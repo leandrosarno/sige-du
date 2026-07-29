@@ -65,9 +65,12 @@
 <body>
 
     <div class="login-card">
-        <div class="login-header">
-            <span class="material-icons">account_balance</span>
-            <h3>SISTEMA CEU</h3>
+<div class="login-header" id="box-logo">
+            <span class="material-icons" id="icone-padrao" style="font-size: 50px; color: var(--cor-primaria);">account_balance</span>
+            
+            <img id="img-logo" src="" alt="Logo do Sistema" style="display: none; max-height: 120px; max-width: 100%; margin: 0 auto 15px auto; object-fit: contain;">
+            
+            <h3 id="titulo-sistema">A carregar...</h3>
             <p class="text-muted">Acesso Restrito</p>
         </div>
 
@@ -97,6 +100,44 @@
         // ==========================================
         const API_URL = "1AqFJ63-UDUmtM-SjKT8kJOjZWkr8MOJHHQT5_aZ3fx4"; 
 
+// ==========================================
+        // 🎨 BUSCA A LOGO E NOME ASSIM QUE ABRE A TELA
+        // ==========================================
+        window.onload = function() {
+            fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify({ acao: "obterConfiguracoes", dados: {} })
+            })
+            .then(res => res.json())
+            .then(retorno => {
+                if(retorno.status === "sucesso") {
+                    // Troca o Nome
+                    document.getElementById('titulo-sistema').innerText = retorno.dados.nomeSistema;
+                    
+                    // Se tiver Logo, esconde o ícone e mostra a Logo!
+                    if (retorno.dados.logoUrl) {
+                        document.getElementById('icone-padrao').style.display = 'none';
+                        const img = document.getElementById('img-logo');
+                        img.src = retorno.dados.logoUrl;
+                        img.style.display = 'block';
+                    }
+                } else {
+                    document.getElementById('titulo-sistema').innerText = "SISTEMA CEU";
+                }
+            })
+            .catch(erro => {
+                console.error("Erro ao puxar identidade visual:", erro);
+                document.getElementById('titulo-sistema').innerText = "SISTEMA CEU";
+            });
+        };
+
+
+
+
+
+
+
+        
         // ==========================================
         // 🚀 FUNÇÃO PRINCIPAL DE LOGIN
         // ==========================================

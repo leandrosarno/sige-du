@@ -101,7 +101,7 @@
         const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec"; 
 
         // ==========================================
-        // 🎨 BUSCA A LOGO E NOME ASSIM QUE ABRE A TELA  
+        // 🎨 BUSCA A LOGO E NOME ASSIM QUE ABRE A TELA
         // ==========================================
         window.onload = function() {
             fetch(API_URL, {
@@ -111,24 +111,29 @@
             .then(res => res.json())
             .then(retorno => {
                 if(retorno.status === "sucesso") {
-                    // Troca o Nome
                     document.getElementById('titulo-sistema').innerText = retorno.dados.nomeSistema;
+                    // GUARDA NA MEMÓRIA PARA O DASHBOARD USAR!
+                    localStorage.setItem('ceu_nome_sistema', retorno.dados.nomeSistema);
                     
-                    // Se tiver Logo, esconde o ícone e mostra a Logo!
                     if (retorno.dados.logoUrl) {
+                        localStorage.setItem('ceu_logo_sistema', retorno.dados.logoUrl);
                         document.getElementById('icone-padrao').style.display = 'none';
                         const img = document.getElementById('img-logo');
                         img.src = retorno.dados.logoUrl;
+                        
+                        // 🎯 A MÁGICA DO TAMANHO ACONTECE AQUI:
+                        if(retorno.dados.tamanhoLogo) {
+                            img.style.height = retorno.dados.tamanhoLogo; // Aplica o tamanho na tela de Login
+                            localStorage.setItem('ceu_tamanho_logo', retorno.dados.tamanhoLogo); // Guarda na memória
+                        } else {
+                            localStorage.removeItem('ceu_tamanho_logo'); // Limpa a memória se a C1 estiver vazia
+                        }
+
                         img.style.display = 'block';
                     }
-                } else {
-                    document.getElementById('titulo-sistema').innerText = " ";
                 }
             })
-            .catch(erro => {
-                console.error("Erro ao puxar identidade visual:", erro);
-                document.getElementById('titulo-sistema').innerText = " ";
-            });
+            .catch(erro => console.error("Erro na logo:", erro));
         };
         
         // ==========================================

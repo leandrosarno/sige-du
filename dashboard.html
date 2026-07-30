@@ -153,7 +153,15 @@
                 }
 
                 // 🎯 ATUALIZA UNIDADE E RF NO TOPO
-                document.getElementById('lbl-ceu').innerText = codigoEol ? ("EOL: " + codigoEol) : ("ID: " + idPlanilha);
+                const nomeCeu = localStorage.getItem('ceu_nome_especifico');
+                
+                if (codigoEol && nomeCeu && nomeCeu.trim() !== "") {
+                    document.getElementById('lbl-ceu').innerText = codigoEol + " - " + nomeCeu;
+                } else if (codigoEol) {
+                    document.getElementById('lbl-ceu').innerText = "EOL: " + codigoEol;
+                } else {
+                    document.getElementById('lbl-ceu').innerText = "ID: " + idPlanilha;
+                }
                 document.getElementById('lbl-usuario').innerText = "RF: " + rfLogado;
 
                 // 🎯 CARREGA LOGO E NOME DO CEU ESPECÍFICO

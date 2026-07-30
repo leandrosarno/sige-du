@@ -169,18 +169,25 @@
             })
             .then(resposta => resposta.json())
             .then(retorno => {
-                if (retorno.status === "sucesso") {
-                        // 🎉 LOGIN COM SUCESSO
-                        
-                        // Guarda os dados da sessão na memória do navegador:
-                        localStorage.setItem('ceu_planilha_id', retorno.token.id_planilha_banco);
-                        localStorage.setItem('ceu_rf_logado', rf);
-                        localStorage.setItem('ceu_codigo_eol', ceu); // 👈 NOVO: Guarda o código EOL do CEU!
-                        
-                        Swal.fire('Bem-vindo!', retorno.mensagem, 'success').then(() => {
-                            window.location.href = "dashboard.html";
-                        });
+                    if (retorno.status === "sucesso") {
+                    // 🎉 LOGIN COM SUCESSO
+                    
+                    // Guarda os dados da sessão na memória do navegador:
+                    localStorage.setItem('ceu_planilha_id', retorno.token.id_planilha_banco);
+                    localStorage.setItem('ceu_rf_logado', rf);
+                    localStorage.setItem('ceu_codigo_eol', ceu);
+                    
+                    // 👈 A MÁGICA: Salva a Logo e o Nome ESPECÍFICOS do CEU!
+                    localStorage.setItem('ceu_nome_especifico', retorno.token.nome_ceu);
+                    if(retorno.token.logo_ceu) {
+                        localStorage.setItem('ceu_logo_especifica', retorno.token.logo_ceu);
+                    } else {
+                        localStorage.removeItem('ceu_logo_especifica');
                     }
+                    
+                    Swal.fire('Bem-vindo!', retorno.mensagem, 'success').then(() => {
+                        window.location.href = "dashboard.html";
+                    });
 
                 } else if (retorno.status === "primeiro_acesso") {
                     // 🚦 REGRA DO PRIMEIRO ACESSO (Obriga a trocar a senha)

@@ -169,13 +169,16 @@
             })
             .then(resposta => resposta.json())
             .then(retorno => {
-                    if (retorno.status === "sucesso") {
+                if (retorno.status === "sucesso") {
                     // 🎉 LOGIN COM SUCESSO
                     
                     // Guarda os dados da sessão na memória do navegador:
                     localStorage.setItem('ceu_planilha_id', retorno.token.id_planilha_banco);
                     localStorage.setItem('ceu_rf_logado', rf);
                     localStorage.setItem('ceu_codigo_eol', ceu);
+                    
+                    // 🎯 O LUGAR CORRETO PARA GUARDAR O NOME DO FUNCIONÁRIO:
+                    localStorage.setItem('ceu_nome_usuario', retorno.token.nome_usuario);
                     
                     // 👈 A MÁGICA: Salva a Logo e o Nome ESPECÍFICOS do CEU!
                     localStorage.setItem('ceu_nome_especifico', retorno.token.nome_ceu);

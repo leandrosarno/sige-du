@@ -115,13 +115,15 @@
                 <strong id="lbl-ceu">Carregando...</strong>
             </div>
             <div class="text-end">
-                <div>
-                    <span class="material-icons" style="vertical-align: middle; font-size: 18px; color: #0d6efd;">account_circle</span>
+                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px;">
+                    <img id="img-avatar-usuario" src="" alt="Avatar" style="display: none; width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid #0d6efd;">
+                    <span class="material-icons" id="icone-avatar-padrao" style="font-size: 30px; color: #0d6efd;">account_circle</span>
+                    
                     <a href="#" onclick="abrirTrocaSenhaLogado(); return false;" id="lbl-rf" style="font-weight: bold; color: #0d6efd; text-decoration: underline;" title="Clique para alterar a sua senha">
                         RF: Carregando...
                     </a>
                 </div>
-                <div id="lbl-nome-usuario" style="font-size: 11px; color: #6c757d; font-weight: 600; margin-top: -2px;">
+                <div id="lbl-nome-usuario" style="font-size: 11px; color: #6c757d; font-weight: 600; margin-top: 2px;">
                     Funcionário
                 </div>
             </div>
@@ -170,9 +172,22 @@ const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOT
                 }
 
                 // 🎯 ATUALIZA RF E NOME DO FUNCIONÁRIO
+ // 🎯 ATUALIZA RF, NOME E FOTO DO FUNCIONÁRIO
                 document.getElementById('lbl-rf').innerText = "RF: " + rfLogado;
-                if (nomeUsuario && document.getElementById('lbl-nome-usuario')) {
+                
+                if (nomeUsuario && nomeUsuario !== "undefined" && nomeUsuario.trim() !== "") {
                     document.getElementById('lbl-nome-usuario').innerText = nomeUsuario;
+                } else {
+                    document.getElementById('lbl-nome-usuario').innerText = "Funcionário";
+                }
+
+                // 📸 Carrega a foto do Avatar
+                const fotoUser = localStorage.getItem('ceu_foto_usuario');
+                if (fotoUser && fotoUser !== "undefined" && fotoUser.trim() !== "") {
+                    document.getElementById('icone-avatar-padrao').style.display = 'none';
+                    const imgAvatar = document.getElementById('img-avatar-usuario');
+                    imgAvatar.src = fotoUser;
+                    imgAvatar.style.display = 'block';
                 }
 
                 // 🎯 CARREGA LOGO

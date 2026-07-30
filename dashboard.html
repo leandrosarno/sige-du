@@ -156,13 +156,15 @@
                 document.getElementById('lbl-ceu').innerText = codigoEol ? ("EOL: " + codigoEol) : ("ID: " + idPlanilha);
                 document.getElementById('lbl-usuario').innerText = "RF: " + rfLogado;
 
-                // 🎯 CARREGA LOGO E NOME DA MEMÓRIA
-                const nomeSalvo = localStorage.getItem('ceu_nome_sistema');
-                const logoSalva = localStorage.getItem('ceu_logo_sistema');
-                const tamanhoSalvo = localStorage.getItem('ceu_tamanho_logo');
+                // 🎯 CARREGA LOGO E NOME DO CEU ESPECÍFICO
+                const nomeSalvo = localStorage.getItem('ceu_nome_especifico');
+                const logoSalva = localStorage.getItem('ceu_logo_especifica');
+                // Opcional: mantemos a altura padrão se tiver configurado no Geral
+                const tamanhoSalvo = localStorage.getItem('ceu_tamanho_logo'); 
 
                 const elNome = document.getElementById('dash-nome-sistema');
                 if (elNome) {
+                    // Se não tiver nome, mostra vazio para ficar limpo
                     elNome.innerText = (nomeSalvo && nomeSalvo.trim() !== "") ? nomeSalvo : " ";
                 }
 

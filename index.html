@@ -177,9 +177,15 @@
                     localStorage.setItem('ceu_rf_logado', rf);
                     localStorage.setItem('ceu_codigo_eol', ceu);
                     
-                    // 🎯 O LUGAR CORRETO PARA GUARDAR O NOME DO FUNCIONÁRIO:
+                    // 🎯 LUGAR CORRETO PARA NOME E FOTO DO FUNCIONÁRIO:
                     localStorage.setItem('ceu_nome_usuario', retorno.token.nome_usuario);
                     
+                    if(retorno.token.foto_usuario) {
+                        localStorage.setItem('ceu_foto_usuario', retorno.token.foto_usuario);
+                    } else {
+                        localStorage.removeItem('ceu_foto_usuario');
+                    }
+
                     // 👈 A MÁGICA: Salva a Logo e o Nome ESPECÍFICOS do CEU!
                     localStorage.setItem('ceu_nome_especifico', retorno.token.nome_ceu);
                     if(retorno.token.logo_ceu) {

@@ -114,7 +114,7 @@
                     document.getElementById('titulo-sistema').innerText = retorno.dados.nomeSistema;
                     // GUARDA NA MEMÓRIA PARA O DASHBOARD USAR!
                     localStorage.setItem('ceu_nome_sistema', retorno.dados.nomeSistema);
-                    localStorage.setItem('ceu_nome_usuario', retorno.token.nome_usuario);
+                   
                     if (retorno.dados.logoUrl) {
                         localStorage.setItem('ceu_logo_sistema', retorno.dados.logoUrl);
                         document.getElementById('icone-padrao').style.display = 'none';

@@ -139,13 +139,16 @@
             elementoClicado.classList.add('ativo');
         }
 
+const API_URL = "SUA_URL_DO_WEB_APP_AQUI"; // 🚨 Cole aqui a URL terminada em /exec
+
         window.onload = function() {
             try {
                 const idPlanilha = localStorage.getItem('ceu_planilha_id');
                 const rfLogado = localStorage.getItem('ceu_rf_logado');
                 const codigoEol = localStorage.getItem('ceu_codigo_eol');
+                const nomeUsuario = localStorage.getItem('ceu_nome_usuario');
+                const nomeCeu = localStorage.getItem('ceu_nome_especifico');
 
-                // Segurança: se não estiver logado, redireciona
                 if (!rfLogado) {
                     window.location.href = "index.html"; 
                     return;
@@ -157,9 +160,7 @@
                     return;
                 }
 
-                // 🎯 ATUALIZA UNIDADE E RF NO TOPO
-                const nomeCeu = localStorage.getItem('ceu_nome_especifico');
-                
+                // 🎯 ATUALIZA UNIDADE
                 if (codigoEol && nomeCeu && nomeCeu.trim() !== "") {
                     document.getElementById('lbl-ceu').innerText = codigoEol + " - " + nomeCeu;
                 } else if (codigoEol) {
@@ -167,35 +168,112 @@
                 } else {
                     document.getElementById('lbl-ceu').innerText = "ID: " + idPlanilha;
                 }
-                document.getElementById('lbl-usuario').innerText = "RF: " + rfLogado;
 
-                // 🎯 CARREGA LOGO E NOME DO CEU ESPECÍFICO
-                const nomeSalvo = localStorage.getItem('ceu_nome_especifico');
-                const logoSalva = localStorage.getItem('ceu_logo_especifica');
-                // Opcional: mantemos a altura padrão se tiver configurado no Geral
-                const tamanhoSalvo = localStorage.getItem('ceu_tamanho_logo'); 
-
-                const elNome = document.getElementById('dash-nome-sistema');
-                if (elNome) {
-                    // Se não tiver nome, mostra vazio para ficar limpo
-                    elNome.innerText = (nomeSalvo && nomeSalvo.trim() !== "") ? nomeSalvo : " ";
+                // 🎯 ATUALIZA RF E NOME DO FUNCIONÁRIO
+                document.getElementById('lbl-rf').innerText = "RF: " + rfLogado;
+                if (nomeUsuario && document.getElementById('lbl-nome-usuario')) {
+                    document.getElementById('lbl-nome-usuario').innerText = nomeUsuario;
                 }
 
+                // 🎯 CARREGA LOGO
+                const logoSalva = localStorage.getItem('ceu_logo_especifica');
+                const tamanhoSalvo = localStorage.getItem('ceu_tamanho_logo'); 
                 const imgDash = document.getElementById('dash-img-logo');
                 const iconePadrao = document.getElementById('dash-icone-padrao');
 
                 if (logoSalva && imgDash) {
                     if (iconePadrao) iconePadrao.style.display = 'none';
                     imgDash.src = logoSalva;
-                    if (tamanhoSalvo) {
-                        imgDash.style.height = tamanhoSalvo;
-                    }
+                    if (tamanhoSalvo) imgDash.style.height = tamanhoSalvo;
                     imgDash.style.display = 'block';
                 }
             } catch (erro) {
                 console.error("Erro ao carregar Dashboard:", erro);
             }
         };
+
+        // ==========================================
+        // 🔑 POP-UP PARA ALTERAR A SENHA
+        // ==========================================
+        function abrirTrocaSenhaLogado() {
+            const rf = localStorage.getItem('ceu_rf_logado');
+            const ceu = localStorage.getItem('ceu_codigo_eol');
+
+            Swal.fire({
+                title: '🔑 Alterar Minha Senha',
+                html: `
+                    <div style="text-align: left; font-size: 14px;">
+                        <label class="fw-bold mt-2">Senha Atual:</label>
+                        <input type="password" id="swal-senha-atual" class="swal2-input" placeholder="Digite sua senha atual">
+                        
+                        <label class="fw-bold mt-2">Nova Senha:</label>
+                        <input type="password" id="swal-nova-senha" class="swal2-input" placeholder="Mínimo 8 caracteres">
+                        
+                        <label class="fw-bold mt-2">Confirmar Nova Senha:</label>
+                        <input type="password" id="swal-conf-senha" class="swal2-input" placeholder="Repita a nova senha">
+                        
+                        <div class="text-muted mt-2" style="font-size:12px;">
+                            Sua nova senha deve ter entre 8 e 12 caracteres, contendo:<br>
+                            ✔️ 1 Letra Maiúscula<br>
+                            ✔️ 1 Letra minúscula<br>
+                            ✔️ 1 Número<br>
+                            ✔️ 1 Símbolo especial (!@#$)
+                        </div>
+                    </div>
+                `,
+                confirmButtonText: '💾 Salvar Nova Senha',
+                confirmButtonColor: '#198754',
+                showCancelButton: true,
+                cancelButtonText: 'Cancelar',
+                focusConfirm: false,
+                preConfirm: () => {
+                    const sAtual = document.getElementById('swal-senha-atual').value.trim();
+                    const s1 = document.getElementById('swal-nova-senha').value.trim();
+                    const s2 = document.getElementById('swal-conf-senha').value.trim();
+
+                    if (!sAtual || !s1 || !s2) {
+                        Swal.showValidationMessage('⚠️ Preencha todos os campos!');
+                        return false;
+                    }
+                    if (s1 !== s2) {
+                        Swal.showValidationMessage('⚠️ As novas senhas não conferem!');
+                        return false;
+                    }
+                    if (!/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,12}$/.test(s1)) {
+                        Swal.showValidationMessage('⚠️ A nova senha não atende aos requisitos de segurança!');
+                        return false;
+                    }
+                    return { senhaAtual: sAtual, novaSenha: s1 };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({ title: 'A gravar...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+
+                    const pacote = {
+                        acao: "alterarSenhaLogado",
+                        dados: {
+                            rf: rf,
+                            ceu: ceu,
+                            senhaAtual: result.value.senhaAtual,
+                            novaSenha: result.value.novaSenha
+                        }
+                    };
+
+                    fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) })
+                    .then(res => res.json())
+                    .then(retorno => {
+                        if (retorno.status === "sucesso") {
+                            Swal.fire('Sucesso!', retorno.mensagem, 'success');
+                        } else {
+                            Swal.fire('Atenção', retorno.mensagem, 'warning');
+                        }
+                    })
+                    .catch(err => {
+                        Swal.fire('Erro', 'Falha ao conectar com o servidor.', 'error');
+                    });
+                }
+            });
+        }
 
         function fazerLogout() {
             localStorage.clear();

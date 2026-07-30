@@ -149,26 +149,28 @@
         }
 
 // Função de Segurança: Carregar dados do Login
-        window.onload = function() {
-            const idPlanilha = localStorage.getItem('ceu_planilha_id');
-            const rfLogado = localStorage.getItem('ceu_rf_logado');
-            
-            // Verifica se fez login
-            if(!rfLogado) {
-                window.location.href = "index.html"; 
-                return;
-            }
-
-            // Verifica se o Gestor configurou a planilha daquele CEU na Coluna R
-            if(!idPlanilha || idPlanilha.trim() === "") {
-                alert("⚠️ Atenção: A sua Unidade (CEU) ainda não tem um Banco de Dados configurado no sistema central. Fale com a Coordenação.");
-                window.location.href = "index.html";
-                return;
-            }
-
-            // Se tudo estiver certo, libera a entrada!
-            document.getElementById('lbl-ceu').innerText = "ID do Banco: " + idPlanilha;
-            document.getElementById('lbl-usuario').innerText = "RF: " + rfLogado;
+window.onload = function() {
+            fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify({ acao: "obterConfiguracoes", dados: {} })
+            })
+            .then(res => res.json())
+            .then(retorno => {
+                if(retorno.status === "sucesso") {
+                    document.getElementById('titulo-sistema').innerText = retorno.dados.nomeSistema;
+                    // GUARDA NA MEMÓRIA PARA O DASHBOARD USAR!
+                    localStorage.setItem('ceu_nome_sistema', retorno.dados.nomeSistema);
+                    
+                    if (retorno.dados.logoUrl) {
+                        localStorage.setItem('ceu_logo_sistema', retorno.dados.logoUrl);
+                        document.getElementById('icone-padrao').style.display = 'none';
+                        const img = document.getElementById('img-logo');
+                        img.src = retorno.dados.logoUrl;
+                        img.style.display = 'block';
+                    }
+                }
+            })
+            .catch(erro => console.error("Erro na logo:", erro));
         };
 
         function fazerLogout() {

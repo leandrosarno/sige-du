@@ -3,26 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema CEU - Painel Principal</title>
+    <title>Painel Principal</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
     <style>
-        /* ==========================================
-           O DESIGN DO FORM PAI (MDI FORM)
-           ========================================== */
         body {
             margin: 0;
             padding: 0;
             display: flex;
-            height: 100vh; /* Ocupa 100% da altura da tela */
-            overflow: hidden; /* Corta barras de rolagem duplas */
+            height: 100vh;
+            overflow: hidden;
             background-color: #f4f7f6;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        /* O MENU LATERAL (A Barra Fixa) */
         .sidebar {
             width: 260px;
             background: #2c3e50;
@@ -37,12 +33,6 @@
             text-align: center;
             background: #1a252f;
             border-bottom: 1px solid #34495e;
-        }
-
-        .sidebar-header img {
-            max-height: 60px;
-            max-width: 100%;
-            margin-bottom: 10px;
         }
 
         .sidebar a {
@@ -62,7 +52,6 @@
             color: white;
         }
 
-        /* A ÁREA CENTRAL ONDE RODA O FILHO */
         .main-content {
             flex-grow: 1;
             display: flex;
@@ -70,7 +59,6 @@
             width: calc(100% - 260px);
         }
 
-        /* O CABEÇALHO DO TOPO */
         .topbar {
             height: 60px;
             background: white;
@@ -82,7 +70,6 @@
             z-index: 10;
         }
 
-        /* O \"FORM FILHO\" (O iFrame) */
         #frame-filho {
             flex-grow: 1;
             border: none;
@@ -96,8 +83,11 @@
 
     <div class="sidebar">
         <div class="sidebar-header">
-            <span class="material-icons" style="font-size: 40px;">account_balance</span>
-            <h5 class="mt-2 mb-0" id="nome-sistema"> </h5>
+            <span class="material-icons" id="dash-icone-padrao" style="font-size: 40px;">account_balance</span>
+            
+            <img id="dash-img-logo" src="" alt="Logo" style="display: none; width: 100%; max-height: 120px; object-fit: contain; margin: 0 auto 10px auto;">
+            
+            <h5 class="mt-2 mb-0" id="dash-nome-sistema"></h5>
         </div>
 
         <a href="#" class="ativo" onclick="abrirFormFilho('inicio.html', this)">
@@ -137,70 +127,65 @@
     </div>
 
     <script>
-        // Função que imita o Delphi: Troca apenas o conteúdo do miolo
         function abrirFormFilho(urlTela, elementoClicado) {
-            // Muda a página que está rodando dentro do iFrame
             document.getElementById('frame-filho').src = urlTela;
-
-            // Muda o efeito visual do menu (marca qual está selecionado)
             const links = document.querySelectorAll('.sidebar a');
             links.forEach(l => l.classList.remove('ativo'));
             elementoClicado.classList.add('ativo');
         }
 
-// Função de Segurança: Carregar dados do Login
-window.onload = function() {
-            fetch(API_URL, {
-                method: 'POST',
-                body: JSON.stringify({ acao: "obterConfiguracoes", dados: {} })
-            })
-            .then(res => res.json())
-            .then(retorno => {
-                if(retorno.status === "sucesso") {
-                    document.getElementById('titulo-sistema').innerText = retorno.dados.nomeSistema;
-                    // GUARDA NA MEMÓRIA PARA O DASHBOARD USAR!
-                    localStorage.setItem('ceu_nome_sistema', retorno.dados.nomeSistema);
-                    
-                    if (retorno.dados.logoUrl) {
-                        localStorage.setItem('ceu_logo_sistema', retorno.dados.logoUrl);
-                        document.getElementById('icone-padrao').style.display = 'none';
-                        const img = document.getElementById('img-logo');
-                        img.src = retorno.dados.logoUrl;
-                        img.style.display = 'block';
-                    }
+        window.onload = function() {
+            try {
+                const idPlanilha = localStorage.getItem('ceu_planilha_id');
+                const rfLogado = localStorage.getItem('ceu_rf_logado');
+                const codigoEol = localStorage.getItem('ceu_codigo_eol');
+
+                // Segurança: se não estiver logado, redireciona
+                if (!rfLogado) {
+                    window.location.href = "index.html"; 
+                    return;
                 }
-            })
-            .catch(erro => console.error("Erro na logo:", erro));
+
+                if (!idPlanilha || idPlanilha.trim() === "") {
+                    alert("⚠️ Atenção: A sua Unidade (CEU) ainda não tem um Banco de Dados configurado.");
+                    window.location.href = "index.html";
+                    return;
+                }
+
+                // 🎯 ATUALIZA UNIDADE E RF NO TOPO
+                document.getElementById('lbl-ceu').innerText = codigoEol ? ("EOL: " + codigoEol) : ("ID: " + idPlanilha);
+                document.getElementById('lbl-usuario').innerText = "RF: " + rfLogado;
+
+                // 🎯 CARREGA LOGO E NOME DA MEMÓRIA
+                const nomeSalvo = localStorage.getItem('ceu_nome_sistema');
+                const logoSalva = localStorage.getItem('ceu_logo_sistema');
+                const tamanhoSalvo = localStorage.getItem('ceu_tamanho_logo');
+
+                const elNome = document.getElementById('dash-nome-sistema');
+                if (elNome) {
+                    elNome.innerText = (nomeSalvo && nomeSalvo.trim() !== "") ? nomeSalvo : " ";
+                }
+
+                const imgDash = document.getElementById('dash-img-logo');
+                const iconePadrao = document.getElementById('dash-icone-padrao');
+
+                if (logoSalva && imgDash) {
+                    if (iconePadrao) iconePadrao.style.display = 'none';
+                    imgDash.src = logoSalva;
+                    if (tamanhoSalvo) {
+                        imgDash.style.height = tamanhoSalvo;
+                    }
+                    imgDash.style.display = 'block';
+                }
+            } catch (erro) {
+                console.error("Erro ao carregar Dashboard:", erro);
+            }
         };
 
         function fazerLogout() {
-            // Limpa a memória de segurança e volta para o Login
-            localStorage.removeItem('ceu_planilha_id');
-            localStorage.removeItem('ceu_rf_logado');
+            localStorage.clear();
             window.location.href = "index.html";
         }
-
-// --- MÁGICA DA LOGO E NOME NO DASHBOARD ---
-            const nomeSalvo = localStorage.getItem('ceu_nome_sistema');
-            const logoSalva = localStorage.getItem('ceu_logo_sistema');
-            const tamanhoSalvo = localStorage.getItem('ceu_tamanho_logo'); // 🎯 Puxa a medida da memória
-
-            if (nomeSalvo) document.getElementById('dash-nome-sistema').innerText = nomeSalvo;
-            
-            if (logoSalva) {
-                document.getElementById('dash-icone-padrao').style.display = 'none';
-                const imgDash = document.getElementById('dash-img-logo');
-                imgDash.src = logoSalva;
-                
-                // 🎯 Aplica a altura se você tiver digitado lá na célula C1
-                if (tamanhoSalvo) {
-                    imgDash.style.height = tamanhoSalvo;
-                }
-                
-                imgDash.style.display = 'block';
-            }
-
-        
     </script>
 </body>
 </html>

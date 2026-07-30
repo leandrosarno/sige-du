@@ -179,6 +179,28 @@ window.onload = function() {
             localStorage.removeItem('ceu_rf_logado');
             window.location.href = "index.html";
         }
+
+// --- MÁGICA DA LOGO E NOME NO DASHBOARD ---
+            const nomeSalvo = localStorage.getItem('ceu_nome_sistema');
+            const logoSalva = localStorage.getItem('ceu_logo_sistema');
+            const tamanhoSalvo = localStorage.getItem('ceu_tamanho_logo'); // 🎯 Puxa a medida da memória
+
+            if (nomeSalvo) document.getElementById('dash-nome-sistema').innerText = nomeSalvo;
+            
+            if (logoSalva) {
+                document.getElementById('dash-icone-padrao').style.display = 'none';
+                const imgDash = document.getElementById('dash-img-logo');
+                imgDash.src = logoSalva;
+                
+                // 🎯 Aplica a altura se você tiver digitado lá na célula C1
+                if (tamanhoSalvo) {
+                    imgDash.style.height = tamanhoSalvo;
+                }
+                
+                imgDash.style.display = 'block';
+            }
+
+        
     </script>
 </body>
 </html>

@@ -170,16 +170,17 @@
             .then(resposta => resposta.json())
             .then(retorno => {
                 if (retorno.status === "sucesso") {
-                    // 🎉 LOGIN COM SUCESSO
-                    
-                    // Guarda o "Bilhete Dourado" (ID da planilha) no navegador para usar nas outras telas!
-                    localStorage.setItem('ceu_planilha_id', retorno.token.id_planilha_banco);
-                    localStorage.setItem('ceu_rf_logado', rf);
-                    
-                    Swal.fire('Bem-vindo!', retorno.mensagem, 'success').then(() => {
-                        // Redireciona para o Painel Principal (Amanhã nós criamos o dashboard.html)
-                        window.location.href = "dashboard.html";
-                    });
+                        // 🎉 LOGIN COM SUCESSO
+                        
+                        // Guarda os dados da sessão na memória do navegador:
+                        localStorage.setItem('ceu_planilha_id', retorno.token.id_planilha_banco);
+                        localStorage.setItem('ceu_rf_logado', rf);
+                        localStorage.setItem('ceu_codigo_eol', ceu); // 👈 NOVO: Guarda o código EOL do CEU!
+                        
+                        Swal.fire('Bem-vindo!', retorno.mensagem, 'success').then(() => {
+                            window.location.href = "dashboard.html";
+                        });
+                    }
 
                 } else if (retorno.status === "primeiro_acesso") {
                     // 🚦 REGRA DO PRIMEIRO ACESSO (Obriga a trocar a senha)

@@ -148,18 +148,26 @@
             elementoClicado.classList.add('ativo');
         }
 
-        // Função de Segurança: Carregar dados do Login
+// Função de Segurança: Carregar dados do Login
         window.onload = function() {
             const idPlanilha = localStorage.getItem('ceu_planilha_id');
             const rfLogado = localStorage.getItem('ceu_rf_logado');
             
-            // Se o cara tentar pular o Login e entrar direto aqui, o sistema chuta ele para fora!
-            if(!idPlanilha || !rfLogado) {
+            // Verifica se fez login
+            if(!rfLogado) {
                 window.location.href = "index.html"; 
                 return;
             }
 
-            document.getElementById('lbl-ceu').innerText = "Conectado ao ID: " + idPlanilha;
+            // Verifica se o Gestor configurou a planilha daquele CEU na Coluna R
+            if(!idPlanilha || idPlanilha.trim() === "") {
+                alert("⚠️ Atenção: A sua Unidade (CEU) ainda não tem um Banco de Dados configurado no sistema central. Fale com a Coordenação.");
+                window.location.href = "index.html";
+                return;
+            }
+
+            // Se tudo estiver certo, libera a entrada!
+            document.getElementById('lbl-ceu').innerText = "ID do Banco: " + idPlanilha;
             document.getElementById('lbl-usuario').innerText = "RF: " + rfLogado;
         };
 

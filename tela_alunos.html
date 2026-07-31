@@ -622,6 +622,123 @@
             })
             .catch(err => Swal.fire('Erro', 'Falha ao comunicar com o servidor. Verifique a internet.', 'error'));
         }
+
+// ==========================================
+        // 🔎 MÁGICA DA EDIÇÃO (MÁQUINA DO TEMPO)
+        // ==========================================
+        window.onload = function() {
+            // Verifica se a URL tem um parâmetro ?id=ALU00001
+            const urlParams = new URLSearchParams(window.location.search);
+            const idEdicao = urlParams.get('id');
+
+            if (idEdicao) {
+                // Modo de Edição Ativado!
+                document.querySelector('.titulo-tela').innerHTML = `<span class="material-icons" style="font-size: 32px; color: #ff9800;">edit_document</span> Editando: ${idEdicao}`;
+                document.getElementById('btn-salvar-aluno').innerHTML = `<span class="material-icons">update</span> Atualizar Ficha`;
+                
+                // Salva o ID na memória temporária para sabermos quem atualizar depois
+                document.body.setAttribute('data-id-edicao', idEdicao);
+
+                carregarDadosDoAluno(idEdicao);
+            }
+        };
+
+        function carregarDadosDoAluno(idAluno) {
+            const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec"; // Confirme seu link
+            const codigoCeu = localStorage.getItem('ceu_codigo_eol'); 
+
+            Swal.fire({ title: 'Buscando Prontuário...', text: 'Viajando no tempo para resgatar os dados.', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+
+            fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify({
+                    acao: "buscarAlunoParaEdicao",
+                    dados: { idCeu: codigoCeu, idAluno: idAluno }
+                })
+            })
+            .then(res => res.json())
+            .then(retorno => {
+                if (retorno.status === "sucesso") {
+                    Swal.close(); // Fecha o aviso carregando
+                    preencherFormulario(retorno.aluno);
+                } else {
+                    Swal.fire('Erro', retorno.mensagem, 'error');
+                }
+            })
+            .catch(err => Swal.fire('Erro', 'Falha na conexão.', 'error'));
+        }
+
+        // Esta função distribui as informações para cada caixinha da tela
+        function preencherFormulario(aluno) {
+            // Puxa a foto do Google Drive ou exibe o avatar padrão
+            if (aluno.linkFoto && aluno.linkFoto !== "") {
+                const matchF = aluno.linkFoto.match(/(?:id=|file\/d\/|d\/)([^&\/]+)/);
+                if (matchF && matchF[1]) {
+                    document.getElementById('aluno-preview-foto').src = "https://drive.google.com/thumbnail?id=" + matchF[1] + "&sz=w300"; 
+                }
+            }
+
+            document.getElementById('aluno-eol').value = aluno.eolAluno || "";
+            document.getElementById('aluno-cin').value = aluno.cin || "";
+            document.getElementById('aluno-nasc').value = aluno.dataNascimento || "";
+            document.getElementById('aluno-nome').value = aluno.nomeCompleto || "";
+            document.getElementById('aluno-social').value = aluno.nomeSocial || "";
+            
+            document.getElementById('aluno-cep').value = aluno.cep || "";
+            document.getElementById('aluno-logradouro').value = aluno.logradouro || "";
+            document.getElementById('aluno-endereco').value = aluno.endereco || "";
+            document.getElementById('aluno-numero').value = aluno.numero || "";
+            document.getElementById('aluno-complemento').value = aluno.complemento || "";
+            document.getElementById('aluno-bairro').value = aluno.bairro || "";
+            document.getElementById('aluno-cidade').value = aluno.cidade || "";
+            document.getElementById('aluno-estado').value = aluno.estado || "";
+
+            document.getElementById('aluno-tel1').value = aluno.telProprio || "";
+            document.getElementById('aluno-tipo-tel1').value = aluno.telPligWaths || "";
+            document.getElementById('aluno-tel-recado').value = aluno.telRecados || "";
+            document.getElementById('aluno-recado-com').value = aluno.recadosCom || "";
+
+            document.getElementById('aluno-resp').value = aluno.respLegal || "";
+            document.getElementById('aluno-saida').value = aluno.autorizacaoSaida || "NÃO";
+            document.getElementById('aluno-quem-autorizou').value = aluno.quemAutorizou || "";
+            document.getElementById('aluno-pcd').value = aluno.pcd || "NÃO";
+            document.getElementById('aluno-def-qual').value = aluno.especificarDeficiencia || "";
+            document.getElementById('aluno-laudo-pcd').value = aluno.laudoPcd || "NÃO";
+            document.getElementById('aluno-restr').value = aluno.restricaoAlimentar || "NÃO";
+            document.getElementById('aluno-restr-qual').value = aluno.especificarRestricao || "";
+            document.getElementById('aluno-laudo-restr').value = aluno.laudoRestricao || "NÃO";
+            
+            if (aluno.parq === "SIM") { document.getElementById('aluno-parq').checked = true; }
+
+            document.getElementById('aluno-print-geral').value = aluno.imprimirCG || "NÃO";
+            document.getElementById('aluno-via-geral').value = aluno.viaGeral || 0;
+            
+            document.getElementById('aluno-perm-academia').value = aluno.permissaoAcademia || "NÃO";
+            document.getElementById('aluno-print-academia').value = aluno.imprimirCAL || "NÃO";
+            document.getElementById('aluno-via-academia').value = aluno.viaAcademia || 0;
+
+            document.getElementById('aluno-perm-raia').value = aluno.permissaoRaia || "NÃO";
+            document.getElementById('aluno-print-raia').value = aluno.imprimirCRL || "NÃO";
+            document.getElementById('aluno-via-piscina').value = aluno.viaPiscina || 0;
+
+            document.getElementById('aluno-obs').value = aluno.obs || "";
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
     </script>
 </body>
 </html>

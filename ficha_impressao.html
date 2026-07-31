@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Ficha de Cadastro - Munícipe</title>
+    <style>
+        body { font-family: 'Arial', sans-serif; margin: 0; padding: 0; background-color: #f0f0f0; }
+        .folha { width: 210mm; min-height: 297mm; padding: 20mm; margin: 10mm auto; border-radius: 5px; background: white; box-shadow: 0 0 10px rgba(0,0,0,0.1); position: relative; }
+        .cabecalho { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
+        .cabecalho h2 { margin: 5px 0; font-size: 22px; color: #333; }
+        .cabecalho p { margin: 0; font-size: 14px; color: #666; }
+        .linha-dados { display: flex; margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 4px; }
+        .titulo-dado { font-weight: bold; width: 200px; color: #444; font-size: 14px; }
+        .valor-dado { flex-grow: 1; font-size: 14px; color: #000; text-transform: uppercase; }
+        .secao { background-color: #f8f9fa; padding: 8px 10px; font-weight: bold; margin-top: 25px; margin-bottom: 15px; border-left: 5px solid #0d6efd; font-size: 16px; }
+        .foto-box { position: absolute; top: 20mm; right: 20mm; width: 30mm; height: 40mm; border: 1px solid #ccc; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #999; overflow: hidden; }
+        .foto-box img { width: 100%; height: 100%; object-fit: cover; }
+        .assinatura { margin-top: 50px; text-align: center; width: 300px; margin-left: auto; margin-right: auto; }
+        .assinatura div { border-top: 1px solid #000; padding-top: 5px; font-size: 14px; }
+        @media print {
+            body { background: white; margin: 0; }
+            .folha { margin: 0; box-shadow: none; border-radius: 0; min-height: auto; padding: 10mm; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="folha" id="folha-impressao">
+        <h3 style="text-align: center; color: #666;">⏳ Gerando ficha para impressão...</h3>
+    </div>
+
+    <script>
+        window.onload = function() {
+            // Como agora estão no mesmo domínio (GitHub), o navegador libera a leitura da memória!
+            const dadosAlvo = localStorage.getItem('alunoParaImpressao');
+            
+            if (dadosAlvo) {
+                const aluno = JSON.parse(dadosAlvo);
+                montarFolha(aluno);
+                // Dá um pequeno fôlego para a foto carregar e chama a impressora!
+                setTimeout(() => { window.print(); }, 800);
+            } else {
+                document.getElementById('folha-impressao').innerHTML = "<h3 style='color:red; text-align:center;'>Erro: Dados do aluno não encontrados na memória.</h3>";
+            }
+        };
+
+        function montarFolha(aluno) {
+            let htmlFoto = "SEM FOTO";
+            if (aluno.linkFoto && aluno.linkFoto !== "") {
+                const matchF = aluno.linkFoto.match(/(?:id=|file\/d\/|d\/)([^&\/]+)/);
+                if (matchF && matchF[1]) {
+                    const imgUrl = "https://drive.google.com/thumbnail?id=" + matchF[1] + "&sz=w300";
+                    htmlFoto = `<img src="${imgUrl}">`;
+                }
+            }
+
+            const dataHoje = new Date().toLocaleDateString('pt-BR');
+
+            const html = `
+                <div class="foto-box">${htmlFoto}</div>
+
+                <div class="cabecalho">
+                    <h2>FICHA CADASTRAL DE MUNÍCIPE</h2>
+                    <p>Secretaria de Esportes / Educação - Sistema CEU</p>
+                </div>
+
+                <div class="secao">1. IDENTIFICAÇÃO DO ALUNO</div>
+                <div class="linha-dados"><div class="titulo-dado">Nome Completo:</div><div class="valor-dado">${aluno.nomeCompleto || '-'}</div></div>
+                <div class="linha-dados"><div class="titulo-dado">Nome Social:</div><div class="valor-dado">${aluno.nomeSocial || '-'}</div></div>
+                <div class="linha-dados"><div class="titulo-dado">Prontuário (ID):</div><div class="valor-dado fw-bold">${aluno.idAluno || '-'}</div></div>
+                <div class="linha-dados"><div class="titulo-dado">Código EOL:</div><div class="valor-dado">${aluno.eolAluno || '-'}</div></div>
+                <div class="linha-dados"><div class="titulo-dado">CPF / CIN:</div><div class="valor-dado">${aluno.cin || '-'}</div></div>
+                <div class="linha-dados"><div class="titulo-dado">Data de Nascimento:</div><div class="valor-dado">${aluno.dataNascimento || '-'}</div></div>
+
+                <div class="secao">2. ENDEREÇO E CONTATOS</div>
+                <div class="linha-dados"><div class="titulo-dado">Endereço:</div><div class="valor-dado">${aluno.logradouro || ''} ${aluno.endereco || '-'}, ${aluno.numero || 'S/N'}</div></div>
+                <div class="linha-dados"><div class="titulo-dado">Complemento:</div><div class="valor-dado">${aluno.complemento || '-'}</div></div>
+                <div class="linha-dados"><div class="titulo-dado">Bairro / CEP:</div><div class="valor-dado">${aluno.bairro || '-'} - CEP: ${aluno.cep || '-'}</div></div>
+                <div class="linha-dados"><div class="titulo-dado">Cidade / UF:</div><div class="valor-dado">${aluno.cidade || '-'} / ${aluno.estado || '-'}</div></div>
+                <div class="linha-dados"><div class="titulo-dado">Telefone Principal:</div><div class="valor-dado">${aluno.telProprio || '-'} (${aluno.telPligWaths || ''})</div></div>
+                <div class="linha-dados"><div class="titulo-dado">Telefone Recados:</div><div class="valor-dado">${aluno.telRecados || '-'} (Falar com: ${aluno.recadosCom || '-'})</div></div>
+
+                <div class="secao">3. RESPONSÁVEL E SAÚDE</div>
+                <div class="linha-dados"><div class="titulo-dado">Responsável Legal:</div><div class="valor-dado">${aluno.respLegal || '-'}</div></div>
+                <div class="linha-dados"><div class="titulo-dado">Autorizado Sair Sozinho?</div><div class="valor-dado">${aluno.autorizacaoSaida || 'NÃO'} (${aluno.quemAutorizou || '-'})</div></div>
+                <div class="linha-dados"><div class="titulo-dado">É Pessoa c/ Deficiência?</div><div class="valor-dado">${aluno.pcd || 'NÃO'} (${aluno.especificarDeficiencia || '-'}) - Laudo: ${aluno.laudoPcd || '-'}</div></div>
+                <div class="linha-dados"><div class="titulo-dado">Restrição Alimentar?</div><div class="valor-dado">${aluno.restricaoAlimentar || 'NÃO'} (${aluno.especificarRestricao || '-'})</div></div>
+                <div class="linha-dados"><div class="titulo-dado">Preencheu o PAR-Q?</div><div class="valor-dado">${aluno.parq || 'NÃO'}</div></div>
+
+                <div class="secao">4. INFORMAÇÕES ADMINISTRATIVAS</div>
+                <div class="linha-dados"><div class="titulo-dado">Permissão Academia:</div><div class="valor-dado">${aluno.permissaoAcademia || 'NÃO'}</div></div>
+                <div class="linha-dados"><div class="titulo-dado">Permissão Raia Livre:</div><div class="valor-dado">${aluno.permissaoRaia || 'NÃO'}</div></div>
+                <div class="linha-dados"><div class="titulo-dado">Observações Sec.:</div><div class="valor-dado">${aluno.obs || '-'}</div></div>
+
+                <div class="assinatura">
+                    <div>Assinatura do Responsável / Munícipe</div>
+                    <p style="font-size:12px; color:#666; margin-top:5px;">Data de Impressão: ${dataHoje}</p>
+                </div>
+            `;
+
+            document.getElementById('folha-impressao').innerHTML = html;
+        }
+    </script>
+</body>
+</html>

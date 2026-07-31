@@ -3,30 +3,181 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Início</title>
+    <title>Início - Visão Geral</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
-        body { padding: 30px; background-color: #f4f7f6; }
-        .card-resumo { border-radius: 15px; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        body { background-color: #f4f7f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 30px; }
+        
+        .welcome-section {
+            background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+            color: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 25px rgba(13, 110, 253, 0.2);
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            border: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+        }
+
+        .stat-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: white;
+        }
+
+        .icon-blue { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .icon-orange { background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); }
+        .icon-green { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+
+        .stat-info h3 { font-size: 32px; font-weight: 800; margin: 0; color: #2c3e50; }
+        .stat-info p { font-size: 14px; font-weight: 600; color: #64748b; margin: 0; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .loading-spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(0,0,0,0.1);
+            border-top-color: #0d6efd;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
-    <h2>Bem-vindo ao Sistema!</h2>
-    <p class="text-muted">Selecione uma opção no menu lateral para começar a trabalhar.</p>
 
-    <div class="row mt-4">
-        <div class="col-md-4">
-            <div class="card card-resumo p-4 text-center">
-                <h3 class="text-primary">0</h3>
-                <span>Alunos Matriculados</span>
+    <div class="animate__animated animate__fadeIn">
+        
+        <div class="welcome-section">
+            <div>
+                <h2 class="fw-bold mb-1" id="titulo-boas-vindas">Olá, Gestor! 👋</h2>
+                <p class="mb-0 opacity-75 fs-5">Aqui está o resumo do seu CEU em tempo real.</p>
             </div>
+            <span class="material-icons" style="font-size: 70px; opacity: 0.2;">analytics</span>
         </div>
-        <div class="col-md-4">
-            <div class="card card-resumo p-4 text-center">
-                <h3 class="text-success">0</h3>
-                <span>Turmas Ativas</span>
+
+        <div class="row g-4">
+            
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-icon icon-blue">
+                        <span class="material-icons">groups</span>
+                    </div>
+                    <div class="stat-info">
+                        <p>Total de Munícipes</p>
+                        <h3 id="val-cadastros"><div class="loading-spinner"></div></h3>
+                    </div>
+                </div>
             </div>
+
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-icon icon-orange">
+                        <span class="material-icons">class</span>
+                    </div>
+                    <div class="stat-info">
+                        <p>Turmas Ativas</p>
+                        <h3 id="val-turmas"><div class="loading-spinner"></div></h3>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-icon icon-green">
+                        <span class="material-icons">sports_score</span>
+                    </div>
+                    <div class="stat-info">
+                        <p>Matrículas Realizadas</p>
+                        <h3 id="val-matriculas"><div class="loading-spinner"></div></h3>
+                    </div>
+                </div>
+            </div>
+
         </div>
+
     </div>
+
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec"; // Cole seu Link API aqui
+
+        window.onload = function() {
+            // Puxa o nome do usuário para dar boas vindas personalizadas
+            const nomeUsuario = localStorage.getItem('ceu_nome_usuario');
+            if(nomeUsuario && nomeUsuario !== "undefined") {
+                document.getElementById('titulo-boas-vindas').innerText = `Olá, ${nomeUsuario.split(' ')[0]}! 👋`;
+            }
+
+            carregarEstatisticas();
+        };
+
+        function carregarEstatisticas() {
+            const codigoCeu = localStorage.getItem('ceu_codigo_eol');
+            if(!codigoCeu) return;
+
+            fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify({
+                    acao: "buscarEstatisticasDashboard",
+                    dados: { idCeu: codigoCeu }
+                })
+            })
+            .then(res => res.json())
+            .then(retorno => {
+                if(retorno.status === "sucesso") {
+                    animarNumero('val-cadastros', retorno.estatisticas.cadastros);
+                    animarNumero('val-turmas', retorno.estatisticas.turmas);
+                    animarNumero('val-matriculas', retorno.estatisticas.matriculas);
+                } else {
+                    document.getElementById('val-cadastros').innerText = "-";
+                    document.getElementById('val-turmas').innerText = "-";
+                    document.getElementById('val-matriculas').innerText = "-";
+                }
+            })
+            .catch(err => console.error(err));
+        }
+
+        // Efeitinho bonitinho para o número subir rápido
+        function animarNumero(id, valorFinal) {
+            const el = document.getElementById(id);
+            el.innerText = "0";
+            let cont = 0;
+            const incremento = Math.ceil(valorFinal / 20) || 1;
+            
+            const timer = setInterval(() => {
+                cont += incremento;
+                if(cont >= valorFinal) {
+                    el.innerText = valorFinal;
+                    clearInterval(timer);
+                } else {
+                    el.innerText = cont;
+                }
+            }, 30);
+        }
+    </script>
 </body>
 </html>

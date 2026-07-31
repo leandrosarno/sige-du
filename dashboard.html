@@ -208,44 +208,65 @@ const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOT
         };
 
 // ==========================================
-        // 🔑 POP-UP PARA ALTERAR SENHA E FOTO
+        // 🔑 POP-UP PREMIUM PARA MEU PERFIL
         // ==========================================
         function abrirTrocaSenhaLogado() {
             const rf = localStorage.getItem('ceu_rf_logado');
             const ceu = localStorage.getItem('ceu_codigo_eol');
+            const fotoAtual = localStorage.getItem('ceu_foto_usuario') || '';
+
+            // Se o funcionário já tem foto, mostra ela. Se não, mostra um ícone genérico lindão.
+            const avatarSrc = (fotoAtual && fotoAtual !== "undefined" && fotoAtual.trim() !== "") 
+                ? fotoAtual 
+                : 'https://via.placeholder.com/120/0d6efd/ffffff?text=FOTO';
 
             Swal.fire({
-                title: 'Meu Perfil',
+                title: '👤 Meu Perfil',
                 html: `
-                    <div style="text-align: left; font-size: 14px;">
-                        <label class="fw-bold mt-2" style="color: #0d6efd;">📷 Alterar Minha Foto:</label>
-                        <input type="file" id="swal-foto" class="form-control mb-2" accept="image/*" onchange="previewAvatar(event)">
-                        <div style="text-align: center;">
-                            <img id="swal-preview-foto" src="" style="display: none; width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid #0d6efd; margin: 5px auto;">
+                    <div style="text-align: left; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+                        
+                        <div style="text-align: center; margin-bottom: 25px; margin-top: 10px;">
+                            <div style="position: relative; display: inline-block;">
+                                <img id="swal-preview-foto" src="${avatarSrc}" style="width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 4px solid #f4f7f6; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
+                                
+                                <label for="swal-foto" style="position: absolute; bottom: 0; right: 0; background: #0d6efd; color: white; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: 0.3s;" onmouseover="this.style.background='#0b5ed7'" onmouseout="this.style.background='#0d6efd'">
+                                    <span class="material-icons" style="font-size: 20px;">camera_alt</span>
+                                </label>
+                                <input type="file" id="swal-foto" style="display: none;" accept="image/*" onchange="previewAvatar(event)">
+                            </div>
+                            <div style="margin-top: 10px; font-size: 13px; color: #6c757d; font-weight: 500;">Clique na câmera para enviar sua foto</div>
                         </div>
 
-                        <hr style="margin: 15px 0;">
+                        <hr style="border-color: #dee2e6; margin: 20px 0;">
 
-                        <label class="fw-bold mt-2">Senha Atual:</label>
-                        <input type="password" id="swal-senha-atual" class="swal2-input" style="margin-top: 5px;" placeholder="Sua senha atual">
+                        <h6 style="color: #0d6efd; font-weight: bold; margin-bottom: 15px;"><span class="material-icons" style="font-size: 18px; vertical-align: text-bottom;">lock_reset</span> Alterar Senha (Opcional)</h6>
                         
-                        <label class="fw-bold mt-2">Nova Senha:</label>
-                        <input type="password" id="swal-nova-senha" class="swal2-input" style="margin-top: 5px;" placeholder="Mínimo 8 caracteres">
+                        <div class="mb-3">
+                            <label class="form-label text-muted" style="font-size: 13px; font-weight: 600; margin-bottom: 4px;">Senha Atual</label>
+                            <input type="password" id="swal-senha-atual" class="form-control form-control-lg" style="border-radius: 8px; font-size: 14px;" placeholder="Digite para alterar a senha">
+                        </div>
                         
-                        <label class="fw-bold mt-2">Confirmar Nova Senha:</label>
-                        <input type="password" id="swal-conf-senha" class="swal2-input" style="margin-top: 5px;" placeholder="Repita a nova senha">
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <label class="form-label text-muted" style="font-size: 13px; font-weight: 600; margin-bottom: 4px;">Nova Senha</label>
+                                <input type="password" id="swal-nova-senha" class="form-control form-control-lg" style="border-radius: 8px; font-size: 14px;" placeholder="Mín. 8 caract.">
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label class="form-label text-muted" style="font-size: 13px; font-weight: 600; margin-bottom: 4px;">Confirmar</label>
+                                <input type="password" id="swal-conf-senha" class="form-control form-control-lg" style="border-radius: 8px; font-size: 14px;" placeholder="Repita a senha">
+                            </div>
+                        </div>
                         
-                        <div class="text-muted mt-2" style="font-size:12px; background: #f8f9fa; padding: 10px; border-radius: 8px;">
-                            Sua nova senha deve ter entre 8 e 12 caracteres, contendo:<br>
-                            ✔️ 1 Letra Maiúscula | ✔️ 1 Letra minúscula<br>
-                            ✔️ 1 Número | ✔️ 1 Símbolo especial (!@#$)
+                        <div style="font-size:12px; background: #f8f9fa; padding: 12px; border-radius: 8px; color: #6c757d; border: 1px solid #e9ecef;">
+                            <strong>Regras para nova senha:</strong> Entre 8 e 12 caracteres. Obrigatório ter Maiúscula, minúscula, Número e Símbolo (!@#$).
                         </div>
                     </div>
                 `,
-                confirmButtonText: '💾 Salvar Dados',
-                confirmButtonColor: '#198754',
+                confirmButtonText: '<span class="material-icons" style="vertical-align: middle; font-size: 18px; margin-right: 5px;">save</span> Salvar Perfil',
+                confirmButtonColor: '#0d6efd',
                 showCancelButton: true,
                 cancelButtonText: 'Cancelar',
+                width: '450px', // Deixa o modal um pouco mais largo e confortável
                 focusConfirm: false,
                 preConfirm: async () => {
                     const sAtual = document.getElementById('swal-senha-atual').value.trim();
@@ -253,16 +274,25 @@ const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOT
                     const s2 = document.getElementById('swal-conf-senha').value.trim();
                     const fileInput = document.getElementById('swal-foto');
 
-                    if (!sAtual || !s1 || !s2) {
-                        Swal.showValidationMessage('⚠️ Preencha todas as senhas para prosseguir!');
-                        return false;
+                    // Se a pessoa digitou ALGUMA coisa na senha, ela é obrigada a preencher tudo da senha
+                    if (sAtual || s1 || s2) {
+                        if (!sAtual || !s1 || !s2) {
+                            Swal.showValidationMessage('⚠️ Para alterar a senha, preencha a Atual, a Nova e a Confirmação!');
+                            return false;
+                        }
+                        if (s1 !== s2) {
+                            Swal.showValidationMessage('⚠️ As novas senhas não conferem!');
+                            return false;
+                        }
+                        if (!/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,12}$/.test(s1)) {
+                            Swal.showValidationMessage('⚠️ A nova senha não atende aos requisitos de segurança!');
+                            return false;
+                        }
                     }
-                    if (s1 !== s2) {
-                        Swal.showValidationMessage('⚠️ As novas senhas não conferem!');
-                        return false;
-                    }
-                    if (!/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,12}$/.test(s1)) {
-                        Swal.showValidationMessage('⚠️ A nova senha não atende aos requisitos de segurança!');
+
+                    // Se não mudou senha nem escolheu foto, não faz sentido enviar
+                    if (!sAtual && !s1 && !s2 && fileInput.files.length === 0) {
+                        Swal.showValidationMessage('⚠️ Você não fez nenhuma alteração!');
                         return false;
                     }
 
@@ -274,7 +304,6 @@ const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOT
                         const file = fileInput.files[0];
                         nomeArquivo = file.name;
                         
-                        // Converte a foto para Base64 usando uma Promessa
                         fotoBase64 = await new Promise((resolve, reject) => {
                             const reader = new FileReader();
                             reader.onload = e => resolve(e.target.result);
@@ -287,7 +316,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOT
                 }
             }).then((result) => {
                 if (result.isConfirmed) {
-                    Swal.fire({ title: 'A gravar dados e foto...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+                    Swal.fire({ title: 'A gravar o seu perfil...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
 
                     const pacote = {
                         acao: "alterarSenhaLogado",
@@ -305,7 +334,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOT
                     .then(res => res.json())
                     .then(retorno => {
                         if (retorno.status === "sucesso") {
-                            // 🎯 A MÁGICA FINAL: Atualiza a foto na tela instantaneamente!
+                            // Atualiza a foto na tela instantaneamente!
                             if (retorno.novaFoto && retorno.novaFoto !== "") {
                                 localStorage.setItem('ceu_foto_usuario', retorno.novaFoto);
                                 document.getElementById('icone-avatar-padrao').style.display = 'none';
@@ -313,7 +342,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOT
                                 imgAvatar.src = retorno.novaFoto;
                                 imgAvatar.style.display = 'block';
                             }
-                            Swal.fire('Sucesso!', retorno.mensagem, 'success');
+                            Swal.fire('Elegante!', retorno.mensagem, 'success');
                         } else {
                             Swal.fire('Atenção', retorno.mensagem, 'warning');
                         }
@@ -325,7 +354,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOT
             });
         }
 
-        // Função para mostrar a miniatura da foto dentro do Pop-up antes de salvar
+        // Função para mostrar a miniatura da foto dentro do Pop-up ANTES de salvar
         function previewAvatar(event) {
             const file = event.target.files[0];
             if(file) {
@@ -333,7 +362,6 @@ const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOT
                 reader.onload = function(e) {
                     const img = document.getElementById('swal-preview-foto');
                     img.src = e.target.result;
-                    img.style.display = 'block';
                 }
                 reader.readAsDataURL(file);
             }

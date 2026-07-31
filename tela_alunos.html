@@ -677,6 +677,9 @@
 
         // Esta função distribui as informações para cada caixinha da tela
         function preencherFormulario(aluno) {
+            sessionStorage.setItem('alunoAtualCompleto', JSON.stringify(aluno));
+            document.getElementById('btn-imprimir-ficha').style.display = 'flex'; // Revela o botão de imprimir!
+            
             // Puxa a foto do Google Drive ou exibe o avatar padrão
             if (aluno.linkFoto && aluno.linkFoto !== "") {
                 const matchF = aluno.linkFoto.match(/(?:id=|file\/d\/|d\/)([^&\/]+)/);
@@ -731,7 +734,20 @@
             document.getElementById('aluno-obs').value = aluno.obs || "";
         }
 
-
+function imprimirFichaAtual() {
+            // Recupera do "bolso" do navegador as informações daquele aluno que acabaram de ser baixadas!
+            const dadosAlvo = sessionStorage.getItem('alunoAtualCompleto');
+            if(dadosAlvo) {
+                // Guarda no localStorage temporário para a janela de impressão conseguir pegar
+                localStorage.setItem('alunoParaImpressao', dadosAlvo);
+                
+                // Pega o seu link mestre do sistema e força ele a abrir a rota fichaAluno numa nova aba
+                const urlBase = API_URL.split('/exec')[0] + '/exec'; 
+                window.open(urlBase + '?tela=fichaAluno', '_blank');
+            } else {
+                Swal.fire('Atenção', 'Os dados do aluno não foram carregados completamente para impressão.', 'warning');
+            }
+        }
 
 
 

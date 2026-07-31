@@ -244,7 +244,7 @@
                 </div>
             </div>
 
-            <div class="tab-pane fade" id="admin" role="tabpanel">
+<div class="tab-pane fade" id="admin" role="tabpanel">
                 <h6 class="section-title"><span class="material-icons">badge</span> Controle de Impressão e Permissões</h6>
                 
                 <div class="p-3 mb-3 border rounded-3 bg-light">
@@ -252,14 +252,14 @@
                     <div class="row align-items-center">
                         <div class="col-md-6">
                             <label class="form-label text-muted">Imprimir Carteirinha? (Coluna O)</label>
-                            <select id="aluno-print-geral" class="form-select border-primary">
+                            <select id="aluno-print-geral" class="form-select border-primary fw-bold">
                                 <option value="">NÃO</option>
                                 <option value="SIM">SIM</option>
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label text-muted">Número da Via (Contador)</label>
-                            <input type="number" id="aluno-via-geral" class="form-control" value="0" min="0">
+                            <label class="form-label text-muted">Número da Via (Automático)</label>
+                            <input type="number" id="aluno-via-geral" class="form-control w-25 text-center fw-bold text-primary" value="0" readonly style="background-color: #e2e8f0; cursor: not-allowed;" title="Controle automático do sistema">
                         </div>
                     </div>
                 </div>
@@ -269,21 +269,21 @@
                     <div class="row align-items-center">
                         <div class="col-md-4">
                             <label class="form-label text-muted">Tem Permissão? (Coluna R)</label>
-                            <select id="aluno-perm-academia" class="form-select border-danger">
+                            <select id="aluno-perm-academia" class="form-select border-danger fw-bold">
                                 <option value="">NÃO</option>
                                 <option value="SIM">SIM</option>
                             </select>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label text-muted">Imprimir Carteirinha? (Coluna N)</label>
-                            <select id="aluno-print-academia" class="form-select border-danger">
+                            <select id="aluno-print-academia" class="form-select border-danger fw-bold">
                                 <option value="">NÃO</option>
                                 <option value="SIM">SIM</option>
                             </select>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label text-muted">Número da Via (Contador)</label>
-                            <input type="number" id="aluno-via-academia" class="form-control" value="0" min="0">
+                            <label class="form-label text-muted">Número da Via (Automático)</label>
+                            <input type="number" id="aluno-via-academia" class="form-control w-25 text-center fw-bold text-danger" value="0" readonly style="background-color: #e2e8f0; cursor: not-allowed;" title="Controle automático do sistema">
                         </div>
                     </div>
                 </div>
@@ -293,24 +293,32 @@
                     <div class="row align-items-center">
                         <div class="col-md-4">
                             <label class="form-label text-muted">Tem Permissão? (Coluna Q)</label>
-                            <select id="aluno-perm-raia" class="form-select border-info">
+                            <select id="aluno-perm-raia" class="form-select border-info fw-bold">
                                 <option value="">NÃO</option>
                                 <option value="SIM">SIM</option>
                             </select>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label text-muted">Imprimir Carteirinha? (Coluna M)</label>
-                            <select id="aluno-print-raia" class="form-select border-info">
+                            <select id="aluno-print-raia" class="form-select border-info fw-bold">
                                 <option value="">NÃO</option>
                                 <option value="SIM">SIM</option>
                             </select>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label text-muted">Número da Via (Contador)</label>
-                            <input type="number" id="aluno-via-piscina" class="form-control" value="0" min="0">
+                            <label class="form-label text-muted">Número da Via (Automático)</label>
+                            <input type="number" id="aluno-via-piscina" class="form-control w-25 text-center fw-bold text-info" value="0" readonly style="background-color: #e2e8f0; cursor: not-allowed;" title="Controle automático do sistema">
                         </div>
                     </div>
                 </div>
+
+                <div class="row">
+                    <div class="col-12">
+                        <label class="form-label">Observações Internas (Secretaria)</label>
+                        <textarea id="aluno-obs" class="form-control" rows="3" placeholder="Digite anotações sobre documentos pendentes, comportamento ou outros avisos..."></textarea>
+                    </div>
+                </div>
+            </div>
 
                 <div class="row">
                     <div class="col-12">

@@ -1,0 +1,361 @@
+<div class="container-fluid animate__animated animate__fadeIn">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold" style="color: #2c3e50;"><i class="material-icons align-middle">person_add</i> Cadastro de Munícipe</h3>
+        <button class="btn btn-success px-4 fw-bold shadow-sm" onclick="salvarNovoAluno()" id="btn-salvar-aluno">
+            <i class="material-icons align-middle fs-5">save</i> SALVAR CADASTRO
+        </button>
+    </div>
+
+    <ul class="nav nav-tabs custom-tabs" id="tabsCadastroAluno" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active fw-bold" id="ident-tab" data-bs-toggle="tab" data-bs-target="#ident" type="button" role="tab"><i class="material-icons align-middle fs-6">badge</i> Identificação</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link fw-bold" id="contato-tab" data-bs-toggle="tab" data-bs-target="#contato" type="button" role="tab"><i class="material-icons align-middle fs-6">contact_phone</i> Endereço e Contato</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link fw-bold" id="saude-tab" data-bs-toggle="tab" data-bs-target="#saude" type="button" role="tab"><i class="material-icons align-middle fs-6">health_and_safety</i> Saúde e Segurança</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link fw-bold" id="admin-tab" data-bs-toggle="tab" data-bs-target="#admin" type="button" role="tab"><i class="material-icons align-middle fs-6">admin_panel_settings</i> Administrativo</button>
+        </li>
+    </ul>
+
+    <div class="tab-content bg-white p-4 border border-top-0 rounded-bottom shadow-sm" id="conteudoTabsAluno">
+        
+        <div class="tab-pane fade show active" id="ident" role="tabpanel">
+            <div class="row">
+                <div class="col-md-3 text-center mb-3">
+                    <div class="mb-2 position-relative d-inline-block">
+                        <img id="aluno-preview-foto" src="https://via.placeholder.com/150/e9ecef/95a5a6?text=FOTO" class="rounded-circle border border-3 shadow-sm" style="width: 140px; height: 140px; object-fit: cover;">
+                        <label for="aluno-foto" class="btn btn-primary btn-sm rounded-circle position-absolute bottom-0 end-0 shadow" style="width: 35px; height: 35px; padding: 5px; cursor: pointer;">
+                            <i class="material-icons fs-6">camera_alt</i>
+                        </label>
+                    </div>
+                    <input type="file" id="aluno-foto" class="d-none" accept="image/*" onchange="previewFotoAluno(event)">
+                    <div class="small text-muted fw-bold">Foto do Munícipe</div>
+                </div>
+
+                <div class="col-md-9">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label text-muted fw-bold small mb-1">Código EOL</label>
+                            <input type="text" id="aluno-eol" class="form-control" placeholder="Apenas números">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label text-muted fw-bold small mb-1">CIN (CPF ou RG) *</label>
+                            <input type="text" id="aluno-cin" class="form-control" placeholder="000.000.000-00">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label text-muted fw-bold small mb-1">Data de Nascimento *</label>
+                            <input type="date" id="aluno-nasc" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted fw-bold small mb-1">Nome Completo *</label>
+                            <input type="text" id="aluno-nome" class="form-control text-uppercase" placeholder="Nome oficial">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted fw-bold small mb-1">Nome Social</label>
+                            <input type="text" id="aluno-social" class="form-control text-uppercase" placeholder="Se houver">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="contato" role="tabpanel">
+            <h6 class="text-primary fw-bold mb-3 border-bottom pb-2">Dados de Endereço</h6>
+            <div class="row g-3 mb-4">
+                <div class="col-md-2">
+                    <label class="form-label text-muted fw-bold small mb-1">CEP</label>
+                    <input type="text" id="aluno-cep" class="form-control" placeholder="00000-000" onblur="buscarCEP(this.value)">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label text-muted fw-bold small mb-1">Logradouro (Ex: Rua)</label>
+                    <input type="text" id="aluno-logradouro" class="form-control text-uppercase">
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label text-muted fw-bold small mb-1">Endereço</label>
+                    <input type="text" id="aluno-endereco" class="form-control text-uppercase">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label text-muted fw-bold small mb-1">Número</label>
+                    <input type="text" id="aluno-numero" class="form-control">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label text-muted fw-bold small mb-1">Complemento</label>
+                    <input type="text" id="aluno-complemento" class="form-control text-uppercase">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label text-muted fw-bold small mb-1">Bairro</label>
+                    <input type="text" id="aluno-bairro" class="form-control text-uppercase">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label text-muted fw-bold small mb-1">Cidade</label>
+                    <input type="text" id="aluno-cidade" class="form-control text-uppercase">
+                </div>
+                <div class="col-md-1">
+                    <label class="form-label text-muted fw-bold small mb-1">UF</label>
+                    <input type="text" id="aluno-estado" class="form-control text-uppercase" maxlength="2">
+                </div>
+            </div>
+
+            <h6 class="text-primary fw-bold mb-3 border-bottom pb-2">Dados de Contato</h6>
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label text-muted fw-bold small mb-1">Tel. Próprio</label>
+                    <input type="text" id="aluno-tel1" class="form-control">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label text-muted fw-bold small mb-1">Contato (Ligação/Whats)</label>
+                    <select id="aluno-tipo-tel1" class="form-select">
+                        <option value="">Selecione...</option>
+                        <option value="LIGAÇÃO E WHATSAPP">Ligação e WhatsApp</option>
+                        <option value="APENAS LIGAÇÃO">Apenas Ligação</option>
+                        <option value="APENAS WHATSAPP">Apenas WhatsApp</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label text-muted fw-bold small mb-1">Tel. Recados</label>
+                    <input type="text" id="aluno-tel-recado" class="form-control">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label text-muted fw-bold small mb-1">Falar com (Recado)</label>
+                    <input type="text" id="aluno-recado-com" class="form-control text-uppercase">
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="saude" role="tabpanel">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label text-muted fw-bold small mb-1">Responsável Legal (Para menores)</label>
+                    <input type="text" id="aluno-resp" class="form-control text-uppercase" placeholder="Nome do Responsável">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label text-muted fw-bold small mb-1">Autoriza Saída Sozinho?</label>
+                    <select id="aluno-saida" class="form-select">
+                        <option value="NÃO">NÃO</option>
+                        <option value="SIM">SIM</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label text-muted fw-bold small mb-1">Quem Autorizou?</label>
+                    <select id="aluno-quem-autorizou" class="form-select">
+                        <option value="">N/A</option>
+                        <option value="PAI">PAI</option>
+                        <option value="MÃE">MÃE</option>
+                        <option value="RESPONSÁVEL LEGAL">RESPONSÁVEL LEGAL</option>
+                    </select>
+                </div>
+
+                <div class="col-12 mt-4"><h6 class="text-danger fw-bold border-bottom pb-2">Informações Médicas</h6></div>
+
+                <div class="col-md-2">
+                    <label class="form-label text-muted fw-bold small mb-1">PCD?</label>
+                    <select id="aluno-pcd" class="form-select">
+                        <option value="NÃO">NÃO</option>
+                        <option value="SIM">SIM</option>
+                    </select>
+                </div>
+                <div class="col-md-7">
+                    <label class="form-label text-muted fw-bold small mb-1">Especificar Deficiência</label>
+                    <input type="text" id="aluno-def-qual" class="form-control text-uppercase">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label text-muted fw-bold small mb-1">Tem Laudo PCD?</label>
+                    <select id="aluno-laudo-pcd" class="form-select">
+                        <option value="NÃO">NÃO</option>
+                        <option value="SIM">SIM</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2 mt-3">
+                    <label class="form-label text-muted fw-bold small mb-1">Restr. Alimentar?</label>
+                    <select id="aluno-restr" class="form-select">
+                        <option value="NÃO">NÃO</option>
+                        <option value="SIM">SIM</option>
+                    </select>
+                </div>
+                <div class="col-md-7 mt-3">
+                    <label class="form-label text-muted fw-bold small mb-1">Especificar Restrição</label>
+                    <input type="text" id="aluno-restr-qual" class="form-control text-uppercase">
+                </div>
+                <div class="col-md-3 mt-3">
+                    <label class="form-label text-muted fw-bold small mb-1">Tem Laudo (Alimentar)?</label>
+                    <select id="aluno-laudo-restr" class="form-select">
+                        <option value="NÃO">NÃO</option>
+                        <option value="SIM">SIM</option>
+                    </select>
+                </div>
+
+                <div class="col-md-12 mt-3">
+                    <div class="alert alert-warning py-2 mb-0">
+                        <div class="form-check form-switch mt-1">
+                            <input class="form-check-input" type="checkbox" id="aluno-parq" value="SIM">
+                            <label class="form-check-label fw-bold" for="aluno-parq">O Munícipe RESPONDEU O PAR-Q (Questionário de Prontidão para Atividade Física)?</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="admin" role="tabpanel">
+            <h6 class="text-primary fw-bold mb-3 border-bottom pb-2">Controle de Vias (Impressões)</h6>
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <label class="form-label text-muted fw-bold small mb-1">Via Carteirinha GERAL</label>
+                    <input type="number" id="aluno-via-geral" class="form-control" value="0" min="0">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label text-muted fw-bold small mb-1">Via Carteirinha ACADEMIA</label>
+                    <input type="number" id="aluno-via-academia" class="form-control" value="0" min="0">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label text-muted fw-bold small mb-1">Via Carteirinha PISCINA</label>
+                    <input type="number" id="aluno-via-piscina" class="form-control" value="0" min="0">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <label class="form-label text-muted fw-bold small mb-1">Observações Internas</label>
+                    <textarea id="aluno-obs" class="form-control text-uppercase" rows="4" placeholder="Anotações da secretaria..."></textarea>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // 1. Mostrar Preview da Foto
+    function previewFotoAluno(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('aluno-preview-foto').src = e.target.result;
+            }
+            reader.readAsDataURL(file);
+        }
+    }
+
+    // 2. Busca CEP Inteligente
+    async function buscarCEP(cep) {
+        const cepLimpo = cep.replace(/\D/g, '');
+        if (cepLimpo.length === 8) {
+            try {
+                const res = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`);
+                const dados = await res.json();
+                if (!dados.erro) {
+                    document.getElementById('aluno-logradouro').value = (dados.logradouro.split(' ')[0] || "").toUpperCase();
+                    document.getElementById('aluno-endereco').value = (dados.logradouro.substring(dados.logradouro.indexOf(' ') + 1) || "").toUpperCase();
+                    document.getElementById('aluno-bairro').value = dados.bairro.toUpperCase();
+                    document.getElementById('aluno-cidade').value = dados.localidade.toUpperCase();
+                    document.getElementById('aluno-estado').value = dados.uf.toUpperCase();
+                    document.getElementById('aluno-numero').focus(); // Joga o cursor pro número
+                }
+            } catch(e) {
+                console.log("Erro na busca de CEP");
+            }
+        }
+    }
+
+    // 3. O BOTÃO DE SALVAR (A Coleta de Dados)
+    async function salvarNovoAluno() {
+        // Pega as chaves essenciais de segurança do LocalStorage (Saber de qual CEU estamos falando)
+        const codigoCeu = localStorage.getItem('ceu_codigo_eol'); 
+        if(!codigoCeu) return Swal.fire('Erro', 'Você não está logado num CEU válido!', 'error');
+
+        // Validação básica
+        const nome = document.getElementById('aluno-nome').value.trim();
+        const cin = document.getElementById('aluno-cin').value.trim();
+        if(!nome || !cin) {
+            return Swal.fire('Atenção', 'Nome Completo e CIN (CPF/RG) são obrigatórios!', 'warning');
+        }
+
+        // Lê a foto Base64
+        const fotoInput = document.getElementById('aluno-foto');
+        let fotoBase64 = null;
+        let nomeArquivo = null;
+        if (fotoInput.files.length > 0) {
+            const file = fotoInput.files[0];
+            nomeArquivo = file.name;
+            fotoBase64 = await new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = e => resolve(e.target.result);
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // Monta o Pacotão de Dados (Exatamente na ordem da Planilha)
+        const pacoteAluno = {
+            idCeu: codigoCeu,
+            eolAluno: document.getElementById('aluno-eol').value,
+            nomeCompleto: nome,
+            nomeSocial: document.getElementById('aluno-social').value,
+            cin: cin,
+            dataNascimento: document.getElementById('aluno-nasc').value,
+            respLegal: document.getElementById('aluno-resp').value,
+            logradouro: document.getElementById('aluno-logradouro').value,
+            endereco: document.getElementById('aluno-endereco').value,
+            numero: document.getElementById('aluno-numero').value,
+            complemento: document.getElementById('aluno-complemento').value,
+            bairro: document.getElementById('aluno-bairro').value,
+            cep: document.getElementById('aluno-cep').value,
+            cidade: document.getElementById('aluno-cidade').value,
+            estado: document.getElementById('aluno-estado').value,
+            telProprio: document.getElementById('aluno-tel1').value,
+            telPligWaths: document.getElementById('aluno-tipo-tel1').value,
+            telRecados: document.getElementById('aluno-tel-recado').value,
+            recadosCom: document.getElementById('aluno-recado-com').value,
+            telWhatsapp: "", // Aqui você pode preencher se tiver campo separado ou mesclar com telProprio
+            obs: document.getElementById('aluno-obs').value,
+            pcd: document.getElementById('aluno-pcd').value,
+            especificarDeficiencia: document.getElementById('aluno-def-qual').value,
+            laudoPcd: document.getElementById('aluno-laudo-pcd').value,
+            restricaoAlimentar: document.getElementById('aluno-restr').value,
+            especificarRestricao: document.getElementById('aluno-restr-qual').value,
+            laudoRestricao: document.getElementById('aluno-laudo-restr').value,
+            autorizacaoSaida: document.getElementById('aluno-saida').value,
+            quemAutorizou: document.getElementById('aluno-quem-autorizou').value,
+            parq: document.getElementById('aluno-parq').checked ? "SIM" : "NÃO",
+            viaGeral: document.getElementById('aluno-via-geral').value,
+            viaAcademia: document.getElementById('aluno-via-academia').value,
+            viaPiscina: document.getElementById('aluno-via-piscina').value,
+            fotoBase64: fotoBase64,
+            nomeArquivoFoto: nomeArquivo
+        };
+
+        // UI de Carregamento
+        Swal.fire({ title: 'A gravar Munícipe...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+
+        // 🚀 O DISPARO PARA O GOOGLE APPS SCRIPT (Via fetch para seu Web App Novo)
+        const pacoteGeral = {
+            acao: "salvarAlunoNovoSistema",
+            dados: pacoteAluno
+        };
+
+        fetch(API_URL, { // Lembre-se que API_URL deve estar declarada no seu index.html principal
+            method: 'POST',
+            body: JSON.stringify(pacoteGeral)
+        })
+        .then(res => res.json())
+        .then(retorno => {
+            if (retorno.status === "sucesso") {
+                Swal.fire('Perfeito!', `Aluno cadastrado com sucesso!<br><br><b>ID Gerado: ${retorno.idNovo}</b>`, 'success');
+                // Aqui você pode limpar os campos se quiser...
+            } else {
+                Swal.fire('Atenção', retorno.mensagem, 'warning');
+            }
+        })
+        .catch(err => Swal.fire('Erro', 'Falha ao comunicar com o servidor.', 'error'));
+    }
+</script>
+
+<style>
+    /* Estilos Premium para as Abas dentro do FormPai */
+    .custom-tabs .nav-link { color: #6c757d; border: none; border-bottom: 3px solid transparent; padding: 12px 20px; transition: 0.3s; }
+    .custom-tabs .nav-link:hover { color: #0d6efd; background: #f8f9fa; border-radius: 6px 6px 0 0; }
+    .custom-tabs .nav-link.active { color: #0d6efd; border-bottom: 3px solid #0d6efd; background: white; border-radius: 6px 6px 0 0; }
+</style>

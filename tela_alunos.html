@@ -173,13 +173,20 @@
     <div class="card-form animate__animated animate__fadeIn">
         
         <div class="card-header-custom">
-            <h3 class="titulo-tela">
+        <h3 class="titulo-tela">
                 <span class="material-icons" style="font-size: 32px; color: #0d6efd;">person_add</span> 
                 Cadastro de Munícipe
             </h3>
-            <button class="btn-salvar" onclick="salvarNovoAluno()" id="btn-salvar-aluno">
-                <span class="material-icons">save</span> Gravar Ficha
-            </button>
+            
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-outline-secondary" onclick="imprimirFichaAtual()" id="btn-imprimir-ficha" style="display: none; align-items: center; gap: 8px; font-weight: bold;">
+                    <span class="material-icons">print</span> Imprimir Ficha
+                </button>
+
+                <button class="btn-salvar" onclick="salvarNovoAluno()" id="btn-salvar-aluno">
+                    <span class="material-icons">save</span> Gravar Ficha
+                </button>
+            </div>
         </div>
 
         <ul class="nav custom-tabs" id="tabsCadastroAluno" role="tablist">

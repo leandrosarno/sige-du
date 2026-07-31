@@ -82,16 +82,15 @@
 <body>
 
     <div class="sidebar">
-    <div class="sidebar-header">
+        <div class="sidebar-header">
             <span class="material-icons" id="dash-icone-padrao" style="font-size: 40px;">account_balance</span>
-            
             <img id="dash-img-logo" src="" alt="Logo" style="display: none; width: 100%; max-height: 120px; object-fit: contain; margin: 0 auto;">
         </div>
 
         <a href="#" class="ativo" onclick="abrirFormFilho('inicio.html', this)">
             <span class="material-icons">home</span> Início
         </a>
-        <a href="#" onclick="abrirFormFilho('alunos.html', this)">
+        <a href="#" onclick="abrirFormFilho('tela_alunos.html', this)">
             <span class="material-icons">people</span> Alunos
         </a>
         <a href="#" onclick="abrirFormFilho('professores.html', this)">
@@ -108,8 +107,7 @@
     </div>
 
     <div class="main-content">
-        
-<div class="topbar">
+        <div class="topbar">
             <div>
                 <span class="text-muted">Unidade: </span>
                 <strong id="lbl-ceu">Carregando...</strong>
@@ -130,7 +128,6 @@
         </div>
 
         <iframe id="frame-filho" src="inicio.html"></iframe>
-
     </div>
 
     <script>
@@ -141,7 +138,7 @@
             elementoClicado.classList.add('ativo');
         }
 
-const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec"; // 🚨 Cole aqui a URL terminada em /exec
+        const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec"; // 🚨 O SEU LINK FOI MANTIDO AQUI!
 
         window.onload = function() {
             try {
@@ -162,7 +159,6 @@ const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOT
                     return;
                 }
 
-                // 🎯 ATUALIZA UNIDADE
                 if (codigoEol && nomeCeu && nomeCeu.trim() !== "") {
                     document.getElementById('lbl-ceu').innerText = codigoEol + " - " + nomeCeu;
                 } else if (codigoEol) {
@@ -171,8 +167,6 @@ const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOT
                     document.getElementById('lbl-ceu').innerText = "ID: " + idPlanilha;
                 }
 
-                // 🎯 ATUALIZA RF E NOME DO FUNCIONÁRIO
- // 🎯 ATUALIZA RF, NOME E FOTO DO FUNCIONÁRIO
                 document.getElementById('lbl-rf').innerText = "RF: " + rfLogado;
                 
                 if (nomeUsuario && nomeUsuario !== "undefined" && nomeUsuario.trim() !== "") {
@@ -181,7 +175,6 @@ const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOT
                     document.getElementById('lbl-nome-usuario').innerText = "Funcionário";
                 }
 
-                // 📸 Carrega a foto do Avatar
                 const fotoUser = localStorage.getItem('ceu_foto_usuario');
                 if (fotoUser && fotoUser !== "undefined" && fotoUser.trim() !== "") {
                     document.getElementById('icone-avatar-padrao').style.display = 'none';
@@ -190,7 +183,6 @@ const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOT
                     imgAvatar.style.display = 'block';
                 }
 
-                // 🎯 CARREGA LOGO
                 const logoSalva = localStorage.getItem('ceu_logo_especifica');
                 const tamanhoSalvo = localStorage.getItem('ceu_tamanho_logo'); 
                 const imgDash = document.getElementById('dash-img-logo');
@@ -207,7 +199,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOT
             }
         };
 
-// ==========================================
+        // ==========================================
         // 🔑 POP-UP PREMIUM PARA MEU PERFIL
         // ==========================================
         function abrirTrocaSenhaLogado() {
@@ -215,7 +207,6 @@ const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOT
             const ceu = localStorage.getItem('ceu_codigo_eol');
             const fotoAtual = localStorage.getItem('ceu_foto_usuario') || '';
 
-            // Se o funcionário já tem foto, mostra ela. Se não, mostra um ícone genérico lindão.
             const avatarSrc = (fotoAtual && fotoAtual !== "undefined" && fotoAtual.trim() !== "") 
                 ? fotoAtual 
                 : 'https://via.placeholder.com/120/0d6efd/ffffff?text=FOTO';
@@ -224,11 +215,9 @@ const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOT
                 title: '👤 Meu Perfil',
                 html: `
                     <div style="text-align: left; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
-                        
                         <div style="text-align: center; margin-bottom: 25px; margin-top: 10px;">
                             <div style="position: relative; display: inline-block;">
                                 <img id="swal-preview-foto" src="${avatarSrc}" style="width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 4px solid #f4f7f6; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
-                                
                                 <label for="swal-foto" style="position: absolute; bottom: 0; right: 0; background: #0d6efd; color: white; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: 0.3s;" onmouseover="this.style.background='#0b5ed7'" onmouseout="this.style.background='#0d6efd'">
                                     <span class="material-icons" style="font-size: 20px;">camera_alt</span>
                                 </label>
@@ -266,7 +255,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOT
                 confirmButtonColor: '#0d6efd',
                 showCancelButton: true,
                 cancelButtonText: 'Cancelar',
-                width: '450px', // Deixa o modal um pouco mais largo e confortável
+                width: '450px',
                 focusConfirm: false,
                 preConfirm: async () => {
                     const sAtual = document.getElementById('swal-senha-atual').value.trim();
@@ -274,7 +263,6 @@ const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOT
                     const s2 = document.getElementById('swal-conf-senha').value.trim();
                     const fileInput = document.getElementById('swal-foto');
 
-                    // Se a pessoa digitou ALGUMA coisa na senha, ela é obrigada a preencher tudo da senha
                     if (sAtual || s1 || s2) {
                         if (!sAtual || !s1 || !s2) {
                             Swal.showValidationMessage('⚠️ Para alterar a senha, preencha a Atual, a Nova e a Confirmação!');
@@ -290,13 +278,11 @@ const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOT
                         }
                     }
 
-                    // Se não mudou senha nem escolheu foto, não faz sentido enviar
                     if (!sAtual && !s1 && !s2 && fileInput.files.length === 0) {
                         Swal.showValidationMessage('⚠️ Você não fez nenhuma alteração!');
                         return false;
                     }
 
-                    // Lê a foto escolhida (se houver)
                     let fotoBase64 = null;
                     let nomeArquivo = null;
 
@@ -334,7 +320,6 @@ const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOT
                     .then(res => res.json())
                     .then(retorno => {
                         if (retorno.status === "sucesso") {
-                            // Atualiza a foto na tela instantaneamente!
                             if (retorno.novaFoto && retorno.novaFoto !== "") {
                                 localStorage.setItem('ceu_foto_usuario', retorno.novaFoto);
                                 document.getElementById('icone-avatar-padrao').style.display = 'none';
@@ -354,7 +339,6 @@ const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOT
             });
         }
 
-        // Função para mostrar a miniatura da foto dentro do Pop-up ANTES de salvar
         function previewAvatar(event) {
             const file = event.target.files[0];
             if(file) {
@@ -372,5 +356,6 @@ const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOT
             window.location.href = "index.html";
         }
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

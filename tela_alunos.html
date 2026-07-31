@@ -502,6 +502,10 @@
         </div> </div>
 
     <script>
+<script>
+        // 1. COLOCAMOS O LINK AQUI FORA PARA TODOS OS BOTÕES ENXERGAREM!
+        const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec"; // Cole seu Link API aqui
+
         // Preview da Foto no estilo circular
         function previewFotoAluno(event) {
             const file = event.target.files[0];
@@ -527,18 +531,14 @@
                         document.getElementById('aluno-bairro').value = dados.bairro.toUpperCase();
                         document.getElementById('aluno-cidade').value = dados.localidade.toUpperCase();
                         document.getElementById('aluno-estado').value = dados.uf.toUpperCase();
-                        document.getElementById('aluno-numero').focus(); // Foca no número!
+                        document.getElementById('aluno-numero').focus(); 
                     }
-                } catch(e) {
-                    console.log("Erro ao buscar CEP");
-                }
+                } catch(e) { console.log("Erro ao buscar CEP"); }
             }
         }
 
-        // Função do Botão "Gravar Ficha"
+        // Função do Botão "Gravar Ficha" (Agora ela sabe se é NOVO ou ATUALIZAR)
         async function salvarNovoAluno() {
-            const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec"; // Cole seu Link API aqui
-            
             const codigoCeu = localStorage.getItem('ceu_codigo_eol'); 
             if(!codigoCeu) return Swal.fire('Acesso Negado', 'Você precisa estar logado num CEU.', 'error');
 
@@ -563,7 +563,6 @@
                 });
             }
 
-            // O Pacotão atualizado e perfeitamente mapeado
             const pacoteAluno = {
                 idCeu: codigoCeu,
                 eolAluno: document.getElementById('aluno-eol').value,
@@ -595,14 +594,12 @@
                 quemAutorizou: document.getElementById('aluno-quem-autorizou').value,
                 parq: document.getElementById('aluno-parq').checked ? "SIM" : "NÃO",
                 
-                // GATILHO DAS CARTEIRINHAS E PERMISSÕES
-                imprimirCG: document.getElementById('aluno-print-geral').value,       // Col O
-                imprimirCAL: document.getElementById('aluno-print-academia').value,   // Col N
-                permissaoAcademia: document.getElementById('aluno-perm-academia').value, // Col R
-                imprimirCRL: document.getElementById('aluno-print-raia').value,       // Col M
-                permissaoRaia: document.getElementById('aluno-perm-raia').value,      // Col Q
+                imprimirCG: document.getElementById('aluno-print-geral').value,
+                imprimirCAL: document.getElementById('aluno-print-academia').value,
+                permissaoAcademia: document.getElementById('aluno-perm-academia').value,
+                imprimirCRL: document.getElementById('aluno-print-raia').value,
+                permissaoRaia: document.getElementById('aluno-perm-raia').value,
                 
-                // CONTADOR DE VIAS DA SECRETARIA
                 viaGeral: document.getElementById('aluno-via-geral').value,
                 viaAcademia: document.getElementById('aluno-via-academia').value,
                 viaPiscina: document.getElementById('aluno-via-piscina').value,
@@ -611,39 +608,44 @@
                 nomeArquivoFoto: nomeArquivo
             };
 
-            Swal.fire({ title: 'A gravar Munícipe...', text: 'Enviando dados seguros.', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+            // 🎯 A INTELIGÊNCIA ARTIFICIAL DA TELA: Novo ou Atualizar?
+            const idEdicao = document.body.getAttribute('data-id-edicao');
+            let acaoParaServidor = "salvarAlunoNovoSistema"; // Padrão: Criar novo
+
+            if (idEdicao) {
+                pacoteAluno.idAluno = idEdicao; // Avisa o backend QUEM deve ser alterado
+                acaoParaServidor = "atualizarAlunoNovoSistema"; // Muda a rota
+            }
+
+            Swal.fire({ title: idEdicao ? 'A atualizar Ficha...' : 'A gravar Munícipe...', text: 'Processando dados seguros.', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
 
             fetch(API_URL, {
                 method: 'POST',
-                body: JSON.stringify({ acao: "salvarAlunoNovoSistema", dados: pacoteAluno })
+                body: JSON.stringify({ acao: acaoParaServidor, dados: pacoteAluno })
             })
             .then(res => res.json())
             .then(retorno => {
                 if (retorno.status === "sucesso") {
-                    Swal.fire('Perfeito!', `Munícipe cadastrado com sucesso!<br><br><b>Prontuário: ${retorno.prontuario || ''}</b>`, 'success').then(() => {
-                        location.reload(); // Recarrega para limpar os campos
+                    Swal.fire('Perfeito!', retorno.mensagem, 'success').then(() => {
+                        if(!idEdicao) location.reload(); // Só limpa a tela se for aluno novo
                     });
                 } else {
                     Swal.fire('Atenção', retorno.mensagem, 'warning');
                 }
             })
-            .catch(err => Swal.fire('Erro', 'Falha ao comunicar com o servidor. Verifique a internet.', 'error'));
+            .catch(err => Swal.fire('Erro', 'Falha ao comunicar com o servidor.', 'error'));
         }
 
-// ==========================================
+        // ==========================================
         // 🔎 MÁGICA DA EDIÇÃO (MÁQUINA DO TEMPO)
         // ==========================================
         window.onload = function() {
-            // Verifica se a URL tem um parâmetro ?id=ALU00001
             const urlParams = new URLSearchParams(window.location.search);
             const idEdicao = urlParams.get('id');
 
             if (idEdicao) {
-                // Modo de Edição Ativado!
                 document.querySelector('.titulo-tela').innerHTML = `<span class="material-icons" style="font-size: 32px; color: #ff9800;">edit_document</span> Editando: ${idEdicao}`;
                 document.getElementById('btn-salvar-aluno').innerHTML = `<span class="material-icons">update</span> Atualizar Ficha`;
-                
-                // Salva o ID na memória temporária para sabermos quem atualizar depois
                 document.body.setAttribute('data-id-edicao', idEdicao);
 
                 carregarDadosDoAluno(idEdicao);
@@ -651,10 +653,9 @@
         };
 
         function carregarDadosDoAluno(idAluno) {
-            const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec"; // Confirme seu link
             const codigoCeu = localStorage.getItem('ceu_codigo_eol'); 
 
-            Swal.fire({ title: 'Buscando Prontuário...', text: 'Viajando no tempo para resgatar os dados.', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+            Swal.fire({ title: 'Buscando Prontuário...', text: 'Resgatando os dados...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
 
             fetch(API_URL, {
                 method: 'POST',
@@ -666,7 +667,7 @@
             .then(res => res.json())
             .then(retorno => {
                 if (retorno.status === "sucesso") {
-                    Swal.close(); // Fecha o aviso carregando
+                    Swal.close(); 
                     preencherFormulario(retorno.aluno);
                 } else {
                     Swal.fire('Erro', retorno.mensagem, 'error');
@@ -675,12 +676,11 @@
             .catch(err => Swal.fire('Erro', 'Falha na conexão.', 'error'));
         }
 
-        // Esta função distribui as informações para cada caixinha da tela
         function preencherFormulario(aluno) {
+            // Guarda os dados originais no bolso para a Impressora poder pegar
             sessionStorage.setItem('alunoAtualCompleto', JSON.stringify(aluno));
             document.getElementById('btn-imprimir-ficha').style.display = 'flex'; // Revela o botão de imprimir!
-            
-            // Puxa a foto do Google Drive ou exibe o avatar padrão
+
             if (aluno.linkFoto && aluno.linkFoto !== "") {
                 const matchF = aluno.linkFoto.match(/(?:id=|file\/d\/|d\/)([^&\/]+)/);
                 if (matchF && matchF[1]) {
@@ -734,34 +734,21 @@
             document.getElementById('aluno-obs').value = aluno.obs || "";
         }
 
-function imprimirFichaAtual() {
-            // Recupera do "bolso" do navegador as informações daquele aluno que acabaram de ser baixadas!
+        // ==========================================
+        // 🖨️ IMPRESSÃO RÁPIDA 
+        // ==========================================
+        function imprimirFichaAtual() {
             const dadosAlvo = sessionStorage.getItem('alunoAtualCompleto');
             if(dadosAlvo) {
-                // Guarda no localStorage temporário para a janela de impressão conseguir pegar
                 localStorage.setItem('alunoParaImpressao', dadosAlvo);
                 
-                // Pega o seu link mestre do sistema e força ele a abrir a rota fichaAluno numa nova aba
+                // Agora o API_URL é global e pode ser lido daqui!
                 const urlBase = API_URL.split('/exec')[0] + '/exec'; 
                 window.open(urlBase + '?tela=fichaAluno', '_blank');
             } else {
-                Swal.fire('Atenção', 'Os dados do aluno não foram carregados completamente para impressão.', 'warning');
+                Swal.fire('Atenção', 'Os dados não foram carregados completamente para impressão.', 'warning');
             }
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-    </script>
+    </script>    </script>
 </body>
 </html>

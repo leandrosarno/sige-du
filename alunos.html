@@ -159,7 +159,8 @@
         }
 
         function editarAluno(id) {
-            Swal.fire('Em breve!', `A tela de edição do aluno ${id} será conectada na próxima etapa!`, 'info');
+            // Em vez de dar o aviso "Em breve", agora ele abre a tela de cadastro passando o ID!
+            window.parent.abrirFormFilho(`tela_alunos.html?id=${id}`, document.querySelector('.sidebar a.ativo'));
         }
     </script>
 </body>

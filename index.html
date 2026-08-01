@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <!-- 🛡️ BLOQUEADORES DE CACHE (Força o navegador a limpar a memória) -->
+    <!-- 🛡️ BLOQUEADORES DE CACHE -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
@@ -37,7 +37,8 @@
             <p class="text-muted">Acesso Restrito</p>
         </div>
 
-        <form id="formLogin" onsubmit="fazerLogin(event)">
+        <!-- FORMULÁRIO SEM O COMPORTAMENTO PADRÃO DE RECARREGAR -->
+        <form id="formLogin">
             <div class="mb-3">
                 <label class="form-label fw-bold">Código EOL do CEU</label>
                 <input type="number" class="form-control" id="id_ceu" placeholder="Ex: 123456" required>
@@ -50,19 +51,20 @@
                 <label class="form-label fw-bold">Senha de Acesso</label>
                 <input type="password" class="form-control" id="senha_usuario" placeholder="Sua senha" required>
             </div>
-            <button type="submit" class="btn btn-primary btn-login" id="btn-entrar">ENTRAR</button>
+            
+            <!-- BOTÃO MÁGICO (type="button" e com onclick) -->
+            <button type="button" class="btn btn-primary btn-login" id="btn-entrar" onclick="fazerLogin()">ENTRAR</button>
         </form>
     </div>
 
     <script>
         // ==========================================
-        // 🔗 LIGAÇÃO COM A API (Verifique se é o seu link exato)
+        // 🔗 LIGAÇÃO COM A API DO GOOGLE SHEETS
         // ==========================================
         const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec"; 
 
         window.onload = function() {
-            // Tenta forçar uma limpeza rápida na memória velha
-            localStorage.removeItem('ceu_codigo_eol');
+            localStorage.removeItem('ceu_codigo_eol'); // Limpa sujeira da sessão anterior
 
             fetch(API_URL, {
                 method: 'POST',
@@ -88,16 +90,19 @@
                     }
                 }
             })
-            .catch(erro => console.error("Erro na logo. O servidor Google pode estar inacessível:", erro));
+            .catch(erro => console.error("Erro na logo:", erro));
         };
         
-        function fazerLogin(event) {
-            event.preventDefault(); 
+        function fazerLogin() {
             const ceu = document.getElementById('id_ceu').value.trim();
             const rf = document.getElementById('rf_usuario').value.trim();
             const senha = document.getElementById('senha_usuario').value.trim();
 
-            if(!ceu || !rf || !senha) return;
+            // Proteção extra: se algum campo estiver vazio, ele avisa e não deixa enviar
+            if(!ceu || !rf || !senha) {
+                Swal.fire('Atenção', 'Preencha o Código EOL, seu RF e sua Senha para entrar.', 'warning');
+                return;
+            }
 
             Swal.fire({
                 title: 'A validar acessos...',
@@ -111,8 +116,7 @@
                 body: JSON.stringify({ acao: "validarLogin", dados: { id_ceu: ceu, rf_usuario: rf, senha_usuario: senha } })
             })
             .then(resposta => {
-                // Checa se o Google não devolveu uma página de Erro (HTML) em vez de JSON
-                if (!resposta.ok) throw new Error("O Google retornou erro " + resposta.status);
+                if (!resposta.ok) throw new Error("Erro de servidor " + resposta.status);
                 return resposta.json();
             })
             .then(retorno => {
@@ -139,9 +143,6 @@
             });
         }
 
-        // ==========================================
-        // 🔑 OBRIGAR A TROCAR SENHA (MANTIDO)
-        // ==========================================
         function tratarPrimeiroAcesso(mensagemDoServidor, dadosUsuario) {
             Swal.fire({
                 title: '🔒 Primeiro Acesso',

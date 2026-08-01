@@ -37,7 +37,7 @@
             <p class="text-muted">Acesso Restrito</p>
         </div>
 
-        <!-- FORMULÁRIO SEM O COMPORTAMENTO PADRÃO DE RECARREGAR -->
+        <!-- FORMULÁRIO (Agora sem nada de onclick, o Javascript toma conta de tudo) -->
         <form id="formLogin">
             <div class="mb-3">
                 <label class="form-label fw-bold">Código EOL do CEU</label>
@@ -52,8 +52,8 @@
                 <input type="password" class="form-control" id="senha_usuario" placeholder="Sua senha" required>
             </div>
             
-            <!-- BOTÃO MÁGICO (type="button" e com onclick) -->
-            <button type="button" class="btn btn-primary btn-login" id="btn-entrar" onclick="fazerLogin()">ENTRAR</button>
+            <!-- Botão com TYPE="SUBMIT" para a tecla ENTER voltar a funcionar -->
+            <button type="submit" class="btn btn-primary btn-login" id="btn-entrar">ENTRAR</button>
         </form>
     </div>
 
@@ -64,7 +64,7 @@
         const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec"; 
 
         window.onload = function() {
-            localStorage.removeItem('ceu_codigo_eol'); // Limpa sujeira da sessão anterior
+            localStorage.removeItem('ceu_codigo_eol'); 
 
             fetch(API_URL, {
                 method: 'POST',
@@ -93,16 +93,24 @@
             .catch(erro => console.error("Erro na logo:", erro));
         };
         
+        // ==========================================
+        // 🛡️ A TRAVA MÁGICA CONTRA A TELA PISCAR
+        // ==========================================
+        document.getElementById('formLogin').addEventListener('submit', function(event) {
+            // Esta linha abaixo é quem proíbe o navegador de piscar e limpar os campos!
+            event.preventDefault(); 
+            fazerLogin();
+        });
+
+        // ==========================================
+        // 🚀 A FUNÇÃO DE ENTRAR NO SISTEMA
+        // ==========================================
         function fazerLogin() {
             const ceu = document.getElementById('id_ceu').value.trim();
             const rf = document.getElementById('rf_usuario').value.trim();
             const senha = document.getElementById('senha_usuario').value.trim();
 
-            // Proteção extra: se algum campo estiver vazio, ele avisa e não deixa enviar
-            if(!ceu || !rf || !senha) {
-                Swal.fire('Atenção', 'Preencha o Código EOL, seu RF e sua Senha para entrar.', 'warning');
-                return;
-            }
+            if(!ceu || !rf || !senha) return;
 
             Swal.fire({
                 title: 'A validar acessos...',
@@ -138,11 +146,14 @@
                 }
             })
             .catch(erro => {
-                Swal.fire('Erro de Comunicação', 'O Servidor Google rejeitou a conexão. O código lá pode estar com erro.', 'error');
+                Swal.fire('Erro de Comunicação', 'O Servidor Google rejeitou a conexão.', 'error');
                 console.error(erro);
             });
         }
 
+        // ==========================================
+        // 🔑 FUNÇÃO DO PRIMEIRO ACESSO (Obriga trocar senha)
+        // ==========================================
         function tratarPrimeiroAcesso(mensagemDoServidor, dadosUsuario) {
             Swal.fire({
                 title: '🔒 Primeiro Acesso',

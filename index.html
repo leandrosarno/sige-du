@@ -3,6 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- 🛡️ BLOQUEADORES DE CACHE (Força o navegador a limpar a memória) -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    
     <title>SIG-EDU - Login</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -10,56 +16,15 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
     <style>
-        :root {
-            --cor-primaria: #0d6efd;
-            --cor-fundo: #f4f7f6;
-        }
-        body {
-            background-color: var(--cor-fundo);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        .login-card {
-            background: white;
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 400px;
-        }
-        .login-header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .login-header span {
-            font-size: 50px;
-            color: var(--cor-primaria);
-        }
-        .login-header h3 {
-            font-weight: 700;
-            color: #333;
-            margin-top: 10px;
-        }
-        .btn-login {
-            background-color: var(--cor-primaria);
-            border: none;
-            width: 100%;
-            padding: 12px;
-            font-weight: bold;
-            font-size: 16px;
-            margin-top: 20px;
-        }
-        .btn-login:hover {
-            background-color: #0b5ed7;
-        }
-        .form-control {
-            padding: 12px;
-            border-radius: 8px;
-        }
+        :root { --cor-primaria: #0d6efd; --cor-fundo: #f4f7f6; }
+        body { background-color: var(--cor-fundo); display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .login-card { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        .login-header { text-align: center; margin-bottom: 30px; }
+        .login-header span { font-size: 50px; color: var(--cor-primaria); }
+        .login-header h3 { font-weight: 700; color: #333; margin-top: 10px; }
+        .btn-login { background-color: var(--cor-primaria); border: none; width: 100%; padding: 12px; font-weight: bold; font-size: 16px; margin-top: 20px; }
+        .btn-login:hover { background-color: #0b5ed7; }
+        .form-control { padding: 12px; border-radius: 8px; }
     </style>
 </head>
 <body>
@@ -67,9 +32,7 @@
     <div class="login-card">
         <div class="login-header" id="box-logo">
             <span class="material-icons" id="icone-padrao" style="font-size: 75px; color: var(--cor-primaria);">account_balance</span>
-            
             <img id="img-logo" src="" alt="Logo do Sistema" style="display: none; width: 100%; height: 120px; object-fit: contain; margin: 0 auto 15px auto;">
-            
             <h3 id="titulo-sistema">A carregar...</h3>
             <p class="text-muted">Acesso Restrito</p>
         </div>
@@ -79,31 +42,28 @@
                 <label class="form-label fw-bold">Código EOL do CEU</label>
                 <input type="number" class="form-control" id="id_ceu" placeholder="Ex: 123456" required>
             </div>
-            
             <div class="mb-3">
                 <label class="form-label fw-bold">RF do Funcionário</label>
                 <input type="number" class="form-control" id="rf_usuario" placeholder="Apenas números" required>
             </div>
-            
             <div class="mb-3">
                 <label class="form-label fw-bold">Senha de Acesso</label>
                 <input type="password" class="form-control" id="senha_usuario" placeholder="Sua senha" required>
             </div>
-
             <button type="submit" class="btn btn-primary btn-login" id="btn-entrar">ENTRAR</button>
         </form>
     </div>
 
     <script>
         // ==========================================
-        // 🔗 LIGAÇÃO COM A API DO GOOGLE SHEETS
+        // 🔗 LIGAÇÃO COM A API (Verifique se é o seu link exato)
         // ==========================================
         const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec"; 
 
-        // ==========================================
-        // 🎨 BUSCA A LOGO E NOME ASSIM QUE ABRE A TELA
-        // ==========================================
         window.onload = function() {
+            // Tenta forçar uma limpeza rápida na memória velha
+            localStorage.removeItem('ceu_codigo_eol');
+
             fetch(API_URL, {
                 method: 'POST',
                 body: JSON.stringify({ acao: "obterConfiguracoes", dados: {} })
@@ -123,22 +83,16 @@
                         if(retorno.dados.tamanhoLogo) {
                             img.style.height = retorno.dados.tamanhoLogo; 
                             localStorage.setItem('ceu_tamanho_logo', retorno.dados.tamanhoLogo); 
-                        } else {
-                            localStorage.removeItem('ceu_tamanho_logo'); 
                         }
                         img.style.display = 'block';
                     }
                 }
             })
-            .catch(erro => console.error("Erro na logo:", erro));
+            .catch(erro => console.error("Erro na logo. O servidor Google pode estar inacessível:", erro));
         };
         
-        // ==========================================
-        // 🚀 FUNÇÃO PRINCIPAL DE LOGIN
-        // ==========================================
         function fazerLogin(event) {
-            event.preventDefault(); // Impede a página de recarregar o formulário e limpar tudo
-
+            event.preventDefault(); 
             const ceu = document.getElementById('id_ceu').value.trim();
             const rf = document.getElementById('rf_usuario').value.trim();
             const senha = document.getElementById('senha_usuario').value.trim();
@@ -152,47 +106,41 @@
                 didOpen: () => { Swal.showLoading(); }
             });
 
-            const pacote = {
-                acao: "validarLogin",
-                dados: { id_ceu: ceu, rf_usuario: rf, senha_usuario: senha }
-            };
-
             fetch(API_URL, {
                 method: 'POST',
-                body: JSON.stringify(pacote)
+                body: JSON.stringify({ acao: "validarLogin", dados: { id_ceu: ceu, rf_usuario: rf, senha_usuario: senha } })
             })
-            .then(resposta => resposta.json())
+            .then(resposta => {
+                // Checa se o Google não devolveu uma página de Erro (HTML) em vez de JSON
+                if (!resposta.ok) throw new Error("O Google retornou erro " + resposta.status);
+                return resposta.json();
+            })
             .then(retorno => {
-                // 🚦 SE FOR O PRIMEIRO ACESSO DA PESSOA
                 if (retorno.status === "primeiro_acesso") {
                     tratarPrimeiroAcesso(retorno.mensagem, retorno.dados_usuario);
                 } 
-                // ✅ SE O LOGIN DEU CERTO E A SENHA ESTÁ OK
                 else if (retorno.status === "sucesso") {
-                    // GUARDA AS INFORMAÇÕES EXATAS PARA A FICHA ACHAR
                     localStorage.setItem('ceu_codigo_eol', document.getElementById('id_ceu').value);
                     localStorage.setItem('ceu_nome', retorno.token.nome_ceu);
                     localStorage.setItem('ceu_logo', retorno.token.logo_ceu);
                     localStorage.setItem('ceu_nome_usuario', retorno.token.nome_usuario);
                     localStorage.setItem('ceu_foto_usuario', retorno.token.foto_usuario);
                     
-                    // REDIRECIONA DIRETO PARA O DASHBOARD (Sem pop-up chato)
                     Swal.close(); 
                     window.location.href = "dashboard.html"; 
                 } 
-                // ❌ SE DIGITOU A SENHA ERRADA OU CEU NÃO EXISTE
                 else {
                     Swal.fire('Acesso Negado', retorno.mensagem, 'error');
                 }
             })
             .catch(erro => {
-                Swal.fire('Erro de Comunicação', 'Falha ao ligar ao servidor. Verifique a internet ou o link da API.', 'error');
+                Swal.fire('Erro de Comunicação', 'O Servidor Google rejeitou a conexão. O código lá pode estar com erro.', 'error');
                 console.error(erro);
             });
         }
 
         // ==========================================
-        // 🔑 FUNÇÃO: OBRIGAR A TROCAR SENHA
+        // 🔑 OBRIGAR A TROCAR SENHA (MANTIDO)
         // ==========================================
         function tratarPrimeiroAcesso(mensagemDoServidor, dadosUsuario) {
             Swal.fire({
@@ -205,13 +153,6 @@
                         <input type="password" id="swal-nova-senha" class="swal2-input" placeholder="Mínimo 8 caracteres">
                         <label class="mt-2 fw-bold">Confirmar Nova Senha:</label>
                         <input type="password" id="swal-conf-senha" class="swal2-input" placeholder="Repita a senha">
-                        <div class="text-muted mt-2" style="font-size:12px;">
-                            Sua nova senha deve ter entre 8 e 12 caracteres, incluindo:<br>
-                            ✔️ 1 Letra Maiúscula<br>
-                            ✔️ 1 Letra minúscula<br>
-                            ✔️ 1 Número<br>
-                            ✔️ 1 Símbolo especial (!@#$)
-                        </div>
                     </div>
                 `,
                 confirmButtonText: 'Gravar Nova Senha',
@@ -220,14 +161,9 @@
                 preConfirm: () => {
                     const s1 = document.getElementById('swal-nova-senha').value;
                     const s2 = document.getElementById('swal-conf-senha').value;
-                    
-                    if (s1 !== s2) {
-                        Swal.showValidationMessage('As senhas não conferem!');
-                        return false;
-                    }
+                    if (s1 !== s2) { Swal.showValidationMessage('As senhas não conferem!'); return false; }
                     if (!/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,12}$/.test(s1)) {
-                        Swal.showValidationMessage('A senha é muito fraca. Siga as regras abaixo!');
-                        return false;
+                        Swal.showValidationMessage('A senha é muito fraca!'); return false;
                     }
                     return s1;
                 }
@@ -240,19 +176,11 @@
 
         function enviarNovaSenha(rf, ceu, novaSenha) {
             Swal.fire({ title: 'A gravar...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
-
-            const pacote = {
-                acao: "alterarSenhaPrimeiroAcesso",
-                dados: { rf: rf, ceu: ceu, novaSenha: novaSenha }
-            };
-
-            fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) })
+            fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "alterarSenhaPrimeiroAcesso", dados: { rf: rf, ceu: ceu, novaSenha: novaSenha } }) })
             .then(resp => resp.json())
             .then(retorno => {
                 if(retorno.status === "sucesso") {
-                    Swal.fire('Sucesso!', retorno.mensagem, 'success').then(() => {
-                        document.getElementById('senha_usuario').value = ''; 
-                    });
+                    Swal.fire('Sucesso!', retorno.mensagem, 'success').then(() => { document.getElementById('senha_usuario').value = ''; });
                 } else {
                     Swal.fire('Erro', retorno.mensagem, 'error');
                 }

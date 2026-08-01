@@ -113,9 +113,13 @@
                 else if (retorno.status === "sucesso") {
                     // 🎉 AS PULSEIRAS VIP PARA O SEGURANÇA DO DASHBOARD DEIXAR ENTRAR!
                     localStorage.setItem('ceu_codigo_eol', document.getElementById('id_ceu').value);
-                    localStorage.setItem('ceu_rf_logado', document.getElementById('rf_usuario').value); // <-- A PULSEIRA QUE FALTAVA!
+                    localStorage.setItem('ceu_rf_logado', document.getElementById('rf_usuario').value); 
+                    
+                    // 🗄️ A CHAVE DO BANCO DE DADOS QUE EU TINHA ESQUECIDO DE TE DAR!
+                    localStorage.setItem('ceu_planilha_id', retorno.token.planilha_id || retorno.planilha_id || retorno.token.id_planilha || "");
+                    
                     localStorage.setItem('ceu_nome', retorno.token.nome_ceu);
-                    localStorage.setItem('ceu_nome_especifico', retorno.token.nome_ceu); // (O painel procura com esse nome também)
+                    localStorage.setItem('ceu_nome_especifico', retorno.token.nome_ceu);
                     localStorage.setItem('ceu_logo', retorno.token.logo_ceu);
                     localStorage.setItem('ceu_nome_usuario', retorno.token.nome_usuario);
                     localStorage.setItem('ceu_foto_usuario', retorno.token.foto_usuario);

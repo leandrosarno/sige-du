@@ -37,8 +37,8 @@
             <p class="text-muted">Acesso Restrito</p>
         </div>
 
-        <!-- FORMULÁRIO (Agora sem nada de onclick, o Javascript toma conta de tudo) -->
-        <form id="formLogin">
+        <!-- ☢️ A TRAVA NUCLEAR: action="javascript:void(0);" impede o recarregamento na raiz! -->
+        <form id="formLogin" action="javascript:void(0);" onsubmit="fazerLogin(); return false;">
             <div class="mb-3">
                 <label class="form-label fw-bold">Código EOL do CEU</label>
                 <input type="number" class="form-control" id="id_ceu" placeholder="Ex: 123456" required>
@@ -52,15 +52,12 @@
                 <input type="password" class="form-control" id="senha_usuario" placeholder="Sua senha" required>
             </div>
             
-            <!-- Botão com TYPE="SUBMIT" para a tecla ENTER voltar a funcionar -->
+            <!-- Botão SUBMIT para o ENTER funcionar maravilhosamente bem -->
             <button type="submit" class="btn btn-primary btn-login" id="btn-entrar">ENTRAR</button>
         </form>
     </div>
 
     <script>
-        // ==========================================
-        // 🔗 LIGAÇÃO COM A API DO GOOGLE SHEETS
-        // ==========================================
         const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec"; 
 
         window.onload = function() {
@@ -93,18 +90,7 @@
             .catch(erro => console.error("Erro na logo:", erro));
         };
         
-        // ==========================================
-        // 🛡️ A TRAVA MÁGICA CONTRA A TELA PISCAR
-        // ==========================================
-        document.getElementById('formLogin').addEventListener('submit', function(event) {
-            // Esta linha abaixo é quem proíbe o navegador de piscar e limpar os campos!
-            event.preventDefault(); 
-            fazerLogin();
-        });
-
-        // ==========================================
-        // 🚀 A FUNÇÃO DE ENTRAR NO SISTEMA
-        // ==========================================
+        // Função de Login limpa e sem complicação de eventos
         function fazerLogin() {
             const ceu = document.getElementById('id_ceu').value.trim();
             const rf = document.getElementById('rf_usuario').value.trim();
@@ -151,9 +137,6 @@
             });
         }
 
-        // ==========================================
-        // 🔑 FUNÇÃO DO PRIMEIRO ACESSO (Obriga trocar senha)
-        // ==========================================
         function tratarPrimeiroAcesso(mensagemDoServidor, dadosUsuario) {
             Swal.fire({
                 title: '🔒 Primeiro Acesso',

@@ -4,11 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <!-- Bloqueadores de cache para garantir a versão nova -->
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-    <meta http-equiv="Pragma" content="no-cache" />
-    <meta http-equiv="Expires" content="0" />
-    
     <title>SIG-EDU - Login</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -37,8 +32,8 @@
             <p class="text-muted">Acesso Restrito</p>
         </div>
 
-        <!-- 🎯 OLHA O "event" AQUI! É ELE QUEM SALVA O DIA E FAZ O ENTER FUNCIONAR -->
-        <form id="formLogin" onsubmit="fazerLogin(event)">
+        <!-- 🛡️ TRAVA INFALÍVEL: event.preventDefault() aqui trava qualquer piscar de tela! -->
+        <form id="formLogin" onsubmit="event.preventDefault(); fazerLogin();">
             <div class="mb-3">
                 <label class="form-label fw-bold">Código EOL do CEU</label>
                 <input type="number" class="form-control" id="id_ceu" placeholder="Ex: 123456" required>
@@ -60,7 +55,7 @@
         const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec"; 
 
         window.onload = function() {
-            localStorage.removeItem('ceu_codigo_eol'); // Limpa a memória para garantir login fresco
+            localStorage.removeItem('ceu_codigo_eol'); 
 
             fetch(API_URL, {
                 method: 'POST',
@@ -89,10 +84,7 @@
             .catch(erro => console.error("Erro na logo:", erro));
         };
         
-        // 🎯 AQUI TAMBÉM RECEBEMOS O "event" PARA IMPEDIR A TELA DE PISCAR E LIMPAR
-        function fazerLogin(event) {
-            event.preventDefault(); // ESTA É A LINHA QUE TRAVA O NAVEGADOR!
-
+        function fazerLogin() {
             const ceu = document.getElementById('id_ceu').value.trim();
             const rf = document.getElementById('rf_usuario').value.trim();
             const senha = document.getElementById('senha_usuario').value.trim();
@@ -111,7 +103,7 @@
                 body: JSON.stringify({ acao: "validarLogin", dados: { id_ceu: ceu, rf_usuario: rf, senha_usuario: senha } })
             })
             .then(resposta => {
-                if (!resposta.ok) throw new Error("Erro de servidor " + resposta.status);
+                if (!resposta.ok) throw new Error("Erro de servidor");
                 return resposta.json();
             })
             .then(retorno => {
@@ -119,27 +111,27 @@
                     tratarPrimeiroAcesso(retorno.mensagem, retorno.dados_usuario);
                 } 
                 else if (retorno.status === "sucesso") {
-                    // GUARDA OS DADOS
                     localStorage.setItem('ceu_codigo_eol', document.getElementById('id_ceu').value);
                     localStorage.setItem('ceu_nome', retorno.token.nome_ceu);
                     localStorage.setItem('ceu_logo', retorno.token.logo_ceu);
                     localStorage.setItem('ceu_nome_usuario', retorno.token.nome_usuario);
                     localStorage.setItem('ceu_foto_usuario', retorno.token.foto_usuario);
                     
-                    // FECHA O SWAL E VAI PRO DASHBOARD (Sem pop-up de boas-vindas!)
                     Swal.close(); 
-                    window.location.href = "dashboard.html"; 
+                    // 🎉 AQUI ESTAVA O VILÃO! MUDAMOS PARA inicio.html !
+                    window.location.href = "inicio.html"; 
                 } 
                 else {
                     Swal.fire('Acesso Negado', retorno.mensagem, 'error');
                 }
             })
             .catch(erro => {
-                Swal.fire('Erro de Comunicação', 'O Servidor Google rejeitou a conexão.', 'error');
+                Swal.fire('Erro de Comunicação', 'Falha ao ligar ao servidor.', 'error');
                 console.error(erro);
             });
         }
 
+        // Funções de primeiro acesso e trocar senha mantidas intactas
         function tratarPrimeiroAcesso(mensagemDoServidor, dadosUsuario) {
             Swal.fire({
                 title: '🔒 Primeiro Acesso',

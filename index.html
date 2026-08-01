@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <!-- 🛡️ BLOQUEADORES DE CACHE -->
+    <!-- Bloqueadores de cache para garantir a versão nova -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
@@ -37,8 +37,8 @@
             <p class="text-muted">Acesso Restrito</p>
         </div>
 
-        <!-- ☢️ A TRAVA NUCLEAR: action="javascript:void(0);" impede o recarregamento na raiz! -->
-        <form id="formLogin" action="javascript:void(0);" onsubmit="fazerLogin(); return false;">
+        <!-- 🎯 OLHA O "event" AQUI! É ELE QUEM SALVA O DIA E FAZ O ENTER FUNCIONAR -->
+        <form id="formLogin" onsubmit="fazerLogin(event)">
             <div class="mb-3">
                 <label class="form-label fw-bold">Código EOL do CEU</label>
                 <input type="number" class="form-control" id="id_ceu" placeholder="Ex: 123456" required>
@@ -52,7 +52,6 @@
                 <input type="password" class="form-control" id="senha_usuario" placeholder="Sua senha" required>
             </div>
             
-            <!-- Botão SUBMIT para o ENTER funcionar maravilhosamente bem -->
             <button type="submit" class="btn btn-primary btn-login" id="btn-entrar">ENTRAR</button>
         </form>
     </div>
@@ -61,7 +60,7 @@
         const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec"; 
 
         window.onload = function() {
-            localStorage.removeItem('ceu_codigo_eol'); 
+            localStorage.removeItem('ceu_codigo_eol'); // Limpa a memória para garantir login fresco
 
             fetch(API_URL, {
                 method: 'POST',
@@ -90,8 +89,10 @@
             .catch(erro => console.error("Erro na logo:", erro));
         };
         
-        // Função de Login limpa e sem complicação de eventos
-        function fazerLogin() {
+        // 🎯 AQUI TAMBÉM RECEBEMOS O "event" PARA IMPEDIR A TELA DE PISCAR E LIMPAR
+        function fazerLogin(event) {
+            event.preventDefault(); // ESTA É A LINHA QUE TRAVA O NAVEGADOR!
+
             const ceu = document.getElementById('id_ceu').value.trim();
             const rf = document.getElementById('rf_usuario').value.trim();
             const senha = document.getElementById('senha_usuario').value.trim();
@@ -118,12 +119,14 @@
                     tratarPrimeiroAcesso(retorno.mensagem, retorno.dados_usuario);
                 } 
                 else if (retorno.status === "sucesso") {
+                    // GUARDA OS DADOS
                     localStorage.setItem('ceu_codigo_eol', document.getElementById('id_ceu').value);
                     localStorage.setItem('ceu_nome', retorno.token.nome_ceu);
                     localStorage.setItem('ceu_logo', retorno.token.logo_ceu);
                     localStorage.setItem('ceu_nome_usuario', retorno.token.nome_usuario);
                     localStorage.setItem('ceu_foto_usuario', retorno.token.foto_usuario);
                     
+                    // FECHA O SWAL E VAI PRO DASHBOARD (Sem pop-up de boas-vindas!)
                     Swal.close(); 
                     window.location.href = "dashboard.html"; 
                 } 

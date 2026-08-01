@@ -6,6 +6,11 @@
     
     <title>SIG-EDU - Login</title>
     
+    <!-- Bloqueadores de Cache -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -32,7 +37,7 @@
             <p class="text-muted">Acesso Restrito</p>
         </div>
 
-        <!-- 🛡️ TRAVA INFALÍVEL: event.preventDefault() aqui trava qualquer piscar de tela! -->
+        <!-- 🛡️ TRAVA INFALÍVEL PARA NÃO PISCAR -->
         <form id="formLogin" onsubmit="event.preventDefault(); fazerLogin();">
             <div class="mb-3">
                 <label class="form-label fw-bold">Código EOL do CEU</label>
@@ -47,6 +52,7 @@
                 <input type="password" class="form-control" id="senha_usuario" placeholder="Sua senha" required>
             </div>
             
+            <!-- Botão Submit faz a Tecla ENTER funcionar -->
             <button type="submit" class="btn btn-primary btn-login" id="btn-entrar">ENTRAR</button>
         </form>
     </div>
@@ -98,6 +104,7 @@
                 didOpen: () => { Swal.showLoading(); }
             });
 
+            // PACOTE INDO PRO GOOGLE: repare que chamamos a ação "validarLogin" (e lá no code.gs você usa "validarLoginNoBanco", o Google vai cuidar disso na sua rota doPost)
             fetch(API_URL, {
                 method: 'POST',
                 body: JSON.stringify({ acao: "validarLogin", dados: { id_ceu: ceu, rf_usuario: rf, senha_usuario: senha } })
@@ -111,12 +118,13 @@
                     tratarPrimeiroAcesso(retorno.mensagem, retorno.dados_usuario);
                 } 
                 else if (retorno.status === "sucesso") {
-                    // 🎉 AS PULSEIRAS VIP PARA O SEGURANÇA DO DASHBOARD DEIXAR ENTRAR!
+                    
+                    // 🎉 AGORA SIM! TODAS AS CHAVES CORRETAS INCLUINDO A CHAVE MESTRA:
                     localStorage.setItem('ceu_codigo_eol', document.getElementById('id_ceu').value);
                     localStorage.setItem('ceu_rf_logado', document.getElementById('rf_usuario').value); 
                     
-                    // 🗄️ A CHAVE DO BANCO DE DADOS QUE EU TINHA ESQUECIDO DE TE DAR!
-                    localStorage.setItem('ceu_planilha_id', retorno.token.planilha_id || retorno.planilha_id || retorno.token.id_planilha || "");
+                    // O Segredo desvendado: id_planilha_banco!
+                    localStorage.setItem('ceu_planilha_id', retorno.token.id_planilha_banco);
                     
                     localStorage.setItem('ceu_nome', retorno.token.nome_ceu);
                     localStorage.setItem('ceu_nome_especifico', retorno.token.nome_ceu);
@@ -126,7 +134,7 @@
                     
                     Swal.close(); 
                     window.location.href = "dashboard.html"; 
-                }
+                } 
                 else {
                     Swal.fire('Acesso Negado', retorno.mensagem, 'error');
                 }
@@ -137,7 +145,6 @@
             });
         }
 
-        // Funções de primeiro acesso e trocar senha mantidas intactas
         function tratarPrimeiroAcesso(mensagemDoServidor, dadosUsuario) {
             Swal.fire({
                 title: '🔒 Primeiro Acesso',

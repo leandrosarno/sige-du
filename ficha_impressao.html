@@ -62,7 +62,7 @@
         function montarFolha(aluno) {
             // 1. Tenta resgatar a Logo e o Nome do CEU que o sistema salvou no login
             // (Coloquei várias opções de chaves para garantir que ele ache, não importa qual nome usamos antes!)
-            const nomeCeu = localStorage.getItem('ceu_nome') || localStorage.getItem('nome_ceu') || "Secretaria de Esportes / Educação";
+            const nomeCeu = localStorage.getItem('ceu_nome') || localStorage.getItem('nome_ceu') || " ";
             const logoCeu = localStorage.getItem('ceu_logo') || localStorage.getItem('logo_ceu') || localStorage.getItem('logo_url') || "";
 
             // 2. Monta o bloco da Logo (Só exibe se a imagem existir no sistema)

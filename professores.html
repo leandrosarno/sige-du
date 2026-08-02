@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Professores</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body { background-color: #f4f7f6; font-family: 'Segoe UI', sans-serif; padding: 20px; }
+        .card-custom { background: #ffffff; border-radius: 16px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04); border: none; padding: 25px; margin-bottom: 25px; }
+        .titulo-tela { color: #2c3e50; font-weight: 800; font-size: 24px; display: flex; align-items: center; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #edf2f7; padding-bottom: 15px; }
+        .form-label { font-weight: 600; color: #4a5568; font-size: 13px; margin-bottom: 6px; }
+        .form-control, .form-select { border-radius: 8px; padding: 10px 15px; font-size: 14px; background-color: #f8fafc; border: 1px solid #cbd5e1; }
+        .form-control:focus, .form-select:focus { border-color: #0d6efd; box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.1); background-color: #ffffff; }
+        
+        .btn-salvar { background: #0d6efd; color: white; border: none; border-radius: 8px; padding: 10px 24px; font-weight: 700; width: 100%; margin-top: 15px; transition: 0.3s; }
+        .btn-salvar:hover { background: #0b5ed7; transform: translateY(-2px); }
+        .btn-cancelar { background: #6c757d; color: white; border: none; border-radius: 8px; padding: 10px 24px; font-weight: 700; width: 100%; margin-top: 10px; transition: 0.3s; display: none;}
+        
+        input.uppercase-field { text-transform: uppercase; }
+        
+        .busca-container { position: relative; margin-bottom: 20px; }
+        .busca-container .material-icons { position: absolute; left: 15px; top: 12px; color: #94a3b8; }
+        .busca-input { padding-left: 45px !important; border-radius: 50px !important; background-color: #f1f5f9; border: none; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
+        
+        .prof-item { padding: 15px; border: 1px solid #edf2f7; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; background: #fff; transition: 0.2s; }
+        .prof-item:hover { border-color: #b6d4fe; background: #f8fafc; }
+        .acoes-btn { background: transparent; border: none; padding: 5px; color: #64748b; transition: 0.2s; border-radius: 6px; }
+        .acoes-btn:hover { background: #e2e8f0; color: #0d6efd; }
+        .acoes-btn.btn-del:hover { background: #fee2e2; color: #dc3545; }
+
+        /* Estilo da Foto de Upload */
+        .foto-upload-container { text-align: center; margin-bottom: 20px; }
+        .foto-preview { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid #e2e8f0; margin-bottom: 10px; background: #f8fafc; }
+        .foto-btn-wrapper { position: relative; display: inline-block; }
+        .foto-btn-badge { position: absolute; bottom: 10px; right: 0; background: #0d6efd; color: white; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 2px solid white; }
+    </style>
+</head>
+<body>
+
+    <div class="row">
+        <!-- FORMULÁRIO -->
+        <div class="col-md-5">
+            <div class="card-custom">
+                <h3 class="titulo-tela" id="titulo-form"><span class="material-icons text-primary">school</span> Cadastrar Professor</h3>
+                
+                <input type="hidden" id="modo_form" value="novo">
+                <input type="hidden" id="p_id"> 
+                
+                <form id="formProf" onsubmit="event.preventDefault(); processarFormulario();">
+                    
+                    <!-- UPLOAD DE FOTO -->
+                    <div class="foto-upload-container">
+                        <div class="foto-btn-wrapper">
+                            <img id="preview-foto" src="https://via.placeholder.com/150/e2e8f0/94a3b8?text=FOTO" class="foto-preview" alt="Foto">
+                            <label for="input-foto" class="foto-btn-badge" title="Enviar Foto"><span class="material-icons" style="font-size:16px;">camera_alt</span></label>
+                            <input type="file" id="input-foto" style="display: none;" accept="image/*" onchange="carregarPreview(event)">
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">Nome do Professor *</label>
+                            <input type="text" class="form-control uppercase-field" id="p_nome" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Tipo de Responsável *</label>
+                            <select class="form-select" id="p_resp" required>
+                                <option value="">Carregando...</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Telefone</label>
+                            <input type="text" class="form-control uppercase-field" id="p_tel">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">E-mail</label>
+                            <input type="email" class="form-control" id="p_email" style="text-transform: lowercase;">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Tipo de Falta</label>
+                            <input type="text" class="form-control uppercase-field" id="p_falta">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Férias</label>
+                            <input type="text" class="form-control uppercase-field" id="p_ferias" placeholder="Ex: JAN/2027">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Reunião Coletiva</label>
+                            <input type="text" class="form-control uppercase-field" id="p_reuniao" placeholder="Ex: SEG QUA DAS 10H ÀS 11H">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Planejamento</label>
+                            <input type="text" class="form-control uppercase-field" id="p_planejamento" placeholder="Ex: SEX DAS 13H ÀS 14H">
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn-salvar" id="btn-submit-form"><span class="material-icons align-middle" style="font-size: 18px;">save</span> GRAVAR PROFESSOR</button>
+                    <button type="button" class="btn-cancelar" id="btn-cancelar" onclick="cancelarEdicao()">CANCELAR EDIÇÃO</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- LISTAGEM -->
+        <div class="col-md-7">
+            <div class="card-custom">
+                <h3 class="titulo-tela">
+                    <span class="material-icons text-success">list_alt</span> Professores Cadastrados
+                    <span id="contador-prof" class="badge bg-success ms-auto" style="font-size: 14px;">0</span>
+                </h3>
+
+                <!-- MOTOR DE BUSCA -->
+                <div class="busca-container">
+                    <i class="material-icons">search</i>
+                    <input type="text" id="campo-busca" class="form-control busca-input uppercase-field" placeholder="Buscar por nome ou tipo..." onkeyup="filtrarProfs()">
+                </div>
+
+                <div id="lista-prof">
+                    <p class="text-center text-muted mt-4"><i class="material-icons spin">sync</i> Lendo banco de dados...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec"; 
+        let profsGlobais = [];
+        let fotoBase64 = null;
+        let nomeArquivoFoto = null;
+
+        window.onload = function() {
+            const idPlanilha = localStorage.getItem('ceu_planilha_id');
+            if (!idPlanilha) return document.getElementById('lista-prof').innerHTML = `<div class="alert alert-danger text-center">Faça login novamente.</div>`;
+            carregarComboResponsaveis(idPlanilha);
+            carregarTabelaProf(idPlanilha);
+        };
+
+        // ==========================================
+        // 1. CARREGAR DEPENDÊNCIAS E FOTO
+        // ==========================================
+        function carregarComboResponsaveis(idPlanilha) {
+            fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "listarTipoResp", dados: { id_planilha: idPlanilha } }) })
+            .then(res => res.json())
+            .then(retorno => {
+                const combo = document.getElementById('p_resp');
+                combo.innerHTML = '<option value="">Selecione...</option>';
+                if(retorno.status === "sucesso" && retorno.tipos.length > 0) {
+                    retorno.tipos.forEach(t => { combo.innerHTML += `<option value="${t.nome}">${t.nome}</option>`; });
+                }
+            });
+        }
+
+        function carregarPreview(event) {
+            const file = event.target.files[0];
+            if(file) {
+                nomeArquivoFoto = file.name;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('preview-foto').src = e.target.result;
+                    fotoBase64 = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // ==========================================
+        // 2. BUSCA E LISTAGEM
+        // ==========================================
+        function carregarTabelaProf(idPlanilha) {
+            fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "listarProfessores", dados: { id_planilha: idPlanilha } }) })
+            .then(res => res.json())
+            .then(retorno => {
+                if(retorno.status === "sucesso") {
+                    profsGlobais = retorno.professores;
+                    desenharProfs(profsGlobais);
+                }
+            });
+        }
+
+        function filtrarProfs() {
+            const termo = document.getElementById('campo-busca').value.toUpperCase();
+            const filtrados = profsGlobais.filter(p => String(p.nome).toUpperCase().includes(termo) || String(p.responsavel).toUpperCase().includes(termo));
+            desenharProfs(filtrados);
+        }
+
+        function desenharProfs(lista) {
+            const div = document.getElementById('lista-prof');
+            document.getElementById('contador-prof').innerText = lista.length;
+
+            if(lista.length === 0) {
+                div.innerHTML = `<div class="alert alert-light text-center border">Nenhum professor encontrado.</div>`;
+                return;
+            }
+
+            div.innerHTML = lista.map(p => {
+                let imgHtml = (p.foto && p.foto !== "") 
+                    ? `<img src="${p.foto}" style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid #0d6efd;">` 
+                    : `<span class="material-icons" style="font-size: 45px; color: #cbd5e1;">account_circle</span>`;
+                
+                return `
+                <div class="prof-item">
+                    <div style="display: flex; align-items: center; gap: 15px; flex-grow: 1;">
+                        ${imgHtml}
+                        <div>
+                            <strong class="text-primary" style="font-size: 15px;">${p.nome}</strong><br>
+                            <span style="font-size:12px; color:#64748b; font-weight: bold;">
+                                <i class="material-icons align-middle text-secondary" style="font-size:14px;">badge</i> ${p.responsavel || 'N/I'} &nbsp;|&nbsp;
+                                <i class="material-icons align-middle text-success" style="font-size:14px;">phone</i> ${p.telefone || 'Sem Tel'}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="text-end" style="min-width: 90px;">
+                        <button class="acoes-btn" title="Editar" onclick="prepararEdicao('${p.id}')"><i class="material-icons">edit</i></button>
+                        <button class="acoes-btn btn-del" title="Excluir" onclick="confirmarExclusao('${p.id}')"><i class="material-icons">delete</i></button>
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        // ==========================================
+        // 3. SALVAR / ATUALIZAR / EDITAR
+        // ==========================================
+        function processarFormulario() {
+            const idPlanilha = localStorage.getItem('ceu_planilha_id');
+            const modo = document.getElementById('modo_form').value; 
+            const acaoReal = (modo === "novo") ? "salvarProfessor" : "atualizarProfessor";
+
+            Swal.fire({ title: 'Enviando dados...', text: 'Pode demorar uns segundos por causa da foto.', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+
+            const pacote = {
+                acao: acaoReal,
+                dados: {
+                    id_planilha: idPlanilha,
+                    id_prof: document.getElementById('p_id').value,
+                    nome: document.getElementById('p_nome').value,
+                    responsavel: document.getElementById('p_resp').value,
+                    telefone: document.getElementById('p_tel').value,
+                    email: document.getElementById('p_email').value,
+                    falta: document.getElementById('p_falta').value,
+                    ferias: document.getElementById('p_ferias').value,
+                    reuniao: document.getElementById('p_reuniao').value,
+                    planejamento: document.getElementById('p_planejamento').value,
+                    fotoBase64: fotoBase64,
+                    nomeArquivo: nomeArquivoFoto
+                }
+            };
+
+            fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) })
+            .then(res => res.json())
+            .then(retorno => {
+                if(retorno.status === "sucesso") {
+                    Swal.fire('Sucesso!', retorno.mensagem, 'success');
+                    cancelarEdicao(); 
+                    carregarTabelaProf(idPlanilha); 
+                } else Swal.fire('Erro', retorno.mensagem, 'error');
+            });
+        }
+
+        function prepararEdicao(idProf) {
+            const idPlanilha = localStorage.getItem('ceu_planilha_id');
+            Swal.fire({ title: 'Carregando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+
+            fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "buscarProfessorPorId", dados: { id_planilha: idPlanilha, id_prof: idProf } }) })
+            .then(res => res.json())
+            .then(retorno => {
+                if(retorno.status === "sucesso") {
+                    const p = retorno.professor;
+                    document.getElementById('p_id').value = p.id;
+                    document.getElementById('p_nome').value = p.nome;
+                    
+                    let combo = document.getElementById('p_resp');
+                    let existe = Array.from(combo.options).some(opt => opt.value === p.responsavel);
+                    if(!existe && p.responsavel) combo.innerHTML += `<option value="${p.responsavel}">${p.responsavel}</option>`;
+                    combo.value = p.responsavel;
+
+                    document.getElementById('p_tel').value = p.telefone;
+                    document.getElementById('p_email').value = p.email;
+                    document.getElementById('p_falta').value = p.falta;
+                    document.getElementById('p_ferias').value = p.ferias;
+                    document.getElementById('p_reuniao').value = p.reuniao;
+                    document.getElementById('p_planejamento').value = p.planejamento;
+
+                    // Mostra a foto atual no form
+                    document.getElementById('preview-foto').src = (p.foto && p.foto !== "") ? p.foto : 'https://via.placeholder.com/150/e2e8f0/94a3b8?text=FOTO';
+                    fotoBase64 = null; // Reseta para não reenviar se o usuário não clicar
+                    nomeArquivoFoto = null;
+
+                    document.getElementById('modo_form').value = "editar";
+                    document.getElementById('titulo-form').innerHTML = `<span class="material-icons text-warning">edit</span> Editar Professor`;
+                    document.getElementById('btn-submit-form').className = "btn-salvar bg-warning text-dark";
+                    document.getElementById('btn-submit-form').innerHTML = `<span class="material-icons align-middle" style="font-size: 18px;">update</span> SALVAR ALTERAÇÃO`;
+                    document.getElementById('btn-cancelar').style.display = "block";
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    
+                    Swal.close();
+                } else Swal.fire('Erro', retorno.mensagem, 'error');
+            });
+        }
+
+        function cancelarEdicao() {
+            document.getElementById('formProf').reset();
+            document.getElementById('p_id').value = "";
+            document.getElementById('preview-foto').src = "https://via.placeholder.com/150/e2e8f0/94a3b8?text=FOTO";
+            fotoBase64 = null; nomeArquivoFoto = null;
+            document.getElementById('modo_form').value = "novo";
+            document.getElementById('titulo-form').innerHTML = `<span class="material-icons text-primary">school</span> Cadastrar Professor`;
+            document.getElementById('btn-submit-form').className = "btn-salvar";
+            document.getElementById('btn-submit-form').innerHTML = `<span class="material-icons align-middle" style="font-size: 18px;">save</span> GRAVAR PROFESSOR`;
+            document.getElementById('btn-cancelar').style.display = "none";
+        }
+
+        function confirmarExclusao(idProf) {
+            Swal.fire({
+                title: 'Atenção!', text: 'Deseja apagar este professor?',
+                icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc3545', cancelButtonColor: '#6c757d', confirmButtonText: 'Sim, apagar!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const idPlanilha = localStorage.getItem('ceu_planilha_id');
+                    Swal.fire({ title: 'Apagando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+                    fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "excluirProfessor", dados: { id_planilha: idPlanilha, id_prof: idProf } }) })
+                    .then(res => res.json())
+                    .then(retorno => {
+                        if(retorno.status === "sucesso") {
+                            Swal.fire('Excluído!', retorno.mensagem, 'success');
+                            carregarTabelaProf(idPlanilha);
+                        } else Swal.fire('Erro', retorno.mensagem, 'error');
+                    });
+                }
+            });
+        }
+    </script>
+</body>
+</html>

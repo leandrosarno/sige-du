@@ -14,23 +14,41 @@
         .form-label { font-weight: 600; color: #4a5568; font-size: 13px; margin-bottom: 6px; }
         .form-control { border-radius: 8px; padding: 10px 15px; font-size: 14px; background-color: #f8fafc; border: 1px solid #cbd5e1; }
         .form-control:focus { border-color: #0d6efd; box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.1); background-color: #ffffff; }
+        
         .btn-salvar { background: #0d6efd; color: white; border: none; border-radius: 8px; padding: 10px 24px; font-weight: 700; width: 100%; margin-top: 15px; transition: 0.3s; }
         .btn-salvar:hover { background: #0b5ed7; transform: translateY(-2px); }
-        input.uppercase-field { text-transform: uppercase; }
+        .btn-cancelar { background: #6c757d; color: white; border: none; border-radius: 8px; padding: 10px 24px; font-weight: 700; width: 100%; margin-top: 10px; transition: 0.3s; display: none;}
+        .btn-cancelar:hover { background: #5a6268; }
+
+        input.uppercase-field, textarea.uppercase-field { text-transform: uppercase; }
+        
+        /* Estilos da Lista e Busca */
+        .busca-container { position: relative; margin-bottom: 20px; }
+        .busca-container .material-icons { position: absolute; left: 15px; top: 12px; color: #94a3b8; }
+        .busca-input { padding-left: 45px !important; border-radius: 50px !important; background-color: #f1f5f9; border: none; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
         
         .nuc-item { padding: 15px; border: 1px solid #edf2f7; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; background: #fff; transition: 0.2s; }
         .nuc-item:hover { border-color: #b6d4fe; background: #f8fafc; }
         .nuc-tag { font-size: 11px; padding: 4px 8px; border-radius: 4px; font-weight: bold; background: #e2e8f0; color: #475569; }
+        
+        .acoes-btn { background: transparent; border: none; padding: 5px; color: #64748b; transition: 0.2s; border-radius: 6px; }
+        .acoes-btn:hover { background: #e2e8f0; color: #0d6efd; }
+        .acoes-btn.btn-del:hover { background: #fee2e2; color: #dc3545; }
     </style>
 </head>
 <body>
 
     <div class="row">
+        <!-- FORMULÁRIO -->
         <div class="col-md-5">
             <div class="card-custom">
-                <h3 class="titulo-tela"><span class="material-icons text-primary">domain</span> Cadastrar Núcleo</h3>
+                <h3 class="titulo-tela" id="titulo-form"><span class="material-icons text-primary">domain</span> Cadastrar Núcleo</h3>
                 
-                <form id="formNucleo" onsubmit="event.preventDefault(); salvarNucleo();">
+                <input type="hidden" id="modo_form" value="novo">
+                <!-- O ID gerado pelo banco fica escondido aqui na edição -->
+                <input type="hidden" id="n_id">
+
+                <form id="formNucleo" onsubmit="event.preventDefault(); processarFormulario();">
                     <div class="row g-3">
                         <div class="col-12">
                             <label class="form-label">Nome do Núcleo *</label>
@@ -41,15 +59,18 @@
                             <input type="text" class="form-control uppercase-field" id="n_chefe" required>
                         </div>
                         
+                        <!-- Assessores -->
                         <div class="col-4"><label class="form-label">Assessor 1</label><input type="text" class="form-control uppercase-field" id="n_ass1"></div>
                         <div class="col-4"><label class="form-label">Assessor 2</label><input type="text" class="form-control uppercase-field" id="n_ass2"></div>
                         <div class="col-4"><label class="form-label">Assessor 3</label><input type="text" class="form-control uppercase-field" id="n_ass3"></div>
 
+                        <!-- Contatos -->
                         <div class="col-12"><label class="form-label">Telefone Principal</label><input type="text" class="form-control uppercase-field" id="n_tel"></div>
                         <div class="col-4"><label class="form-label">E-mail 1</label><input type="text" class="form-control uppercase-field" id="n_email1"></div>
                         <div class="col-4"><label class="form-label">E-mail 2</label><input type="text" class="form-control uppercase-field" id="n_email2"></div>
                         <div class="col-4"><label class="form-label">E-mail 3</label><input type="text" class="form-control uppercase-field" id="n_email3"></div>
 
+                        <!-- Cabeçalho e Rodapé -->
                         <div class="col-12">
                             <label class="form-label">Cabeçalho para Relatórios</label>
                             <textarea class="form-control uppercase-field" id="n_cabecalho" rows="2" placeholder="Texto impresso no topo das listas"></textarea>
@@ -60,14 +81,26 @@
                         </div>
                     </div>
                     
-                    <button type="submit" class="btn-salvar"><span class="material-icons align-middle" style="font-size: 18px;">save</span> GRAVAR NÚCLEO</button>
+                    <button type="submit" class="btn-salvar" id="btn-submit-form"><span class="material-icons align-middle" style="font-size: 18px;">save</span> GRAVAR NÚCLEO</button>
+                    <button type="button" class="btn-cancelar" id="btn-cancelar" onclick="cancelarEdicao()">CANCELAR EDIÇÃO</button>
                 </form>
             </div>
         </div>
 
+        <!-- LISTAGEM -->
         <div class="col-md-7">
             <div class="card-custom">
-                <h3 class="titulo-tela"><span class="material-icons text-success">list_alt</span> Núcleos Cadastrados</h3>
+                <h3 class="titulo-tela">
+                    <span class="material-icons text-success">list_alt</span> Núcleos Cadastrados
+                    <span id="contador-nucleos" class="badge bg-success ms-auto" style="font-size: 14px;">0</span>
+                </h3>
+
+                <!-- 🔍 MOTOR DE BUSCA -->
+                <div class="busca-container">
+                    <i class="material-icons">search</i>
+                    <input type="text" id="campo-busca" class="form-control busca-input uppercase-field" placeholder="Buscar por nome do núcleo ou chefe..." onkeyup="filtrarNucleos()">
+                </div>
+
                 <div id="lista-nucleos">
                     <p class="text-center text-muted mt-4"><i class="material-icons spin">sync</i> Lendo banco de dados...</p>
                 </div>
@@ -77,19 +110,81 @@
 
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec"; 
+        let nucleosGlobais = [];
 
-        window.onload = function() { carregarTabelaNucleos(); };
-
-        function salvarNucleo() {
+        window.onload = function() {
             const idPlanilha = localStorage.getItem('ceu_planilha_id');
-            if(!idPlanilha) return Swal.fire('Erro', 'Banco de dados não localizado.', 'error');
+            if (!idPlanilha) return document.getElementById('lista-nucleos').innerHTML = `<div class="alert alert-danger text-center">Faça login novamente.</div>`;
+            carregarTabelaNucleos(idPlanilha);
+        };
+
+        // ==========================================
+        // 1. CARREGAMENTO E BUSCA
+        // ==========================================
+        function carregarTabelaNucleos(idPlanilha) {
+            fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "listarNucleos", dados: { id_planilha: idPlanilha } }) })
+            .then(res => res.json())
+            .then(retorno => {
+                if(retorno.status === "sucesso") {
+                    nucleosGlobais = retorno.nucleos;
+                    desenharNucleos(nucleosGlobais);
+                }
+            });
+        }
+
+        function filtrarNucleos() {
+            const termo = document.getElementById('campo-busca').value.toUpperCase();
+            const filtrados = nucleosGlobais.filter(n => 
+                String(n.nucleo).toUpperCase().includes(termo) || 
+                String(n.chefe).toUpperCase().includes(termo)
+            );
+            desenharNucleos(filtrados);
+        }
+
+        function desenharNucleos(lista) {
+            const div = document.getElementById('lista-nucleos');
+            document.getElementById('contador-nucleos').innerText = lista.length;
+
+            if(lista.length === 0) {
+                div.innerHTML = `<div class="alert alert-light text-center border">Nenhum núcleo encontrado.</div>`;
+                return;
+            }
+
+            div.innerHTML = lista.map(n => `
+                <div class="nuc-item">
+                    <div style="flex-grow: 1;">
+                        <strong class="text-primary">${n.nucleo}</strong><br>
+                        <span style="font-size:12.5px; color:#64748b; margin-top: 5px; display: inline-block;">
+                            <i class="material-icons align-middle text-primary" style="font-size:15px;">person</i> Chefe: <b>${n.chefe || 'Sem Chefe'}</b>
+                        </span><br>
+                        <span style="font-size:12px; color:#64748b;">
+                            <i class="material-icons align-middle text-secondary" style="font-size:15px;">phone</i> ${n.telefone || 'Sem telefone'}
+                        </span>
+                    </div>
+                    <div class="text-end ms-3" style="min-width: 90px;">
+                        <span class="nuc-tag bg-light text-secondary mb-2 d-inline-block px-2 py-1 border">${n.id}</span><br>
+                        <button class="acoes-btn" title="Editar" onclick="prepararEdicao('${n.id}')"><i class="material-icons">edit</i></button>
+                        <button class="acoes-btn btn-del" title="Excluir" onclick="confirmarExclusao('${n.id}')"><i class="material-icons">delete</i></button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ==========================================
+        // 2. SALVAR OU ATUALIZAR
+        // ==========================================
+        function processarFormulario() {
+            const idPlanilha = localStorage.getItem('ceu_planilha_id');
+            const modo = document.getElementById('modo_form').value; 
+            const acaoReal = (modo === "novo") ? "salvarNucleo" : "atualizarNucleo";
 
             Swal.fire({ title: 'Salvando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
 
             const pacote = {
-                acao: "salvarNucleo",
+                acao: acaoReal,
                 dados: {
                     id_planilha: idPlanilha,
+                    id_nucleo: document.getElementById('n_id').value,
                     nucleo: document.getElementById('n_nome').value,
                     chefe: document.getElementById('n_chefe').value,
                     assessor1: document.getElementById('n_ass1').value,
@@ -108,35 +203,78 @@
             .then(res => res.json())
             .then(retorno => {
                 if(retorno.status === "sucesso") {
-                    Swal.fire('Perfeito!', retorno.mensagem, 'success');
-                    document.getElementById('formNucleo').reset();
-                    carregarTabelaNucleos();
+                    Swal.fire('Sucesso!', retorno.mensagem, 'success');
+                    cancelarEdicao(); 
+                    carregarTabelaNucleos(idPlanilha); 
                 } else Swal.fire('Erro', retorno.mensagem, 'error');
             });
         }
 
-        function carregarTabelaNucleos() {
+        // ==========================================
+        // 3. PREPARAR EDIÇÃO E EXCLUSÃO
+        // ==========================================
+        function prepararEdicao(idNucleo) {
             const idPlanilha = localStorage.getItem('ceu_planilha_id');
-            fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "listarNucleos", dados: { id_planilha: idPlanilha } }) })
+            Swal.fire({ title: 'Carregando dados...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+
+            fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "buscarNucleoPorId", dados: { id_planilha: idPlanilha, id_nucleo: idNucleo } }) })
             .then(res => res.json())
             .then(retorno => {
-                const div = document.getElementById('lista-nucleos');
-                if(retorno.status === "sucesso" && retorno.nucleos.length > 0) {
-                    div.innerHTML = retorno.nucleos.map(n => `
-                        <div class="nuc-item">
-                            <div>
-                                <strong class="text-primary">${n.nucleo}</strong><br>
-                                <span style="font-size:12px; color:#64748b;">
-                                    <i class="material-icons align-middle" style="font-size:14px;">person</i> Chefe: ${n.chefe}
-                                </span>
-                            </div>
-                            <div class="text-end">
-                                <span class="nuc-tag"><i class="material-icons align-middle" style="font-size:12px;">phone</i> ${n.telefone || 'Sem telefone'}</span>
-                            </div>
-                        </div>
-                    `).join('');
-                } else {
-                    div.innerHTML = `<div class="alert alert-light text-center border">Ainda não há Núcleos cadastrados.</div>`;
+                if(retorno.status === "sucesso") {
+                    const n = retorno.nucleo;
+                    document.getElementById('n_id').value = n.id;
+                    document.getElementById('n_nome').value = n.nucleo;
+                    document.getElementById('n_chefe').value = n.chefe;
+                    document.getElementById('n_ass1').value = n.assessor1;
+                    document.getElementById('n_ass2').value = n.assessor2;
+                    document.getElementById('n_ass3').value = n.assessor3;
+                    document.getElementById('n_tel').value = n.telefone;
+                    document.getElementById('n_email1').value = n.email1;
+                    document.getElementById('n_email2').value = n.email2;
+                    document.getElementById('n_email3').value = n.email3;
+                    document.getElementById('n_cabecalho').value = n.cabecalho;
+                    document.getElementById('n_rodape').value = n.rodape;
+
+                    // Muda a "cara" do formulário
+                    document.getElementById('modo_form').value = "editar";
+                    document.getElementById('titulo-form').innerHTML = `<span class="material-icons text-warning">edit</span> Editar Núcleo`;
+                    document.getElementById('btn-submit-form').className = "btn-salvar bg-warning text-dark";
+                    document.getElementById('btn-submit-form').innerHTML = `<span class="material-icons align-middle" style="font-size: 18px;">update</span> SALVAR ALTERAÇÃO`;
+                    document.getElementById('btn-cancelar').style.display = "block";
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    
+                    Swal.close();
+                } else Swal.fire('Erro', retorno.mensagem, 'error');
+            });
+        }
+
+        function cancelarEdicao() {
+            document.getElementById('formNucleo').reset();
+            document.getElementById('n_id').value = "";
+            document.getElementById('modo_form').value = "novo";
+            document.getElementById('titulo-form').innerHTML = `<span class="material-icons text-primary">domain</span> Cadastrar Núcleo`;
+            document.getElementById('btn-submit-form').className = "btn-salvar";
+            document.getElementById('btn-submit-form').innerHTML = `<span class="material-icons align-middle" style="font-size: 18px;">save</span> GRAVAR NÚCLEO`;
+            document.getElementById('btn-cancelar').style.display = "none";
+        }
+
+        function confirmarExclusao(idNucleo) {
+            Swal.fire({
+                title: 'Atenção!', text: `Tem certeza que deseja apagar o núcleo ${idNucleo}?`,
+                icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc3545', cancelButtonColor: '#6c757d', confirmButtonText: 'Sim, apagar!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const idPlanilha = localStorage.getItem('ceu_planilha_id');
+                    Swal.fire({ title: 'Apagando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+                    
+                    fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "excluirNucleo", dados: { id_planilha: idPlanilha, id_nucleo: idNucleo } }) })
+                    .then(res => res.json())
+                    .then(retorno => {
+                        if(retorno.status === "sucesso") {
+                            Swal.fire('Excluído!', retorno.mensagem, 'success');
+                            carregarTabelaNucleos(idPlanilha);
+                        } else Swal.fire('Erro', retorno.mensagem, 'error');
+                    });
                 }
             });
         }

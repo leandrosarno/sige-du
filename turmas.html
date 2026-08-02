@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Turmas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body { background-color: #f4f7f6; font-family: 'Segoe UI', sans-serif; padding: 20px; }
+        .card-custom { background: #ffffff; border-radius: 16px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04); border: none; padding: 25px; margin-bottom: 25px; }
+        .titulo-tela { color: #2c3e50; font-weight: 800; font-size: 24px; display: flex; align-items: center; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #edf2f7; padding-bottom: 15px; }
+        .form-label { font-weight: 600; color: #4a5568; font-size: 13px; margin-bottom: 6px; }
+        .form-control, .form-select { border-radius: 8px; padding: 10px 15px; font-size: 14px; background-color: #f8fafc; border: 1px solid #cbd5e1; }
+        .form-control:focus, .form-select:focus { border-color: #0d6efd; box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.1); background-color: #ffffff; }
+        .btn-salvar { background: #0d6efd; color: white; border: none; border-radius: 8px; padding: 10px 24px; font-weight: 700; width: 100%; margin-top: 15px; transition: 0.3s; }
+        .btn-salvar:hover { background: #0b5ed7; transform: translateY(-2px); }
+        
+        /* Força a digitação visual em maiúsculas */
+        input.uppercase-field { text-transform: uppercase; }
+        
+        .turma-item { padding: 15px; border: 1px solid #edf2f7; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; background: #fff; transition: 0.2s; }
+        .turma-item:hover { border-color: #b6d4fe; background: #f8fafc; }
+        .turma-tag { font-size: 11px; padding: 4px 8px; border-radius: 4px; font-weight: bold; background: #e2e8f0; color: #475569; }
+    </style>
+</head>
+<body>
+
+    <div class="row">
+        <div class="col-md-5">
+            <div class="card-custom">
+                <h3 class="titulo-tela"><span class="material-icons text-primary">school</span> Cadastrar Turma</h3>
+                
+                <form id="formTurma" onsubmit="event.preventDefault(); salvarTurma();">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label class="form-label">ID da Turma (Cód. EOL) *</label>
+                            <input type="number" class="form-control" id="t_id" required placeholder="Apenas números">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Sufixo da Turma *</label>
+                            <input type="text" class="form-control uppercase-field" id="t_sufixo" required placeholder="Ex: 01, A, INICIANTE">
+                        </div>
+                        
+                        <div class="col-12">
+                            <label class="form-label">Modalidade *</label>
+                            <select class="form-select" id="t_modalidade" required>
+                                <option value="">Carregando...</option>
+                            </select>
+                        </div>
+
+                        <div class="col-6">
+                            <label class="form-label">Núcleo *</label>
+                            <select class="form-select" id="t_nucleo" required>
+                                <option value="">Carregando...</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Professor *</label>
+                            <select class="form-select" id="t_professor" required>
+                                <option value="">Carregando...</option>
+                            </select>
+                        </div>
+
+                        <div class="col-6">
+                            <label class="form-label">Espaço/Sala *</label>
+                            <select class="form-select" id="t_espaco" required>
+                                <option value="">Carregando...</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Quantidade de Vagas *</label>
+                            <input type="number" class="form-control" id="t_vagas" required placeholder="Ex: 30">
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">Faixa Etária</label>
+                            <input type="text" class="form-control uppercase-field" id="t_faixa" placeholder="Ex: 10 A 15 ANOS">
+                        </div>
+
+                        <div class="col-6">
+                            <label class="form-label">Dias (X Semana)</label>
+                            <input type="text" class="form-control uppercase-field" id="t_xsemana" placeholder="Ex: 2X, 3X, SAB">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Horário das Aulas</label>
+                            <input type="text" class="form-control uppercase-field" id="t_horario" placeholder="Ex: 14:00 AS 15:00">
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn-salvar"><span class="material-icons align-middle" style="font-size: 18px;">save</span> GRAVAR NOVA TURMA</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-md-7">
+            <div class="card-custom">
+                <h3 class="titulo-tela"><span class="material-icons text-success">list_alt</span> Turmas Cadastradas</h3>
+                <div id="lista-turmas">
+                    <p class="text-center text-muted mt-4"><i class="material-icons spin">sync</i> Lendo banco de dados...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec"; 
+
+        window.onload = function() {
+            carregarDependencias();
+            carregarTabelaTurmas();
+        };
+
+        // Carrega Comboboxes
+        function carregarDependencias() {
+            const idPlanilha = localStorage.getItem('ceu_planilha_id');
+            fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "buscarDependenciasTurma", dados: { id_planilha: idPlanilha } }) })
+            .then(res => res.json())
+            .then(retorno => {
+                if(retorno.status === "sucesso") {
+                    preencherCombo('t_modalidade', retorno.modalidades, "Digite a modalidade");
+                    preencherCombo('t_nucleo', retorno.nucleos, "Digite o núcleo");
+                    preencherCombo('t_professor', retorno.professores, "Digite o professor");
+                    preencherCombo('t_espaco', retorno.espacos, "Digite o espaço");
+                }
+            });
+        }
+
+        // Transforma o select em Input de Texto caso não existam cadastros prévios na aba
+        function preencherCombo(idElemento, lista, placeholderSeVazio) {
+            const combo = document.getElementById(idElemento);
+            if (lista.length === 0) {
+                const input = document.createElement('input');
+                input.type = 'text'; input.className = 'form-control uppercase-field'; input.id = idElemento; input.placeholder = placeholderSeVazio; input.required = true;
+                combo.parentNode.replaceChild(input, combo);
+            } else {
+                combo.innerHTML = '<option value="">Selecione...</option>';
+                lista.forEach(item => { combo.innerHTML += `<option value="${item}">${item}</option>`; });
+            }
+        }
+
+        function salvarTurma() {
+            const idPlanilha = localStorage.getItem('ceu_planilha_id');
+            if(!idPlanilha) return Swal.fire('Erro', 'Banco de dados não localizado.', 'error');
+
+            Swal.fire({ title: 'Salvando Turma...', text: 'Organizando banco de dados.', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+
+            const pacote = {
+                acao: "salvarTurma",
+                dados: {
+                    id_planilha: idPlanilha,
+                    id_turma: document.getElementById('t_id').value,
+                    sufixo: document.getElementById('t_sufixo').value,
+                    modalidade: document.getElementById('t_modalidade').value,
+                    nucleo: document.getElementById('t_nucleo').value,
+                    professor: document.getElementById('t_professor').value,
+                    espaco: document.getElementById('t_espaco').value,
+                    vagas: document.getElementById('t_vagas').value,
+                    faixa_etaria: document.getElementById('t_faixa').value,
+                    x_semana: document.getElementById('t_xsemana').value,
+                    horario: document.getElementById('t_horario').value
+                }
+            };
+
+            fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) })
+            .then(res => res.json())
+            .then(retorno => {
+                if(retorno.status === "sucesso") {
+                    Swal.fire('Perfeito!', retorno.mensagem, 'success');
+                    document.getElementById('formTurma').reset();
+                    carregarTabelaTurmas();
+                } else Swal.fire('Erro', retorno.mensagem, 'error');
+            });
+        }
+
+        function carregarTabelaTurmas() {
+            const idPlanilha = localStorage.getItem('ceu_planilha_id');
+            fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "listarTurmas", dados: { id_planilha: idPlanilha } }) })
+            .then(res => res.json())
+            .then(retorno => {
+                const div = document.getElementById('lista-turmas');
+                if(retorno.status === "sucesso" && retorno.turmas.length > 0) {
+                    div.innerHTML = retorno.turmas.map(t => `
+                        <div class="turma-item">
+                            <div>
+                                <strong class="text-primary">${t.modalidade}</strong> <span class="turma-tag">${t.id}</span><br>
+                                <span style="font-size:12px; color:#64748b;">
+                                    <i class="material-icons align-middle" style="font-size:14px;">person</i> ${t.professor} | 
+                                    <i class="material-icons align-middle" style="font-size:14px;">schedule</i> ${t.horario}
+                                </span>
+                            </div>
+                            <div class="text-end">
+                                <span class="turma-tag bg-success text-white">${t.vagas} Vagas</span>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    div.innerHTML = `<div class="alert alert-light text-center border">Ainda não há turmas cadastradas neste CEU.</div>`;
+                }
+            });
+        }
+    </script>
+</body>
+</html>

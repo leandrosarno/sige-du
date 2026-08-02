@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Núcleos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body { background-color: #f4f7f6; font-family: 'Segoe UI', sans-serif; padding: 20px; }
+        .card-custom { background: #ffffff; border-radius: 16px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04); border: none; padding: 25px; margin-bottom: 25px; }
+        .titulo-tela { color: #2c3e50; font-weight: 800; font-size: 24px; display: flex; align-items: center; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #edf2f7; padding-bottom: 15px; }
+        .form-label { font-weight: 600; color: #4a5568; font-size: 13px; margin-bottom: 6px; }
+        .form-control { border-radius: 8px; padding: 10px 15px; font-size: 14px; background-color: #f8fafc; border: 1px solid #cbd5e1; }
+        .form-control:focus { border-color: #0d6efd; box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.1); background-color: #ffffff; }
+        .btn-salvar { background: #0d6efd; color: white; border: none; border-radius: 8px; padding: 10px 24px; font-weight: 700; width: 100%; margin-top: 15px; transition: 0.3s; }
+        .btn-salvar:hover { background: #0b5ed7; transform: translateY(-2px); }
+        input.uppercase-field { text-transform: uppercase; }
+        
+        .nuc-item { padding: 15px; border: 1px solid #edf2f7; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; background: #fff; transition: 0.2s; }
+        .nuc-item:hover { border-color: #b6d4fe; background: #f8fafc; }
+        .nuc-tag { font-size: 11px; padding: 4px 8px; border-radius: 4px; font-weight: bold; background: #e2e8f0; color: #475569; }
+    </style>
+</head>
+<body>
+
+    <div class="row">
+        <div class="col-md-5">
+            <div class="card-custom">
+                <h3 class="titulo-tela"><span class="material-icons text-primary">domain</span> Cadastrar Núcleo</h3>
+                
+                <form id="formNucleo" onsubmit="event.preventDefault(); salvarNucleo();">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">Nome do Núcleo *</label>
+                            <input type="text" class="form-control uppercase-field" id="n_nome" required placeholder="Ex: NÚCLEO DE ESPORTES">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Nome do Chefe *</label>
+                            <input type="text" class="form-control uppercase-field" id="n_chefe" required>
+                        </div>
+                        
+                        <div class="col-4"><label class="form-label">Assessor 1</label><input type="text" class="form-control uppercase-field" id="n_ass1"></div>
+                        <div class="col-4"><label class="form-label">Assessor 2</label><input type="text" class="form-control uppercase-field" id="n_ass2"></div>
+                        <div class="col-4"><label class="form-label">Assessor 3</label><input type="text" class="form-control uppercase-field" id="n_ass3"></div>
+
+                        <div class="col-12"><label class="form-label">Telefone Principal</label><input type="text" class="form-control uppercase-field" id="n_tel"></div>
+                        <div class="col-4"><label class="form-label">E-mail 1</label><input type="text" class="form-control uppercase-field" id="n_email1"></div>
+                        <div class="col-4"><label class="form-label">E-mail 2</label><input type="text" class="form-control uppercase-field" id="n_email2"></div>
+                        <div class="col-4"><label class="form-label">E-mail 3</label><input type="text" class="form-control uppercase-field" id="n_email3"></div>
+
+                        <div class="col-12">
+                            <label class="form-label">Cabeçalho para Relatórios</label>
+                            <textarea class="form-control uppercase-field" id="n_cabecalho" rows="2" placeholder="Texto impresso no topo das listas"></textarea>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Rodapé para Relatórios</label>
+                            <textarea class="form-control uppercase-field" id="n_rodape" rows="2" placeholder="Texto impresso no fim das listas"></textarea>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn-salvar"><span class="material-icons align-middle" style="font-size: 18px;">save</span> GRAVAR NÚCLEO</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-md-7">
+            <div class="card-custom">
+                <h3 class="titulo-tela"><span class="material-icons text-success">list_alt</span> Núcleos Cadastrados</h3>
+                <div id="lista-nucleos">
+                    <p class="text-center text-muted mt-4"><i class="material-icons spin">sync</i> Lendo banco de dados...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec"; 
+
+        window.onload = function() { carregarTabelaNucleos(); };
+
+        function salvarNucleo() {
+            const idPlanilha = localStorage.getItem('ceu_planilha_id');
+            if(!idPlanilha) return Swal.fire('Erro', 'Banco de dados não localizado.', 'error');
+
+            Swal.fire({ title: 'Salvando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+
+            const pacote = {
+                acao: "salvarNucleo",
+                dados: {
+                    id_planilha: idPlanilha,
+                    nucleo: document.getElementById('n_nome').value,
+                    chefe: document.getElementById('n_chefe').value,
+                    assessor1: document.getElementById('n_ass1').value,
+                    assessor2: document.getElementById('n_ass2').value,
+                    assessor3: document.getElementById('n_ass3').value,
+                    telefone: document.getElementById('n_tel').value,
+                    email1: document.getElementById('n_email1').value,
+                    email2: document.getElementById('n_email2').value,
+                    email3: document.getElementById('n_email3').value,
+                    cabecalho: document.getElementById('n_cabecalho').value,
+                    rodape: document.getElementById('n_rodape').value
+                }
+            };
+
+            fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) })
+            .then(res => res.json())
+            .then(retorno => {
+                if(retorno.status === "sucesso") {
+                    Swal.fire('Perfeito!', retorno.mensagem, 'success');
+                    document.getElementById('formNucleo').reset();
+                    carregarTabelaNucleos();
+                } else Swal.fire('Erro', retorno.mensagem, 'error');
+            });
+        }
+
+        function carregarTabelaNucleos() {
+            const idPlanilha = localStorage.getItem('ceu_planilha_id');
+            fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "listarNucleos", dados: { id_planilha: idPlanilha } }) })
+            .then(res => res.json())
+            .then(retorno => {
+                const div = document.getElementById('lista-nucleos');
+                if(retorno.status === "sucesso" && retorno.nucleos.length > 0) {
+                    div.innerHTML = retorno.nucleos.map(n => `
+                        <div class="nuc-item">
+                            <div>
+                                <strong class="text-primary">${n.nucleo}</strong><br>
+                                <span style="font-size:12px; color:#64748b;">
+                                    <i class="material-icons align-middle" style="font-size:14px;">person</i> Chefe: ${n.chefe}
+                                </span>
+                            </div>
+                            <div class="text-end">
+                                <span class="nuc-tag"><i class="material-icons align-middle" style="font-size:12px;">phone</i> ${n.telefone || 'Sem telefone'}</span>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    div.innerHTML = `<div class="alert alert-light text-center border">Ainda não há Núcleos cadastrados.</div>`;
+                }
+            });
+        }
+    </script>
+</body>
+</html>

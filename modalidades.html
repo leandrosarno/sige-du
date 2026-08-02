@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Modalidades</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body { background-color: #f4f7f6; font-family: 'Segoe UI', sans-serif; padding: 20px; }
+        .card-custom { background: #ffffff; border-radius: 16px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04); border: none; padding: 25px; margin-bottom: 25px; }
+        .titulo-tela { color: #2c3e50; font-weight: 800; font-size: 24px; display: flex; align-items: center; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #edf2f7; padding-bottom: 15px; }
+        .form-label { font-weight: 600; color: #4a5568; font-size: 13px; margin-bottom: 6px; }
+        .form-control { border-radius: 8px; padding: 10px 15px; font-size: 14px; background-color: #f8fafc; border: 1px solid #cbd5e1; }
+        .form-control:focus { border-color: #0d6efd; box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.1); background-color: #ffffff; }
+        
+        .btn-salvar { background: #0d6efd; color: white; border: none; border-radius: 8px; padding: 10px 24px; font-weight: 700; width: 100%; margin-top: 15px; transition: 0.3s; }
+        .btn-salvar:hover { background: #0b5ed7; transform: translateY(-2px); }
+        .btn-cancelar { background: #6c757d; color: white; border: none; border-radius: 8px; padding: 10px 24px; font-weight: 700; width: 100%; margin-top: 10px; transition: 0.3s; display: none;}
+        .btn-cancelar:hover { background: #5a6268; }
+
+        input.uppercase-field { text-transform: uppercase; }
+        
+        /* Estilos da Lista e Busca */
+        .busca-container { position: relative; margin-bottom: 20px; }
+        .busca-container .material-icons { position: absolute; left: 15px; top: 12px; color: #94a3b8; }
+        .busca-input { padding-left: 45px !important; border-radius: 50px !important; background-color: #f1f5f9; border: none; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
+        
+        .mod-item { padding: 15px; border: 1px solid #edf2f7; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; background: #fff; transition: 0.2s; }
+        .mod-item:hover { border-color: #b6d4fe; background: #f8fafc; }
+        
+        .acoes-btn { background: transparent; border: none; padding: 5px; color: #64748b; transition: 0.2s; border-radius: 6px; }
+        .acoes-btn:hover { background: #e2e8f0; color: #0d6efd; }
+        .acoes-btn.btn-del:hover { background: #fee2e2; color: #dc3545; }
+    </style>
+</head>
+<body>
+
+    <div class="row">
+        <!-- FORMULÁRIO -->
+        <div class="col-md-5">
+            <div class="card-custom">
+                <h3 class="titulo-tela" id="titulo-form"><span class="material-icons text-primary">sports_soccer</span> Cadastrar Modalidade</h3>
+                
+                <input type="hidden" id="modo_form" value="novo">
+                <input type="hidden" id="m_id"> <!-- ID invisível para edição -->
+
+                <form id="formModalidade" onsubmit="event.preventDefault(); processarFormulario();">
+                    <div class="mb-3">
+                        <label class="form-label">Nome da Modalidade *</label>
+                        <input type="text" class="form-control uppercase-field" id="m_nome" required placeholder="Ex: FUTSAL SUB-11">
+                    </div>
+                    
+                    <button type="submit" class="btn-salvar" id="btn-submit-form"><span class="material-icons align-middle" style="font-size: 18px;">save</span> GRAVAR MODALIDADE</button>
+                    <button type="button" class="btn-cancelar" id="btn-cancelar" onclick="cancelarEdicao()">CANCELAR EDIÇÃO</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- LISTAGEM -->
+        <div class="col-md-7">
+            <div class="card-custom">
+                <h3 class="titulo-tela">
+                    <span class="material-icons text-success">list_alt</span> Modalidades Cadastradas
+                    <span id="contador-mod" class="badge bg-success ms-auto" style="font-size: 14px;">0</span>
+                </h3>
+
+                <!-- MOTOR DE BUSCA -->
+                <div class="busca-container">
+                    <i class="material-icons">search</i>
+                    <input type="text" id="campo-busca" class="form-control busca-input uppercase-field" placeholder="Buscar por modalidade..." onkeyup="filtrarMods()">
+                </div>
+
+                <div id="lista-mod">
+                    <p class="text-center text-muted mt-4"><i class="material-icons spin">sync</i> Lendo banco de dados...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec"; 
+        let modsGlobais = [];
+
+        window.onload = function() {
+            const idPlanilha = localStorage.getItem('ceu_planilha_id');
+            if (!idPlanilha) return document.getElementById('lista-mod').innerHTML = `<div class="alert alert-danger text-center">Faça login novamente.</div>`;
+            carregarTabelaMods(idPlanilha);
+        };
+
+        function carregarTabelaMods(idPlanilha) {
+            fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "listarModalidades", dados: { id_planilha: idPlanilha } }) })
+            .then(res => res.json())
+            .then(retorno => {
+                if(retorno.status === "sucesso") {
+                    modsGlobais = retorno.modalidades;
+                    desenharMods(modsGlobais);
+                }
+            });
+        }
+
+        function filtrarMods() {
+            const termo = document.getElementById('campo-busca').value.toUpperCase();
+            const filtrados = modsGlobais.filter(m => String(m.nome).toUpperCase().includes(termo));
+            desenharMods(filtrados);
+        }
+
+        function desenharMods(lista) {
+            const div = document.getElementById('lista-mod');
+            document.getElementById('contador-mod').innerText = lista.length;
+
+            if(lista.length === 0) {
+                div.innerHTML = `<div class="alert alert-light text-center border">Nenhuma modalidade encontrada.</div>`;
+                return;
+            }
+
+            div.innerHTML = lista.map(m => `
+                <div class="mod-item">
+                    <div style="flex-grow: 1;">
+                        <strong class="text-primary" style="font-size: 16px;">${m.nome}</strong>
+                    </div>
+                    <div class="text-end ms-3" style="min-width: 90px;">
+                        <button class="acoes-btn" title="Editar" onclick="prepararEdicao('${m.id}')"><i class="material-icons">edit</i></button>
+                        <button class="acoes-btn btn-del" title="Excluir" onclick="confirmarExclusao('${m.id}')"><i class="material-icons">delete</i></button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function processarFormulario() {
+            const idPlanilha = localStorage.getItem('ceu_planilha_id');
+            const modo = document.getElementById('modo_form').value; 
+            const acaoReal = (modo === "novo") ? "salvarModalidade" : "atualizarModalidade";
+
+            Swal.fire({ title: 'Salvando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+
+            const pacote = {
+                acao: acaoReal,
+                dados: {
+                    id_planilha: idPlanilha,
+                    id_mod: document.getElementById('m_id').value,
+                    modalidade: document.getElementById('m_nome').value
+                }
+            };
+
+            fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) })
+            .then(res => res.json())
+            .then(retorno => {
+                if(retorno.status === "sucesso") {
+                    Swal.fire('Sucesso!', retorno.mensagem, 'success');
+                    cancelarEdicao(); 
+                    carregarTabelaMods(idPlanilha); 
+                } else Swal.fire('Erro', retorno.mensagem, 'error');
+            });
+        }
+
+        function prepararEdicao(idMod) {
+            const idPlanilha = localStorage.getItem('ceu_planilha_id');
+            Swal.fire({ title: 'Carregando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+
+            fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "buscarModalidadePorId", dados: { id_planilha: idPlanilha, id_mod: idMod } }) })
+            .then(res => res.json())
+            .then(retorno => {
+                if(retorno.status === "sucesso") {
+                    const m = retorno.modalidade;
+                    document.getElementById('m_id').value = m.id;
+                    document.getElementById('m_nome').value = m.nome;
+
+                    document.getElementById('modo_form').value = "editar";
+                    document.getElementById('titulo-form').innerHTML = `<span class="material-icons text-warning">edit</span> Editar Modalidade`;
+                    document.getElementById('btn-submit-form').className = "btn-salvar bg-warning text-dark";
+                    document.getElementById('btn-submit-form').innerHTML = `<span class="material-icons align-middle" style="font-size: 18px;">update</span> SALVAR ALTERAÇÃO`;
+                    document.getElementById('btn-cancelar').style.display = "block";
+                    
+                    Swal.close();
+                } else Swal.fire('Erro', retorno.mensagem, 'error');
+            });
+        }
+
+        function cancelarEdicao() {
+            document.getElementById('formModalidade').reset();
+            document.getElementById('m_id').value = "";
+            document.getElementById('modo_form').value = "novo";
+            document.getElementById('titulo-form').innerHTML = `<span class="material-icons text-primary">sports_soccer</span> Cadastrar Modalidade`;
+            document.getElementById('btn-submit-form').className = "btn-salvar";
+            document.getElementById('btn-submit-form').innerHTML = `<span class="material-icons align-middle" style="font-size: 18px;">save</span> GRAVAR MODALIDADE`;
+            document.getElementById('btn-cancelar').style.display = "none";
+        }
+
+        function confirmarExclusao(idMod) {
+            Swal.fire({
+                title: 'Atenção!', text: 'Deseja apagar esta modalidade?',
+                icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc3545', cancelButtonColor: '#6c757d', confirmButtonText: 'Sim, apagar!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const idPlanilha = localStorage.getItem('ceu_planilha_id');
+                    Swal.fire({ title: 'Apagando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+                    
+                    fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "excluirModalidade", dados: { id_planilha: idPlanilha, id_mod: idMod } }) })
+                    .then(res => res.json())
+                    .then(retorno => {
+                        if(retorno.status === "sucesso") {
+                            Swal.fire('Excluída!', retorno.mensagem, 'success');
+                            carregarTabelaMods(idPlanilha);
+                        } else Swal.fire('Erro', retorno.mensagem, 'error');
+                    });
+                }
+            });
+        }
+    </script>
+</body>
+</html>

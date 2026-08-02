@@ -52,6 +52,10 @@
             color: white;
         }
 
+        /* ESTILOS ESPECÍFICOS DO SUBMENU (A GAVETA) */
+        .sidebar .submenu { background: #233140; }
+        .sidebar .submenu a { padding-left: 50px; padding-top: 12px; padding-bottom: 12px; font-size: 14.5px; }
+        
         .main-content {
             flex-grow: 1;
             display: flex;
@@ -87,18 +91,31 @@
             <img id="dash-img-logo" src="" alt="Logo" style="display: none; width: 100%; max-height: 120px; object-fit: contain; margin: 0 auto;">
         </div>
 
+        <!-- MENUS PRINCIPAIS OPERACIONAIS -->
         <a href="#" class="ativo" onclick="abrirFormFilho('inicio.html', this)">
             <span class="material-icons">home</span> Início
         </a>
         <a href="#" onclick="abrirFormFilho('alunos.html', this)">
             <span class="material-icons">people</span> Alunos
         </a>
-        <a href="#" onclick="abrirFormFilho('professores.html', this)">
-            <span class="material-icons">school</span> Professores
-        </a>
         <a href="#" onclick="abrirFormFilho('turmas.html', this)">
             <span class="material-icons">class</span> Turmas
         </a>
+
+        <!-- GAVETA (SUBMENU) DE CADASTROS BASE -->
+        <a href="#submenuCadastros" data-bs-toggle="collapse" style="justify-content: space-between;" onclick="removerAtivo(this)">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <span class="material-icons">settings</span> Cadastros Base
+            </div>
+            <span class="material-icons" style="font-size: 18px;">expand_more</span>
+        </a>
+        <div class="collapse submenu" id="submenuCadastros">
+            <a href="#" onclick="abrirFormFilho('nucleos.html', this)"><span class="material-icons" style="font-size: 18px;">domain</span> Núcleos</a>
+            <a href="#" onclick="abrirFormFilho('espacos.html', this)"><span class="material-icons" style="font-size: 18px;">place</span> Espaços</a>
+            <a href="#" onclick="abrirFormFilho('professores.html', this)"><span class="material-icons" style="font-size: 18px;">school</span> Professores</a>
+            <a href="#" onclick="abrirFormFilho('tipo_responsavel.html', this)"><span class="material-icons" style="font-size: 18px;">badge</span> Tipo Resp.</a>
+            <a href="#" onclick="abrirFormFilho('modalidades.html', this)"><span class="material-icons" style="font-size: 18px;">sports_soccer</span> Modalidades</a>
+        </div>
 
         <div style="margin-top: auto;"></div>
         <a href="#" onclick="fazerLogout()" style="background: #c0392b;">
@@ -138,7 +155,12 @@
             elementoClicado.classList.add('ativo');
         }
 
-        const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec"; // 🚨 O SEU LINK FOI MANTIDO AQUI!
+        // Evita que o botão que abre a gaveta fique "marcado" de azul
+        function removerAtivo(elemento) {
+            elemento.classList.remove('ativo');
+        }
+
+        const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec"; 
 
         window.onload = function() {
             try {

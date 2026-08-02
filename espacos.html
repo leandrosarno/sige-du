@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Espaços</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body { background-color: #f4f7f6; font-family: 'Segoe UI', sans-serif; padding: 20px; }
+        .card-custom { background: #ffffff; border-radius: 16px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04); border: none; padding: 25px; margin-bottom: 25px; }
+        .titulo-tela { color: #2c3e50; font-weight: 800; font-size: 24px; display: flex; align-items: center; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #edf2f7; padding-bottom: 15px; }
+        .form-label { font-weight: 600; color: #4a5568; font-size: 13px; margin-bottom: 6px; }
+        .form-control { border-radius: 8px; padding: 10px 15px; font-size: 14px; background-color: #f8fafc; border: 1px solid #cbd5e1; }
+        .form-control:focus { border-color: #0d6efd; box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.1); background-color: #ffffff; }
+        
+        .btn-salvar { background: #0d6efd; color: white; border: none; border-radius: 8px; padding: 10px 24px; font-weight: 700; width: 100%; margin-top: 15px; transition: 0.3s; }
+        .btn-salvar:hover { background: #0b5ed7; transform: translateY(-2px); }
+        .btn-cancelar { background: #6c757d; color: white; border: none; border-radius: 8px; padding: 10px 24px; font-weight: 700; width: 100%; margin-top: 10px; transition: 0.3s; display: none;}
+        .btn-cancelar:hover { background: #5a6268; }
+
+        input.uppercase-field { text-transform: uppercase; }
+        
+        /* Estilos da Lista e Busca */
+        .busca-container { position: relative; margin-bottom: 20px; }
+        .busca-container .material-icons { position: absolute; left: 15px; top: 12px; color: #94a3b8; }
+        .busca-input { padding-left: 45px !important; border-radius: 50px !important; background-color: #f1f5f9; border: none; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
+        
+        .espaco-item { padding: 15px; border: 1px solid #edf2f7; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; background: #fff; transition: 0.2s; }
+        .espaco-item:hover { border-color: #b6d4fe; background: #f8fafc; }
+        
+        .acoes-btn { background: transparent; border: none; padding: 5px; color: #64748b; transition: 0.2s; border-radius: 6px; }
+        .acoes-btn:hover { background: #e2e8f0; color: #0d6efd; }
+        .acoes-btn.btn-del:hover { background: #fee2e2; color: #dc3545; }
+    </style>
+</head>
+<body>
+
+    <div class="row">
+        <!-- FORMULÁRIO -->
+        <div class="col-md-5">
+            <div class="card-custom">
+                <h3 class="titulo-tela" id="titulo-form"><span class="material-icons text-primary">place</span> Cadastrar Espaço</h3>
+                
+                <input type="hidden" id="modo_form" value="novo">
+                <input type="hidden" id="e_id"> <!-- ID invisível para edição -->
+
+                <form id="formEspaco" onsubmit="event.preventDefault(); processarFormulario();">
+                    <div class="mb-3">
+                        <label class="form-label">Nome do Espaço / Sala *</label>
+                        <input type="text" class="form-control uppercase-field" id="e_nome" required placeholder="Ex: QUADRA POLIESPORTIVA 1">
+                    </div>
+                    
+                    <button type="submit" class="btn-salvar" id="btn-submit-form"><span class="material-icons align-middle" style="font-size: 18px;">save</span> GRAVAR ESPAÇO</button>
+                    <button type="button" class="btn-cancelar" id="btn-cancelar" onclick="cancelarEdicao()">CANCELAR EDIÇÃO</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- LISTAGEM -->
+        <div class="col-md-7">
+            <div class="card-custom">
+                <h3 class="titulo-tela">
+                    <span class="material-icons text-success">list_alt</span> Espaços Cadastrados
+                    <span id="contador-espacos" class="badge bg-success ms-auto" style="font-size: 14px;">0</span>
+                </h3>
+
+                <!-- MOTOR DE BUSCA -->
+                <div class="busca-container">
+                    <i class="material-icons">search</i>
+                    <input type="text" id="campo-busca" class="form-control busca-input uppercase-field" placeholder="Buscar por nome do espaço..." onkeyup="filtrarEspacos()">
+                </div>
+
+                <div id="lista-espacos">
+                    <p class="text-center text-muted mt-4"><i class="material-icons spin">sync</i> Lendo banco de dados...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec"; 
+        let espacosGlobais = [];
+
+        window.onload = function() {
+            const idPlanilha = localStorage.getItem('ceu_planilha_id');
+            if (!idPlanilha) return document.getElementById('lista-espacos').innerHTML = `<div class="alert alert-danger text-center">Faça login novamente.</div>`;
+            carregarTabelaEspacos(idPlanilha);
+        };
+
+        function carregarTabelaEspacos(idPlanilha) {
+            fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "listarEspacos", dados: { id_planilha: idPlanilha } }) })
+            .then(res => res.json())
+            .then(retorno => {
+                if(retorno.status === "sucesso") {
+                    espacosGlobais = retorno.espacos;
+                    desenharEspacos(espacosGlobais);
+                }
+            });
+        }
+
+        function filtrarEspacos() {
+            const termo = document.getElementById('campo-busca').value.toUpperCase();
+            const filtrados = espacosGlobais.filter(e => String(e.nome).toUpperCase().includes(termo));
+            desenharEspacos(filtrados);
+        }
+
+        function desenharEspacos(lista) {
+            const div = document.getElementById('lista-espacos');
+            document.getElementById('contador-espacos').innerText = lista.length;
+
+            if(lista.length === 0) {
+                div.innerHTML = `<div class="alert alert-light text-center border">Nenhum espaço encontrado.</div>`;
+                return;
+            }
+
+            div.innerHTML = lista.map(e => `
+                <div class="espaco-item">
+                    <div style="flex-grow: 1;">
+                        <strong class="text-primary" style="font-size: 16px;">${e.nome}</strong>
+                    </div>
+                    <div class="text-end ms-3" style="min-width: 90px;">
+                        <button class="acoes-btn" title="Editar" onclick="prepararEdicao('${e.id}')"><i class="material-icons">edit</i></button>
+                        <button class="acoes-btn btn-del" title="Excluir" onclick="confirmarExclusao('${e.id}')"><i class="material-icons">delete</i></button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function processarFormulario() {
+            const idPlanilha = localStorage.getItem('ceu_planilha_id');
+            const modo = document.getElementById('modo_form').value; 
+            const acaoReal = (modo === "novo") ? "salvarEspaco" : "atualizarEspaco";
+
+            Swal.fire({ title: 'Salvando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+
+            const pacote = {
+                acao: acaoReal,
+                dados: {
+                    id_planilha: idPlanilha,
+                    id_espaco: document.getElementById('e_id').value,
+                    espaco: document.getElementById('e_nome').value
+                }
+            };
+
+            fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) })
+            .then(res => res.json())
+            .then(retorno => {
+                if(retorno.status === "sucesso") {
+                    Swal.fire('Sucesso!', retorno.mensagem, 'success');
+                    cancelarEdicao(); 
+                    carregarTabelaEspacos(idPlanilha); 
+                } else Swal.fire('Erro', retorno.mensagem, 'error');
+            });
+        }
+
+        function prepararEdicao(idEspaco) {
+            const idPlanilha = localStorage.getItem('ceu_planilha_id');
+            Swal.fire({ title: 'Carregando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+
+            fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "buscarEspacoPorId", dados: { id_planilha: idPlanilha, id_espaco: idEspaco } }) })
+            .then(res => res.json())
+            .then(retorno => {
+                if(retorno.status === "sucesso") {
+                    const e = retorno.espaco;
+                    document.getElementById('e_id').value = e.id;
+                    document.getElementById('e_nome').value = e.nome;
+
+                    document.getElementById('modo_form').value = "editar";
+                    document.getElementById('titulo-form').innerHTML = `<span class="material-icons text-warning">edit</span> Editar Espaço`;
+                    document.getElementById('btn-submit-form').className = "btn-salvar bg-warning text-dark";
+                    document.getElementById('btn-submit-form').innerHTML = `<span class="material-icons align-middle" style="font-size: 18px;">update</span> SALVAR ALTERAÇÃO`;
+                    document.getElementById('btn-cancelar').style.display = "block";
+                    
+                    Swal.close();
+                } else Swal.fire('Erro', retorno.mensagem, 'error');
+            });
+        }
+
+        function cancelarEdicao() {
+            document.getElementById('formEspaco').reset();
+            document.getElementById('e_id').value = "";
+            document.getElementById('modo_form').value = "novo";
+            document.getElementById('titulo-form').innerHTML = `<span class="material-icons text-primary">place</span> Cadastrar Espaço`;
+            document.getElementById('btn-submit-form').className = "btn-salvar";
+            document.getElementById('btn-submit-form').innerHTML = `<span class="material-icons align-middle" style="font-size: 18px;">save</span> GRAVAR ESPAÇO`;
+            document.getElementById('btn-cancelar').style.display = "none";
+        }
+
+        function confirmarExclusao(idEspaco) {
+            Swal.fire({
+                title: 'Atenção!', text: 'Deseja apagar este espaço?',
+                icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc3545', cancelButtonColor: '#6c757d', confirmButtonText: 'Sim, apagar!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const idPlanilha = localStorage.getItem('ceu_planilha_id');
+                    Swal.fire({ title: 'Apagando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+                    
+                    fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "excluirEspaco", dados: { id_planilha: idPlanilha, id_espaco: idEspaco } }) })
+                    .then(res => res.json())
+                    .then(retorno => {
+                        if(retorno.status === "sucesso") {
+                            Swal.fire('Excluído!', retorno.mensagem, 'success');
+                            carregarTabelaEspacos(idPlanilha);
+                        } else Swal.fire('Erro', retorno.mensagem, 'error');
+                    });
+                }
+            });
+        }
+    </script>
+</body>
+</html>

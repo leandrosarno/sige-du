@@ -104,19 +104,28 @@
         </div>
     </div>
 
-    <script>
+<script>
         const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec"; 
 
         window.onload = function() {
-            carregarDependencias();
-            carregarTabelaTurmas();
+            // 🛡️ VERIFICA SE VOCÊ ESTÁ LOGADO ANTES DE TENTAR LER O BANCO
+            const idPlanilha = localStorage.getItem('ceu_planilha_id');
+            if (!idPlanilha) {
+                document.getElementById('lista-turmas').innerHTML = `<div class="alert alert-danger text-center"><b>Acesso Negado!</b><br>A chave do banco de dados não foi encontrada. Por favor, faça login no sistema novamente.</div>`;
+                return;
+            }
+
+            carregarDependencias(idPlanilha);
+            carregarTabelaTurmas(idPlanilha);
         };
 
         // Carrega Comboboxes
-        function carregarDependencias() {
-            const idPlanilha = localStorage.getItem('ceu_planilha_id');
+        function carregarDependencias(idPlanilha) {
             fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "buscarDependenciasTurma", dados: { id_planilha: idPlanilha } }) })
-            .then(res => res.json())
+            .then(res => {
+                if(!res.ok) throw new Error("O Google não conseguiu responder (Erro 500).");
+                return res.json();
+            })
             .then(retorno => {
                 if(retorno.status === "sucesso") {
                     preencherCombo('t_modalidade', retorno.modalidades, "Digite a modalidade");
@@ -124,13 +133,14 @@
                     preencherCombo('t_professor', retorno.professores, "Digite o professor");
                     preencherCombo('t_espaco', retorno.espacos, "Digite o espaço");
                 }
-            });
+            })
+            .catch(erro => console.error("Aviso nas dependências: " + erro));
         }
 
         // Transforma o select em Input de Texto caso não existam cadastros prévios na aba
         function preencherCombo(idElemento, lista, placeholderSeVazio) {
             const combo = document.getElementById(idElemento);
-            if (lista.length === 0) {
+            if (!lista || lista.length === 0) {
                 const input = document.createElement('input');
                 input.type = 'text'; input.className = 'form-control uppercase-field'; input.id = idElemento; input.placeholder = placeholderSeVazio; input.required = true;
                 combo.parentNode.replaceChild(input, combo);
@@ -142,7 +152,7 @@
 
         function salvarTurma() {
             const idPlanilha = localStorage.getItem('ceu_planilha_id');
-            if(!idPlanilha) return Swal.fire('Erro', 'Banco de dados não localizado.', 'error');
+            if(!idPlanilha) return Swal.fire('Erro', 'Banco de dados não localizado. Faça login novamente.', 'error');
 
             Swal.fire({ title: 'Salvando Turma...', text: 'Organizando banco de dados.', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
 
@@ -169,35 +179,48 @@
                 if(retorno.status === "sucesso") {
                     Swal.fire('Perfeito!', retorno.mensagem, 'success');
                     document.getElementById('formTurma').reset();
-                    carregarTabelaTurmas();
+                    carregarTabelaTurmas(idPlanilha);
                 } else Swal.fire('Erro', retorno.mensagem, 'error');
+            })
+            .catch(erro => {
+                Swal.fire('Erro no Servidor', 'Ocorreu uma falha na comunicação com o Google. ' + erro.message, 'error');
             });
         }
 
-        function carregarTabelaTurmas() {
-            const idPlanilha = localStorage.getItem('ceu_planilha_id');
+        function carregarTabelaTurmas(idPlanilha) {
             fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "listarTurmas", dados: { id_planilha: idPlanilha } }) })
-            .then(res => res.json())
+            .then(res => {
+                if(!res.ok) throw new Error("Erro de comunicação com o Script (Falha na rota).");
+                return res.json();
+            })
             .then(retorno => {
                 const div = document.getElementById('lista-turmas');
-                if(retorno.status === "sucesso" && retorno.turmas.length > 0) {
-                    div.innerHTML = retorno.turmas.map(t => `
-                        <div class="turma-item">
-                            <div>
-                                <strong class="text-primary">${t.modalidade}</strong> <span class="turma-tag">${t.id}</span><br>
-                                <span style="font-size:12px; color:#64748b;">
-                                    <i class="material-icons align-middle" style="font-size:14px;">person</i> ${t.professor} | 
-                                    <i class="material-icons align-middle" style="font-size:14px;">schedule</i> ${t.horario}
-                                </span>
+                
+                if(retorno.status === "sucesso") {
+                    if(retorno.turmas && retorno.turmas.length > 0) {
+                        div.innerHTML = retorno.turmas.map(t => `
+                            <div class="turma-item">
+                                <div>
+                                    <strong class="text-primary">${t.modalidade}</strong> <span class="turma-tag">${t.id}</span><br>
+                                    <span style="font-size:12px; color:#64748b;">
+                                        <i class="material-icons align-middle" style="font-size:14px;">person</i> ${t.professor || 'Sem Prof.'} | 
+                                        <i class="material-icons align-middle" style="font-size:14px;">schedule</i> ${t.horario || 'Sem Horário'}
+                                    </span>
+                                </div>
+                                <div class="text-end">
+                                    <span class="turma-tag bg-success text-white">${t.vagas} Vagas</span>
+                                </div>
                             </div>
-                            <div class="text-end">
-                                <span class="turma-tag bg-success text-white">${t.vagas} Vagas</span>
-                            </div>
-                        </div>
-                    `).join('');
+                        `).join('');
+                    } else {
+                        div.innerHTML = `<div class="alert alert-light text-center border">Ainda não há turmas cadastradas neste CEU.</div>`;
+                    }
                 } else {
-                    div.innerHTML = `<div class="alert alert-light text-center border">Ainda não há turmas cadastradas neste CEU.</div>`;
+                     div.innerHTML = `<div class="alert alert-danger text-center border">Erro no banco: ${retorno.mensagem}</div>`;
                 }
+            })
+            .catch(erro => {
+                document.getElementById('lista-turmas').innerHTML = `<div class="alert alert-danger text-center"><b>Falha no Sistema:</b><br>Verifique se você gerou a Nova Implantação no Google.<br>Detalhe: ${erro.message}</div>`;
             });
         }
     </script>

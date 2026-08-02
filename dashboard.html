@@ -205,17 +205,20 @@
                     imgAvatar.style.display = 'block';
                 }
 
-                const logoSalva = localStorage.getItem('ceu_logo_especifica');
+                // --- CÓDIGO BLINDADO PARA MOSTRAR A LOGO ---
+                // Ele tenta achar a logo do CEU, se não tiver, pega a do Sistema!
+                const logoSalva = localStorage.getItem('ceu_logo') || localStorage.getItem('ceu_logo_sistema') || localStorage.getItem('ceu_logo_especifica');
                 const tamanhoSalvo = localStorage.getItem('ceu_tamanho_logo'); 
                 const imgDash = document.getElementById('dash-img-logo');
                 const iconePadrao = document.getElementById('dash-icone-padrao');
 
-                if (logoSalva && imgDash) {
+                if (logoSalva && logoSalva !== "undefined" && logoSalva !== "null" && imgDash) {
                     if (iconePadrao) iconePadrao.style.display = 'none';
                     imgDash.src = logoSalva;
                     if (tamanhoSalvo) imgDash.style.height = tamanhoSalvo;
                     imgDash.style.display = 'block';
                 }
+                // -------------------------------------------
             } catch (erro) {
                 console.error("Erro ao carregar Dashboard:", erro);
             }

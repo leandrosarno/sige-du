@@ -185,7 +185,7 @@
             desenharProfs(filtrados);
         }
 
-        function desenharProfs(lista) {
+function desenharProfs(lista) {
             const div = document.getElementById('lista-prof');
             document.getElementById('contador-prof').innerText = lista.length;
 
@@ -211,7 +211,10 @@
                             </span>
                         </div>
                     </div>
-                    <div class="text-end" style="min-width: 90px;">
+                    <div class="text-end" style="min-width: 120px;">
+                        <!-- BOTÃO DE IMPRIMIR ADICIONADO AQUI 👇 -->
+                        <button class="acoes-btn" style="color: #6f42c1;" title="Imprimir Ficha" onclick="imprimirFichaProf('${p.id}')"><i class="material-icons">print</i></button>
+                        
                         <button class="acoes-btn" title="Editar" onclick="prepararEdicao('${p.id}')"><i class="material-icons">edit</i></button>
                         <button class="acoes-btn btn-del" title="Excluir" onclick="confirmarExclusao('${p.id}')"><i class="material-icons">delete</i></button>
                     </div>
@@ -330,6 +333,11 @@
                 }
             });
         }
+function imprimirFichaProf(idProf) {
+            // Abre uma nova aba com a tela de impressão, passando o ID do professor!
+            window.open(`ficha_professor.html?id=${idProf}`, '_blank');
+        }
+        
     </script>
 </body>
 </html>

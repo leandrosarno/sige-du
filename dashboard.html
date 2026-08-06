@@ -102,9 +102,9 @@
             <span class="material-icons">class</span> Turmas
         </a>
 
-        <a href="#" onclick="abrirFormFilho('recreio.html', this)">
-            <span class="material-icons">class</span> Recreio nas Férias
-        </a>
+            <button class="btn" id="btnRegrasRF" style="display: none;" onclick="navegarParaAba('CadastroRegrasRF')">
+              <i class="material-icons">wb_sunny</i> Regras Recreio (DRE)
+            </button>
 
 
         
@@ -229,7 +229,19 @@
                 console.error("Erro ao carregar Dashboard:", erro);
             }
         };
-
+// 🔒 VERIFICAÇÃO DE PERMISSÃO DRE (RECREIO NAS FÉRIAS)
+document.addEventListener("DOMContentLoaded", () => {
+    // Busca qual é o CEU do usuário logado
+    const ceuLogado = sessionStorage.getItem('ceu_id') || localStorage.getItem('ceu_id');
+    
+    // Se for o ID da DRE (777777), a mágica acontece: o botão aparece!
+    if (String(ceuLogado) === "777777") {
+        const botaoDRE = document.getElementById('btnRegrasRF');
+        if (botaoDRE) {
+            botaoDRE.style.display = 'flex'; // ou 'block', dependendo do seu CSS
+        }
+    }
+});
         // ==========================================
         // 🔑 POP-UP PREMIUM PARA MEU PERFIL
         // ==========================================

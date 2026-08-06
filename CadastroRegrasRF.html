@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuração - Recreio nas Férias</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet"/>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root {
+            --bg-body: #f1f5f9; --bg-card: #ffffff; --border: #e2e8f0;
+            --text-main: #0f172a; --text-muted: #64748b; 
+            --dre-color: #0369a1; --dre-hover: #075985;
+        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-body); color: var(--text-main); margin: 0; padding: 2rem 1rem; }
+        .container { max-width: 900px; margin: 0 auto; background: var(--bg-card); border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); overflow: hidden; display: none; }
+        
+        .header { background: var(--dre-color); color: white; padding: 1.5rem 2rem; display: flex; align-items: center; gap: 1rem; }
+        .header i { font-size: 2.5rem; }
+        .header h1 { margin: 0; font-size: 1.5rem; font-weight: 700; }
+        .header p { margin: 0; font-size: 0.9rem; opacity: 0.9; }
+
+        .content { padding: 2rem; }
+        .section-title { font-size: 1.1rem; color: var(--dre-color); border-bottom: 2px solid var(--border); padding-bottom: 0.5rem; margin: 2rem 0 1rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem;}
+        .section-title:first-child { margin-top: 0; }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+        
+        .form-group { margin-bottom: 1rem; }
+        label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.4rem; }
+        input, select { width: 100%; padding: 0.7rem; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 0.95rem; box-sizing: border-box; }
+        input:focus, select:focus { outline: none; border-color: var(--dre-color); box-shadow: 0 0 0 3px rgba(3, 105, 161, 0.1); }
+        
+        /* Paleta de Cores (Crachás) */
+        .color-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 1rem; background: #f8fafc; padding: 1rem; border-radius: 8px; border: 1px dashed var(--border);}
+        .color-box { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
+        input[type="color"] { padding: 0; height: 45px; cursor: pointer; border: none; border-radius: 8px; overflow: hidden; }
+
+        .btn-salvar { background: var(--dre-color); color: white; border: none; padding: 1rem 2rem; border-radius: 8px; font-weight: 700; font-size: 1rem; cursor: pointer; width: 100%; margin-top: 2rem; transition: 0.2s; display: flex; justify-content: center; align-items: center; gap: 0.5rem;}
+        .btn-salvar:hover { background: var(--dre-hover); }
+
+        /* Tela de Bloqueio */
+        #bloqueio { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 80vh; text-align: center; }
+        #bloqueio i { font-size: 5rem; color: #ef4444; margin-bottom: 1rem; }
+        #bloqueio h2 { margin: 0 0 0.5rem 0; }
+    </style>
+</head>
+<body>
+
+    <div id="bloqueio">
+        <i class="ri-lock-2-fill"></i>
+        <h2>Acesso Negado</h2>
+        <p style="color: var(--text-muted); max-width: 400px;">
+            Apenas o nível hierárquico <b>Diretoria Regional de Educação (DRE)</b> tem permissão para visualizar e alterar as regras globais do Recreio nas Férias.
+        </p>
+    </div>
+
+    <div class="container" id="painel-regras">
+        <div class="header">
+            <i class="ri-sun-cloud-fill"></i>
+            <div>
+                <h1>Gestão Global: Recreio nas Férias</h1>
+                <p>Módulo de configuração exclusiva DRE Santo Amaro</p>
+            </div>
+        </div>
+
+        <div class="content">
+            <form id="form-regras" onsubmit="salvar(event)">
+                
+                <div class="section-title"><i class="ri-file-paper-2-line"></i> 1. Regulamentação e Portaria</div>
+                <div class="grid-2">
+                    <div class="form-group"><label>Nº da Portaria</label><input type="text" id="portaria" required></div>
+                    <div class="form-group"><label>Data de Publicação</label><input type="date" id="dataPub" required></div>
+                </div>
+                <div class="grid-3">
+                    <div class="form-group"><label>Mín. Alunos (0 a 3 anos)</label><input type="number" id="min0a3" required></div>
+                    <div class="form-group"><label>Mín. Alunos (4 a 14 anos)</label><input type="number" id="min4a14" required></div>
+                    <div class="form-group"><label>Mín. Alunos (CECIs/UEs)</label><input type="number" id="minCeci" required></div>
+                </div>
+
+                <div class="section-title"><i class="ri-calendar-event-line"></i> 2. Período do Programa</div>
+                <div class="grid-2">
+                    <div class="form-group"><label>Ano de Referência</label><input type="number" id="ano" value="2026" required></div>
+                    <div class="form-group"><label>Mês</label>
+                        <select id="mes" required>
+                            <option value="JANEIRO">Janeiro</option>
+                            <option value="JULHO">Julho</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid-2">
+                    <div class="form-group"><label>Data Inicial (Início do RF)</label><input type="date" id="diaIni" required></div>
+                    <div class="form-group"><label>Data Final (Fim do RF)</label><input type="date" id="diaFim" required></div>
+                </div>
+
+                <div class="section-title"><i class="ri-group-line"></i> 3. Limite de Turmas</div>
+                <div class="grid-2">
+                    <div class="form-group"><label>Máx. por Turma (4 e 5 anos)</label><input type="number" id="max4e5" placeholder="Ex: 20" required></div>
+                    <div class="form-group"><label>Máx. por Turma (6 a 14 anos)</label><input type="number" id="max6a14" placeholder="Ex: 35" required></div>
+                </div>
+
+                <div class="section-title"><i class="ri-pass-valid-line"></i> 4. Ícones Padrão (Crachás)</div>
+                <div class="grid-3">
+                    <div class="form-group"><label>Restrição de Imagem</label><select id="restricao"><option value="SIM">SIM</option><option value="NÃO">NÃO</option></select></div>
+                    <div class="form-group"><label>Dieta Especial</label><select id="dieta"><option value="SIM">SIM</option><option value="NÃO">NÃO</option></select></div>
+                    <div class="form-group"><label>Vai Sozinho</label><select id="sozinho"><option value="SIM">SIM (Verde)</option><option value="NÃO">NÃO (Vermelho)</option></select></div>
+                    <div class="form-group"><label>Inclusão</label><select id="inclusao"><option value="SIM">SIM</option><option value="NÃO">NÃO</option></select></div>
+                    <div class="form-group"><label>Piscina</label><select id="piscina"><option value="SIM">SIM</option><option value="NÃO">NÃO</option></select></div>
+                </div>
+
+                <div class="section-title"><i class="ri-palette-line"></i> 5. Cores dos Crachás por Idade</div>
+                <div class="color-grid">
+                    <div class="color-box"><label>4 Anos</label><input type="color" id="c4" value="#ff0000"></div>
+                    <div class="color-box"><label>5 Anos</label><input type="color" id="c5" value="#ff9900"></div>
+                    <div class="color-box"><label>6 Anos</label><input type="color" id="c6" value="#ffff00"></div>
+                    <div class="color-box"><label>7 Anos</label><input type="color" id="c7" value="#33cc33"></div>
+                    <div class="color-box"><label>8 Anos</label><input type="color" id="c8" value="#00ffff"></div>
+                    <div class="color-box"><label>9 Anos</label><input type="color" id="c9" value="#0000ff"></div>
+                    <div class="color-box"><label>10 Anos</label><input type="color" id="c10" value="#0000ff"></div>
+                    <div class="color-box"><label>11 Anos</label><input type="color" id="c11" value="#6600ff"></div>
+                    <div class="color-box"><label>12 Anos</label><input type="color" id="c12" value="#9900cc"></div>
+                    <div class="color-box"><label>13 Anos</label><input type="color" id="c13" value="#cc0099"></div>
+                    <div class="color-box"><label>14 Anos</label><input type="color" id="c14" value="#ff00ff"></div>
+                </div>
+
+                <button type="submit" class="btn-salvar" id="btn-salvar">
+                    <i class="ri-save-3-line"></i> GRAVAR REGRAS DO RECREIO
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // 🔒 SISTEMA DE AUTENTICAÇÃO E CARREGAMENTO
+        document.addEventListener("DOMContentLoaded", () => {
+            // No nosso sistema, o CEU do usuário logado costuma ficar no sessionStorage.
+            const ceuLogado = sessionStorage.getItem('ceu_id') || localStorage.getItem('ceu_id');
+            
+            // 👉 LEANDRO: Se for testar, troque temporariamente o '777777' por outro número se o seu usuário não tiver esse CEU ainda.
+            if (String(ceuLogado) !== "777777") {
+                document.getElementById('bloqueio').style.display = 'flex';
+                document.getElementById('painel-regras').style.display = 'none';
+                return; // Para o código aqui!
+            }
+
+            // Liberou! Esconde o cadeado e mostra a tela.
+            document.getElementById('bloqueio').style.display = 'none';
+            document.getElementById('painel-regras').style.display = 'block';
+
+            // Puxa as regras que já existem
+            google.script.run.withSuccessHandler(preencherTela).getRegrasRF_Matriz();
+        });
+
+        function preencherTela(res) {
+            if (!res.sucesso) return; // Planilha ainda vazia
+            const d = res.dados;
+            const ids = ['portaria','dataPub','min0a3','min4a14','minCeci','ano','mes','diaIni','diaFim','max4e5','max6a14',
+                         'restricao','dieta','sozinho','inclusao','piscina','c4','c5','c6','c7','c8','c9','c10','c11','c12','c13','c14'];
+            
+            ids.forEach(id => {
+                if(d[id]) document.getElementById(id).value = d[id];
+            });
+        }
+
+        function salvar(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btn-salvar');
+            btn.innerHTML = '<i class="ri-loader-4-line spinning"></i> Gravando na Matriz...';
+            btn.disabled = true;
+
+            const ceuLogado = sessionStorage.getItem('ceu_id') || localStorage.getItem('ceu_id');
+
+            const payload = {
+                portaria: document.getElementById('portaria').value,
+                dataPub: document.getElementById('dataPub').value,
+                min0a3: document.getElementById('min0a3').value,
+                min4a14: document.getElementById('min4a14').value,
+                minCeci: document.getElementById('minCeci').value,
+                ano: document.getElementById('ano').value,
+                mes: document.getElementById('mes').value,
+                diaIni: document.getElementById('diaIni').value,
+                diaFim: document.getElementById('diaFim').value,
+                max4e5: document.getElementById('max4e5').value,
+                max6a14: document.getElementById('max6a14').value,
+                restricao: document.getElementById('restricao').value,
+                dieta: document.getElementById('dieta').value,
+                sozinho: document.getElementById('sozinho').value,
+                inclusao: document.getElementById('inclusao').value,
+                piscina: document.getElementById('piscina').value,
+                c4: document.getElementById('c4').value, c5: document.getElementById('c5').value,
+                c6: document.getElementById('c6').value, c7: document.getElementById('c7').value,
+                c8: document.getElementById('c8').value, c9: document.getElementById('c9').value,
+                c10: document.getElementById('c10').value, c11: document.getElementById('c11').value,
+                c12: document.getElementById('c12').value, c13: document.getElementById('c13').value,
+                c14: document.getElementById('c14').value
+            };
+
+            google.script.run.withSuccessHandler((res) => {
+                btn.innerHTML = '<i class="ri-save-3-line"></i> GRAVAR REGRAS DO RECREIO';
+                btn.disabled = false;
+
+                if(res.sucesso) {
+                    Swal.fire('Matriz Atualizada!', res.mensagem, 'success');
+                } else {
+                    Swal.fire('Acesso Negado', res.erro, 'error');
+                }
+            }).salvarRegrasRF_Matriz(payload, ceuLogado);
+        }
+    </script>
+</body>
+</html>

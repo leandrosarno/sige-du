@@ -91,7 +91,6 @@
             <img id="dash-img-logo" src="" alt="Logo" style="display: none; width: 100%; max-height: 120px; object-fit: contain; margin: 0 auto;">
         </div>
 
-        <!-- MENUS PRINCIPAIS OPERACIONAIS -->
         <a href="#" class="ativo" onclick="abrirFormFilho('inicio.html', this)">
             <span class="material-icons">home</span> Início
         </a>
@@ -102,12 +101,10 @@
             <span class="material-icons">class</span> Turmas
         </a>
 
+        <a href="#" id="btnRegrasRF" style="display: none;" onclick="abrirFormFilho('CadastroRegrasRF.html', this)">
+            <span class="material-icons">wb_sunny</span> Recreio nas Férias
         </a>
-        <a href="#" onclick="abrirFormFilho('CadastroRegrasRF.html', this)">
-            <span class="material-icons">class</span> Recreio nas Férias
-        </a>
-       
-        <!-- GAVETA (SUBMENU) DE CADASTROS BASE -->
+        
         <a href="#submenuCadastros" data-bs-toggle="collapse" style="justify-content: space-between;" onclick="removerAtivo(this)">
             <div style="display: flex; align-items: center; gap: 12px;">
                 <span class="material-icons">settings</span> Cadastros Base
@@ -211,7 +208,6 @@
                 }
 
                 // --- CÓDIGO BLINDADO PARA MOSTRAR A LOGO ---
-                // Ele tenta achar a logo do CEU, se não tiver, pega a do Sistema!
                 const logoSalva = localStorage.getItem('ceu_logo') || localStorage.getItem('ceu_logo_sistema') || localStorage.getItem('ceu_logo_especifica');
                 const tamanhoSalvo = localStorage.getItem('ceu_tamanho_logo'); 
                 const imgDash = document.getElementById('dash-img-logo');
@@ -228,19 +224,21 @@
                 console.error("Erro ao carregar Dashboard:", erro);
             }
         };
-// 🔒 VERIFICAÇÃO DE PERMISSÃO DRE (RECREIO NAS FÉRIAS)
-document.addEventListener("DOMContentLoaded", () => {
-    // Busca qual é o CEU do usuário logado
-    const ceuLogado = sessionStorage.getItem('ceu_id') || localStorage.getItem('ceu_id');
-    
-    // Se for o ID da DRE (777777), a mágica acontece: o botão aparece!
-    if (String(ceuLogado) === "777777") {
-        const botaoDRE = document.getElementById('btnRegrasRF');
-        if (botaoDRE) {
-            botaoDRE.style.display = 'flex'; // ou 'block', dependendo do seu CSS
-        }
-    }
-});
+
+        // 🔒 VERIFICAÇÃO DE PERMISSÃO DRE (RECREIO NAS FÉRIAS)
+        document.addEventListener("DOMContentLoaded", () => {
+            // Busca qual é o CEU do usuário logado
+            const ceuLogado = sessionStorage.getItem('ceu_id') || localStorage.getItem('ceu_id');
+            
+            // Se for o ID da DRE (777777), a mágica acontece: o botão aparece!
+            if (String(ceuLogado) === "777777") {
+                const botaoDRE = document.getElementById('btnRegrasRF');
+                if (botaoDRE) {
+                    botaoDRE.style.display = 'flex';
+                }
+            }
+        });
+
         // ==========================================
         // 🔑 POP-UP PREMIUM PARA MEU PERFIL
         // ==========================================
@@ -395,6 +393,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         function fazerLogout() {
             localStorage.clear();
+            sessionStorage.clear();
             window.location.href = "index.html";
         }
     </script>

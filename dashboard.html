@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel -Principal</title>
+    <title>Painel Principal - Sistema CEU</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -94,26 +94,27 @@
         <a href="#" class="ativo" onclick="abrirFormFilho('inicio.html', this)">
             <span class="material-icons">home</span> Início
         </a>
-        <a href="#" onclick="abrirFormFilho('alunos.html', this)">
-            <span class="material-icons">people</span> -Alunos
+
+        <a href="#" id="link-alunos" onclick="abrirFormFilho('alunos.html', this)">
+            <span class="material-icons">people</span> Alunos
         </a>
-        <a href="#" onclick="abrirFormFilho('turmas.html', this)">
+        <a href="#" id="link-turmas" onclick="abrirFormFilho('turmas.html', this)">
             <span class="material-icons">class</span> Turmas
         </a>
 
-        <button class="btn" id="btnRegrasRF" style="display: none;" onclick="navegarParaAba('CadastroRegrasRF')">
-          <i class="material-icons">wb_sunny</i> Regras Recreio (DRE)
-        </button>
+        <a href="#" id="btnRegrasRF" style="display: none;" onclick="abrirFormFilho('CadastroRegrasRF.html', this)">
+            <span class="material-icons">wb_sunny</span> Regras Recreio (DRE)
+        </a>
         
-        <a href="#submenuCadastros" data-bs-toggle="collapse" style="justify-content: space-between;" onclick="removerAtivo(this)">
+        <a href="#submenuCadastros" id="link-cadastros" data-bs-toggle="collapse" style="justify-content: space-between;" onclick="removerAtivo(this)">
             <div style="display: flex; align-items: center; gap: 12px;">
                 <span class="material-icons">settings</span> Cadastros Base
             </div>
             <span class="material-icons" style="font-size: 18px;">expand_more</span>
         </a>
         <div class="collapse submenu" id="submenuCadastros">
-            <a href="#" onclick="abrirFormFilho('nucleos.html', this)"><span class="material-icons" style="font-size: 18px;">domain</span> Núcleos teste</a>
-            <a href="#" onclick="abrirFormFilho('espacos.html', this)"><span class="material-icons" style="font-size: 18px;">place</span> Espaços e nucleos </a>
+            <a href="#" onclick="abrirFormFilho('nucleos.html', this)"><span class="material-icons" style="font-size: 18px;">domain</span> Núcleos</a>
+            <a href="#" onclick="abrirFormFilho('espacos.html', this)"><span class="material-icons" style="font-size: 18px;">place</span> Espaços</a>
             <a href="#" onclick="abrirFormFilho('professores.html', this)"><span class="material-icons" style="font-size: 18px;">school</span> Professores</a>
             <a href="#" onclick="abrirFormFilho('tipo_responsavel.html', this)"><span class="material-icons" style="font-size: 18px;">badge</span> Tipo Resp.</a>
             <a href="#" onclick="abrirFormFilho('modalidades.html', this)"><span class="material-icons" style="font-size: 18px;">sports_soccer</span> Modalidades</a>
@@ -154,10 +155,9 @@
             document.getElementById('frame-filho').src = urlTela;
             const links = document.querySelectorAll('.sidebar a');
             links.forEach(l => l.classList.remove('ativo'));
-            elementoClicado.classList.add('ativo');
+            if (elementoClicado) elementoClicado.classList.add('ativo');
         }
 
-        // Evita que o botão que abre a gaveta fique "marcado" de azul
         function removerAtivo(elemento) {
             elemento.classList.remove('ativo');
         }
@@ -177,10 +177,29 @@
                     return;
                 }
 
-                if (!idPlanilha || idPlanilha.trim() === "") {
-                    alert("⚠️ Atenção: A sua Unidade (CEU) ainda não tem um Banco de Dados configurado.");
-                    window.location.href = "index.html";
-                    return;
+                // 🚦 CONTROLO DE VISIBILIDADE: DRE vs CEU NORMAL
+                if (String(codigoEol) === "777777") {
+                    // Exibe o menu exclusivo da DRE
+                    const btnRF = document.getElementById('btnRegrasRF');
+                    if (btnRF) btnRF.style.display = 'flex';
+
+                    // Oculta as opções exclusivas do CEU comum
+                    const elAlunos = document.getElementById('link-alunos');
+                    const elTurmas = document.getElementById('link-turmas');
+                    const elCadastros = document.getElementById('link-cadastros');
+                    const elSubmenu = document.getElementById('submenuCadastros');
+
+                    if (elAlunos) elAlunos.style.display = 'none';
+                    if (elTurmas) elTurmas.style.display = 'none';
+                    if (elCadastros) elCadastros.style.display = 'none';
+                    if (elSubmenu) elSubmenu.style.display = 'none';
+                } else {
+                    // Se for CEU Normal, valida se o banco está configurado
+                    if (!idPlanilha || idPlanilha.trim() === "") {
+                        alert("⚠️ Atenção: A sua Unidade (CEU) ainda não tem um Banco de Dados configurado.");
+                        window.location.href = "index.html";
+                        return;
+                    }
                 }
 
                 if (codigoEol && nomeCeu && nomeCeu.trim() !== "") {
@@ -207,7 +226,7 @@
                     imgAvatar.style.display = 'block';
                 }
 
-                // --- CÓDIGO BLINDADO PARA MOSTRAR A LOGO ---
+                // --- CARREGAR LOGO DA UNIDADE ---
                 const logoSalva = localStorage.getItem('ceu_logo') || localStorage.getItem('ceu_logo_sistema') || localStorage.getItem('ceu_logo_especifica');
                 const tamanhoSalvo = localStorage.getItem('ceu_tamanho_logo'); 
                 const imgDash = document.getElementById('dash-img-logo');
@@ -219,36 +238,12 @@
                     if (tamanhoSalvo) imgDash.style.height = tamanhoSalvo;
                     imgDash.style.display = 'block';
                 }
-                // -------------------------------------------
             } catch (erro) {
                 console.error("Erro ao carregar Dashboard:", erro);
             }
         };
 
-// 🔒 VERIFICAÇÃO DE PERMISSÃO DRE (RECREIO NAS FÉRIAS E MENU)
-        document.addEventListener("DOMContentLoaded", () => {
-            const ceuLogado = sessionStorage.getItem('ceu_id') || localStorage.getItem('ceu_id');
-            
-            // SE FOR A DRE (CÓDIGO 777777)
-            if (String(ceuLogado) === "777777") {
-                // 1. Mostra o botão das Regras
-                const botaoDRE = document.getElementById('btnRegrasRF');
-                if (botaoDRE) botaoDRE.style.display = 'flex';
-                
-                // 2. Esconde os botões operacionais da barra lateral (Alunos, Turmas, Cadastros)
-                const linksSidebar = document.querySelectorAll('.sidebar a');
-                linksSidebar.forEach(link => {
-                    // Se o link NÃO FOR o "Início" e NÃO FOR o "Sair", nós o escondemos
-                    if (!link.innerHTML.includes('home') && !link.innerHTML.includes('logout')) {
-                        link.style.display = 'none';
-                    }
-                });
-            }
-        });
-
-        // ==========================================
-        // 🔑 POP-UP PREMIUM PARA MEU PERFIL
-        // ==========================================
+        // 🔑 POP-UP PARA PERFIL E SENHA
         function abrirTrocaSenhaLogado() {
             const rf = localStorage.getItem('ceu_rf_logado');
             const ceu = localStorage.getItem('ceu_codigo_eol');
@@ -349,7 +344,7 @@
                 }
             }).then((result) => {
                 if (result.isConfirmed) {
-                    Swal.fire({ title: 'A gravar o seu perfil...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+                    Swal.fire({ title: 'A regravar o seu perfil...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
 
                     const pacote = {
                         acao: "alterarSenhaLogado",

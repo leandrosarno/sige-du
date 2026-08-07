@@ -14,7 +14,7 @@
             padding: 0;
             display: flex;
             height: 100vh;
-            overflow: hidden;
+            overflow: hidden; 
             background-color: #f4f7f6;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
@@ -175,13 +175,15 @@ function abrirFormFilho(nomeDaTelaHTML, elementoClicado) {
 
         const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec"; 
 
-        window.onload = function() {
+window.onload = function() {
             try {
                 const idPlanilha = localStorage.getItem('ceu_planilha_id');
                 const rfLogado = localStorage.getItem('ceu_rf_logado');
-                const codigoEol = localStorage.getItem('ceu_codigo_eol');
                 const nomeUsuario = localStorage.getItem('ceu_nome_usuario');
                 const nomeCeu = localStorage.getItem('ceu_nome_especifico');
+                
+                // 💡 A BUSCA UNIVERSAL (Apanha o ID onde quer que ele esteja)
+                const codigoCeuUniversal = localStorage.getItem('ceu_id') || sessionStorage.getItem('ceu_id') || localStorage.getItem('ceu_codigo_eol');
 
                 if (!rfLogado) {
                     window.location.href = "index.html"; 
@@ -189,7 +191,7 @@ function abrirFormFilho(nomeDaTelaHTML, elementoClicado) {
                 }
 
                 // 🚦 CONTROLO DE VISIBILIDADE: DRE vs CEU NORMAL
-                if (String(codigoEol) === "777777") {
+                if (String(codigoCeuUniversal) === "777777") {
                     // Exibe o menu exclusivo da DRE
                     const btnRF = document.getElementById('btnRegrasRF');
                     if (btnRF) btnRF.style.display = 'flex';
@@ -213,10 +215,10 @@ function abrirFormFilho(nomeDaTelaHTML, elementoClicado) {
                     }
                 }
 
-                if (codigoEol && nomeCeu && nomeCeu.trim() !== "") {
-                    document.getElementById('lbl-ceu').innerText = codigoEol + " - " + nomeCeu;
-                } else if (codigoEol) {
-                    document.getElementById('lbl-ceu').innerText = "EOL: " + codigoEol;
+                if (codigoCeuUniversal && nomeCeu && nomeCeu.trim() !== "") {
+                    document.getElementById('lbl-ceu').innerText = codigoCeuUniversal + " - " + nomeCeu;
+                } else if (codigoCeuUniversal) {
+                    document.getElementById('lbl-ceu').innerText = "EOL: " + codigoCeuUniversal;
                 } else {
                     document.getElementById('lbl-ceu').innerText = "ID: " + idPlanilha;
                 }

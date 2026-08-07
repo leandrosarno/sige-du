@@ -176,7 +176,7 @@
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec";
+                const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec";
 
         function atualizarSaudacao() {
             const data = new Date();
@@ -199,7 +199,8 @@
             document.getElementById('area-loading').style.display = 'block';
             document.getElementById('painel-dre').style.display = 'none';
 
-            const ceuLogado = localStorage.getItem('ceu_id') || sessionStorage.getItem('ceu_id');
+            // ✨ AQUI ESTAVA O ERRO: O NOME CORRETO É 'ceu_codigo_eol'
+            const ceuLogado = localStorage.getItem('ceu_codigo_eol');
             const pacote = { acao: "getDadosPainelDRE", dados: { idCeu: ceuLogado } };
 
             fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) })
@@ -222,7 +223,8 @@
 
         // Função de carregamento exclusiva para o CEU Normal
         function carregarDadosCEU() {
-            const ceuLogado = localStorage.getItem('ceu_id') || sessionStorage.getItem('ceu_id');
+            // ✨ AQUI ESTAVA O ERRO: O NOME CORRETO É 'ceu_codigo_eol'
+            const ceuLogado = localStorage.getItem('ceu_codigo_eol');
             const pacote = { acao: "buscarEstatisticasDashboard", dados: { idCeu: ceuLogado } };
 
             fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) })
@@ -253,7 +255,7 @@
                 grid.innerHTML = `
                     <div class="alert alert-info" style="width: 100%; grid-column: 1 / -1;">
                         <i class="material-icons" style="vertical-align: text-bottom;">info</i> 
-                        Nenhum CEU desta DRE tem banco de dados configurado no sistema ainda.
+                        Nenhum CEU tem banco de dados configurado no sistema ainda.
                     </div>`;
             } else {
                 listaCeus.forEach(ceu => {
@@ -287,13 +289,13 @@
             atualizarSaudacao();
             
             // O INICIO.HTML DECIDE O QUE CARREGAR NA ABERTURA
-            const ceuLogado = localStorage.getItem('ceu_id') || sessionStorage.getItem('ceu_id');
+            const ceuLogado = localStorage.getItem('ceu_codigo_eol');
             if (String(ceuLogado) === "777777") {
                 carregarDadosDRE();
             } else {
                 carregarDadosCEU();
             }
         };
-    </script>
+</script>
 </body>
 </html>

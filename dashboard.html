@@ -225,17 +225,24 @@
             }
         };
 
-        // 🔒 VERIFICAÇÃO DE PERMISSÃO DRE (RECREIO NAS FÉRIAS)
+// 🔒 VERIFICAÇÃO DE PERMISSÃO DRE (RECREIO NAS FÉRIAS E MENU)
         document.addEventListener("DOMContentLoaded", () => {
-            // Busca qual é o CEU do usuário logado
             const ceuLogado = sessionStorage.getItem('ceu_id') || localStorage.getItem('ceu_id');
             
-            // Se for o ID da DRE (777777), a mágica acontece: o botão aparece!
+            // SE FOR A DRE (CÓDIGO 777777)
             if (String(ceuLogado) === "777777") {
+                // 1. Mostra o botão das Regras
                 const botaoDRE = document.getElementById('btnRegrasRF');
-                if (botaoDRE) {
-                    botaoDRE.style.display = 'flex';
-                }
+                if (botaoDRE) botaoDRE.style.display = 'flex';
+                
+                // 2. Esconde os botões operacionais da barra lateral (Alunos, Turmas, Cadastros)
+                const linksSidebar = document.querySelectorAll('.sidebar a');
+                linksSidebar.forEach(link => {
+                    // Se o link NÃO FOR o "Início" e NÃO FOR o "Sair", nós o escondemos
+                    if (!link.innerHTML.includes('home') && !link.innerHTML.includes('logout')) {
+                        link.style.display = 'none';
+                    }
+                });
             }
         });
 

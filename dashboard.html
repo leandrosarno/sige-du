@@ -151,11 +151,22 @@
     </div>
 
     <script>
-        function abrirFormFilho(urlTela, elementoClicado) {
-            document.getElementById('frame-filho').src = urlTela;
-            const links = document.querySelectorAll('.sidebar a');
-            links.forEach(l => l.classList.remove('ativo'));
-            if (elementoClicado) elementoClicado.classList.add('ativo');
+function abrirFormFilho(nomeDaTelaHTML, elementoClicado) {
+            // No Apps Script, temos que usar a URL completa do Web App + parâmetro ?tela=
+            // Vamos descobrir qual é a URL atual do seu sistema
+            google.script.run.withSuccessHandler(function(urlBase) {
+                // Tira o .html do nome, se existir (ex: CadastroRegrasRF.html vira CadastroRegrasRF)
+                const telaLimpa = nomeDaTelaHTML.replace('.html', '');
+                
+                // Manda o iframe carregar o link completo
+                document.getElementById('frame-filho').src = urlBase + "?tela=" + telaLimpa;
+                
+                // Pinta o botão de azul (Ativo)
+                const links = document.querySelectorAll('.sidebar a');
+                links.forEach(l => l.classList.remove('ativo'));
+                if (elementoClicado) elementoClicado.classList.add('ativo');
+
+            }).obterUrlWebApp(); 
         }
 
         function removerAtivo(elemento) {

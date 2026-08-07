@@ -194,57 +194,8 @@
             document.getElementById('lbl-data').innerText = dataFormatada.charAt(0).toUpperCase() + dataFormatada.slice(1);
         }
 
-        // Função de carregamento exclusiva para a DRE
-        function carregarDadosDRE() {
-            document.getElementById('area-loading').style.display = 'block';
-            document.getElementById('painel-dre').style.display = 'none';
 
-            // ✨ AQUI ESTAVA O ERRO: O NOME CORRETO É 'ceu_codigo_eol'
-            const ceuLogado = localStorage.getItem('ceu_codigo_eol');
-            const pacote = { acao: "getDadosPainelDRE", dados: { idCeu: ceuLogado } };
 
-            fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) })
-            .then(res => res.json())
-            .then(retorno => {
-                document.getElementById('area-loading').style.display = 'none';
-                
-                if (retorno.status === "sucesso" || retorno.sucesso === true) {
-                    montarPainelDRE(retorno.dre, retorno.painel);
-                } else {
-                    alert("Atenção: Não foi possível ler as planilhas da DRE. Erro: " + (retorno.mensagem || retorno.erro));
-                }
-            })
-            .catch(err => {
-                document.getElementById('area-loading').style.display = 'none';
-                alert("Falha de conexão ao buscar relatórios da DRE.");
-                console.error(err);
-            });
-        }
-
-        // Função de carregamento exclusiva para o CEU Normal
-        function carregarDadosCEU() {
-            // ✨ AQUI ESTAVA O ERRO: O NOME CORRETO É 'ceu_codigo_eol'
-            const ceuLogado = localStorage.getItem('ceu_codigo_eol');
-            const pacote = { acao: "buscarEstatisticasDashboard", dados: { idCeu: ceuLogado } };
-
-            fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) })
-            .then(res => res.json())
-            .then(retorno => {
-                document.getElementById('area-loading').style.display = 'none';
-                if (retorno.status === "sucesso") {
-                    document.getElementById('stat-alunos').innerText = retorno.estatisticas.cadastros;
-                    document.getElementById('stat-turmas').innerText = retorno.estatisticas.turmas;
-                    document.getElementById('stat-matriculas').innerText = retorno.estatisticas.matriculas;
-                    document.getElementById('painel-ceu').style.display = 'block';
-                } else {
-                    alert("Erro ao carregar métricas da unidade: " + retorno.mensagem);
-                }
-            })
-            .catch(err => {
-                document.getElementById('area-loading').style.display = 'none';
-                alert("Falha de conexão com a planilha do CEU.");
-            });
-        }
 
         function montarPainelDRE(nomeDRE, listaCeus) {
             document.getElementById('nome-dre-titulo').innerText = nomeDRE || "DRE Central";
@@ -285,15 +236,62 @@
             document.getElementById('painel-dre').style.display = 'block';
         }
 
+// Função de carregamento exclusiva para a DRE
+        function carregarDadosDRE(idDRE) {
+            document.getElementById('area-loading').style.display = 'block';
+            document.getElementById('painel-dre').style.display = 'none';
+
+            const pacote = { acao: "getDadosPainelDRE", dados: { idCeu: idDRE } };
+
+            fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) })
+            .then(res => res.json())
+            .then(retorno => {
+                document.getElementById('area-loading').style.display = 'none';
+                if (retorno.status === "sucesso" || retorno.sucesso === true) {
+                    montarPainelDRE(retorno.dre, retorno.painel);
+                } else {
+                    alert("Atenção: Não foi possível ler as planilhas da DRE. Erro: " + (retorno.mensagem || retorno.erro));
+                }
+            })
+            .catch(err => {
+                document.getElementById('area-loading').style.display = 'none';
+                alert("Falha de conexão ao buscar relatórios da DRE.");
+            });
+        }
+
+        // Função de carregamento exclusiva para o CEU Normal
+        function carregarDadosCEU(idCEU) {
+            const pacote = { acao: "buscarEstatisticasDashboard", dados: { idCeu: idCEU } };
+
+            fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) })
+            .then(res => res.json())
+            .then(retorno => {
+                document.getElementById('area-loading').style.display = 'none';
+                if (retorno.status === "sucesso") {
+                    document.getElementById('stat-alunos').innerText = retorno.estatisticas.cadastros;
+                    document.getElementById('stat-turmas').innerText = retorno.estatisticas.turmas;
+                    document.getElementById('stat-matriculas').innerText = retorno.estatisticas.matriculas;
+                    document.getElementById('painel-ceu').style.display = 'block';
+                } else {
+                    alert("Erro ao carregar métricas da unidade: " + retorno.mensagem);
+                }
+            })
+            .catch(err => {
+                document.getElementById('area-loading').style.display = 'none';
+                alert("Falha de conexão com a planilha do CEU.");
+            });
+        }
+
         window.onload = function() {
             atualizarSaudacao();
             
-            // O INICIO.HTML DECIDE O QUE CARREGAR NA ABERTURA
-            const ceuLogado = localStorage.getItem('ceu_codigo_eol');
+            // 💡 A BUSCA UNIVERSAL: Tenta pegar o ID de qualquer uma das chaves salvas!
+            const ceuLogado = localStorage.getItem('ceu_id') || sessionStorage.getItem('ceu_id') || localStorage.getItem('ceu_codigo_eol');
+            
             if (String(ceuLogado) === "777777") {
-                carregarDadosDRE();
+                carregarDadosDRE(ceuLogado);
             } else {
-                carregarDadosCEU();
+                carregarDadosCEU(ceuLogado);
             }
         };
 </script>

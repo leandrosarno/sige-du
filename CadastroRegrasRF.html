@@ -208,6 +208,28 @@
                 }
             }).salvarRegrasRF_Matriz(payload, ceuLogado);
         }
+        // ==========================================
+        // 🔒 VERIFICAÇÃO DE SEGURANÇA (EXCLUSIVO DRE)
+        // ==========================================
+        window.onload = function() {
+            // BUSCA A CHAVE CORRETA NO CACHE DO NAVEGADOR
+            const codigoLogado = localStorage.getItem('ceu_codigo_eol') || sessionStorage.getItem('ceu_codigo_eol');
+            
+            // SE NÃO FOR A DRE (777777), MOSTRA TELA DE BLOQUEIO
+            if (String(codigoLogado) !== "777777") {
+                document.body.innerHTML = `
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #f8d7da; color: #721c24; font-family: sans-serif; text-align: center; padding: 20px;">
+                        <span class="material-icons" style="font-size: 80px; margin-bottom: 20px;">gpp_bad</span>
+                        <h2 style="font-weight: bold;">Acesso Negado</h2>
+                        <p style="font-size: 16px; max-width: 500px;">Apenas o nível hierárquico <b>Diretoria Regional de Educação (DRE)</b> tem permissão para visualizar e alterar as regras globais do Recreio nas Férias.</p>
+                    </div>
+                `;
+                return; // Para a execução do restante da página
+            }
+
+            // SE PASSOU PELA SEGURANÇA, CARREGA OS DADOS!
+            carregarRegrasAtuais();
+        };
     </script>
 </body>
 </html>

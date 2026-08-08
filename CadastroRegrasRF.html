@@ -133,16 +133,20 @@
     </div>
 
     <script>
-        // 🔒 SISTEMA DE AUTENTICAÇÃO E CARREGAMENTO
+        const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec";
+
+        // ==========================================
+        // 🔒 VERIFICAÇÃO DE SEGURANÇA E CARREGAMENTO
+        // ==========================================
         document.addEventListener("DOMContentLoaded", () => {
-            // No nosso sistema, o CEU do usuário logado costuma ficar no sessionStorage.
-            const ceuLogado = sessionStorage.getItem('ceu_id') || localStorage.getItem('ceu_id');
+            // 💡 BUSCA UNIVERSAL: Tenta pegar o ID de qualquer uma das chaves salvas!
+            const codigoLogado = String(localStorage.getItem('ceu_id') || sessionStorage.getItem('ceu_id') || localStorage.getItem('ceu_codigo_eol')).trim();
             
-            // 👉 LEANDRO: Se for testar, troque temporariamente o '777777' por outro número se o seu usuário não tiver esse CEU ainda.
-            if (String(ceuLogado) !== "777777") {
+            // SE NÃO FOR A DRE (777777), MANTÉM TELA DE BLOQUEIO E PARA A EXECUÇÃO
+            if (codigoLogado !== "777777") {
                 document.getElementById('bloqueio').style.display = 'flex';
                 document.getElementById('painel-regras').style.display = 'none';
-                return; // Para o código aqui!
+                return; 
             }
 
             // Liberou! Esconde o cadeado e mostra a tela.
@@ -150,17 +154,45 @@
             document.getElementById('painel-regras').style.display = 'block';
 
             // Puxa as regras que já existem
-            google.script.run.withSuccessHandler(preencherTela).getRegrasRF_Matriz();
+            carregarRegrasAtuais();
         });
 
-        function preencherTela(res) {
-            if (!res.sucesso) return; // Planilha ainda vazia
-            const d = res.dados;
+        function carregarRegrasAtuais() {
+            const pacote = { acao: "getRegrasRF_Matriz", dados: {} };
+
+            fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) })
+            .then(res => res.json())
+            .then(retorno => {
+                if (retorno.sucesso && retorno.dados) {
+                    preencherTela(retorno.dados);
+                }
+            })
+            .catch(err => {
+                console.error("Erro ao carregar regras:", err);
+            });
+        }
+
+        function preencherTela(d) {
             const ids = ['portaria','dataPub','min0a3','min4a14','minCeci','ano','mes','diaIni','diaFim','max4e5','max6a14',
                          'restricao','dieta','sozinho','inclusao','piscina','c4','c5','c6','c7','c8','c9','c10','c11','c12','c13','c14'];
             
             ids.forEach(id => {
-                if(d[id]) document.getElementById(id).value = d[id];
+                // Preenche o campo se houver valor, mantendo datas formatadas corretamente (YYYY-MM-DD)
+                if(d[id]) {
+                     let valor = d[id];
+                     
+                     // Converte formato DD/MM/YYYY para YYYY-MM-DD se necessário
+                     if(valor.indexOf("/") > -1) {
+                         let p = valor.split("/");
+                         if(p.length === 3) valor = p[2] + "-" + p[1] + "-" + p[0];
+                     }
+                     // Converte datas em formato ISO ISO 8601 do Google Sheets
+                     else if (valor.indexOf("T") > -1 && valor.indexOf("Z") > -1) {
+                         valor = valor.split("T")[0];
+                     }
+                     
+                     document.getElementById(id).value = valor;
+                }
             });
         }
 
@@ -170,66 +202,55 @@
             btn.innerHTML = '<i class="ri-loader-4-line spinning"></i> Gravando na Matriz...';
             btn.disabled = true;
 
-            const ceuLogado = sessionStorage.getItem('ceu_id') || localStorage.getItem('ceu_id');
+            const ceuLogado = String(localStorage.getItem('ceu_id') || sessionStorage.getItem('ceu_id') || localStorage.getItem('ceu_codigo_eol')).trim();
 
             const payload = {
-                portaria: document.getElementById('portaria').value,
-                dataPub: document.getElementById('dataPub').value,
-                min0a3: document.getElementById('min0a3').value,
-                min4a14: document.getElementById('min4a14').value,
-                minCeci: document.getElementById('minCeci').value,
-                ano: document.getElementById('ano').value,
-                mes: document.getElementById('mes').value,
-                diaIni: document.getElementById('diaIni').value,
-                diaFim: document.getElementById('diaFim').value,
-                max4e5: document.getElementById('max4e5').value,
-                max6a14: document.getElementById('max6a14').value,
-                restricao: document.getElementById('restricao').value,
-                dieta: document.getElementById('dieta').value,
-                sozinho: document.getElementById('sozinho').value,
-                inclusao: document.getElementById('inclusao').value,
-                piscina: document.getElementById('piscina').value,
-                c4: document.getElementById('c4').value, c5: document.getElementById('c5').value,
-                c6: document.getElementById('c6').value, c7: document.getElementById('c7').value,
-                c8: document.getElementById('c8').value, c9: document.getElementById('c9').value,
-                c10: document.getElementById('c10').value, c11: document.getElementById('c11').value,
-                c12: document.getElementById('c12').value, c13: document.getElementById('c13').value,
-                c14: document.getElementById('c14').value
+                acao: "salvarRegrasRF_Matriz",
+                dados: {
+                    ceuIdLogado: ceuLogado, // Enviamos a chave da DRE para o servidor validar
+                    portaria: document.getElementById('portaria').value,
+                    dataPub: document.getElementById('dataPub').value,
+                    min0a3: document.getElementById('min0a3').value,
+                    min4a14: document.getElementById('min4a14').value,
+                    minCeci: document.getElementById('minCeci').value,
+                    ano: document.getElementById('ano').value,
+                    mes: document.getElementById('mes').value,
+                    diaIni: document.getElementById('diaIni').value,
+                    diaFim: document.getElementById('diaFim').value,
+                    max4e5: document.getElementById('max4e5').value,
+                    max6a14: document.getElementById('max6a14').value,
+                    restricao: document.getElementById('restricao').value,
+                    dieta: document.getElementById('dieta').value,
+                    sozinho: document.getElementById('sozinho').value,
+                    inclusao: document.getElementById('inclusao').value,
+                    piscina: document.getElementById('piscina').value,
+                    c4: document.getElementById('c4').value, c5: document.getElementById('c5').value,
+                    c6: document.getElementById('c6').value, c7: document.getElementById('c7').value,
+                    c8: document.getElementById('c8').value, c9: document.getElementById('c9').value,
+                    c10: document.getElementById('c10').value, c11: document.getElementById('c11').value,
+                    c12: document.getElementById('c12').value, c13: document.getElementById('c13').value,
+                    c14: document.getElementById('c14').value
+                }
             };
 
-            google.script.run.withSuccessHandler((res) => {
+            fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) })
+            .then(res => res.json())
+            .then(retorno => {
                 btn.innerHTML = '<i class="ri-save-3-line"></i> GRAVAR REGRAS DO RECREIO';
                 btn.disabled = false;
 
-                if(res.sucesso) {
-                    Swal.fire('Matriz Atualizada!', res.mensagem, 'success');
+                if (retorno.status === "sucesso" || retorno.sucesso === true) {
+                    Swal.fire('Matriz Atualizada!', retorno.mensagem || "As regras foram salvas com sucesso.", 'success');
                 } else {
-                    Swal.fire('Acesso Negado', res.erro, 'error');
+                    Swal.fire('Acesso Negado', retorno.mensagem || retorno.erro, 'error');
                 }
-            }).salvarRegrasRF_Matriz(payload, ceuLogado);
+            })
+            .catch(err => {
+                btn.innerHTML = '<i class="ri-save-3-line"></i> GRAVAR REGRAS DO RECREIO';
+                btn.disabled = false;
+                Swal.fire('Erro', 'Falha na comunicação com o servidor.', 'error');
+            });
         }
-        // ==========================================
-        // 🔒 VERIFICAÇÃO DE SEGURANÇA (EXCLUSIVO DRE)
-        // ==========================================
-        window.onload = function() {
-            // BUSCA A CHAVE CORRETA NO CACHE DO NAVEGADOR
-            const codigoLogado = localStorage.getItem('ceu_codigo_eol') || sessionStorage.getItem('ceu_codigo_eol');
-            
-            // SE NÃO FOR A DRE (777777), MOSTRA TELA DE BLOQUEIO
-            if (String(codigoLogado) !== "777777") {
-                document.body.innerHTML = `
-                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #f8d7da; color: #721c24; font-family: sans-serif; text-align: center; padding: 20px;">
-                        <span class="material-icons" style="font-size: 80px; margin-bottom: 20px;">gpp_bad</span>
-                        <h2 style="font-weight: bold;">Acesso Negado</h2>
-                        <p style="font-size: 16px; max-width: 500px;">Apenas o nível hierárquico <b>Diretoria Regional de Educação (DRE)</b> tem permissão para visualizar e alterar as regras globais do Recreio nas Férias.</p>
-                    </div>
-                `;
-                return; // Para a execução do restante da página
-            }
-
-            // SE PASSOU PELA SEGURANÇA, CARREGA OS DADOS!
-            carregarRegrasAtuais();
-        };
     </script>
 </body>
 </html>

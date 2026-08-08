@@ -36,13 +36,18 @@
         /* Paleta de Cores e Ícones */
         .color-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 1rem; background: #f8fafc; padding: 1rem; border-radius: 8px; border: 1px dashed var(--border);}
         .color-box { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
-        input[type="color"] { padding: 0; height: 45px; cursor: pointer; border: none; border-radius: 8px; overflow: hidden; }
+        input[type="color"] { padding: 0; height: 45px; cursor: pointer; border: none; border-radius: 8px; overflow: hidden; width: 100%;}
 
         .icon-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; margin-bottom: 10px; }
-        .icon-upload-box { text-align: center; }
+        .icon-upload-box { text-align: center; position: relative; }
         .icon-upload-box label { font-size: 0.75rem; font-weight: 600; margin-bottom: 5px; height: 32px; display: flex; align-items: center; justify-content: center;}
+        
+        .img-container { position: relative; display: inline-block; }
         .icon-preview { width: 65px; height: 65px; border-radius: 8px; border: 2px dashed var(--border); object-fit: contain; cursor: pointer; transition: 0.3s; background: white; padding: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);}
         .icon-preview:hover { border-color: var(--dre-color); transform: scale(1.05); }
+        
+        .btn-limpar-img { position: absolute; top: -8px; right: -8px; background: #ef4444; color: white; border: none; border-radius: 50%; width: 22px; height: 22px; font-size: 12px; display: none; cursor: pointer; justify-content: center; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.2);}
+        .btn-limpar-img:hover { background: #dc2626; transform: scale(1.1); }
 
         .btn-salvar { background: var(--dre-color); color: white; border: none; padding: 1rem 2rem; border-radius: 8px; font-weight: 700; font-size: 1rem; cursor: pointer; width: 100%; margin-top: 2rem; transition: 0.2s; display: flex; justify-content: center; align-items: center; gap: 0.5rem;}
         .btn-salvar:hover { background: var(--dre-hover); }
@@ -109,27 +114,114 @@
                 </div>
 
                 <div class="section-title"><i class="ri-image-add-fill"></i> 4. Ícones Visuais para Crachás (Arquivos de Imagem)</div>
-                <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">Clique nos quadrados para enviar as imagens em alta qualidade. Recomendado fundos transparentes (PNG).</div>
+                <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">Clique nos quadrados para enviar. Para remover um ícone, passe o mouse sobre ele e clique no ✖.</div>
 
                 <div style="background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px dashed var(--border);">
                     <h6 style="text-align: center; margin-top:0; color: #198754; font-weight: bold;">CONDIÇÃO: SIM (Autorizado / Possui)</h6>
                     <div class="icon-grid">
-                        <div class="icon-upload-box"><label>Restrição de Img</label><img id="img_restricao_sim" class="icon-preview" src="" onclick="document.getElementById('file_restricao_sim').click()"><input type="file" id="file_restricao_sim" accept="image/*" style="display:none" onchange="previewIcon(this, 'img_restricao_sim')"></div>
-                        <div class="icon-upload-box"><label>Dieta Especial</label><img id="img_dieta_sim" class="icon-preview" src="" onclick="document.getElementById('file_dieta_sim').click()"><input type="file" id="file_dieta_sim" accept="image/*" style="display:none" onchange="previewIcon(this, 'img_dieta_sim')"></div>
-                        <div class="icon-upload-box"><label>Vai Sozinho</label><img id="img_sozinho_sim" class="icon-preview" src="" onclick="document.getElementById('file_sozinho_sim').click()"><input type="file" id="file_sozinho_sim" accept="image/*" style="display:none" onchange="previewIcon(this, 'img_sozinho_sim')"></div>
-                        <div class="icon-upload-box"><label>Inclusão</label><img id="img_inclusao_sim" class="icon-preview" src="" onclick="document.getElementById('file_inclusao_sim').click()"><input type="file" id="file_inclusao_sim" accept="image/*" style="display:none" onchange="previewIcon(this, 'img_inclusao_sim')"></div>
-                        <div class="icon-upload-box"><label>Usa Piscina</label><img id="img_piscina_sim" class="icon-preview" src="" onclick="document.getElementById('file_piscina_sim').click()"><input type="file" id="file_piscina_sim" accept="image/*" style="display:none" onchange="previewIcon(this, 'img_piscina_sim')"></div>
+                        <div class="icon-upload-box">
+                            <label>Restrição de Img</label>
+                            <div class="img-container" onmouseover="mostrarLixeira('btn_del_restricao_sim')" onmouseout="esconderLixeira('btn_del_restricao_sim')">
+                                <img id="img_restricao_sim" class="icon-preview" src="" onclick="document.getElementById('file_restricao_sim').click()">
+                                <button type="button" id="btn_del_restricao_sim" class="btn-limpar-img" onclick="limparImagem('img_restricao_sim')">✖</button>
+                            </div>
+                            <input type="file" id="file_restricao_sim" accept="image/*" style="display:none" onchange="previewIcon(this, 'img_restricao_sim')">
+                        </div>
+
+                        <div class="icon-upload-box">
+                            <label>Dieta Especial</label>
+                            <div class="img-container" onmouseover="mostrarLixeira('btn_del_dieta_sim')" onmouseout="esconderLixeira('btn_del_dieta_sim')">
+                                <img id="img_dieta_sim" class="icon-preview" src="" onclick="document.getElementById('file_dieta_sim').click()">
+                                <button type="button" id="btn_del_dieta_sim" class="btn-limpar-img" onclick="limparImagem('img_dieta_sim')">✖</button>
+                            </div>
+                            <input type="file" id="file_dieta_sim" accept="image/*" style="display:none" onchange="previewIcon(this, 'img_dieta_sim')">
+                        </div>
+
+                        <div class="icon-upload-box">
+                            <label>Vai Sozinho</label>
+                            <div class="img-container" onmouseover="mostrarLixeira('btn_del_sozinho_sim')" onmouseout="esconderLixeira('btn_del_sozinho_sim')">
+                                <img id="img_sozinho_sim" class="icon-preview" src="" onclick="document.getElementById('file_sozinho_sim').click()">
+                                <button type="button" id="btn_del_sozinho_sim" class="btn-limpar-img" onclick="limparImagem('img_sozinho_sim')">✖</button>
+                            </div>
+                            <input type="file" id="file_sozinho_sim" accept="image/*" style="display:none" onchange="previewIcon(this, 'img_sozinho_sim')">
+                            <div style="margin-top: 8px;">
+                                <label style="font-size: 10px;">Cor da Faixa:</label>
+                                <input type="color" id="cor_sozinho_sim" value="#bbf7d0" style="height: 30px;">
+                            </div>
+                        </div>
+
+                        <div class="icon-upload-box">
+                            <label>Inclusão</label>
+                            <div class="img-container" onmouseover="mostrarLixeira('btn_del_inclusao_sim')" onmouseout="esconderLixeira('btn_del_inclusao_sim')">
+                                <img id="img_inclusao_sim" class="icon-preview" src="" onclick="document.getElementById('file_inclusao_sim').click()">
+                                <button type="button" id="btn_del_inclusao_sim" class="btn-limpar-img" onclick="limparImagem('img_inclusao_sim')">✖</button>
+                            </div>
+                            <input type="file" id="file_inclusao_sim" accept="image/*" style="display:none" onchange="previewIcon(this, 'img_inclusao_sim')">
+                        </div>
+
+                        <div class="icon-upload-box">
+                            <label>Usa Piscina</label>
+                            <div class="img-container" onmouseover="mostrarLixeira('btn_del_piscina_sim')" onmouseout="esconderLixeira('btn_del_piscina_sim')">
+                                <img id="img_piscina_sim" class="icon-preview" src="" onclick="document.getElementById('file_piscina_sim').click()">
+                                <button type="button" id="btn_del_piscina_sim" class="btn-limpar-img" onclick="limparImagem('img_piscina_sim')">✖</button>
+                            </div>
+                            <input type="file" id="file_piscina_sim" accept="image/*" style="display:none" onchange="previewIcon(this, 'img_piscina_sim')">
+                        </div>
                     </div>
                 </div>
 
                 <div style="background: #fff5f5; padding: 15px; border-radius: 8px; border: 1px dashed #f5c6cb; margin-top: 15px;">
                     <h6 style="text-align: center; margin-top:0; color: #dc3545; font-weight: bold;">CONDIÇÃO: NÃO (Não Autorizado / Não Possui)</h6>
                     <div class="icon-grid">
-                        <div class="icon-upload-box"><label>Restrição de Img</label><img id="img_restricao_nao" class="icon-preview" src="" onclick="document.getElementById('file_restricao_nao').click()"><input type="file" id="file_restricao_nao" accept="image/*" style="display:none" onchange="previewIcon(this, 'img_restricao_nao')"></div>
-                        <div class="icon-upload-box"><label>Dieta Especial</label><img id="img_dieta_nao" class="icon-preview" src="" onclick="document.getElementById('file_dieta_nao').click()"><input type="file" id="file_dieta_nao" accept="image/*" style="display:none" onchange="previewIcon(this, 'img_dieta_nao')"></div>
-                        <div class="icon-upload-box"><label>Vai Sozinho</label><img id="img_sozinho_nao" class="icon-preview" src="" onclick="document.getElementById('file_sozinho_nao').click()"><input type="file" id="file_sozinho_nao" accept="image/*" style="display:none" onchange="previewIcon(this, 'img_sozinho_nao')"></div>
-                        <div class="icon-upload-box"><label>Inclusão</label><img id="img_inclusao_nao" class="icon-preview" src="" onclick="document.getElementById('file_inclusao_nao').click()"><input type="file" id="file_inclusao_nao" accept="image/*" style="display:none" onchange="previewIcon(this, 'img_inclusao_nao')"></div>
-                        <div class="icon-upload-box"><label>Usa Piscina</label><img id="img_piscina_nao" class="icon-preview" src="" onclick="document.getElementById('file_piscina_nao').click()"><input type="file" id="file_piscina_nao" accept="image/*" style="display:none" onchange="previewIcon(this, 'img_piscina_nao')"></div>
+                        
+                        <div class="icon-upload-box">
+                            <label>Restrição de Img</label>
+                            <div class="img-container" onmouseover="mostrarLixeira('btn_del_restricao_nao')" onmouseout="esconderLixeira('btn_del_restricao_nao')">
+                                <img id="img_restricao_nao" class="icon-preview" src="" onclick="document.getElementById('file_restricao_nao').click()">
+                                <button type="button" id="btn_del_restricao_nao" class="btn-limpar-img" onclick="limparImagem('img_restricao_nao')">✖</button>
+                            </div>
+                            <input type="file" id="file_restricao_nao" accept="image/*" style="display:none" onchange="previewIcon(this, 'img_restricao_nao')">
+                        </div>
+
+                        <div class="icon-upload-box">
+                            <label>Dieta Especial</label>
+                            <div class="img-container" onmouseover="mostrarLixeira('btn_del_dieta_nao')" onmouseout="esconderLixeira('btn_del_dieta_nao')">
+                                <img id="img_dieta_nao" class="icon-preview" src="" onclick="document.getElementById('file_dieta_nao').click()">
+                                <button type="button" id="btn_del_dieta_nao" class="btn-limpar-img" onclick="limparImagem('img_dieta_nao')">✖</button>
+                            </div>
+                            <input type="file" id="file_dieta_nao" accept="image/*" style="display:none" onchange="previewIcon(this, 'img_dieta_nao')">
+                        </div>
+
+                        <div class="icon-upload-box">
+                            <label>Vai Sozinho</label>
+                            <div class="img-container" onmouseover="mostrarLixeira('btn_del_sozinho_nao')" onmouseout="esconderLixeira('btn_del_sozinho_nao')">
+                                <img id="img_sozinho_nao" class="icon-preview" src="" onclick="document.getElementById('file_sozinho_nao').click()">
+                                <button type="button" id="btn_del_sozinho_nao" class="btn-limpar-img" onclick="limparImagem('img_sozinho_nao')">✖</button>
+                            </div>
+                            <input type="file" id="file_sozinho_nao" accept="image/*" style="display:none" onchange="previewIcon(this, 'img_sozinho_nao')">
+                            <div style="margin-top: 8px;">
+                                <label style="font-size: 10px;">Cor da Faixa:</label>
+                                <input type="color" id="cor_sozinho_nao" value="#fecaca" style="height: 30px;">
+                            </div>
+                        </div>
+
+                        <div class="icon-upload-box">
+                            <label>Inclusão</label>
+                            <div class="img-container" onmouseover="mostrarLixeira('btn_del_inclusao_nao')" onmouseout="esconderLixeira('btn_del_inclusao_nao')">
+                                <img id="img_inclusao_nao" class="icon-preview" src="" onclick="document.getElementById('file_inclusao_nao').click()">
+                                <button type="button" id="btn_del_inclusao_nao" class="btn-limpar-img" onclick="limparImagem('img_inclusao_nao')">✖</button>
+                            </div>
+                            <input type="file" id="file_inclusao_nao" accept="image/*" style="display:none" onchange="previewIcon(this, 'img_inclusao_nao')">
+                        </div>
+
+                        <div class="icon-upload-box">
+                            <label>Usa Piscina</label>
+                            <div class="img-container" onmouseover="mostrarLixeira('btn_del_piscina_nao')" onmouseout="esconderLixeira('btn_del_piscina_nao')">
+                                <img id="img_piscina_nao" class="icon-preview" src="" onclick="document.getElementById('file_piscina_nao').click()">
+                                <button type="button" id="btn_del_piscina_nao" class="btn-limpar-img" onclick="limparImagem('img_piscina_nao')">✖</button>
+                            </div>
+                            <input type="file" id="file_piscina_nao" accept="image/*" style="display:none" onchange="previewIcon(this, 'img_piscina_nao')">
+                        </div>
                     </div>
                 </div>
 
@@ -159,9 +251,6 @@
         const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec";
         const placeholderImg = "https://via.placeholder.com/150/e2e8f0/64748b?text=Clique+Aqui";
 
-        // ==========================================
-        // 🔒 VERIFICAÇÃO DE SEGURANÇA E CARREGAMENTO
-        // ==========================================
         document.addEventListener("DOMContentLoaded", () => {
             const codigoLogado = String(localStorage.getItem('ceu_id') || sessionStorage.getItem('ceu_id') || localStorage.getItem('ceu_codigo_eol')).trim();
             
@@ -174,11 +263,24 @@
             document.getElementById('bloqueio').style.display = 'none';
             document.getElementById('painel-regras').style.display = 'block';
             
-            // Coloca o placeholder provisório nas imagens
             document.querySelectorAll('.icon-preview').forEach(img => img.src = placeholderImg);
 
             carregarRegrasAtuais();
         });
+
+        function mostrarLixeira(idBtn) {
+            const imgSrc = document.getElementById(idBtn.replace('btn_del_', 'img_')).src;
+            if (!imgSrc.includes("via.placeholder.com")) {
+                document.getElementById(idBtn).style.display = 'flex';
+            }
+        }
+        function esconderLixeira(idBtn) { document.getElementById(idBtn).style.display = 'none'; }
+        
+        function limparImagem(idImg) {
+            document.getElementById(idImg).src = placeholderImg;
+            document.getElementById(idImg.replace('img_', 'file_')).value = ""; 
+            esconderLixeira(idImg.replace('img_', 'btn_del_'));
+        }
 
         function carregarRegrasAtuais() {
             const pacote = { acao: "getRegrasRF_Matriz", dados: {} };
@@ -195,11 +297,11 @@
 
         function preencherTela(d) {
             const idsTexto = ['portaria','dataPub','min0a3','min4a14','minCeci','ano','mes','diaIni','diaFim','max4e5','max6a14',
+                              'cor_sozinho_sim', 'cor_sozinho_nao',
                               'c4','c5','c6','c7','c8','c9','c10','c11','c12','c13','c14'];
             
             const idsImagem = ['restricao_sim','restricao_nao','dieta_sim','dieta_nao','sozinho_sim','sozinho_nao','inclusao_sim','inclusao_nao','piscina_sim','piscina_nao'];
 
-            // Textos e Cores
             idsTexto.forEach(id => {
                 if(d[id]) {
                      let valor = d[id];
@@ -213,7 +315,6 @@
                 }
             });
 
-            // Imagens
             idsImagem.forEach(id => {
                 if(d[id] && d[id] !== "") {
                     document.getElementById('img_' + id).src = d[id];
@@ -221,8 +322,6 @@
             });
         }
 
-        // MOTOR DE COMPRESSÃO DE IMAGENS 
-        // Comprime a foto na hora do upload para não travar o banco de dados!
         function previewIcon(input, imgId) {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
@@ -230,9 +329,8 @@
                     const img = new Image();
                     img.onload = function() {
                         const canvas = document.createElement('canvas');
-                        const MAX_SIZE = 150; // Diminui pra 150px
-                        let width = img.width;
-                        let height = img.height;
+                        const MAX_SIZE = 150; 
+                        let width = img.width; let height = img.height;
 
                         if (width > height) { if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; } } 
                         else { if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; } }
@@ -240,7 +338,7 @@
                         canvas.width = width; canvas.height = height;
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
-                        document.getElementById(imgId).src = canvas.toDataURL('image/png'); // Devolve em PNG comprimido
+                        document.getElementById(imgId).src = canvas.toDataURL('image/png'); 
                     }
                     img.src = e.target.result;
                 };
@@ -272,7 +370,6 @@
                     max4e5: document.getElementById('max4e5').value,
                     max6a14: document.getElementById('max6a14').value,
                     
-                    // Lê as imagens da tela
                     restricao_sim: document.getElementById('img_restricao_sim').src,
                     restricao_nao: document.getElementById('img_restricao_nao').src,
                     dieta_sim: document.getElementById('img_dieta_sim').src,
@@ -283,6 +380,9 @@
                     inclusao_nao: document.getElementById('img_inclusao_nao').src,
                     piscina_sim: document.getElementById('img_piscina_sim').src,
                     piscina_nao: document.getElementById('img_piscina_nao').src,
+
+                    cor_sozinho_sim: document.getElementById('cor_sozinho_sim').value,
+                    cor_sozinho_nao: document.getElementById('cor_sozinho_nao').value,
 
                     c4: document.getElementById('c4').value, c5: document.getElementById('c5').value,
                     c6: document.getElementById('c6').value, c7: document.getElementById('c7').value,

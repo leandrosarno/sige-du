@@ -287,7 +287,7 @@
             atualizarSaudacao();
             
             // 💡 A BUSCA UNIVERSAL: Tenta pegar o ID de qualquer uma das chaves salvas!
-            const ceuLogado = localStorage.getItem('ceu_id') || sessionStorage.getItem('ceu_id') || localStorage.getItem('ceu_codigo_eol');
+            const ceuLogado = String(localStorage.getItem('ceu_id') || sessionStorage.getItem('ceu_id') || localStorage.getItem('ceu_codigo_eol')).trim();
             
             if (String(ceuLogado) === "777777") {
                 carregarDadosDRE(ceuLogado);

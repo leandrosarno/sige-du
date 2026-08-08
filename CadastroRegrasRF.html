@@ -295,7 +295,7 @@
             .catch(err => console.error("Erro:", err));
         }
 
-        function preencherTela(d) {
+function preencherTela(d) {
             const idsTexto = ['portaria','dataPub','min0a3','min4a14','minCeci','ano','mes','diaIni','diaFim','max4e5','max6a14',
                               'cor_sozinho_sim', 'cor_sozinho_nao',
                               'c4','c5','c6','c7','c8','c9','c10','c11','c12','c13','c14'];
@@ -305,7 +305,8 @@
             idsTexto.forEach(id => {
                 if(d[id]) {
                      let valor = d[id];
-                     if(valor.indexOf("/") > -1) {
+                     // A mágica da formatação universal de datas
+                     if(valor.indexOf("/") > -1 && valor.length <= 10) {
                          let p = valor.split("/");
                          if(p.length === 3) valor = p[2] + "-" + p[1] + "-" + p[0];
                      } else if (valor.indexOf("T") > -1 && valor.indexOf("Z") > -1) {

@@ -26,7 +26,7 @@
         .saudacao-titulo { font-size: 24px; font-weight: 700; margin-bottom: 5px; }
         .saudacao-sub { font-size: 15px; opacity: 0.9; }
 
-        /* CARDS DO CEU NORMAL */
+        /* CARDS GERAIS (Tanto CEU quanto DRE) */
         .dashboard-cards {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -64,8 +64,9 @@
         .bg-blue { background: #0d6efd; }
         .bg-green { background: #198754; }
         .bg-orange { background: #fd7e14; }
+        .bg-purple { background: #6f42c1; }
 
-        /* CARDS DA DRE (MULTI-TENANT) */
+        /* CARDS INDIVIDUAIS DA DRE */
         .dre-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -154,7 +155,7 @@
             </div>
 
             <div class="stat-card">
-                <div class="stat-icon bg-orange"><span class="material-icons">assignment_turned_in</span></div>
+                <div class="stat-icon bg-purple"><span class="material-icons">assignment_turned_in</span></div>
                 <div class="stat-info">
                     <h3 id="stat-matriculas">0</h3>
                     <p>Matrículas Realizadas</p>
@@ -171,12 +172,29 @@
             </button>
         </div>
         
-        <div class="dre-grid" id="grid-ceus">
+        <div class="dashboard-cards mb-4" id="dre-placar-global">
+            <div class="stat-card" style="padding: 15px; min-height: 80px;">
+                <div class="stat-icon bg-purple" style="width: 50px; height: 50px;"><span class="material-icons" style="font-size: 24px;">assignment_turned_in</span></div>
+                <div class="stat-info">
+                    <h3 id="dre-total-matriculas" style="font-size: 24px;">0</h3>
+                    <p style="font-size: 12px;">Total Matrículas (Rede)</p>
+                </div>
             </div>
+            <div class="stat-card" style="padding: 15px; min-height: 80px;">
+                <div class="stat-icon bg-orange" style="width: 50px; height: 50px;"><span class="material-icons" style="font-size: 24px;">wb_sunny</span></div>
+                <div class="stat-info">
+                    <h3 id="dre-total-recreio" style="font-size: 24px;">0</h3>
+                    <p style="font-size: 12px;">Crianças no Recreio (Rede)</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="dre-grid" id="grid-ceus">
+        </div>
     </div>
 
     <script>
-                const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec";
 
         function atualizarSaudacao() {
             const data = new Date();
@@ -194,13 +212,14 @@
             document.getElementById('lbl-data').innerText = dataFormatada.charAt(0).toUpperCase() + dataFormatada.slice(1);
         }
 
-
-
-
         function montarPainelDRE(nomeDRE, listaCeus) {
             document.getElementById('nome-dre-titulo').innerText = nomeDRE || "DRE Central";
             const grid = document.getElementById('grid-ceus');
             grid.innerHTML = "";
+
+            // Variáveis para somar tudo
+            let somaMatriculas = 0;
+            let somaRecreio = 0;
 
             if (!listaCeus || listaCeus.length === 0) {
                 grid.innerHTML = `
@@ -211,7 +230,13 @@
             } else {
                 listaCeus.forEach(ceu => {
                     let isConectado = ceu.status.includes("Conectado");
-                    let corStatus = isConectado ? "#198754" : "#dc3545"; // Verde ou Vermelho
+                    let corStatus = isConectado ? "#198754" : "#dc3545"; 
+                    
+                    // Se estiver conectado, soma no placar global
+                    if(isConectado) {
+                        somaMatriculas += (ceu.matriculas || 0);
+                        somaRecreio += (ceu.recreio || 0);
+                    }
                     
                     grid.innerHTML += `
                         <div class="dre-card">
@@ -225,20 +250,37 @@
                                     <span class="dre-stat-value">${ceu.alunos}</span>
                                 </div>
                                 <div class="dre-stat-row">
-                                    <span class="dre-stat-label"><i class="material-icons" style="font-size: 18px; color: #198754;">class</i> Turmas</span>
+                                    <span class="dre-stat-label"><i class="material-icons" style="font-size: 18px; color: #198754;">class</i> Turmas Ativas</span>
                                     <span class="dre-stat-value" style="color: #198754; background: #d1e7dd;">${ceu.turmas}</span>
+                                </div>
+                                <div class="dre-stat-row">
+                                    <span class="dre-stat-label"><i class="material-icons" style="font-size: 18px; color: #6f42c1;">assignment_turned_in</i> Matrículas</span>
+                                    <span class="dre-stat-value" style="color: #6f42c1; background: #e0d4f5;">${ceu.matriculas || 0}</span>
+                                </div>
+                                <div class="dre-stat-row">
+                                    <span class="dre-stat-label"><i class="material-icons" style="font-size: 18px; color: #fd7e14;">wb_sunny</i> Recreio Férias</span>
+                                    <span class="dre-stat-value" style="color: #fd7e14; background: #ffe5d0;">${ceu.recreio || 0}</span>
                                 </div>
                             </div>
                         </div>
                     `;
                 });
             }
+            
+            // Pinta os totais no Placar Global da DRE
+            document.getElementById('dre-total-matriculas').innerText = somaMatriculas;
+            document.getElementById('dre-total-recreio').innerText = somaRecreio;
+            
             document.getElementById('painel-dre').style.display = 'block';
         }
 
-        
-// Função de carregamento exclusiva para a DRE
+        // Função de carregamento exclusiva para a DRE
         function carregarDadosDRE(idDRE) {
+            // Caso seja acionado pelo botão de atualizar
+            if (!idDRE) {
+                 idDRE = String(localStorage.getItem('ceu_id') || sessionStorage.getItem('ceu_id') || localStorage.getItem('ceu_codigo_eol')).trim();
+            }
+
             document.getElementById('area-loading').style.display = 'block';
             document.getElementById('painel-dre').style.display = 'none';
 
@@ -286,7 +328,7 @@
         window.onload = function() {
             atualizarSaudacao();
             
-            // 💡 A BUSCA UNIVERSAL: Tenta pegar o ID de qualquer uma das chaves salvas!
+            // 💡 A BUSCA UNIVERSAL
             const ceuLogado = String(localStorage.getItem('ceu_id') || sessionStorage.getItem('ceu_id') || localStorage.getItem('ceu_codigo_eol')).trim();
             
             if (String(ceuLogado) === "777777") {
@@ -295,7 +337,6 @@
                 carregarDadosCEU(ceuLogado);
             }
         };
-    
-</script>
+    </script>
 </body>
 </html>

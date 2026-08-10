@@ -5,9 +5,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-      body {
-        font-family: 'Nunito', sans-serif; background-color: #f8fafc; margin: 0; padding: 20px; color: #2d3748;
-      }
+      body { font-family: 'Nunito', sans-serif; background-color: #f8fafc; margin: 0; padding: 20px; color: #2d3748; }
       .card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
       .header-icon { font-size: 35px; color: #ed8936; text-align: center; margin-bottom: 10px; }
       h2 { text-align: center; margin: 0 0 5px 0; color: #2b6cb0; font-weight: 800; font-size: 22px; }
@@ -15,17 +13,10 @@
       
       .form-group { margin-bottom: 20px; }
       label { display: block; font-weight: 800; color: #4a5568; margin-bottom: 8px; font-size: 14px; }
-      select {
-        width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px;
-        font-family: 'Nunito', sans-serif; font-size: 15px; font-weight: 600; outline: none; cursor: pointer;
-      }
+      select { width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-family: 'Nunito', sans-serif; font-size: 15px; font-weight: 600; outline: none; cursor: pointer; }
       select:focus { border-color: #4299e1; box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2); }
       
-      .btn-gerar {
-        width: 100%; padding: 15px; background: linear-gradient(135deg, #4299e1, #3182ce);
-        color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 800; cursor: pointer;
-        display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 10px;
-      }
+      .btn-gerar { width: 100%; padding: 15px; background: linear-gradient(135deg, #4299e1, #3182ce); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 800; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 10px; }
       .btn-gerar:hover { opacity: 0.9; }
       
       #msg-status { text-align: center; margin-top: 15px; font-weight: 800; font-size: 14px; display: none; padding: 12px; border-radius: 8px; }
@@ -66,7 +57,6 @@
     </div>
 
     <script>
-      // O MESMO LINK DO SEU DASHBOARD
       const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec"; 
 
       async function gerarRelatorio() {
@@ -102,13 +92,17 @@
             btn.disabled = false;
             msg.style.display = 'block';
 
-            if (resposta.sucesso) {
+            // 🛡️ O TRUQUE DE SEGURANÇA: Tenta ler 'sucesso' ou 'status', e 'erro' ou 'mensagem'
+            const deuCerto = resposta.sucesso === true || resposta.status === "sucesso";
+            const textoErro = resposta.erro || resposta.mensagem || JSON.stringify(resposta);
+
+            if (deuCerto) {
               msg.className = "sucesso";
-              msg.innerHTML = "✅ Relatório gerado! (" + resposta.quantidade + " crianças).<br><a href='" + resposta.urlPdf + "' target='_blank' class='btn-pdf'><i class='fas fa-download'></i> Baixar PDF</a>";
-              window.open(resposta.urlPdf, "_blank"); // Abre o PDF automaticamente
+              msg.innerHTML = "✅ Relatório gerado! (" + resposta.quantidade + " crianças).<br><br><a href='" + resposta.urlPdf + "' target='_blank' class='btn-pdf'><i class='fas fa-download'></i> Baixar PDF</a>";
+              window.open(resposta.urlPdf, "_blank"); 
             } else {
               msg.className = "erro";
-              msg.innerHTML = "❌ Erro: " + resposta.erro;
+              msg.innerHTML = "❌ Erro: " + textoErro;
             }
         } catch (error) {
             btn.innerHTML = '<i class="fas fa-file-pdf"></i> Gerar PDF Oficial';

@@ -17,12 +17,11 @@
         .card-title { font-weight: 800; font-size: 18px; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; color: #34495e; }
         
         label { font-weight: 700; color: #7f8c8d; font-size: 13px; margin-bottom: 5px; text-transform: uppercase; }
-        .form-control, .form-select { border-radius: 8px; border: 2px solid #e0e6ed; padding: 10px 15px; font-weight: 600; }
-        .form-control:focus, .form-select:focus { border-color: #3498db; box-shadow: none; }
+        .form-control { border-radius: 8px; border: 2px solid #e0e6ed; padding: 10px 15px; font-weight: 600; }
+        .form-control:focus { border-color: #3498db; box-shadow: none; }
         
-        /* O estilo do botão 'Switch' (Interruptor) */
         .form-check-input { width: 3em; height: 1.5em; cursor: pointer; }
-        .form-check-label { cursor: pointer; font-weight: 700; padding-top: 4px; padding-left: 5px; }
+        .form-check-label { cursor: pointer; font-weight: 800; padding-top: 4px; padding-left: 5px; color: #34495e;}
 
         .btn-salvar { background: linear-gradient(135deg, #2ecc71, #27ae60); color: white; font-weight: 800; padding: 15px; border-radius: 10px; border: none; width: 100%; font-size: 18px; transition: 0.3s; }
         .btn-salvar:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(46, 204, 113, 0.4); color: white;}
@@ -36,7 +35,7 @@
     <div class="card-form">
         <div class="card-title"><i class="fas fa-child text-primary"></i> 1. Dados da Criança</div>
         <div class="row g-3">
-            <div class="col-md-6">
+            <div class="col-md-9">
                 <label>Nome Completo *</label>
                 <input type="text" id="nome" class="form-control" placeholder="Nome da criança" required>
             </div>
@@ -44,9 +43,9 @@
                 <label>Idade *</label>
                 <input type="number" id="idade" class="form-control" placeholder="Ex: 8" required>
             </div>
-            <div class="col-md-3">
-                <label>Turma *</label>
-                <input type="text" id="turma" class="form-control" placeholder="Ex: T1" required>
+            <div class="col-md-12 mt-3">
+                <label class="text-primary"><i class="fas fa-home"></i> Criança de Abrigo?</label>
+                <input type="text" id="abrigo" class="form-control" placeholder="Se SIM, digite o nome do abrigo. Se NÃO, deixe em branco.">
             </div>
         </div>
     </div>
@@ -77,44 +76,42 @@
         <div class="card-title"><i class="fas fa-heartbeat text-success"></i> 3. Saúde e Autorizações</div>
         
         <div class="row g-4 mb-4">
-            <div class="col-md-3">
+            <div class="col-md-4">
                 <div class="form-check form-switch">
                     <input class="form-check-input" type="checkbox" id="piscina">
-                    <label class="form-check-label" for="piscina">🏊‍♂️ Autoriza Piscina?</label>
+                    <label class="form-check-label text-primary" for="piscina">🏊‍♂️ Autoriza Piscina?</label>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-4">
                 <div class="form-check form-switch">
                     <input class="form-check-input" type="checkbox" id="vaiSozinho">
                     <label class="form-check-label" for="vaiSozinho">🚶‍♂️ Vai Sozinho?</label>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-4">
                 <div class="form-check form-switch">
                     <input class="form-check-input" type="checkbox" id="restricaoImagem">
-                    <label class="form-check-label text-danger" for="restricaoImagem">🚫 Restrição de Imagem?</label>
+                    <label class="form-check-label text-danger" for="restricaoImagem">🚫 Restrição Imagem?</label>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-4 mt-4">
                 <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="abrigo">
-                    <label class="form-check-label text-primary" for="abrigo">🏠 Criança de Abrigo?</label>
+                    <input class="form-check-input" type="checkbox" id="dietaEspecial">
+                    <label class="form-check-label text-warning" for="dietaEspecial">🍎 Dieta Especial?</label>
+                </div>
+            </div>
+            <div class="col-md-4 mt-4">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="inclusao">
+                    <label class="form-check-label text-info" for="inclusao">🤝 Criança de Inclusão?</label>
                 </div>
             </div>
         </div>
 
         <div class="row g-3">
-            <div class="col-md-6">
-                <label>Dieta Especial (Alimentação)</label>
-                <input type="text" id="dietaEspecial" class="form-control" placeholder="Deixe em branco se não houver">
-            </div>
-            <div class="col-md-6">
-                <label>Inclusão (PCD / TEA / Outros)</label>
-                <input type="text" id="inclusao" class="form-control" placeholder="Deixe em branco se não houver">
-            </div>
             <div class="col-md-12">
-                <label>Observações Gerais</label>
-                <textarea id="observacao" class="form-control" rows="2" placeholder="Detalhes médicos, remédios, etc."></textarea>
+                <label>Observações Gerais / Detalhes de Saúde</label>
+                <textarea id="observacao" class="form-control" rows="2" placeholder="Qual a dieta? Qual a inclusão? Remédios?"></textarea>
             </div>
         </div>
     </div>
@@ -134,45 +131,38 @@
                 return;
             }
 
-            // Pega os valores obrigatórios
             const nome = document.getElementById('nome').value.trim();
             const idade = document.getElementById('idade').value;
-            const turma = document.getElementById('turma').value.trim();
             const responsavel = document.getElementById('responsavel').value.trim();
             const telefoneResp = document.getElementById('telefoneResp').value.trim();
 
-            if (!nome || !idade || !turma || !responsavel || !telefoneResp) {
-                Swal.fire('Atenção!', 'Preencha todos os campos com asterisco (*)', 'warning');
+            if (!nome || !idade || !responsavel || !telefoneResp) {
+                Swal.fire('Atenção!', 'Preencha o Nome, Idade, Responsável e Telefone!', 'warning');
                 return;
             }
 
-            // Monta o pacote de dados
             const dadosMatricula = {
                 idPlanilha: idPlanilha,
                 nome: nome,
                 idade: idade,
-                turma: turma,
+                abrigo: document.getElementById('abrigo').value.trim(),
                 responsavel: responsavel,
                 telefoneResp: telefoneResp,
                 telContato: document.getElementById('telContato').value.trim(),
                 contatoCom: document.getElementById('contatoCom').value.trim(),
-                abrigo: document.getElementById('abrigo').checked,
                 piscina: document.getElementById('piscina').checked,
                 vaiSozinho: document.getElementById('vaiSozinho').checked,
                 restricaoImagem: document.getElementById('restricaoImagem').checked,
-                dietaEspecial: document.getElementById('dietaEspecial').value.trim(),
-                inclusao: document.getElementById('inclusao').value.trim(),
+                dietaEspecial: document.getElementById('dietaEspecial').checked,
+                inclusao: document.getElementById('inclusao').checked,
                 observacao: document.getElementById('observacao').value.trim()
             };
 
             const btn = document.getElementById('btnSalvar');
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando no Banco de Dados...';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando e Calculando Turma...';
             btn.disabled = true;
 
-            const pacote = {
-                acao: "salvarCriancaRecreio",
-                dados: dadosMatricula
-            };
+            const pacote = { acao: "salvarCriancaRecreio", dados: dadosMatricula };
 
             try {
                 const respostaRaw = await fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) });
@@ -184,7 +174,11 @@
                 if (resposta.sucesso || resposta.status === "sucesso") {
                     Swal.fire({
                         title: 'Matriculado!',
-                        text: 'Criança cadastrada com sucesso! (ID: ' + (resposta.idGerado || resposta.id) + ')',
+                        html: `A criança foi salva com sucesso!<br><br>
+                               <div style="font-size: 22px; color: #2980b9; font-weight: bold; background: #ebf5fb; padding: 15px; border-radius: 10px;">
+                                 👉 TURMA: ${resposta.turma}<br>
+                                 <span style="font-size: 14px; color: #7f8c8d;">ID: ${resposta.idGerado || resposta.id}</span>
+                               </div>`,
                         icon: 'success',
                         confirmButtonColor: '#2ecc71'
                     });
@@ -200,24 +194,21 @@
         }
 
         function limparFormulario() {
-            // Limpa campos de texto (Mantive a Turma porque geralmente cadastram vários alunos na mesma turma)
             document.getElementById('nome').value = '';
             document.getElementById('idade').value = '';
+            document.getElementById('abrigo').value = '';
             document.getElementById('responsavel').value = '';
             document.getElementById('telefoneResp').value = '';
             document.getElementById('telContato').value = '';
             document.getElementById('contatoCom').value = '';
-            document.getElementById('dietaEspecial').value = '';
-            document.getElementById('inclusao').value = '';
             document.getElementById('observacao').value = '';
 
-            // Desmarca todos os switches
-            document.getElementById('abrigo').checked = false;
             document.getElementById('piscina').checked = false;
             document.getElementById('vaiSozinho').checked = false;
             document.getElementById('restricaoImagem').checked = false;
+            document.getElementById('dietaEspecial').checked = false;
+            document.getElementById('inclusao').checked = false;
             
-            // Dá o foco de volta para o primeiro campo
             document.getElementById('nome').focus();
         }
     </script>

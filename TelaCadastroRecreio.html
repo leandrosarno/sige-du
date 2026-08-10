@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro - Recreio nas Férias</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body { font-family: 'Nunito', sans-serif; background-color: #f4f7f6; padding: 20px; color: #2c3e50; }
+        .page-title { color: #f39c12; font-weight: 800; display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+        .card-form { background: white; border-radius: 15px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; border-top: 5px solid #3498db; }
+        .card-orange { border-top-color: #e67e22; }
+        .card-green { border-top-color: #2ecc71; }
+        .card-title { font-weight: 800; font-size: 18px; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; color: #34495e; }
+        
+        label { font-weight: 700; color: #7f8c8d; font-size: 13px; margin-bottom: 5px; text-transform: uppercase; }
+        .form-control, .form-select { border-radius: 8px; border: 2px solid #e0e6ed; padding: 10px 15px; font-weight: 600; }
+        .form-control:focus, .form-select:focus { border-color: #3498db; box-shadow: none; }
+        
+        /* O estilo do botão 'Switch' (Interruptor) */
+        .form-check-input { width: 3em; height: 1.5em; cursor: pointer; }
+        .form-check-label { cursor: pointer; font-weight: 700; padding-top: 4px; padding-left: 5px; }
+
+        .btn-salvar { background: linear-gradient(135deg, #2ecc71, #27ae60); color: white; font-weight: 800; padding: 15px; border-radius: 10px; border: none; width: 100%; font-size: 18px; transition: 0.3s; }
+        .btn-salvar:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(46, 204, 113, 0.4); color: white;}
+        .btn-salvar:disabled { background: #95a5a6; cursor: not-allowed; transform: none; box-shadow: none; }
+    </style>
+</head>
+<body>
+
+    <h3 class="page-title"><i class="fas fa-sun"></i> Cadastro - Recreio nas Férias</h3>
+
+    <div class="card-form">
+        <div class="card-title"><i class="fas fa-child text-primary"></i> 1. Dados da Criança</div>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label>Nome Completo *</label>
+                <input type="text" id="nome" class="form-control" placeholder="Nome da criança" required>
+            </div>
+            <div class="col-md-3">
+                <label>Idade *</label>
+                <input type="number" id="idade" class="form-control" placeholder="Ex: 8" required>
+            </div>
+            <div class="col-md-3">
+                <label>Turma *</label>
+                <input type="text" id="turma" class="form-control" placeholder="Ex: T1" required>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-form card-orange">
+        <div class="card-title"><i class="fas fa-address-book text-warning"></i> 2. Responsáveis e Contatos</div>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label>Responsável Legal *</label>
+                <input type="text" id="responsavel" class="form-control" placeholder="Nome do pai/mãe/responsável" required>
+            </div>
+            <div class="col-md-6">
+                <label>Telefone do Responsável *</label>
+                <input type="text" id="telefoneResp" class="form-control" placeholder="(11) 99999-9999" required>
+            </div>
+            <div class="col-md-6">
+                <label>Telefone de Emergência (Opcional)</label>
+                <input type="text" id="telContato" class="form-control" placeholder="(11) 99999-9999">
+            </div>
+            <div class="col-md-6">
+                <label>Falar com (Emergência)</label>
+                <input type="text" id="contatoCom" class="form-control" placeholder="Ex: Avó Maria">
+            </div>
+        </div>
+    </div>
+
+    <div class="card-form card-green">
+        <div class="card-title"><i class="fas fa-heartbeat text-success"></i> 3. Saúde e Autorizações</div>
+        
+        <div class="row g-4 mb-4">
+            <div class="col-md-3">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="piscina">
+                    <label class="form-check-label" for="piscina">🏊‍♂️ Autoriza Piscina?</label>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="vaiSozinho">
+                    <label class="form-check-label" for="vaiSozinho">🚶‍♂️ Vai Sozinho?</label>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="restricaoImagem">
+                    <label class="form-check-label text-danger" for="restricaoImagem">🚫 Restrição de Imagem?</label>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="abrigo">
+                    <label class="form-check-label text-primary" for="abrigo">🏠 Criança de Abrigo?</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label>Dieta Especial (Alimentação)</label>
+                <input type="text" id="dietaEspecial" class="form-control" placeholder="Deixe em branco se não houver">
+            </div>
+            <div class="col-md-6">
+                <label>Inclusão (PCD / TEA / Outros)</label>
+                <input type="text" id="inclusao" class="form-control" placeholder="Deixe em branco se não houver">
+            </div>
+            <div class="col-md-12">
+                <label>Observações Gerais</label>
+                <textarea id="observacao" class="form-control" rows="2" placeholder="Detalhes médicos, remédios, etc."></textarea>
+            </div>
+        </div>
+    </div>
+
+    <button id="btnSalvar" class="btn-salvar" onclick="salvarMatricula()"><i class="fas fa-save"></i> Efetivar Matrícula no Recreio</button>
+
+    <script>
+        // ====================================================
+        // 🚨 COLOQUE O LINK DA SUA API (DO DASHBOARD) AQUI
+        // ====================================================
+        const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec";
+
+        async function salvarMatricula() {
+            const idPlanilha = localStorage.getItem('ceu_planilha_id');
+            if (!idPlanilha) {
+                Swal.fire('Erro', 'O Banco de Dados do CEU não está conectado!', 'error');
+                return;
+            }
+
+            // Pega os valores obrigatórios
+            const nome = document.getElementById('nome').value.trim();
+            const idade = document.getElementById('idade').value;
+            const turma = document.getElementById('turma').value.trim();
+            const responsavel = document.getElementById('responsavel').value.trim();
+            const telefoneResp = document.getElementById('telefoneResp').value.trim();
+
+            if (!nome || !idade || !turma || !responsavel || !telefoneResp) {
+                Swal.fire('Atenção!', 'Preencha todos os campos com asterisco (*)', 'warning');
+                return;
+            }
+
+            // Monta o pacote de dados
+            const dadosMatricula = {
+                idPlanilha: idPlanilha,
+                nome: nome,
+                idade: idade,
+                turma: turma,
+                responsavel: responsavel,
+                telefoneResp: telefoneResp,
+                telContato: document.getElementById('telContato').value.trim(),
+                contatoCom: document.getElementById('contatoCom').value.trim(),
+                abrigo: document.getElementById('abrigo').checked,
+                piscina: document.getElementById('piscina').checked,
+                vaiSozinho: document.getElementById('vaiSozinho').checked,
+                restricaoImagem: document.getElementById('restricaoImagem').checked,
+                dietaEspecial: document.getElementById('dietaEspecial').value.trim(),
+                inclusao: document.getElementById('inclusao').value.trim(),
+                observacao: document.getElementById('observacao').value.trim()
+            };
+
+            const btn = document.getElementById('btnSalvar');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando no Banco de Dados...';
+            btn.disabled = true;
+
+            const pacote = {
+                acao: "salvarCriancaRecreio",
+                dados: dadosMatricula
+            };
+
+            try {
+                const respostaRaw = await fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) });
+                const resposta = await respostaRaw.json();
+
+                btn.innerHTML = '<i class="fas fa-save"></i> Efetivar Matrícula no Recreio';
+                btn.disabled = false;
+
+                if (resposta.sucesso || resposta.status === "sucesso") {
+                    Swal.fire({
+                        title: 'Matriculado!',
+                        text: 'Criança cadastrada com sucesso! (ID: ' + (resposta.idGerado || resposta.id) + ')',
+                        icon: 'success',
+                        confirmButtonColor: '#2ecc71'
+                    });
+                    limparFormulario();
+                } else {
+                    Swal.fire('Erro ao Salvar', resposta.erro || resposta.mensagem, 'error');
+                }
+            } catch (error) {
+                btn.innerHTML = '<i class="fas fa-save"></i> Efetivar Matrícula no Recreio';
+                btn.disabled = false;
+                Swal.fire('Falha na Conexão', 'Não foi possível enviar os dados ao servidor.', 'error');
+            }
+        }
+
+        function limparFormulario() {
+            // Limpa campos de texto (Mantive a Turma porque geralmente cadastram vários alunos na mesma turma)
+            document.getElementById('nome').value = '';
+            document.getElementById('idade').value = '';
+            document.getElementById('responsavel').value = '';
+            document.getElementById('telefoneResp').value = '';
+            document.getElementById('telContato').value = '';
+            document.getElementById('contatoCom').value = '';
+            document.getElementById('dietaEspecial').value = '';
+            document.getElementById('inclusao').value = '';
+            document.getElementById('observacao').value = '';
+
+            // Desmarca todos os switches
+            document.getElementById('abrigo').checked = false;
+            document.getElementById('piscina').checked = false;
+            document.getElementById('vaiSozinho').checked = false;
+            document.getElementById('restricaoImagem').checked = false;
+            
+            // Dá o foco de volta para o primeiro campo
+            document.getElementById('nome').focus();
+        }
+    </script>
+</body>
+</html>

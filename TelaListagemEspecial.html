@@ -57,10 +57,14 @@
     </div>
 
     <script>
+      // O SEU LINK DA API FICA AQUI
       const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec"; 
 
       async function gerarRelatorio() {
         const idPlanilha = localStorage.getItem('ceu_planilha_id');
+        // 🧠 AQUI PEGAMOS O NOME DO CEU DIRETO DO DASHBOARD!
+        const nomeCeu = localStorage.getItem('ceu_nome_especifico') || "CEU Desconhecido"; 
+
         if (!idPlanilha) {
             alert("⚠️ Erro: Banco de dados do CEU não encontrado.");
             return;
@@ -68,6 +72,7 @@
 
         const config = {
           idPlanilha: idPlanilha,
+          nomeCeu: nomeCeu, // Mandando pro servidor
           tipo: document.getElementById('tipoRelatorio').value,
           ordem: document.getElementById('ordemRelatorio').value
         };
@@ -92,7 +97,6 @@
             btn.disabled = false;
             msg.style.display = 'block';
 
-            // 🛡️ O TRUQUE DE SEGURANÇA: Tenta ler 'sucesso' ou 'status', e 'erro' ou 'mensagem'
             const deuCerto = resposta.sucesso === true || resposta.status === "sucesso";
             const textoErro = resposta.erro || resposta.mensagem || JSON.stringify(resposta);
 

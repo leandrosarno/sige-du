@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão Recreio nas Férias</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body { font-family: 'Nunito', sans-serif; background-color: #f4f7f6; padding: 20px; color: #2c3e50; }
+        .page-title { color: #2980b9; font-weight: 800; display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+        
+        .card-main { background: white; border-radius: 15px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .search-bar { background: #f8fafc; border: 2px solid #e0e6ed; border-radius: 10px; padding: 12px 20px; width: 100%; font-size: 16px; font-weight: 600; outline: none; margin-bottom: 20px; transition: 0.3s; }
+        .search-bar:focus { border-color: #3498db; background: white; }
+
+        .table { margin-top: 10px; }
+        .table thead th { background: #34495e; color: white; font-weight: 800; border: none; padding: 15px; }
+        .table tbody td { padding: 15px; vertical-align: middle; font-weight: 600; color: #576574; border-bottom: 1px solid #eee; }
+        .table tbody tr:hover { background-color: #f1f8ff; }
+
+        .btn-acao { border: none; padding: 8px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; color: white; }
+        .btn-editar { background-color: #f39c12; }
+        .btn-editar:hover { background-color: #d68910; }
+        .btn-excluir { background-color: #e74c3c; margin-left: 5px; }
+        .btn-excluir:hover { background-color: #c0392b; }
+
+        /* Estilos do Modal (Janela Flutuante) */
+        .modal-content { border-radius: 15px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .modal-header { background: #34495e; color: white; border-radius: 15px 15px 0 0; border: none; }
+        .modal-title { font-weight: 800; }
+        .btn-close { filter: invert(1) grayscale(100%) brightness(200%); }
+        label { font-weight: 700; color: #7f8c8d; font-size: 13px; margin-top: 10px; text-transform: uppercase; }
+        .form-control { border-radius: 8px; border: 2px solid #e0e6ed; font-weight: 600; }
+        .form-control:focus { border-color: #3498db; box-shadow: none; }
+        .form-check-input { width: 2.5em; height: 1.3em; cursor: pointer; margin-top: 10px; }
+        .form-check-label { cursor: pointer; font-weight: 800; padding-top: 13px; padding-left: 5px; color: #34495e;}
+        
+        #loading { text-align: center; padding: 40px; font-size: 18px; font-weight: bold; color: #7f8c8d; }
+    </style>
+</head>
+<body>
+
+    <h3 class="page-title"><i class="fas fa-users"></i> Gestão de Crianças - Recreio</h3>
+
+    <div class="card-main">
+        <input type="text" id="inputBusca" class="search-bar" placeholder="🔍 Buscar por Nome, ID ou Turma..." onkeyup="filtrarTabela()">
+        
+        <div id="loading"><i class="fas fa-spinner fa-spin fa-2x"></i><br>Buscando crianças...</div>
+
+        <div class="table-responsive">
+            <table class="table" id="tabelaLista" style="display: none;">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome da Criança</th>
+                        <th>Idade</th>
+                        <th>Turma</th>
+                        <th>Responsável</th>
+                        <th class="text-center">Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="corpoTabela">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalEdicao" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title"><i class="fas fa-edit"></i> Alterar Cadastro</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body bg-light">
+             <input type="hidden" id="edit_id">
+             <div class="row g-2">
+                 <div class="col-md-7">
+                     <label>Nome Completo</label>
+                     <input type="text" id="edit_nome" class="form-control" required>
+                 </div>
+                 <div class="col-md-2">
+                     <label>Idade</label>
+                     <input type="number" id="edit_idade" class="form-control" required>
+                 </div>
+                 <div class="col-md-3">
+                     <label class="text-danger">Turma (Manual)</label>
+                     <input type="text" id="edit_turma" class="form-control" required>
+                 </div>
+                 
+                 <div class="col-md-6">
+                     <label>Responsável Legal</label>
+                     <input type="text" id="edit_responsavel" class="form-control" required>
+                 </div>
+                 <div class="col-md-6">
+                     <label>Telefone Responsável</label>
+                     <input type="text" id="edit_telefoneResp" class="form-control" required>
+                 </div>
+
+                 <div class="col-md-6">
+                     <label>Criança de Abrigo?</label>
+                     <input type="text" id="edit_abrigo" class="form-control" placeholder="Se NÃO, deixe em branco">
+                 </div>
+                 <div class="col-md-6">
+                     <label>Observações Médicas/Gerais</label>
+                     <input type="text" id="edit_observacao" class="form-control">
+                 </div>
+
+                 <div class="col-md-4"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="edit_piscina"><label class="form-check-label text-primary" for="edit_piscina">🏊‍♂️ Piscina?</label></div></div>
+                 <div class="col-md-4"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="edit_vaiSozinho"><label class="form-check-label" for="edit_vaiSozinho">🚶‍♂️ Vai Sozinho?</label></div></div>
+                 <div class="col-md-4"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="edit_restricaoImagem"><label class="form-check-label text-danger" for="edit_restricaoImagem">🚫 Imag.?</label></div></div>
+                 <div class="col-md-4"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="edit_dietaEspecial"><label class="form-check-label text-warning" for="edit_dietaEspecial">🍎 Dieta?</label></div></div>
+                 <div class="col-md-4"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="edit_inclusao"><label class="form-check-label text-info" for="edit_inclusao">🤝 Inclusão?</label></div></div>
+                 
+                 <div class="col-md-6 mt-3">
+                     <label>Telefone de Emergência</label>
+                     <input type="text" id="edit_telContato" class="form-control">
+                 </div>
+                 <div class="col-md-6 mt-3">
+                     <label>Falar com (Emergência)</label>
+                     <input type="text" id="edit_contatoCom" class="form-control">
+                 </div>
+             </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary font-weight-bold" data-bs-dismiss="modal">Cancelar</button>
+            <button type="button" class="btn btn-success font-weight-bold" onclick="salvarEdicao()" id="btnSalvarModal"><i class="fas fa-save"></i> Gravar Alterações</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // ====================================================
+        // 🚨 COLOQUE O LINK DA SUA API (DO DASHBOARD) AQUI
+        // ====================================================
+        const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec";
+        
+        let modalJanela;
+
+        // Ao carregar a página
+        window.onload = () => {
+            modalJanela = new bootstrap.Modal(document.getElementById('modalEdicao'));
+            carregarLista();
+        };
+
+        async function carregarLista() {
+            const idPlanilha = localStorage.getItem('ceu_planilha_id');
+            if (!idPlanilha) {
+                document.getElementById('loading').innerHTML = '<span class="text-danger">⚠️ Banco de Dados não conectado!</span>';
+                return;
+            }
+
+            const pacote = { acao: "listarCriancasRecreio", dados: { idPlanilha: idPlanilha } };
+
+            try {
+                const resRaw = await fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) });
+                const res = await resRaw.json();
+
+                if (res.sucesso) {
+                    const tbody = document.getElementById('corpoTabela');
+                    tbody.innerHTML = '';
+                    
+                    res.lista.forEach(c => {
+                        tbody.innerHTML += `
+                            <tr>
+                                <td>${c.id}</td>
+                                <td><strong>${c.nome}</strong></td>
+                                <td>${c.idade} anos</td>
+                                <td><span class="badge bg-info text-dark" style="font-size:14px;">${c.turma}</span></td>
+                                <td>${c.responsavel}</td>
+                                <td class="text-center">
+                                    <button class="btn-acao btn-editar" onclick="abrirEdicao('${c.id}')"><i class="fas fa-edit"></i> Editar</button>
+                                    <button class="btn-acao btn-excluir" onclick="excluirCrianca('${c.id}', '${c.nome}')"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('tabelaLista').style.display = 'table';
+                } else {
+                    document.getElementById('loading').innerHTML = '<span class="text-danger">❌ Erro ao buscar dados.</span>';
+                }
+            } catch (e) {
+                document.getElementById('loading').innerHTML = '<span class="text-danger">❌ Falha de Conexão.</span>';
+            }
+        }
+
+        // ============================================
+        // ✏️ ABRIR EDIÇÃO
+        // ============================================
+        async function abrirEdicao(id) {
+            Swal.fire({ title: 'Buscando Dados...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+
+            const pacote = { acao: "buscarCriancaRecreio", dados: { idPlanilha: localStorage.getItem('ceu_planilha_id'), id: id } };
+            
+            try {
+                const resRaw = await fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) });
+                const res = await resRaw.json();
+
+                if (res.sucesso) {
+                    Swal.close();
+                    const c = res.dados;
+                    document.getElementById('edit_id').value = c.id;
+                    document.getElementById('edit_nome').value = c.nome;
+                    document.getElementById('edit_idade').value = c.idade;
+                    document.getElementById('edit_turma').value = c.turma;
+                    document.getElementById('edit_responsavel').value = c.responsavel;
+                    document.getElementById('edit_telefoneResp').value = c.telefoneResp;
+                    document.getElementById('edit_abrigo').value = c.abrigo;
+                    document.getElementById('edit_observacao').value = c.observacao;
+                    document.getElementById('edit_telContato').value = c.telContato;
+                    document.getElementById('edit_contatoCom').value = c.contatoCom;
+
+                    document.getElementById('edit_piscina').checked = c.piscina;
+                    document.getElementById('edit_vaiSozinho').checked = c.vaiSozinho;
+                    document.getElementById('edit_restricaoImagem').checked = c.restricaoImagem;
+                    document.getElementById('edit_dietaEspecial').checked = c.dietaEspecial;
+                    document.getElementById('edit_inclusao').checked = c.inclusao;
+
+                    modalJanela.show();
+                } else {
+                    Swal.fire('Erro', res.erro, 'error');
+                }
+            } catch (e) {
+                Swal.fire('Erro', 'Falha na conexão.', 'error');
+            }
+        }
+
+        // ============================================
+        // 💾 SALVAR EDIÇÃO
+        // ============================================
+        async function salvarEdicao() {
+            const nome = document.getElementById('edit_nome').value.trim();
+            if(!nome) { Swal.fire('Aviso', 'O nome não pode ficar vazio!', 'warning'); return; }
+
+            const btn = document.getElementById('btnSalvarModal');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gravando...';
+            btn.disabled = true;
+
+            const dadosEdicao = {
+                idPlanilha: localStorage.getItem('ceu_planilha_id'),
+                id: document.getElementById('edit_id').value,
+                nome: document.getElementById('edit_nome').value,
+                idade: document.getElementById('edit_idade').value,
+                turma: document.getElementById('edit_turma').value,
+                responsavel: document.getElementById('edit_responsavel').value,
+                telefoneResp: document.getElementById('edit_telefoneResp').value,
+                abrigo: document.getElementById('edit_abrigo').value,
+                observacao: document.getElementById('edit_observacao').value,
+                telContato: document.getElementById('edit_telContato').value,
+                contatoCom: document.getElementById('edit_contatoCom').value,
+                piscina: document.getElementById('edit_piscina').checked,
+                vaiSozinho: document.getElementById('edit_vaiSozinho').checked,
+                restricaoImagem: document.getElementById('edit_restricaoImagem').checked,
+                dietaEspecial: document.getElementById('edit_dietaEspecial').checked,
+                inclusao: document.getElementById('edit_inclusao').checked
+            };
+
+            const pacote = { acao: "atualizarCriancaRecreio", dados: dadosEdicao };
+
+            try {
+                const resRaw = await fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) });
+                const res = await resRaw.json();
+
+                btn.innerHTML = '<i class="fas fa-save"></i> Gravar Alterações';
+                btn.disabled = false;
+
+                if (res.sucesso) {
+                    modalJanela.hide();
+                    Swal.fire('Sucesso!', 'Cadastro atualizado.', 'success');
+                    carregarLista(); // Recarrega a tabela na hora
+                } else {
+                    Swal.fire('Erro', res.erro, 'error');
+                }
+            } catch (e) {
+                btn.innerHTML = '<i class="fas fa-save"></i> Gravar Alterações';
+                btn.disabled = false;
+                Swal.fire('Erro', 'Falha na conexão.', 'error');
+            }
+        }
+
+        // ============================================
+        // 🗑️ EXCLUIR CRIANÇA
+        // ============================================
+        function excluirCrianca(id, nome) {
+            Swal.fire({
+                title: 'Excluir Cadastro?',
+                html: `Tem certeza que deseja apagar <b>${nome}</b> do Recreio nas Férias?<br>A vaga será devolvida para a turma.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#e74c3c',
+                cancelButtonColor: '#95a5a6',
+                confirmButtonText: 'Sim, Apagar!'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({ title: 'Apagando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+                    
+                    const pacote = { acao: "excluirCriancaRecreio", dados: { idPlanilha: localStorage.getItem('ceu_planilha_id'), id: id } };
+                    
+                    try {
+                        const resRaw = await fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) });
+                        const res = await resRaw.json();
+
+                        if (res.sucesso) {
+                            Swal.fire('Excluído!', 'A criança foi removida do sistema.', 'success');
+                            carregarLista();
+                        } else {
+                            Swal.fire('Erro', res.erro, 'error');
+                        }
+                    } catch (e) {
+                        Swal.fire('Erro', 'Falha na conexão.', 'error');
+                    }
+                }
+            });
+        }
+
+        // ============================================
+        // 🔎 FILTRO DE TABELA (PESQUISA RÁPIDA)
+        // ============================================
+        function filtrarTabela() {
+            let input = document.getElementById("inputBusca");
+            let filter = input.value.toUpperCase();
+            let table = document.getElementById("tabelaLista");
+            let tr = table.getElementsByTagName("tr");
+
+            for (let i = 1; i < tr.length; i++) {
+                let text = tr[i].innerText.toUpperCase();
+                tr[i].style.display = text.indexOf(filter) > -1 ? "" : "none";
+            }
+        }
+    </script>
+</body>
+</html>

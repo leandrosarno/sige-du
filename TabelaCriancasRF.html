@@ -179,18 +179,30 @@ function carregarLista() {
         dados: { idPlanilha: idPlanilhaAtiva }
       };
 
-      fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) })
-        .then(res => res.json())
-        .then(res => {
-           // ✨ Agora ele aceita tanto "sucesso: true" quanto "status: sucesso"
+      fetch(API_URL, { 
+          method: 'POST', 
+          body: JSON.stringify(pacote) 
+      })
+      .then(res => {
+          if (!res.ok) throw new Error("Erro de Rede: " + res.status);
+          return res.json();
+      })
+      .then(res => {
+           console.log("Resposta do Google:", res); // Isso ajuda a ver o erro apertando F12
+           
            if(res.sucesso || res.status === "sucesso"){
                listaCriancasGlobal = res.criancas || [];
                montarCorpoTabela(listaCriancasGlobal);
            } else {
-               // Mostra o erro real que o Google enviou
-               Swal.fire('Erro', res.erro || res.mensagem || 'Erro desconhecido', 'error');
+               document.getElementById('corpoTabela').innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4"><b>Erro:</b> ${res.erro || res.mensagem}</td></tr>`;
+               Swal.fire('Erro da Planilha', res.erro || res.mensagem || 'Erro desconhecido', 'error');
            }
-        }).catch(err => Swal.fire('Erro', 'Falha ao conectar com o Google.', 'error'));
+      })
+      .catch(err => {
+          console.error("Erro Crítico no Fetch:", err);
+          document.getElementById('corpoTabela').innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4"><b>Falha de Conexão.</b><br><small>${err.message}</small></td></tr>`;
+          Swal.fire('Erro', 'Falha ao conectar com o Google. Veja o Console (F12).', 'error');
+      });
     }
 
     function montarCorpoTabela(lista) {

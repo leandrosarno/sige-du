@@ -105,6 +105,13 @@
 
     async function carregarTurmasNoDropdown() {
       const select = document.getElementById('selectTurma');
+
+      if (!idPlanilhaAtiva) {
+        select.innerHTML = '<option value="">⚠️ Unidade / Planilha não conectada</option>';
+        return;
+      }
+
+      select.innerHTML = '<option value="">Carregando turmas da planilha...</option>';
       
       const pacote = { acao: "carregarCriancasRF", dados: { idPlanilha: idPlanilhaAtiva } };
 
@@ -113,14 +120,21 @@
         const res = await resRaw.json();
 
         if (res.sucesso && res.criancas) {
-          const turmasUnicas = [...new Set(res.criancas.map(c => c.turma).filter(t => t))].sort();
-          select.innerHTML = '<option value="">-- Escolha a Turma --</option>';
-          turmasUnicas.forEach(t => select.innerHTML += `<option value="${t}">Turma ${t}</option>`);
+          // Filtra turmas únicas e válidas da Coluna E
+          const turmasUnicas = [...new Set(res.criancas.map(c => c.turma).filter(t => t && t !== 'SEM TURMA'))].sort();
+          
+          if (turmasUnicas.length === 0) {
+            select.innerHTML = '<option value="">Nenhuma turma cadastrada na aba RF - CRIANCAS</option>';
+          } else {
+            select.innerHTML = '<option value="">-- Escolha a Turma --</option>';
+            turmasUnicas.forEach(t => select.innerHTML += `<option value="${t}">Turma ${t}</option>`);
+          }
         } else {
-          select.innerHTML = '<option value="">Nenhuma turma encontrada</option>';
+          select.innerHTML = `<option value="">Erro: ${res.erro || 'Falha ao buscar turmas'}</option>`;
         }
       } catch (e) {
-        select.innerHTML = '<option value="">Erro ao carregar turmas</option>';
+        console.error(e);
+        select.innerHTML = '<option value="">Erro de Conexão com o Servidor</option>';
       }
     }
 

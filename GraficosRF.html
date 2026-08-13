@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gráficos - Recreio nas Férias</title>
+  
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <style>
+    body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    .card-kpi { border: none; border-radius: 12px; transition: 0.3s; }
+    .card-kpi:hover { transform: translateY(-3px); }
+    .kpi-icon { width: 50px; height: 50px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+    .card-chart { border: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    .chart-container { position: relative; height: 300px; width: 100%; }
+  </style>
+</head>
+<body class="p-3">
+
+  <div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <div>
+        <h4 class="fw-bold text-primary m-0"><i class="fa-solid fa-chart-pie me-2"></i>Estatísticas - Recreio nas Férias</h4>
+        <small class="text-muted">Acompanhamento de matriculados e indicadores em tempo real</small>
+      </div>
+      <button class="btn btn-primary btn-sm fw-bold shadow-sm" onclick="carregarDados()">
+        <i class="fa-solid fa-rotate me-1"></i> Atualizar Dados
+      </button>
+    </div>
+
+    <div class="card card-chart mb-4 p-3 bg-white">
+      <div class="row g-2 align-items-center">
+        <div class="col-md-1 text-muted fw-bold"><i class="fa-solid fa-filter me-1"></i> Filtros:</div>
+        
+        <div class="col-md-3">
+          <select id="filtroTurma" class="form-select form-select-sm fw-bold" onchange="processarEDesenhar()">
+            <option value="TODAS">Todas as Turmas</option>
+          </select>
+        </div>
+
+        <div class="col-md-3">
+          <select id="filtroIdade" class="form-select form-select-sm fw-bold" onchange="processarEDesenhar()">
+            <option value="TODAS">Todas as Idades</option>
+          </select>
+        </div>
+
+        <div class="col-md-3">
+          <select id="filtroAbrigo" class="form-select form-select-sm fw-bold" onchange="processarEDesenhar()">
+            <option value="TODOS">Todas as Origens (Abrigo/Comunidade)</option>
+            <option value="ABRIGO">Apenas Crianças de Abrigo</option>
+            <option value="COMUNIDADE">Apenas Comunidade</option>
+          </select>
+        </div>
+
+        <div class="col-md-2 text-end">
+          <button class="btn btn-outline-secondary btn-sm w-100 fw-bold" onclick="resetarFiltros()">Limpar Filtros</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+      <div class="col-md-3">
+        <div class="card card-kpi bg-white shadow-sm p-3 d-flex flex-row align-items-center">
+          <div class="kpi-icon bg-primary text-white me-3"><i class="fa-solid fa-children"></i></div>
+          <div>
+            <small class="text-muted fw-bold">TOTAL MATRICULADOS</small>
+            <h3 class="fw-bold m-0 text-primary" id="kpiTotal">0</h3>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card card-kpi bg-white shadow-sm p-3 d-flex flex-row align-items-center">
+          <div class="kpi-icon bg-info text-white me-3"><i class="fa-solid fa-wheelchair"></i></div>
+          <div>
+            <small class="text-muted fw-bold">INCLUSÃO (PCD)</small>
+            <h3 class="fw-bold m-0 text-info" id="kpiInclusao">0</h3>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card card-kpi bg-white shadow-sm p-3 d-flex flex-row align-items-center">
+          <div class="kpi-icon bg-warning text-dark me-3"><i class="fa-solid fa-utensils"></i></div>
+          <div>
+            <small class="text-muted fw-bold">DIETA ESPECIAL</small>
+            <h3 class="fw-bold m-0 text-warning" id="kpiDieta">0</h3>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card card-kpi bg-white shadow-sm p-3 d-flex flex-row align-items-center">
+          <div class="kpi-icon bg-success text-white me-3"><i class="fa-solid fa-person-walking"></i></div>
+          <div>
+            <small class="text-muted fw-bold">VAI DESACOMPANHADO</small>
+            <h3 class="fw-bold m-0 text-success" id="kpiSozinho">0</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-md-6">
+        <div class="card card-chart p-3">
+          <h6 class="fw-bold text-dark mb-3"><i class="fa-solid fa-chart-column me-2 text-primary"></i>Crianças por Idade</h6>
+          <div class="chart-container">
+            <canvas id="chartIdade"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="card card-chart p-3">
+          <h6 class="fw-bold text-dark mb-3"><i class="fa-solid fa-users-rectangle me-2 text-primary"></i>Crianças por Turma</h6>
+          <div class="chart-container">
+            <canvas id="chartTurma"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="card card-chart p-3">
+          <h6 class="fw-bold text-dark mb-3"><i class="fa-solid fa-list-check me-2 text-primary"></i>Indicadores de Saúde e Segurança</h6>
+          <div class="chart-container">
+            <canvas id="chartIndicadores"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="card card-chart p-3">
+          <h6 class="fw-bold text-dark mb-3"><i class="fa-solid fa-house-chimney-user me-2 text-primary"></i>Distribuição Abrigo / Comunidade</h6>
+          <div class="chart-container">
+            <canvas id="chartAbrigo"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec";
+    const idPlanilhaAtiva = localStorage.getItem('ceu_planilha_id');
+
+    let dadosBrutosGlobal = [];
+    let instanciasGraficos = {};
+
+    window.onload = function() {
+      carregarDados();
+    };
+
+    async function carregarDados() {
+      if (!idPlanilhaAtiva) {
+        Swal.fire('Erro', 'Unidade não identificada.', 'error');
+        return;
+      }
+
+      Swal.fire({ title: 'Carregando Estatísticas...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+      const pacote = { acao: "carregarCriancasRF", dados: { idPlanilha: idPlanilhaAtiva } };
+
+      try {
+        const resRaw = await fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) });
+        const res = await resRaw.json();
+        Swal.close();
+
+        if (res.sucesso) {
+          dadosBrutosGlobal = res.criancas || [];
+          preencherOpcoesFiltros();
+          processarEDesenhar();
+        } else {
+          Swal.fire('Atenção', res.erro || 'Falha ao buscar dados da planilha.', 'warning');
+        }
+      } catch (e) {
+        Swal.fire('Erro', 'Falha na conexão com o servidor.', 'error');
+      }
+    }
+
+    function preencherOpcoesFiltros() {
+      const selectTurma = document.getElementById('filtroTurma');
+      const selectIdade = document.getElementById('filtroIdade');
+
+      selectTurma.innerHTML = '<option value="TODAS">Todas as Turmas</option>';
+      selectIdade.innerHTML = '<option value="TODAS">Todas as Idades</option>';
+
+      const turmasUnicas = [...new Set(dadosBrutosGlobal.map(c => c.turma).filter(t => t))].sort();
+      const idadesUnicas = [...new Set(dadosBrutosGlobal.map(c => Number(c.idade)).filter(i => !isNaN(i)))].sort((a, b) => a - b);
+
+      turmasUnicas.forEach(t => selectTurma.innerHTML += `<option value="${t}">${t}</option>`);
+      idadesUnicas.forEach(i => selectIdade.innerHTML += `<option value="${i}">${i} anos</option>`);
+    }
+
+    function resetarFiltros() {
+      document.getElementById('filtroTurma').value = 'TODAS';
+      document.getElementById('filtroIdade').value = 'TODAS';
+      document.getElementById('filtroAbrigo').value = 'TODOS';
+      processarEDesenhar();
+    }
+
+    function processarEDesenhar() {
+      const fTurma = document.getElementById('filtroTurma').value;
+      const fIdade = document.getElementById('filtroIdade').value;
+      const fAbrigo = document.getElementById('filtroAbrigo').value;
+
+      // Filtragem dinâmica instantânea!
+      const filtrados = dadosBrutosGlobal.filter(c => {
+        let baterTurma = (fTurma === 'TODAS' || c.turma === fTurma);
+        let baterIdade = (fIdade === 'TODAS' || String(c.idade) === fIdade);
+        let ehAbrigo = (c.abrigo && c.abrigo !== 'NÃO' && c.abrigo !== 'NAO' && c.abrigo !== '-');
+        let baterAbrigo = (fAbrigo === 'TODOS' || (fAbrigo === 'ABRIGO' && ehAbrigo) || (fAbrigo === 'COMUNIDADE' && !ehAbrigo));
+        return baterTurma && baterIdade && baterAbrigo;
+      });
+
+      // Atualiza KPIs
+      document.getElementById('kpiTotal').innerText = filtrados.length;
+      document.getElementById('kpiInclusao').innerText = filtrados.filter(c => c.inclusao === 'SIM').length;
+      document.getElementById('kpiDieta').innerText = filtrados.filter(c => c.dieta === 'SIM').length;
+      document.getElementById('kpiSozinho').innerText = filtrados.filter(c => c.sozinho === 'SIM').length;
+
+      // Desenha Gráficos
+      desenharGraficoIdade(filtrados);
+      desenharGraficoTurma(filtrados);
+      desenharGraficoIndicadores(filtrados);
+      desenharGraficoAbrigo(filtrados);
+    }
+
+    // 📈 GRÁFICO 1: IDADES
+    function desenharGraficoIdade(lista) {
+      const contagem = {};
+      lista.forEach(c => {
+        let id = c.idade ? c.idade + ' anos' : 'Não Inf.';
+        contagem[id] = (contagem[id] || 0) + 1;
+      });
+
+      renderChart('chartIdade', 'bar', Object.keys(contagem), [{
+        label: 'Crianças',
+        data: Object.values(contagem),
+        backgroundColor: '#0d6efd'
+      }]);
+    }
+
+    // 📈 GRÁFICO 2: TURMAS
+    function desenharGraficoTurma(lista) {
+      const contagem = {};
+      lista.forEach(c => {
+        let t = c.turma || 'Sem Turma';
+        contagem[t] = (contagem[t] || 0) + 1;
+      });
+
+      renderChart('chartTurma', 'bar', Object.keys(contagem), [{
+        label: 'Matriculados',
+        data: Object.values(contagem),
+        backgroundColor: '#6f42c1'
+      }]);
+    }
+
+    // 📈 GRÁFICO 3: INDICADORES ESPECIAIS
+    function desenharGraficoIndicadores(lista) {
+      const piscina = lista.filter(c => c.piscina === 'SIM').length;
+      const dieta = lista.filter(c => c.dieta === 'SIM').length;
+      const sozinho = lista.filter(c => c.sozinho === 'SIM').length;
+      const inclusao = lista.filter(c => c.inclusao === 'SIM').length;
+      const restImg = lista.filter(c => c.restImg === 'SIM').length;
+
+      renderChart('chartIndicadores', 'bar', ['Piscina 🏊', 'Dieta 🥗', 'Desacompanhado 🚶', 'Inclusão ♿', 'Restr. Imagem 📸'], [{
+        label: 'Total de Crianças',
+        data: [piscina, dieta, sozinho, inclusao, restImg],
+        backgroundColor: ['#198754', '#ffc107', '#0dcaf0', '#0d6efd', '#212529']
+      }], { indexAxis: 'y' });
+    }
+
+    // 📈 GRÁFICO 4: ABRIGO VS COMUNIDADE
+    function desenharGraficoAbrigo(lista) {
+      const abrigo = lista.filter(c => c.abrigo && c.abrigo !== 'NÃO' && c.abrigo !== 'NAO' && c.abrigo !== '-').length;
+      const comunidade = lista.length - abrigo;
+
+      renderChart('chartAbrigo', 'doughnut', ['Comunidade', 'Abrigo'], [{
+        data: [comunidade, abrigo],
+        backgroundColor: ['#0d6efd', '#fd7e14']
+      }]);
+    }
+
+    // Helper Universal para destruir e re-criar o gráfico sem sobrepor telas
+    function renderChart(canvasId, type, labels, datasets, extraOptions = {}) {
+      if (instanciasGraficos[canvasId]) {
+        instanciasGraficos[canvasId].destroy();
+      }
+
+      const ctx = document.getElementById(canvasId).getContext('2d');
+      instanciasGraficos[canvasId] = new Chart(ctx, {
+        type: type,
+        data: { labels: labels, datasets: datasets },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: type === 'doughnut' } },
+          ...extraOptions
+        }
+      });
+    }
+  </script>
+</body>
+</html>v

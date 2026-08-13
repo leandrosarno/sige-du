@@ -57,14 +57,20 @@
         </form>
     </div>
 
-    <script>
+<script>
+        // O link oficial com /exec
         const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec"; 
 
         window.onload = function() {
             localStorage.removeItem('ceu_codigo_eol'); 
 
+            // ==========================================
+            // LOGO: Carrega as configs sem travar a tela
+            // ==========================================
             fetch(API_URL, {
                 method: 'POST',
+                // O Google Apps Script adora receber o Content-Type como text/plain para não dar erro de CORS!
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify({ acao: "obterConfiguracoes", dados: {} })
             })
             .then(res => res.json())
@@ -87,15 +93,21 @@
                     }
                 }
             })
-            .catch(erro => console.error("Erro na logo:", erro));
+            .catch(erro => console.error("Aviso: Falha ao puxar a Logo. Sistema continua rodando."));
         };
         
+        // ==========================================
+        // O MOTOR BLINDADO DE LOGIN
+        // ==========================================
         function fazerLogin() {
             const ceu = document.getElementById('id_ceu').value.trim();
             const rf = document.getElementById('rf_usuario').value.trim();
             const senha = document.getElementById('senha_usuario').value.trim();
 
-            if(!ceu || !rf || !senha) return;
+            if(!ceu || !rf || !senha) {
+                Swal.fire('Atenção', 'Preencha todos os campos.', 'warning');
+                return;
+            }
 
             Swal.fire({
                 title: 'A validar acessos...',
@@ -104,13 +116,17 @@
                 didOpen: () => { Swal.showLoading(); }
             });
 
-            // PACOTE INDO PRO GOOGLE: repare que chamamos a ação "validarLogin" (e lá no code.gs você usa "validarLoginNoBanco", o Google vai cuidar disso na sua rota doPost)
+            // 🛡️ O TRUQUE MÁGICO DO CONTENT-TYPE (Evita o Erro de CORS do Google)
             fetch(API_URL, {
                 method: 'POST',
-                body: JSON.stringify({ acao: "validarLogin", dados: { id_ceu: ceu, rf_usuario: rf, senha_usuario: senha } })
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ 
+                    acao: "validarLogin", 
+                    dados: { id_ceu: ceu, rf_usuario: rf, senha_usuario: senha } 
+                })
             })
             .then(resposta => {
-                if (!resposta.ok) throw new Error("Erro de servidor");
+                if (!resposta.ok) throw new Error("Erro de servidor (HTTP " + resposta.status + ")");
                 return resposta.json();
             })
             .then(retorno => {
@@ -119,13 +135,10 @@
                 } 
                 else if (retorno.status === "sucesso") {
                     
-                    // 🎉 AGORA SIM! TODAS AS CHAVES CORRETAS INCLUINDO A CHAVE MESTRA:
+                    // 🎉 AGORA SIM! SALVA AS CHAVES E ABRE O SISTEMA
                     localStorage.setItem('ceu_codigo_eol', document.getElementById('id_ceu').value);
                     localStorage.setItem('ceu_rf_logado', document.getElementById('rf_usuario').value); 
-                    
-                    // O Segredo desvendado: id_planilha_banco!
                     localStorage.setItem('ceu_planilha_id', retorno.token.id_planilha_banco);
-                    
                     localStorage.setItem('ceu_nome', retorno.token.nome_ceu);
                     localStorage.setItem('ceu_nome_especifico', retorno.token.nome_ceu);
                     localStorage.setItem('ceu_logo', retorno.token.logo_ceu);
@@ -136,15 +149,18 @@
                     window.location.href = "dashboard.html"; 
                 } 
                 else {
-                    Swal.fire('Acesso Negado', retorno.mensagem, 'error');
+                    Swal.fire('Acesso Negado', retorno.mensagem || retorno.erro || 'Credenciais inválidas.', 'error');
                 }
             })
             .catch(erro => {
-                Swal.fire('Erro de Comunicação', 'Falha ao ligar ao servidor.', 'error');
-                console.error(erro);
+                Swal.fire('Erro de Comunicação', 'Falha ao ligar ao servidor do Google. Tente novamente.', 'error');
+                console.error("Erro fatal no Fetch de Login: ", erro);
             });
         }
 
+        // ==========================================
+        // PRIMEIRO ACESSO (Opcional, se o usuário precisar trocar a senha)
+        // ==========================================
         function tratarPrimeiroAcesso(mensagemDoServidor, dadosUsuario) {
             Swal.fire({
                 title: '🔒 Primeiro Acesso',
@@ -179,7 +195,12 @@
 
         function enviarNovaSenha(rf, ceu, novaSenha) {
             Swal.fire({ title: 'A gravar...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
-            fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "alterarSenhaPrimeiroAcesso", dados: { rf: rf, ceu: ceu, novaSenha: novaSenha } }) })
+            
+            fetch(API_URL, { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ acao: "alterarSenhaPrimeiroAcesso", dados: { rf: rf, ceu: ceu, novaSenha: novaSenha } }) 
+            })
             .then(resp => resp.json())
             .then(retorno => {
                 if(retorno.status === "sucesso") {

@@ -14,6 +14,8 @@
     .card-box { border: none; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); background: white; }
     .btn-opcao { border: 2px solid #e0e6ed; border-radius: 10px; padding: 15px; cursor: pointer; transition: 0.3s; }
     .btn-opcao:hover, .btn-opcao.selecionado { border-color: #0d6efd; background-color: #e8f0fe; }
+    .select-premium { border-width: 2px; box-shadow: none !important; }
+    .select-premium:focus { border-color: #0d6efd; }
   </style>
 </head>
 <body class="p-4">
@@ -24,21 +26,40 @@
       <div class="bg-primary text-white rounded-circle d-inline-flex p-3 mb-2">
         <i class="fa-solid fa-print fs-3"></i>
       </div>
-      <h4 class="fw-bold text-dark m-0">Impressão de Listas</h4>
-      <small class="text-muted">Frequências, Salas e Assinaturas</small>
+      <h4 class="fw-bold text-dark m-0">Central de Impressão</h4>
+      <small class="text-muted">Recreio nas Férias - Documentação Oficial</small>
     </div>
 
     <div class="card-box p-4 mb-4">
       <h6 class="fw-bold text-primary mb-3"><i class="fa-solid fa-file-pdf me-2"></i>1. O que deseja imprimir?</h6>
-      <select id="selectTipoDoc" class="form-select form-select-lg fw-bold mb-3 border-primary text-primary">
-        <option value="CHAMADA">📋 Lista de Chamada Oficial</option>
-        <option value="PORTA">🚪 Listagem para a Porta da Sala</option>
-        <option value="ASSINATURA">✍️ Listagem para Assinatura dos Pais</option>
+      
+      <select id="selectTipoDoc" class="form-select form-select-lg fw-bold mb-3 select-premium text-primary" onchange="atualizarInteligenciaTela()">
+        <optgroup label="📋 Listagens por Turma (Presença e Assinaturas)">
+            <option value="CHAMADA">📋 Lista de Chamada Oficial (Dias Úteis)</option>
+            <option value="PORTA">🚪 Listagem para a Porta da Sala</option>
+            <option value="ASSINATURA">✍️ Listagem para Assinatura dos Pais</option>
+        </optgroup>
+        <optgroup label="🌟 Listagens Especiais (Todas as Turmas Juntas)">
+            <option value="INCLUSAO">🤝 Crianças de Inclusão</option>
+            <option value="DIETA ESPECIAL">🍎 Crianças com Dieta Especial</option>
+            <option value="VAI DESACOMPANHADO">🚶‍♂️ Saída Desacompanhado (Vai Sozinho)</option>
+            <option value="USO DE PISCINA">🏊‍♂️ Uso de Piscina</option>
+            <option value="RESTRICAO DE IMAGEM">📷 Restrição de Imagem</option>
+        </optgroup>
       </select>
     </div>
 
-    <div class="card-box p-4 mb-4">
-      <h6 class="fw-bold text-primary mb-3"><i class="fa-solid fa-users me-2"></i>2. Escolha o Modo de Geração:</h6>
+    <div class="card-box p-4 mb-4" id="divOrdemEspecial" style="display: none;">
+      <h6 class="fw-bold text-primary mb-3"><i class="fa-solid fa-sort-alpha-down me-2"></i>2. Qual a ordem desejada?</h6>
+      <select id="ordemRelatorio" class="form-select select-premium fw-bold text-dark">
+        <option value="ALFABETICA">A a Z (Apenas Ordem Alfabética)</option>
+        <option value="IDADE_ALFA">Por Idade, depois Alfabética</option>
+        <option value="TURMA_IDADE_ALFA">Por Turma, depois Idade, depois Alfabética</option>
+      </select>
+    </div>
+
+    <div class="card-box p-4 mb-4" id="divEscolhaTurmas">
+      <h6 class="fw-bold text-primary mb-3"><i class="fa-solid fa-users me-2"></i>2. Escolha o Filtro de Turmas:</h6>
       
       <div class="row g-3 mb-3">
         <div class="col-md-6">
@@ -47,7 +68,7 @@
               <input class="form-check-input" type="radio" name="radioModo" id="radioTodas" checked>
               <label class="form-check-label fw-bold text-dark" for="radioTodas">✨ TODAS AS TURMAS</label>
             </div>
-            <small class="text-muted d-block mt-1">Gera a documentação de todas as turmas em lote.</small>
+            <small class="text-muted d-block mt-1">Gera todos os PDFs agrupados em ZIP.</small>
           </div>
         </div>
 
@@ -57,23 +78,23 @@
               <input class="form-check-input" type="radio" name="radioModo" id="radioUnica">
               <label class="form-check-label fw-bold text-dark" for="radioUnica">🎯 APENAS UMA TURMA</label>
             </div>
-            <small class="text-muted d-block mt-1">Escolha uma turma específica para imprimir.</small>
+            <small class="text-muted d-block mt-1">Gera e baixa apenas o PDF de uma turma.</small>
           </div>
         </div>
       </div>
 
       <div id="divSelectTurma" class="mb-3" style="display: none;">
-        <select id="selectTurma" class="form-select form-select-lg fw-bold">
+        <select id="selectTurma" class="form-select form-select-lg fw-bold select-premium">
           <option value="">Carregando turmas...</option>
         </select>
       </div>
-
-      <button class="btn btn-primary btn-lg w-100 fw-bold shadow-sm mt-2" id="btnGerar" onclick="processarGeracao()">
-        <i class="fa-solid fa-gear me-2"></i> Processar e Gerar PDF
-      </button>
     </div>
 
-    <div class="card-box p-4" id="divResultado" style="display: none;">
+    <button class="btn btn-primary btn-lg w-100 fw-bold shadow-sm mt-2 mb-4" id="btnGerar" onclick="processarGeracao()">
+      <i class="fa-solid fa-gear me-2"></i> Processar e Gerar PDF
+    </button>
+
+    <div class="card-box p-4 mb-4" id="divResultado" style="display: none;">
       <h6 class="fw-bold text-success mb-3"><i class="fa-solid fa-circle-check me-2"></i>Documentos Gerados com Sucesso!</h6>
       <div class="mb-3 text-center" id="divZip"></div>
       <div class="list-group" id="listaLinks"></div>
@@ -90,7 +111,22 @@
 
     window.onload = function() {
       carregarTurmasNoDropdown();
+      atualizarInteligenciaTela();
     };
+
+    // 🧠 A Inteligência que esconde e mostra painéis dependendo da escolha
+    function atualizarInteligenciaTela() {
+      const tipo = document.getElementById('selectTipoDoc').value;
+      const ehEspecial = ["INCLUSAO", "DIETA ESPECIAL", "VAI DESACOMPANHADO", "USO DE PISCINA", "RESTRICAO DE IMAGEM"].includes(tipo);
+
+      if (ehEspecial) {
+          document.getElementById('divEscolhaTurmas').style.display = 'none';
+          document.getElementById('divOrdemEspecial').style.display = 'block';
+      } else {
+          document.getElementById('divEscolhaTurmas').style.display = 'block';
+          document.getElementById('divOrdemEspecial').style.display = 'none';
+      }
+    }
 
     function selecionarModo(modo) {
       modoSelecionado = modo;
@@ -107,7 +143,7 @@
         select.innerHTML = '<option value="">⚠️ Planilha não conectada</option>';
         return;
       }
-      select.innerHTML = '<option value="">Carregando turmas da planilha...</option>';
+      select.innerHTML = '<option value="">Carregando turmas...</option>';
       const pacote = { acao: "carregarCriancasRF", dados: { idPlanilha: idPlanilhaAtiva } };
 
       try {
@@ -122,35 +158,51 @@
             turmasUnicas.forEach(t => select.innerHTML += `<option value="${t}">Turma ${t}</option>`);
           }
         }
-      } catch (e) { console.error(e); select.innerHTML = '<option value="">Erro de Conexão</option>'; }
+      } catch (e) { select.innerHTML = '<option value="">Erro de Conexão</option>'; }
     }
 
     async function processarGeracao() {
-      let turmaAlvo = "TODAS";
       const tipoDoc = document.getElementById('selectTipoDoc').value;
+      const ehEspecial = ["INCLUSAO", "DIETA ESPECIAL", "VAI DESACOMPANHADO", "USO DE PISCINA", "RESTRICAO DE IMAGEM"].includes(tipoDoc);
+      
+      let pacote = {};
 
-      if (modoSelecionado === 'UNICA') {
-        turmaAlvo = document.getElementById('selectTurma').value;
-        if (!turmaAlvo) return Swal.fire('Aviso', 'Selecione uma turma na lista!', 'warning');
+      if (ehEspecial) {
+          // Motor 1: Listagens Especiais
+          pacote = {
+              acao: "gerarListagemEspecial",
+              dados: {
+                  idPlanilha: idPlanilhaAtiva,
+                  nomeCeu: nomeCeuAtivo,
+                  tipo: tipoDoc,
+                  ordem: document.getElementById('ordemRelatorio').value
+              }
+          };
+      } else {
+          // Motor 2: Turmas (Chamada, Porta, Assinatura)
+          let turmaAlvo = "TODAS";
+          if (modoSelecionado === 'UNICA') {
+            turmaAlvo = document.getElementById('selectTurma').value;
+            if (!turmaAlvo) return Swal.fire('Aviso', 'Selecione uma turma!', 'warning');
+          }
+          
+          let qualRobo = tipoDoc === 'CHAMADA' ? "gerarListaChamadaRF" : "gerarListasExtrasRF";
+
+          pacote = {
+              acao: qualRobo,
+              dados: {
+                  idPlanilha: idPlanilhaAtiva,
+                  nomeCeu: nomeCeuAtivo,
+                  turmaDesejada: turmaAlvo,
+                  tipoLista: tipoDoc
+              }
+          };
       }
 
       const btn = document.getElementById('btnGerar');
       btn.disabled = true;
       btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Gerando Documentos...';
       document.getElementById('divResultado').style.display = 'none';
-
-      // Decide qual motor chamar no Google Apps Script
-      const acaoRobo = tipoDoc === 'CHAMADA' ? "gerarListaChamadaRF" : "gerarListasExtrasRF";
-
-      const pacote = {
-        acao: acaoRobo,
-        dados: {
-          idPlanilha: idPlanilhaAtiva,
-          nomeCeu: nomeCeuAtivo,
-          turmaDesejada: turmaAlvo,
-          tipoLista: tipoDoc
-        }
-      };
 
       try {
         const resRaw = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(pacote) });
@@ -160,7 +212,20 @@
         btn.innerHTML = '<i class="fa-solid fa-gear me-2"></i> Processar e Gerar PDF';
 
         if (res.sucesso || res.status === "sucesso") {
-          exibirResultados(res);
+           if (ehEspecial) {
+               // Resposta do Motor de Listas Especiais
+               document.getElementById('divZip').innerHTML = '';
+               document.getElementById('listaLinks').innerHTML = `
+                 <a href="${res.urlPdf}" target="_blank" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center fw-bold bg-success text-white rounded">
+                   <span><i class="fa-solid fa-file-pdf me-2"></i>Abrir Relatório (${res.quantidade} alunos)</span>
+                   <i class="fa-solid fa-download"></i>
+                 </a>
+               `;
+               document.getElementById('divResultado').style.display = 'block';
+           } else {
+               // Resposta do Motor de Turmas
+               exibirResultadosGerais(res);
+           }
         } else {
           Swal.fire('Atenção', res.erro || res.mensagem || 'Falha ao gerar', 'error');
         }
@@ -171,7 +236,7 @@
       }
     }
 
-    function exibirResultados(res) {
+    function exibirResultadosGerais(res) {
       const divRes = document.getElementById('divResultado');
       const divZip = document.getElementById('divZip');
       const listaLinks = document.getElementById('listaLinks');
@@ -195,255 +260,6 @@
           `;
         });
       }
-      divRes.style.display = 'block';
-    }
-  </script>
-</body>
-</html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<!--
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Listas de Chamada - Recreio nas Férias</title>
-  
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-  <style>
-    body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    .card-box { border: none; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); background: white; }
-    .btn-opcao { border: 2px solid #e0e6ed; border-radius: 10px; padding: 15px; cursor: pointer; transition: 0.3s; }
-    .btn-opcao:hover, .btn-opcao.selecionado { border-color: #0d6efd; background-color: #e8f0fe; }
-  </style>
-</head>
-<body class="p-4">
-
-  <div class="container" style="max-width: 800px;">
-    
-    <div class="card-box p-4 mb-4 text-center">
-      <div class="bg-primary text-white rounded-circle d-inline-flex p-3 mb-2">
-        <i class="fa-solid fa-clipboard-user fs-3"></i>
-      </div>
-      <h4 class="fw-bold text-dark m-0">Gerar Listas de Chamada</h4>
-      <small class="text-muted">Recreio nas Férias - Impressão Oficial de Frequência</small>
-    </div>
-
-    <div class="card-box p-4 mb-4">
-      <h6 class="fw-bold text-primary mb-3"><i class="fa-solid fa-filter me-2"></i>Escolha o Modo de Impressão:</h6>
-      
-      <div class="row g-3 mb-3">
-        <div class="col-md-6">
-          <div class="btn-opcao selecionado" id="cardTodas" onclick="selecionarModo('TODAS')">
-            <div class="form-check">
-              <input class="form-check-input" type="radio" name="radioModo" id="radioTodas" checked>
-              <label class="form-check-label fw-bold text-dark" for="radioTodas">
-                ✨ TODAS AS TURMAS
-              </label>
-            </div>
-            <small class="text-muted d-block mt-1">Gera a lista de chamada de todas as turmas de uma só vez em arquivo ZIP.</small>
-          </div>
-        </div>
-
-        <div class="col-md-6">
-          <div class="btn-opcao" id="cardUnica" onclick="selecionarModo('UNICA')">
-            <div class="form-check">
-              <input class="form-check-input" type="radio" name="radioModo" id="radioUnica">
-              <label class="form-check-label fw-bold text-dark" for="radioUnica">
-                🎯 APENAS UMA TURMA
-              </label>
-            </div>
-            <small class="text-muted d-block mt-1">Escolha uma turma específica para gerar e baixar apenas a lista dela.</small>
-          </div>
-        </div>
-      </div>
-
-      <div id="divSelectTurma" class="mb-3" style="display: none;">
-        <label class="form-label fw-bold text-muted small">Selecione a Turma Desejada:</label>
-        <select id="selectTurma" class="form-select form-select-lg fw-bold border-primary text-primary">
-          <option value="">Carregando turmas...</option>
-        </select>
-      </div>
-
-      <button class="btn btn-primary btn-lg w-100 fw-bold shadow-sm mt-2" id="btnGerar" onclick="processarGeracao()">
-        <i class="fa-solid fa-file-pdf me-2"></i> Gerar Lista de Chamada
-      </button>
-    </div>
-
-    <div class="card-box p-4" id="divResultado" style="display: none;">
-      <h6 class="fw-bold text-success mb-3"><i class="fa-solid fa-circle-check me-2"></i>Listas Geradas com Sucesso!</h6>
-      <p class="text-muted small">Clique nos links individuais abaixo ou baixe todas juntas no arquivo ZIP:</p>
-      
-      <div class="mb-3 text-center" id="divZip"></div>
-      
-      <div class="list-group" id="listaLinks"></div>
-    </div>
-
-  </div>
-
-  <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec";
-    const idPlanilhaAtiva = localStorage.getItem('ceu_planilha_id');
-    const nomeCeuAtivo = localStorage.getItem('ceu_nome_especifico') || "CEU";
-
-    let modoSelecionado = 'TODAS';
-
-    window.onload = function() {
-      carregarTurmasNoDropdown();
-    };
-
-    function selecionarModo(modo) {
-      modoSelecionado = modo;
-      
-      document.getElementById('cardTodas').classList.toggle('selecionado', modo === 'TODAS');
-      document.getElementById('cardUnica').classList.toggle('selecionado', modo === 'UNICA');
-      
-      document.getElementById('radioTodas').checked = (modo === 'TODAS');
-      document.getElementById('radioUnica').checked = (modo === 'UNICA');
-
-      document.getElementById('divSelectTurma').style.display = (modo === 'UNICA') ? 'block' : 'none';
-    }
-
-    async function carregarTurmasNoDropdown() {
-      const select = document.getElementById('selectTurma');
-
-      if (!idPlanilhaAtiva) {
-        select.innerHTML = '<option value="">⚠️ Unidade / Planilha não conectada</option>';
-        return;
-      }
-
-      select.innerHTML = '<option value="">Carregando turmas da planilha...</option>';
-      
-      const pacote = { acao: "carregarCriancasRF", dados: { idPlanilha: idPlanilhaAtiva } };
-
-      try {
-        const resRaw = await fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) });
-        const res = await resRaw.json();
-
-        if (res.sucesso && res.criancas) {
-          // Filtra turmas únicas e válidas da Coluna E
-          const turmasUnicas = [...new Set(res.criancas.map(c => c.turma).filter(t => t && t !== 'SEM TURMA'))].sort();
-          
-          if (turmasUnicas.length === 0) {
-            select.innerHTML = '<option value="">Nenhuma turma cadastrada na aba RF - CRIANCAS</option>';
-          } else {
-            select.innerHTML = '<option value="">-- Escolha a Turma --</option>';
-            turmasUnicas.forEach(t => select.innerHTML += `<option value="${t}">Turma ${t}</option>`);
-          }
-        } else {
-          select.innerHTML = `<option value="">Erro: ${res.erro || 'Falha ao buscar turmas'}</option>`;
-        }
-      } catch (e) {
-        console.error(e);
-        select.innerHTML = '<option value="">Erro de Conexão com o Servidor</option>';
-      }
-    }
-
-    async function processarGeracao() {
-      let turmaAlvo = "TODAS";
-
-      if (modoSelecionado === 'UNICA') {
-        turmaAlvo = document.getElementById('selectTurma').value;
-        if (!turmaAlvo) {
-          Swal.fire('Aviso', 'Por favor, selecione uma turma na lista!', 'warning');
-          return;
-        }
-      }
-
-      const btn = document.getElementById('btnGerar');
-      btn.disabled = true;
-      btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Construindo Calendário e Gerando PDFs...';
-
-      document.getElementById('divResultado').style.display = 'none';
-
-      const pacote = {
-        acao: "gerarListaChamadaRF",
-        dados: {
-          idPlanilha: idPlanilhaAtiva,
-          nomeCeu: nomeCeuAtivo,
-          turmaDesejada: turmaAlvo
-        }
-      };
-
-      try {
-        const resRaw = await fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) });
-        const res = await resRaw.json();
-
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-file-pdf me-2"></i> Gerar Lista de Chamada';
-
-        if (res.sucesso) {
-          exibirResultados(res);
-        } else {
-          Swal.fire('Erro', res.erro || 'Não foi possível gerar a chamada.', 'error');
-        }
-      } catch (e) {
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-file-pdf me-2"></i> Gerar Lista de Chamada';
-        Swal.fire('Erro', 'Falha na conexão com o servidor.', 'error');
-      }
-    }
-
-    function exibirResultados(res) {
-      const divRes = document.getElementById('divResultado');
-      const divZip = document.getElementById('divZip');
-      const listaLinks = document.getElementById('listaLinks');
-
-      divZip.innerHTML = '';
-      listaLinks.innerHTML = '';
-
-      if (res.zip) {
-        divZip.innerHTML = `
-          <a href="${res.zip}" target="_blank" class="btn btn-success btn-lg fw-bold shadow-sm">
-            <i class="fa-solid fa-file-zipper me-2"></i> Baixar Pacote ZIP Completo
-          </a>
-        `;
-      }
-
-      if (res.paginas && res.paginas.length > 0) {
-        res.paginas.forEach(p => {
-          listaLinks.innerHTML += `
-            <a href="${p.link}" target="_blank" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center fw-bold">
-              <span><i class="fa-solid fa-file-pdf text-danger me-2"></i>${p.nome}</span>
-              <span class="badge bg-primary rounded-pill">Abrir PDF</span>
-            </a>
-          `;
-        });
-      }
-
       divRes.style.display = 'block';
       divRes.scrollIntoView({ behavior: 'smooth' });
     }

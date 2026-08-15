@@ -70,13 +70,14 @@
                             <select class="form-select" id="t_professor" required><option value="">Carregando...</option></select>
                         </div>
 
-                        <div class="col-6">
-                            <label class="form-label text-primary">Cargo do Prof. *</label>
-                            <select class="form-select border-primary" id="t_tipo_resp" required><option value="">Carregando...</option></select>
-                        </div>
+                        <!-- ORDEM CORRIGIDA: Espaço na ESQUERDA, Cargo na DIREITA -->
                         <div class="col-6">
                             <label class="form-label">Espaço/Sala *</label>
                             <select class="form-select" id="t_espaco" required><option value="">Carregando...</option></select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label text-primary">Cargo do Prof. *</label>
+                            <select class="form-select border-primary" id="t_tipo_resp" required><option value="">Carregando...</option></select>
                         </div>
 
                         <div class="col-6">
@@ -143,14 +144,14 @@
                     preencherCombo('t_nucleo', retorno.nucleos, "Digite o núcleo");
                     preencherCombo('t_professor', retorno.professores, "Digite o professor");
                     preencherCombo('t_espaco', retorno.espacos, "Digite o espaço");
-                    preencherCombo('t_tipo_resp', retorno.tiposResp, "Digite o cargo"); // O NOVO CARGO
+                    preencherCombo('t_tipo_resp', retorno.tiposResp, "Digite o cargo"); // AQUI ENTRA O CARGO!
                 }
             }).catch(err => console.log(err));
         }
 
         function preencherCombo(idElemento, lista, placeholderSeVazio) {
             const combo = document.getElementById(idElemento);
-            if(!combo) return; // 🛡️ Proteção extra (impede erro se a caixinha sumir)
+            if(!combo) return; 
             if (!lista || lista.length === 0) {
                 const input = document.createElement('input');
                 input.type = 'text'; input.className = 'form-control uppercase-field'; input.id = idElemento; input.placeholder = placeholderSeVazio; input.required = true;
@@ -217,12 +218,14 @@
             `).join('');
         }
 
-        function processarFormulario() {
+        // ==========================================
+        // 3. O CÉREBRO HONESTO (À PROVA DE FALHAS)
+        // ==========================================
+        async function processarFormulario() {
             const idPlanilha = localStorage.getItem('ceu_planilha_id');
             const modo = document.getElementById('modo_form').value; 
             const acaoReal = (modo === "novo") ? "salvarTurma" : "atualizarTurma";
 
-            // 🛡️ A NOSSA BLINDAGEM DE OURO: Se o campo sumir, o JS avisa, grava em branco e não trava!
             const valorCargo = document.getElementById('t_tipo_resp') ? document.getElementById('t_tipo_resp').value : "";
 
             Swal.fire({ title: 'Salvando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
@@ -231,34 +234,46 @@
                 acao: acaoReal,
                 dados: {
                     id_planilha: idPlanilha,
-                    id_turma: document.getElementById('t_id')?.value || "",
-                    sufixo: document.getElementById('t_sufixo')?.value || "",
-                    modalidade: document.getElementById('t_modalidade')?.value || "",
-                    nucleo: document.getElementById('t_nucleo')?.value || "",
-                    professor: document.getElementById('t_professor')?.value || "",
-                    tipo_resp: valorCargo, // CARGO TOTALMENTE PROTEGIDO
-                    espaco: document.getElementById('t_espaco')?.value || "",
-                    vagas: document.getElementById('t_vagas')?.value || "",
-                    faixa_etaria: document.getElementById('t_faixa')?.value || "",
-                    x_semana: document.getElementById('t_xsemana')?.value || "",
-                    horario: document.getElementById('t_horario')?.value || ""
+                    id_turma: document.getElementById('t_id') ? document.getElementById('t_id').value : "",
+                    sufixo: document.getElementById('t_sufixo') ? document.getElementById('t_sufixo').value : "",
+                    modalidade: document.getElementById('t_modalidade') ? document.getElementById('t_modalidade').value : "",
+                    nucleo: document.getElementById('t_nucleo') ? document.getElementById('t_nucleo').value : "",
+                    professor: document.getElementById('t_professor') ? document.getElementById('t_professor').value : "",
+                    tipo_resp: valorCargo, 
+                    espaco: document.getElementById('t_espaco') ? document.getElementById('t_espaco').value : "",
+                    vagas: document.getElementById('t_vagas') ? document.getElementById('t_vagas').value : "",
+                    faixa_etaria: document.getElementById('t_faixa') ? document.getElementById('t_faixa').value : "",
+                    x_semana: document.getElementById('t_xsemana') ? document.getElementById('t_xsemana').value : "",
+                    horario: document.getElementById('t_horario') ? document.getElementById('t_horario').value : ""
                 }
             };
 
-            fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) })
-            .then(res => res.json())
-            .then(retorno => {
-                if(retorno.status === "sucesso") {
+            try {
+                // A comunicação com o servidor
+                const resposta = await fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) });
+                const textoPuro = await resposta.text(); // Lemos como texto puro para evitar a quebra do JSON
+                
+                let retorno;
+                try {
+                    retorno = JSON.parse(textoPuro);
+                } catch (eParse) {
+                    console.error("Erro devolvido pelo Google:", textoPuro);
+                    Swal.fire('Erro no Servidor do Google', 'O servidor não devolveu os dados corretamente. Você lembrou de salvar e gerar uma "Nova Implantação" no Apps Script?', 'error');
+                    return; // Para o código aqui!
+                }
+
+                // Se o JSON foi gerado corretamente, lemos a resposta:
+                if (retorno.status === "sucesso") {
                     Swal.fire('Sucesso!', retorno.mensagem, 'success');
                     cancelarEdicao(); 
                     carregarTabelaTurmas(idPlanilha); 
                 } else {
                     Swal.fire('Erro no Banco de Dados', retorno.mensagem, 'error');
                 }
-            })
-            .catch(err => {
-                Swal.fire('Atenção', 'A turma foi salva, mas ocorreu uma oscilação na rede ao fechar. Atualize a página e confira a aba de Turmas.', 'warning');
-            });
+                
+            } catch (err) {
+                Swal.fire('Erro de Conexão', 'O navegador cortou a requisição. Tente novamente.', 'error');
+            }
         }
 
         function prepararEdicao(idTurma) {
@@ -270,14 +285,16 @@
             .then(retorno => {
                 if(retorno.status === "sucesso") {
                     const t = retorno.turma;
-                    if(document.getElementById('t_id')) document.getElementById('t_id').value = t.id;
-                    if(document.getElementById('t_id')) document.getElementById('t_id').readOnly = true; 
+                    if(document.getElementById('t_id')) {
+                        document.getElementById('t_id').value = t.id;
+                        document.getElementById('t_id').readOnly = true; 
+                    }
                     if(document.getElementById('t_sufixo')) document.getElementById('t_sufixo').value = t.sufixo;
                     
                     setValorCampo('t_modalidade', t.modalidade);
                     setValorCampo('t_nucleo', t.nucleo);
                     setValorCampo('t_professor', t.professor);
-                    setValorCampo('t_tipo_resp', t.tipo_resp); // TIPO DE RESPONSÁVEL
+                    setValorCampo('t_tipo_resp', t.tipo_resp); // CARREGANDO O CARGO
                     setValorCampo('t_espaco', t.espaco);
                     
                     if(document.getElementById('t_vagas')) document.getElementById('t_vagas').value = t.vagas;
@@ -298,7 +315,7 @@
 
         function setValorCampo(id, valor) {
             const campo = document.getElementById(id);
-            if(!campo) return; // 🛡️ BLINDADO
+            if(!campo) return; 
             if(campo.tagName === 'SELECT') {
                 let existe = Array.from(campo.options).some(opt => opt.value === valor);
                 if(!existe && valor) campo.innerHTML += `<option value="${valor}">${valor}</option>`;

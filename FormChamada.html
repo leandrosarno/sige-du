@@ -33,7 +33,6 @@
 
         .folha-chamada { font-family: Arial, sans-serif; width: 100%; page-break-after: always; color: #000; }
         
-        /* CABEÇALHO AZUL OFICIAL */
         .cabecalho-oficial { 
             background-color: #0d6efd !important; 
             color: white !important; 
@@ -54,7 +53,6 @@
         .tabela-grid { width: 100%; border-collapse: collapse; font-size: 8px; text-align: center; }
         .tabela-grid th, .tabela-grid td { border: 1px solid #000; padding: 3px 2px; }
         
-        /* CABEÇALHO DA TABELA AZUL */
         .tabela-grid th { 
             background-color: #0d6efd !important; 
             color: white !important; 
@@ -63,7 +61,6 @@
             print-color-adjust: exact;
         }
         
-        /* CÉLULAS CINZAS PARA OS DIAS SEM AULA */
         .bg-cinza { 
             background-color: #d9d9d9 !important; 
             -webkit-print-color-adjust: exact;
@@ -94,7 +91,8 @@
     </div>
     
     <div class="card-body p-4">
-      <form id="formChamada" onsubmit="gerarListaHTML(event)">
+      <!-- REMOVI O ONSUBMIT DAQUI PARA BLINDAR NO JAVASCRIPT -->
+      <form id="formChamada">
         
         <div class="mb-4">
           <label class="form-label fw-bold text-muted mb-2">Formato de Busca</label>
@@ -152,32 +150,31 @@
 <script>
   const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec"; 
   
-  // 🛡️ BLINDAGEM MÁXIMA CONTRA A JANELA ANÔNIMA
   let idPlanilhaCeu = "";
-  try {
-      idPlanilhaCeu = localStorage.getItem('ceu_planilha_id');
-  } catch(e) {
-      console.warn("Acesso ao armazenamento bloqueado pelo navegador.");
-  }
+  try { idPlanilhaCeu = localStorage.getItem('ceu_planilha_id'); } catch(e) {}
 
   window.onload = function() {
       if(!idPlanilhaCeu) {
-          Swal.fire('Aviso', 'Banco de dados não conectado. Por favor, feche e abra o sistema pela página inicial de login.', 'warning');
+          Swal.fire('Aviso', 'Banco de dados não conectado. Por favor, volte ao login.', 'warning');
           return;
       }
       carregarCombosDependencias();
   };
 
+  // 🛡️ A TRAVA DE TITÂNIO QUE IMPEDE A TELA DE PISCAR E APAGAR DADOS
+  document.getElementById("formChamada").addEventListener("submit", async function(e) {
+      e.preventDefault(); // Corta o refresh na raiz!
+      await gerarListaHTML();
+  });
+
   async function carregarCombosDependencias() {
       try {
           const pacote = { acao: "buscarDependenciasTurma", dados: { id_planilha: idPlanilhaCeu } };
-          
           const resRaw = await fetch(API_URL, { 
               method: 'POST', 
               headers: { 'Content-Type': 'text/plain;charset=utf-8' },
               body: JSON.stringify(pacote) 
           });
-          
           const res = await resRaw.json();
 
           if (res.status === "sucesso") {
@@ -199,9 +196,8 @@
     document.getElementById('divNucleo').style.display = (tipo === 'nucleo') ? 'block' : 'none';
   }
 
-  async function gerarListaHTML(e) {
-    e.preventDefault();
-    if(!idPlanilhaCeu) return Swal.fire('Erro', 'Banco de dados não conectado. Por favor, volte e faça login.', 'error');
+  async function gerarListaHTML() {
+    if(!idPlanilhaCeu) return Swal.fire('Erro', 'Banco de dados não conectado.', 'error');
 
     const tipoBusca = document.querySelector('input[name="tipoBusca"]:checked').value;
     const mesAno = document.getElementById("mesAno").value.trim();
@@ -236,7 +232,9 @@
         } else {
             Swal.fire('Atenção', res.mensagem, 'warning');
         }
-    } catch(err) { Swal.fire('Detetive de Erros', 'O erro real que o Google devolveu foi: ' + err.message, 'error'); }
+    } catch(err) { 
+        Swal.fire('Bloqueio do Google', 'A conexão falhou. Para usar o sistema no GitHub, você precisa hospedar o seu código (code.gs) em uma conta @gmail.com pessoal!', 'error'); 
+    }
   }
 
   function desenharFolhas(dados) {

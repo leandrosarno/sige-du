@@ -33,7 +33,6 @@
 
         .folha-chamada { font-family: Arial, sans-serif; width: 100%; page-break-after: always; color: #000; }
         
-        /* CABEÇALHO AZUL OFICIAL */
         .cabecalho-oficial { 
             background-color: #0d6efd !important; 
             color: white !important; 
@@ -54,7 +53,6 @@
         .tabela-grid { width: 100%; border-collapse: collapse; font-size: 8px; text-align: center; }
         .tabela-grid th, .tabela-grid td { border: 1px solid #000; padding: 3px 2px; }
         
-        /* CABEÇALHO DA TABELA AZUL */
         .tabela-grid th { 
             background-color: #0d6efd !important; 
             color: white !important; 
@@ -63,7 +61,6 @@
             print-color-adjust: exact;
         }
         
-        /* CÉLULAS CINZAS PARA OS DIAS SEM AULA */
         .bg-cinza { 
             background-color: #d9d9d9 !important; 
             -webkit-print-color-adjust: exact;
@@ -94,8 +91,7 @@
     </div>
     
     <div class="card-body p-4">
-      <!-- O ONSUBMIT CLÁSSICO E PERFEITO VOLTOU! -->
-      <form id="formChamada" onsubmit="gerarListaHTML(event)">
+      <form id="formChamada">
         
         <div class="mb-4">
           <label class="form-label fw-bold text-muted mb-2">Formato de Busca</label>
@@ -157,16 +153,25 @@
   try { idPlanilhaCeu = localStorage.getItem('ceu_planilha_id'); } catch(e) {}
 
   window.onload = function() {
-      if(!idPlanilhaCeu) return;
+      if(!idPlanilhaCeu) {
+          Swal.fire('Aviso', 'Banco de dados não conectado. Por favor, volte ao login.', 'warning');
+          return;
+      }
       carregarCombosDependencias();
   };
+
+  document.getElementById("formChamada").addEventListener("submit", async function(e) {
+      e.preventDefault(); 
+      await gerarListaHTML();
+  });
 
   async function carregarCombosDependencias() {
       try {
           const pacote = { acao: "buscarDependenciasTurma", dados: { id_planilha: idPlanilhaCeu } };
+          
+          // REMOVIDO OS HEADERS PROBLEMATICOS - IDÊNTICO AO DE CARTEIRINHAS
           const resRaw = await fetch(API_URL, { 
               method: 'POST', 
-              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
               body: JSON.stringify(pacote) 
           });
           const res = await resRaw.json();
@@ -190,9 +195,7 @@
     document.getElementById('divNucleo').style.display = (tipo === 'nucleo') ? 'block' : 'none';
   }
 
-  async function gerarListaHTML(e) {
-    e.preventDefault(); // Impede a tela de piscar/recarregar!
-    
+  async function gerarListaHTML() {
     if(!idPlanilhaCeu) return Swal.fire('Erro', 'Banco de dados não conectado.', 'error');
 
     const tipoBusca = document.querySelector('input[name="tipoBusca"]:checked').value;
@@ -214,9 +217,9 @@
             dados: { idPlanilha: idPlanilhaCeu, tipoBusca: tipoBusca, valorBuscado: valorBuscado, mesAno: mesAno }
         };
         
+        // REMOVIDO OS HEADERS PROBLEMATICOS
         const resRaw = await fetch(API_URL, { 
             method: 'POST', 
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify(pacote) 
         });
         
@@ -229,8 +232,7 @@
             Swal.fire('Atenção', res.mensagem, 'warning');
         }
     } catch(err) { 
-        // Mensagem corrigida: nada de "Bloqueio do Google" falso!
-        Swal.fire('Erro na Conexão', 'Houve uma falha de rede ao conectar com a planilha. Tente clicar em gerar novamente!', 'error'); 
+        Swal.fire('Erro na Conexão', 'O navegador bloqueou a requisição ou houve uma oscilação na rede. Detalhe: ' + err.message, 'error'); 
     }
   }
 

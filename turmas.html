@@ -226,6 +226,9 @@
         // ==========================================
         // 3. SALVAR OU ATUALIZAR (O CÉREBRO DO FORM)
         // ==========================================
+// ==========================================
+        // 3. SALVAR OU ATUALIZAR (O CÉREBRO DO FORM)
+        // ==========================================
         function processarFormulario() {
             const idPlanilha = localStorage.getItem('ceu_planilha_id');
             const modo = document.getElementById('modo_form').value; 
@@ -242,7 +245,7 @@
                     modalidade: document.getElementById('t_modalidade').value,
                     nucleo: document.getElementById('t_nucleo').value,
                     professor: document.getElementById('t_professor').value,
-                    tipo_resp: document.getElementById('t_tipo_resp').value, // NOVO
+                    tipo_resp: document.getElementById('t_tipo_resp').value, // NOVO CARGO
                     espaco: document.getElementById('t_espaco').value,
                     vagas: document.getElementById('t_vagas').value,
                     faixa_etaria: document.getElementById('t_faixa').value,
@@ -251,14 +254,27 @@
                 }
             };
 
-            fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) })
-            .then(res => res.json())
+            fetch(API_URL, { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // Blindagem CORS adicionada
+                body: JSON.stringify(pacote) 
+            })
+            .then(res => {
+                if (!res.ok) throw new Error("Falha na comunicação com o servidor.");
+                return res.json();
+            })
             .then(retorno => {
                 if(retorno.status === "sucesso") {
                     Swal.fire('Sucesso!', retorno.mensagem, 'success');
                     cancelarEdicao(); 
                     carregarTabelaTurmas(idPlanilha); 
-                } else Swal.fire('Erro', retorno.mensagem, 'error');
+                } else {
+                    Swal.fire('Aviso', retorno.mensagem, 'warning');
+                }
+            })
+            .catch(err => {
+                // O NOSSO DETETIVE DE ERROS EM AÇÃO!
+                Swal.fire('Detetive de Erros', 'Ocorreu um erro invisível: ' + err.message, 'error');
             });
         }
 

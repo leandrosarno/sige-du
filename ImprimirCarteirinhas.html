@@ -111,9 +111,13 @@
             margin-right: 0.5cm;
             page-break-inside: avoid;
         }
-        .et-topo { display: flex; justify-content: space-between; border-bottom: 2px solid #ccc; padding-bottom: 0.2cm; margin-bottom: 0.2cm; }
-        .et-titulo { font-size: 10px; font-weight: 900; color: #333; margin: 0; text-transform: uppercase; }
-        .et-sub { font-size: 28px; font-weight: 900; color: #000; margin: 0; }
+        .et-topo { display: flex; justify-content: space-between; border-bottom: 2px solid #ccc; padding-bottom: 0.2cm; margin-bottom: 0.2cm; align-items: flex-end; }
+        .et-titulo { font-size: 10px; font-weight: 900; color: #64748b; margin: 0; text-transform: uppercase; }
+        
+        /* Estilos específicos para o topo invertido */
+        .et-sub { font-size: 14px; font-weight: 900; color: #000; margin: 0; }
+        .et-destaque-prontuario { font-size: 26px; font-weight: 900; color: #000; margin: 0; line-height: 1; }
+
         .et-corpo { display: flex; gap: 0.3cm; }
         .et-dados { flex: 1; display: flex; flex-direction: column; gap: 0.15cm; }
         .et-campo { background: #f8fafc; padding: 4px; border-radius: 4px; border: 1px solid #e2e8f0; }
@@ -149,7 +153,6 @@
         <button id="btn-print" class="btn-imprimir" style="display:none;" onclick="acionarImpressao()"><i class="fa-solid fa-print"></i> Iniciar Impressão</button>
     </div>
 
-    <!-- O contêiner onde as Carteirinhas E os Envelopes serão colados -->
     <div id="area-geral"></div>
 
     <script>
@@ -168,7 +171,7 @@
             try {
                 const pacote = {
                     acao: "buscarDadosImpressaoHTML",
-                    dados: { idPlanilha: idPlanilhaCeu, tipo: "GERAL" } // Gatilho Coluna O
+                    dados: { idPlanilha: idPlanilhaCeu, tipo: "GERAL" } 
                 };
 
                 const resRaw = await fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) });
@@ -243,17 +246,19 @@
                     <div class="nome-aluno-cart">${nomeAbreviado}</div>
                 </div>`;
 
-                // 2. MONTA A ETIQUETA DO ENVELOPE DO MESMO ALUNO
+                // 2. MONTA A ETIQUETA DO ENVELOPE (COM O PRONTUÁRIO GIGANTE NA DIREITA)
                 htmlEnvelopes += `
                 <div class="etiqueta-envelope">
                     <div class="et-topo">
-                        <div style="text-align: right;">
+                        <!-- Cód EOL na esquerda -->
+                        <div>
                             <p class="et-titulo">Cód. EOL</p>
                             <p class="et-sub">${al.eol}</p>
                         </div>
-                        <div>
+                        <!-- Prontuário na direita e GIGANTE -->
+                        <div style="text-align: right;">
                             <p class="et-titulo">Prontuário</p>
-                            <p class="et-sub">${al.carteirinha}</p>
+                            <p class="et-destaque-prontuario">${al.carteirinha}</p>
                         </div>
                     </div>
                     <div class="et-corpo">
@@ -291,7 +296,6 @@
             document.getElementById('msg-status').innerHTML = `✅ Pronto! ${dadosGerais.alunos.length} Carteirinhas e Envelopes gerados!`;
             document.getElementById('btn-print').style.display = "inline-block";
             
-            // Chama a impressão automaticamente
             acionarImpressao();
         }
 
@@ -300,9 +304,7 @@
         // ========================================================
         function acionarImpressao() {
             setTimeout(() => {
-                window.print(); // Abre a tela de impressão do navegador
-                
-                // Assim que a janela de impressão fechar, dispara a nossa famosa pergunta!
+                window.print(); 
                 setTimeout(perguntarLimpeza, 1000); 
             }, 500);
         }
@@ -339,11 +341,9 @@
 
                 if (res.status === "sucesso") {
                     Swal.fire('Elegante!', 'A fila de Carteirinhas de Uso Geral e Envelopes foi limpa com sucesso.', 'success').then(() => {
-                        // Atualiza as bolinhas vermelhas no menu (puxando a função do pai/dashboard)
                         if(window.parent && typeof window.parent.atualizarContadoresImpressao === 'function') {
                             window.parent.atualizarContadoresImpressao();
                         }
-                        // Limpa a tela para não imprimir de novo por acidente
                         document.getElementById('area-geral').innerHTML = "";
                         document.getElementById('msg-status').innerHTML = "Fila limpa. Aguardando novos alunos.";
                         document.getElementById('btn-print').style.display = "none";

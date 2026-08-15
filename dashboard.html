@@ -81,6 +81,32 @@
             height: 100%;
             background-color: #f4f7f6;
         }
+
+
+/* =========================================
+           📜 BARRA DE ROLAGEM ELEGANTE PARA O MENU LATERAL
+           ========================================= */
+        .sidebar {
+            overflow-y: auto; /* Ativa a rolagem apenas quando a tela for pequena */
+            max-height: 100vh; /* Trava o menu no tamanho exato do monitor */
+        }
+
+        /* Estilizando a barra de rolagem (Fininha e Moderna) */
+        .sidebar::-webkit-scrollbar {
+            width: 5px;
+        }
+        .sidebar::-webkit-scrollbar-track {
+            background: transparent; 
+        }
+        .sidebar::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 10px;
+        }
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+
+        
     </style>
 </head>
 <body>

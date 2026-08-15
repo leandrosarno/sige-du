@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Impressão de Carteirinhas</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #e2e8f0; margin: 0; padding: 20px; }
+        
+        /* O BOTÃO E O CABEÇALHO SOMEM NA HORA DA IMPRESSÃO! */
+        .painel-controle { text-align: center; margin-bottom: 30px; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .btn-imprimir { background: #0d6efd; color: white; border: none; padding: 12px 25px; font-size: 18px; font-weight: bold; border-radius: 8px; cursor: pointer; transition: 0.3s; }
+        .btn-imprimir:hover { background: #0b5ed7; transform: translateY(-2px); }
+        .status-loading { font-size: 18px; color: #64748b; font-weight: bold; }
+
+        .container-folha { display: flex; flex-wrap: wrap; gap: 0; justify-content: center; }
+
+        /* A MÁGICA DOS CENTÍMETROS: A CAIXA PRINCIPAL */
+        .carteirinha {
+            width: 10.5cm;
+            height: 6.0cm;
+            background: white;
+            border: 2px solid #000;
+            border-radius: 8px;
+            position: relative;
+            box-sizing: border-box;
+            padding: 0.2cm;
+            margin-bottom: 0.5cm;
+            margin-right: 0.5cm;
+            overflow: hidden;
+            page-break-inside: avoid; /* Impede que a impressora corte a carteirinha no meio */
+        }
+
+        /* LOGO E TEXTOS DO CABEÇALHO */
+        .topo { display: flex; width: calc(100% - 3.2cm); }
+        .logo-pref { width: 2.0cm; height: 2.0cm; object-fit: contain; margin-right: 0.2cm; }
+        .info-ceu { flex: 1; padding-top: 0.1cm; }
+        .nome-ceu { font-size: 11px; font-weight: 900; color: #000; margin: 0; line-height: 1.1; text-transform: uppercase; }
+        .endereco-ceu { font-size: 7px; font-weight: bold; color: #333; margin-top: 3px; line-height: 1.2; text-transform: uppercase;}
+        
+        /* A FOTO 3x4 NO CANTO SUPERIOR DIREITO */
+        .foto-aluno {
+            position: absolute;
+            top: 0.2cm;
+            right: 0.2cm;
+            width: 3.0cm;
+            height: 4.0cm;
+            border: 1px solid #333;
+            object-fit: cover;
+            border-radius: 4px;
+            background-color: #f1f5f9;
+        }
+
+        /* GRID DO MEIO: PRONTUÁRIO, EOL, DATA E TELEFONE */
+        .dados-meio { display: flex; margin-top: 0.2cm; width: calc(100% - 3.2cm); gap: 0.1cm; }
+        .bloco-dado { border: 1px solid #000; padding: 2px 4px; border-radius: 4px; flex: 1; text-align: center; }
+        .titulo-dado { font-size: 6px; font-weight: 900; color: #333; display: block; text-transform: uppercase; }
+        .valor-dado { font-size: 9px; font-weight: 900; color: #000; display: block; margin-top: 1px; }
+
+        /* BLOCO DIVIDIDO (DATA E TELEFONE) */
+        .bloco-duplo { flex: 1.5; display: flex; flex-direction: column; gap: 0.05cm; }
+        .sub-bloco { border: 1px solid #000; padding: 1px 4px; border-radius: 4px; text-align: center; }
+
+        /* NOME DO ALUNO NO RODAPÉ */
+        .nome-aluno {
+            position: absolute;
+            bottom: 0.2cm;
+            left: 0.2cm;
+            width: calc(100% - 0.4cm);
+            text-align: center;
+            font-size: 15px;
+            font-weight: 900;
+            text-transform: uppercase;
+            background: #f1f5f9;
+            padding: 3px 0;
+            border-radius: 4px;
+            border: 1px solid #000;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        @media print {
+            @page { margin: 1cm; size: A4 portrait; }
+            body { background: white; padding: 0; }
+            .painel-controle { display: none !important; }
+            .carteirinha { border: 1px solid #ccc; /* Deixa uma linha fina para corte */ }
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="painel-controle">
+        <h2 id="msg-status" class="status-loading"><i class="fa-solid fa-circle-notch fa-spin"></i> Gerando Carteirinhas...</h2>
+        <button id="btn-print" class="btn-imprimir" style="display:none;" onclick="window.print()"><i class="fa-solid fa-print"></i> Imprimir Carteirinhas</button>
+    </div>
+
+    <div class="container-folha" id="area-carteirinhas"></div>
+
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec"; // COLOQUE SEU LINK AQUI
+        const idPlanilhaCeu = localStorage.getItem('ceu_planilha_id');
+
+        window.onload = function() {
+            if(!idPlanilhaCeu) {
+                document.getElementById('msg-status').innerHTML = "Erro: Banco de dados não conectado.";
+                return;
+            }
+            buscarDados();
+        };
+
+        async function buscarDados() {
+            try {
+                const pacote = {
+                    acao: "buscarCarteirinhasHTML",
+                    dados: { idPlanilha: idPlanilhaCeu }
+                };
+
+                const resRaw = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(pacote)
+                });
+                
+                const res = await resRaw.json();
+
+                if (res.status === "sucesso") {
+                    montarHTML(res);
+                } else {
+                    document.getElementById('msg-status').innerHTML = "<i class='fa-solid fa-circle-exclamation text-danger'></i> " + res.mensagem;
+                }
+            } catch (e) {
+                document.getElementById('msg-status').innerHTML = "Erro ao comunicar com o servidor.";
+            }
+        }
+
+        // 🧠 O ENCURTADOR INTELIGENTE DE NOMES GIGANTES
+        function abreviarNome(nomeCompleto) {
+            let partes = String(nomeCompleto).trim().split(" ");
+            if (partes.length <= 2) return nomeCompleto; // Mantém intacto
+            
+            let nomeFinal = partes[0] + " ";
+            for (let i = 1; i < partes.length - 1; i++) {
+                let p = partes[i];
+                if (p.length > 3) { // Ignora DA, DE, DOS...
+                    nomeFinal += p[0] + ". ";
+                } else {
+                    nomeFinal += p + " ";
+                }
+            }
+            nomeFinal += partes[partes.length - 1]; // Mantém o último nome inteiro
+            return nomeFinal;
+        }
+
+        function montarHTML(dadosGerais) {
+            const area = document.getElementById('area-carteirinhas');
+            let html = "";
+
+            const semFotoPlaceholder = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2394a3b8'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E";
+
+            dadosGerais.alunos.forEach(al => {
+                let fotoPronta = al.foto && al.foto.includes('http') ? al.foto : semFotoPlaceholder;
+                let nomeAbreviado = abreviarNome(al.nome);
+
+                html += `
+                <div class="carteirinha">
+                    <div class="topo">
+                        <img src="${dadosGerais.logo}" class="logo-pref" onerror="this.src='${semFotoPlaceholder}'">
+                        <div class="info-ceu">
+                            <p class="nome-ceu">${dadosGerais.ceu.nome}</p>
+                            <p class="endereco-ceu">${dadosGerais.ceu.endereco}<br>${dadosGerais.ceu.telefone}</p>
+                            <p class="endereco-ceu" style="margin-top:2px;"><b>OBRIGATÓRIO APRESENTAÇÃO NA PORTARIA.</b></p>
+                        </div>
+                    </div>
+
+                    <div class="dados-meio">
+                        <div class="bloco-dado">
+                            <span class="titulo-dado">CARTEIRINHA</span>
+                            <span class="valor-dado">${al.carteirinha}</span>
+                        </div>
+                        <div class="bloco-dado">
+                            <span class="titulo-dado">CÓD EOL</span>
+                            <span class="valor-dado">${al.eol}</span>
+                        </div>
+                        <div class="bloco-duplo">
+                            <div class="sub-bloco">
+                                <span class="titulo-dado">DATA NASCIMENTO</span>
+                                <span class="valor-dado">${al.nascimento}</span>
+                            </div>
+                            <div class="sub-bloco">
+                                <span class="titulo-dado">TELEFONE</span>
+                                <span class="valor-dado">${al.telefone}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <img src="${fotoPronta}" class="foto-aluno" onerror="this.src='${semFotoPlaceholder}'">
+
+                    <div class="nome-aluno">${nomeAbreviado}</div>
+                </div>`;
+            });
+
+            area.innerHTML = html;
+            document.getElementById('msg-status').innerHTML = "✅ " + dadosGerais.alunos.length + " Carteirinhas Geradas!";
+            document.getElementById('btn-print').style.display = "inline-block";
+            
+            // Dispara a impressão automática após 1 segundo
+            setTimeout(() => window.print(), 1000);
+        }
+    </script>
+</body>
+</html>

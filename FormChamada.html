@@ -47,10 +47,10 @@
             print-color-adjust: exact;
         }
         
-        .tabela-info { background-color: #2A3990 !important; color: white !important;  width: 100%; font-size: 10px; margin-bottom: 5px; border-collapse: collapse; }
+        .tabela-info { width: 100%; font-size: 10px; margin-bottom: 5px; border-collapse: collapse; }
         .tabela-info td { padding: 2px 5px; }
 
-        .tabela-grid { width: 100%; border-collapse: collapse; font-size: 8px; text-align: center; }
+        .tabela-grid {  background-color: #2A3990 !important; color: white !important; width: 100%; border-collapse: collapse; font-size: 8px; text-align: center; }
         .tabela-grid th, .tabela-grid td { border: 1px solid #000; padding: 3px 2px; }
         
         .tabela-grid th { 
@@ -263,7 +263,7 @@
               }
           }
 
-          let txtCabecalho = turma.cabecalho !== "" ? turma.cabecalho : `SME/COCEU/${turma.sigla} - FREQUÊNCIA`;
+          let txtCabecalho =  `SME/COCEU/${turma.sigla} - FREQUÊNCIA`;
 /*          let txtCabecalho = turma.cabecalho && turma.cabecalho !== "" ? turma.cabecalho : `SME/COCEU/${turma.sigla} - FREQUÊNCIA`; */
           let txtRodape = turma.rodape && turma.rodape !== "" ? turma.rodape : "Carimbo e<br>assinatura do NEL";
 

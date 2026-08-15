@@ -79,11 +79,18 @@
             overflow: hidden;
         }
 
-        @media print {
-            @page { margin: 1cm; size: A4 portrait; }
+@media print {
+            @page { margin: 0.5cm; size: A4 portrait; }
             body { background: white; padding: 0; }
             .painel-controle { display: none !important; }
-            .carteirinha { border: 1px solid #ccc; /* Deixa uma linha fina para corte */ }
+            .container-folha { gap: 0; justify-content: center; }
+            /* Magia do tamanho para caber 2 na A4 com folga */
+            .carteirinha { 
+                margin: 0.1cm; 
+                width: 9.6cm; 
+                border: 1px dashed #ccc; 
+                page-break-inside: avoid;
+            }
             body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         }
     </style>

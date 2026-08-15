@@ -192,8 +192,10 @@
 
   async function gerarListaHTML(e) {
     e.preventDefault();
-    if(!idPlanilhaCeu) return Swal.fire('Erro', 'Banco de dados não conectado.', 'error');
-
+/*    if(!idPlanilhaCeu) return Swal.fire('Erro', 'Banco de dados não conectado.', 'error'); */
+catch(err) { 
+        Swal.fire('Detetive de Erros', 'O erro real que o Google devolveu foi: ' + err.message, 'error'); 
+    }
     const tipoBusca = document.querySelector('input[name="tipoBusca"]:checked').value;
     const mesAno = document.getElementById("mesAno").value.trim();
     

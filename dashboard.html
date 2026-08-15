@@ -27,8 +27,8 @@
             display: flex;
             flex-direction: column;
             transition: all 0.3s;
-            height: 100vh; /* 👈 Fundamental para a rolagem */
-            overflow-y: auto; /* 👈 Ativa a rolagem interna */
+            height: 100vh; 
+            overflow-y: auto; 
         }
 
         .sidebar-header {
@@ -55,7 +55,6 @@
             color: white;
         }
 
-        /* ESTILOS ESPECÍFICOS DO SUBMENU (A GAVETA) */
         .sidebar .submenu { background: #233140; }
         .sidebar .submenu a { 
             padding-left: 40px; 
@@ -92,9 +91,7 @@
             background-color: #f4f7f6;
         }
 
-        /* =========================================
-           📜 BARRA DE ROLAGEM ELEGANTE PARA O MENU LATERAL
-           ========================================= */
+        /* 📜 BARRA DE ROLAGEM ELEGANTE PARA O MENU LATERAL */
         .sidebar::-webkit-scrollbar { width: 6px; }
         .sidebar::-webkit-scrollbar-track { background: #1a252f; }
         .sidebar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
@@ -122,9 +119,7 @@
             <span class="material-icons">class</span> Turmas
         </a>
 
-        <!-- ========================================== -->
-        <!-- 🖨️ NOVA GAVETA: IMPRESSÃO E EXPEDIÇÃO      -->
-        <!-- ========================================== -->
+        <!-- 🖨️ GAVETA: IMPRESSÃO E EXPEDIÇÃO -->
         <a href="#submenuImpressao" id="link-impressao" data-bs-toggle="collapse" style="justify-content: space-between;" onclick="removerAtivo(this)">
             <div style="display: flex; align-items: center; gap: 12px;">
                 <span class="material-icons">print</span> Impressão / Expedição
@@ -156,6 +151,7 @@
             </a>
         </div>
         
+        <!-- 🎉 GAVETA: RECREIO NAS FÉRIAS -->
         <a href="#submenuRecreio" id="link-recreio" data-bs-toggle="collapse" style="justify-content: space-between;" onclick="removerAtivo(this)">
             <div style="display: flex; align-items: center; gap: 12px;">
                 <span class="material-icons">celebration</span> Recreio nas Férias
@@ -175,6 +171,7 @@
             <span class="material-icons">wb_sunny</span> Regras Recreio (DRE)
         </a>
         
+        <!-- ⚙️ GAVETA: CADASTROS BASE -->
         <a href="#submenuCadastros" id="link-cadastros" data-bs-toggle="collapse" style="justify-content: space-between;" onclick="removerAtivo(this)">
             <div style="display: flex; align-items: center; gap: 12px;">
                 <span class="material-icons">settings</span> Cadastros Base
@@ -311,9 +308,7 @@
             }
         };
 
-        // ========================================================
         // 🚨 ATUALIZADOR DO CONTADOR DE IMPRESSÕES MÚLTIPLO
-        // ========================================================
         function atualizarContadoresImpressao() {
             const idPlanilha = localStorage.getItem('ceu_planilha_id');
             if(!idPlanilha) return;

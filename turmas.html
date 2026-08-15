@@ -70,21 +70,21 @@
                             <select class="form-select" id="t_professor" required><option value="">Carregando...</option></select>
                         </div>
 
+                        <!-- 🌟 NOVO CAMPO FOTOGRÁFICO DE CARGO AQUI! -->
+                        <div class="col-6">
+                            <label class="form-label text-primary">Cargo na Turma *</label>
+                            <select class="form-select border-primary" id="t_tipo_resp" required><option value="">Carregando...</option></select>
+                        </div>
                         <div class="col-6">
                             <label class="form-label">Espaço/Sala *</label>
                             <select class="form-select" id="t_espaco" required><option value="">Carregando...</option></select>
-                        </div>
-                        <!-- CAMPO NOVO AQUI! -->
-                        <div class="col-6">
-                            <label class="form-label text-primary">Cargo do Prof. na Turma *</label>
-                            <select class="form-select border-primary" id="t_tipo_resp" required><option value="">Carregando...</option></select>
                         </div>
 
                         <div class="col-6">
                             <label class="form-label">Qtd. Vagas *</label>
                             <input type="number" class="form-control" id="t_vagas" required placeholder="Ex: 30">
                         </div>
-                        <div class="col-12">
+                        <div class="col-6">
                             <label class="form-label">Faixa Etária</label>
                             <input type="text" class="form-control uppercase-field" id="t_faixa" placeholder="Ex: 10 A 15 ANOS">
                         </div>
@@ -135,25 +135,26 @@
             carregarTabelaTurmas(idPlanilha);
         };
 
-        // ==========================================
-        // 1. CARREGAMENTO INICIAL
-        // ==========================================
         function carregarDependencias(idPlanilha) {
             fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "buscarDependenciasTurma", dados: { id_planilha: idPlanilha } }) })
-            .then(res => res.json())
-            .then(retorno => {
-                if(retorno.status === "sucesso") {
-                    preencherCombo('t_modalidade', retorno.modalidades, "Digite a modalidade");
-                    preencherCombo('t_nucleo', retorno.nucleos, "Digite o núcleo");
-                    preencherCombo('t_professor', retorno.professores, "Digite o professor");
-                    preencherCombo('t_espaco', retorno.espacos, "Digite o espaço");
-                    preencherCombo('t_tipo_resp', retorno.tiposResp, "Digite o cargo (Ex: Analista)"); // AQUI O CARGO!
-                }
+            .then(res => res.text()) // 🛡️ Leitura blindada
+            .then(texto => {
+                try {
+                    const retorno = JSON.parse(texto);
+                    if(retorno.status === "sucesso") {
+                        preencherCombo('t_modalidade', retorno.modalidades, "Digite a modalidade");
+                        preencherCombo('t_nucleo', retorno.nucleos, "Digite o núcleo");
+                        preencherCombo('t_professor', retorno.professores, "Digite o professor");
+                        preencherCombo('t_tipo_resp', retorno.tiposResp, "Digite o cargo"); // AQUI ENTRA O CARGO!
+                        preencherCombo('t_espaco', retorno.espacos, "Digite o espaço");
+                    }
+                } catch(e) { console.log("Dependências falharam: Google retornou login ou erro."); }
             });
         }
 
         function preencherCombo(idElemento, lista, placeholderSeVazio) {
             const combo = document.getElementById(idElemento);
+            if (!combo) return;
             if (!lista || lista.length === 0) {
                 const input = document.createElement('input');
                 input.type = 'text'; input.className = 'form-control uppercase-field'; input.id = idElemento; input.placeholder = placeholderSeVazio; input.required = true;
@@ -166,18 +167,18 @@
 
         function carregarTabelaTurmas(idPlanilha) {
             fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "listarTurmas", dados: { id_planilha: idPlanilha } }) })
-            .then(res => res.json())
-            .then(retorno => {
-                if(retorno.status === "sucesso") {
-                    turmasGlobais = retorno.turmas;
-                    desenharTurmas(turmasGlobais);
-                }
+            .then(res => res.text()) // 🛡️ Leitura blindada
+            .then(texto => {
+                try {
+                    const retorno = JSON.parse(texto);
+                    if(retorno.status === "sucesso") {
+                        turmasGlobais = retorno.turmas; 
+                        desenharTurmas(turmasGlobais);
+                    }
+                } catch(e) {}
             });
         }
 
-        // ==========================================
-        // 2. BUSCA E DESENHO DA LISTA
-        // ==========================================
         function filtrarTurmas() {
             const termo = document.getElementById('campo-busca').value.toUpperCase();
             const filtradas = turmasGlobais.filter(t => 
@@ -203,7 +204,7 @@
                         <strong class="text-primary">${t.modalidade}</strong> <span class="turma-tag">${t.id}</span><br>
                         
                         <div style="font-size:12.5px; color:#475569; margin-top: 5px;">
-                            <i class="material-icons align-middle text-primary" style="font-size:15px;">person</i> <b>${t.professor || 'Sem Prof.'}</b> <i class="text-muted" style="font-size:11px;">(${t.tipo_resp || 'Sem cargo'})</i> &nbsp;|&nbsp; 
+                            <i class="material-icons align-middle text-primary" style="font-size:15px;">person</i> <b>${t.professor || 'Sem Prof.'}</b> <i class="text-muted" style="font-size: 11px;">(${t.tipo_resp || 'Sem cargo'})</i> &nbsp;|&nbsp; 
                             <i class="material-icons align-middle text-secondary" style="font-size:15px;">domain</i> ${t.nucleo || 'Sem Núcleo'}
                         </div>
                         
@@ -224,12 +225,14 @@
         }
 
         // ==========================================
-        // 3. SALVAR OU ATUALIZAR (O CÉREBRO DO FORM)
+        // 3. O CÉREBRO COM DETECTOR DE MENTIRAS DO GOOGLE
         // ==========================================
-        function processarFormulario() {
+        async function processarFormulario() {
             const idPlanilha = localStorage.getItem('ceu_planilha_id');
             const modo = document.getElementById('modo_form').value; 
             const acaoReal = (modo === "novo") ? "salvarTurma" : "atualizarTurma";
+
+            const valorCargo = document.getElementById('t_tipo_resp') ? document.getElementById('t_tipo_resp').value : "";
 
             Swal.fire({ title: 'Salvando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
 
@@ -242,7 +245,7 @@
                     modalidade: document.getElementById('t_modalidade').value,
                     nucleo: document.getElementById('t_nucleo').value,
                     professor: document.getElementById('t_professor').value,
-                    tipo_resp: document.getElementById('t_tipo_resp').value, // SALVA O CARGO!
+                    tipo_resp: valorCargo, // O NOVO CAMPO FOTOGRAFADO
                     espaco: document.getElementById('t_espaco').value,
                     vagas: document.getElementById('t_vagas').value,
                     faixa_etaria: document.getElementById('t_faixa').value,
@@ -251,18 +254,31 @@
                 }
             };
 
-            fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) })
-            .then(res => res.json())
-            .then(retorno => {
+            try {
+                const resRaw = await fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) });
+                
+                // 🕵️‍♂️ Lemos o texto PURO. O Google não pode mais mentir pra gente.
+                const textoPuro = await resRaw.text();
+
+                let retorno;
+                try {
+                    retorno = JSON.parse(textoPuro);
+                } catch (eParse) {
+                    console.error("ERRO ESCONDIDO DO GOOGLE:", textoPuro);
+                    Swal.fire('🚨 Erro de Permissão!', 'O Google bloqueou a gravação! Vá no Apps Script, clique em "Implantar > Gerenciar Implantações > Nova Versão" e certifique-se de que "Quem pode acessar" está como "QUALQUER PESSOA".', 'error');
+                    return; // Para tudo e não deixa dar falso erro de conexão!
+                }
+
                 if(retorno.status === "sucesso") {
                     Swal.fire('Sucesso!', retorno.mensagem, 'success');
                     cancelarEdicao(); 
                     carregarTabelaTurmas(idPlanilha); 
-                } else Swal.fire('Erro', retorno.mensagem, 'error');
-            })
-            .catch(err => {
-                Swal.fire('Erro na Conexão', 'O navegador cortou a comunicação. Verifique sua rede e tente novamente.', 'error');
-            });
+                } else {
+                    Swal.fire('Erro no Banco', retorno.mensagem, 'error');
+                }
+            } catch (err) {
+                Swal.fire('Erro na Internet', 'A sua conexão oscilou ou o link da API está incorreto.', 'error');
+            }
         }
 
         // ==========================================
@@ -273,38 +289,42 @@
             Swal.fire({ title: 'Carregando dados...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
 
             fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "buscarTurmaPorId", dados: { id_planilha: idPlanilha, id_turma: idTurma } }) })
-            .then(res => res.json())
-            .then(retorno => {
-                if(retorno.status === "sucesso") {
-                    const t = retorno.turma;
-                    document.getElementById('t_id').value = t.id;
-                    document.getElementById('t_id').readOnly = true; 
-                    document.getElementById('t_sufixo').value = t.sufixo;
-                    
-                    setValorCampo('t_modalidade', t.modalidade);
-                    setValorCampo('t_nucleo', t.nucleo);
-                    setValorCampo('t_professor', t.professor);
-                    setValorCampo('t_tipo_resp', t.tipo_resp); // CARREGA O CARGO!
-                    setValorCampo('t_espaco', t.espaco);
-                    
-                    document.getElementById('t_vagas').value = t.vagas;
-                    document.getElementById('t_faixa').value = t.faixa;
-                    document.getElementById('t_xsemana').value = t.xsemana;
-                    document.getElementById('t_horario').value = t.horario;
+            .then(res => res.text()) // 🛡️ Leitura blindada
+            .then(texto => {
+                try {
+                    const retorno = JSON.parse(texto);
+                    if(retorno.status === "sucesso") {
+                        const t = retorno.turma;
+                        document.getElementById('t_id').value = t.id;
+                        document.getElementById('t_id').readOnly = true; 
+                        document.getElementById('t_sufixo').value = t.sufixo;
+                        
+                        setValorCampo('t_modalidade', t.modalidade);
+                        setValorCampo('t_nucleo', t.nucleo);
+                        setValorCampo('t_professor', t.professor);
+                        setValorCampo('t_tipo_resp', t.tipo_resp); // CARREGA O CARGO NA TELA
+                        setValorCampo('t_espaco', t.espaco);
+                        
+                        document.getElementById('t_vagas').value = t.vagas;
+                        document.getElementById('t_faixa').value = t.faixa;
+                        document.getElementById('t_xsemana').value = t.xsemana;
+                        document.getElementById('t_horario').value = t.horario;
 
-                    document.getElementById('modo_form').value = "editar";
-                    document.getElementById('titulo-form').innerHTML = `<span class="material-icons text-warning">edit</span> Editar Turma`;
-                    document.getElementById('btn-submit-form').className = "btn-salvar bg-warning text-dark";
-                    document.getElementById('btn-submit-form').innerHTML = `<span class="material-icons align-middle" style="font-size: 18px;">update</span> SALVAR ALTERAÇÃO`;
-                    document.getElementById('btn-cancelar').style.display = "block";
-                    
-                    Swal.close();
-                } else Swal.fire('Erro', retorno.mensagem, 'error');
-            });
+                        document.getElementById('modo_form').value = "editar";
+                        document.getElementById('titulo-form').innerHTML = `<span class="material-icons text-warning">edit</span> Editar Turma`;
+                        document.getElementById('btn-submit-form').className = "btn-salvar bg-warning text-dark";
+                        document.getElementById('btn-submit-form').innerHTML = `<span class="material-icons align-middle" style="font-size: 18px;">update</span> SALVAR ALTERAÇÃO`;
+                        document.getElementById('btn-cancelar').style.display = "block";
+                        
+                        Swal.close();
+                    } else Swal.fire('Erro', retorno.mensagem, 'error');
+                } catch(e) { Swal.fire('Erro', 'O Google bloqueou a busca dos dados.', 'error'); }
+            }).catch(err => Swal.fire('Erro de Rede', 'Falha ao buscar os dados da turma.', 'error'));
         }
 
         function setValorCampo(id, valor) {
             const campo = document.getElementById(id);
+            if (!campo) return;
             if(campo.tagName === 'SELECT') {
                 let existe = Array.from(campo.options).some(opt => opt.value === valor);
                 if(!existe && valor) campo.innerHTML += `<option value="${valor}">${valor}</option>`;
@@ -341,7 +361,7 @@
                             Swal.fire('Excluída!', retorno.mensagem, 'success');
                             carregarTabelaTurmas(idPlanilha);
                         } else Swal.fire('Erro', retorno.mensagem, 'error');
-                    });
+                    }).catch(err => Swal.fire('Erro', 'Falha ao tentar excluir a turma.', 'error'));
                 }
             });
         }

@@ -103,69 +103,43 @@
             <span class="material-icons">class</span> Turmas
         </a>
 
-        <!-- ========================================== -->
-<!-- 🖨️ GAVETA: IMPRESSÃO E EXPEDIÇÃO          -->
-<!-- ========================================== -->
-<li class="nav-item mt-2">
-  <a class="nav-link collapsed text-dark fw-bold" data-bs-toggle="collapse" href="#gavetaImpressao" role="button" aria-expanded="false" aria-controls="gavetaImpressao">
-    <i class="fa-solid fa-print me-2 text-primary"></i> 
-    Impressão e Expedição
-    <i class="fa-solid fa-chevron-down ms-auto" style="font-size: 12px;"></i>
-  </a>
-  
-  <div class="collapse" id="gavetaImpressao" data-bs-parent="#sidebarMenu"> <!-- Atenção: Ajuste o data-bs-parent se o seu menu tiver outro ID -->
-    <ul class="nav flex-column ms-3 mt-1 mb-2" style="border-left: 2px solid #e2e8f0; padding-left: 10px;">
-      
-      <!-- 1. Carteirinha de Uso Geral -->
-      <li class="nav-item">
-        <a class="nav-link text-muted" href="javascript:void(0)" onclick="abrirFormFilho('ImprimirCarteirinhas.html', this)">
-          🪪 Uso Geral 
-          <span class="badge bg-danger rounded-pill float-end" id="badge-uso-geral">0</span>
-        </a>
-      </li>
-      
-      <!-- 2. Carteirinha Academia Livre -->
-      <li class="nav-item">
-        <a class="nav-link text-muted" href="javascript:void(0)" onclick="abrirFormFilho('TelaImpressaoAcademia.html', this)">
-          🏋️ Academia Livre 
-          <span class="badge bg-danger rounded-pill float-end" id="badge-academia">0</span>
-        </a>
-      </li>
+// ========================================================
+// 📊 CONTADOR DE PENDÊNCIAS (TODAS AS GAVETAS DE IMPRESSÃO)
+// ========================================================
+function contarPendenciasImpressao(dados) {
+  try {
+    const ssCeu = SpreadsheetApp.openById(dados.idPlanilha);
+    const abaDados = ssCeu.getSheetByName("DADOS") || ssCeu.getSheetByName("dados");
+    if (!abaDados) return { status: "erro", mensagem: "Aba Dados ausente" };
 
-      <!-- 3. Carteirinha Raia Livre -->
-      <li class="nav-item">
-        <a class="nav-link text-muted" href="javascript:void(0)" onclick="abrirFormFilho('TelaImpressaoRaia.html', this)">
-          🏊‍♂️ Raia Livre 
-          <span class="badge bg-danger rounded-pill float-end" id="badge-raia">0</span>
-        </a>
-      </li>
+    const ultRow = abaDados.getLastRow();
+    if (ultRow < 2) return { status: "sucesso", comum: 0, academia: 0, raia: 0, envelope: 0 };
 
-      <!-- 4. Etiquetas / Envelopes -->
-      <li class="nav-item mt-2">
-        <a class="nav-link text-muted" href="javascript:void(0)" onclick="abrirFormFilho('ImprimirEnvelopes.html', this)">
-          ✉️ Envelopes 
-          <span class="badge bg-danger rounded-pill float-end" id="badge-envelopes">0</span>
-        </a>
-      </li>
+    // Puxa as colunas M(13) até S(19) de uma única vez (Muito mais rápido e seguro)
+    const vals = abaDados.getRange(2, 13, ultRow - 1, 7).getValues(); 
+    
+    let cComum = 0, cAcademia = 0, cRaia = 0, cEnv = 0;
+    
+    for (let i = 0; i < vals.length; i++) {
+       if (String(vals[i][0]).toUpperCase().trim() === "SIM") cRaia++;     // Índice 0 = Coluna M
+       if (String(vals[i][1]).toUpperCase().trim() === "SIM") cAcademia++; // Índice 1 = Coluna N
+       if (String(vals[i][2]).toUpperCase().trim() === "SIM") cComum++;    // Índice 2 = Coluna O
+       if (String(vals[i][6]).toUpperCase().trim() === "SIM") cEnv++;      // Índice 6 = Coluna S
+    }
 
-      <!-- 5. Listas de Chamada -->
-      <li class="nav-item mt-2">
-        <a class="nav-link text-muted" href="javascript:void(0)" onclick="abrirFormFilho('TelaListaChamada.html', this)">
-          📋 Listas de Chamada
-        </a>
-      </li>
+    return { status: "sucesso", comum: cComum, academia: cAcademia, raia: cRaia, envelope: cEnv };
+  } catch(e) { 
+    return { status: "erro", erro: e.message }; 
+  }
+}
 
-      <!-- 6. Listas de Vagas -->
-      <li class="nav-item">
-        <a class="nav-link text-muted" href="javascript:void(0)" onclick="abrirFormFilho('FormListaVagas.html', this)">
-          📄 Listas de Vagas
-        </a>
-      </li>
 
-    </ul>
-  </div>
-</li>
-<!-- ========================================== -->
+
+
+
+
+
+
         
         <a href="#submenuRecreio" id="link-recreio" data-bs-toggle="collapse" style="justify-content: space-between;" onclick="removerAtivo(this)">
             <div style="display: flex; align-items: center; gap: 12px;">

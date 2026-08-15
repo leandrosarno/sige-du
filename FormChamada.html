@@ -161,7 +161,14 @@
   async function carregarCombosDependencias() {
       try {
           const pacote = { acao: "buscarDependenciasTurma", dados: { id_planilha: idPlanilhaCeu } };
-          const resRaw = await fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) });
+          
+          // 🛡️ BLINDAGEM CORS INJETADA AQUI
+          const resRaw = await fetch(API_URL, { 
+              method: 'POST', 
+              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+              body: JSON.stringify(pacote) 
+          });
+          
           const res = await resRaw.json();
 
           if (res.status === "sucesso") {
@@ -205,7 +212,14 @@
             acao: "buscarDadosChamadaHTML",
             dados: { idPlanilha: idPlanilhaCeu, tipoBusca: tipoBusca, valorBuscado: valorBuscado, mesAno: mesAno }
         };
-        const resRaw = await fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) });
+        
+        // 🛡️ BLINDAGEM CORS INJETADA AQUI TAMBÉM
+        const resRaw = await fetch(API_URL, { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(pacote) 
+        });
+        
         const res = await resRaw.json();
 
         if (res.status === "sucesso") {
@@ -214,7 +228,7 @@
         } else {
             Swal.fire('Atenção', res.mensagem, 'warning');
         }
-    } catch(err) { Swal.fire('Erro', 'Falha na conexão com o servidor.', 'error'); }
+    } catch(err) { Swal.fire('Erro', 'Falha na conexão com o servidor. Verifique a permissão do Apps Script.', 'error'); }
   }
 
   function desenharFolhas(dados) {

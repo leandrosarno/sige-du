@@ -227,64 +227,49 @@
         // 3. SALVAR OU ATUALIZAR (O CÉREBRO DO FORM)
         // ==========================================
 // ==========================================
-// 3. SALVAR OU ATUALIZAR (O CÉREBRO DO FORM)
-// ==========================================
-async function processarFormulario() {
-    const idPlanilha = localStorage.getItem('ceu_planilha_id');
-    const modo = document.getElementById('modo_form').value; 
-    const acaoReal = (modo === "novo") ? "salvarTurma" : "atualizarTurma";
+        // 3. SALVAR OU ATUALIZAR (O CÉREBRO DO FORM)
+        // ==========================================
+        function processarFormulario() {
+            const idPlanilha = localStorage.getItem('ceu_planilha_id');
+            const modo = document.getElementById('modo_form').value; 
+            const acaoReal = (modo === "novo") ? "salvarTurma" : "atualizarTurma";
 
-    Swal.fire({ title: 'Salvando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+            Swal.fire({ title: 'Salvando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
 
-    const pacote = {
-        acao: acaoReal,
-        dados: {
-            id_planilha: idPlanilha,
-            id_turma: document.getElementById('t_id').value,
-            sufixo: document.getElementById('t_sufixo').value,
-            modalidade: document.getElementById('t_modalidade').value,
-            nucleo: document.getElementById('t_nucleo').value,
-            professor: document.getElementById('t_professor').value,
-            tipo_resp: document.getElementById('t_tipo_resp').value, // O NOVO CARGO FOTOGRAFADO
-            espaco: document.getElementById('t_espaco').value,
-            vagas: document.getElementById('t_vagas').value,
-            faixa_etaria: document.getElementById('t_faixa').value,
-            x_semana: document.getElementById('t_xsemana').value,
-            horario: document.getElementById('t_horario').value
+            const pacote = {
+                acao: acaoReal,
+                dados: {
+                    id_planilha: idPlanilha,
+                    id_turma: document.getElementById('t_id').value,
+                    sufixo: document.getElementById('t_sufixo').value,
+                    modalidade: document.getElementById('t_modalidade').value,
+                    nucleo: document.getElementById('t_nucleo').value,
+                    professor: document.getElementById('t_professor').value,
+                    tipo_resp: document.getElementById('t_tipo_resp').value, // NOVO CAMPO SALVO PERFEITAMENTE
+                    espaco: document.getElementById('t_espaco').value,
+                    vagas: document.getElementById('t_vagas').value,
+                    faixa_etaria: document.getElementById('t_faixa').value,
+                    x_semana: document.getElementById('t_xsemana').value,
+                    horario: document.getElementById('t_horario').value
+                }
+            };
+
+            // FETCH SIMPLES, VELOZ E SEM HEADERS PROBLEMÁTICOS!
+            fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) })
+            .then(res => res.json())
+            .then(retorno => {
+                if(retorno.status === "sucesso") {
+                    Swal.fire('Sucesso!', retorno.mensagem, 'success');
+                    cancelarEdicao(); // Limpa a tela
+                    carregarTabelaTurmas(idPlanilha); // Atualiza a lista
+                } else {
+                    Swal.fire('Erro no Banco', retorno.mensagem, 'error');
+                }
+            })
+            .catch(err => {
+                Swal.fire('Erro na Conexão', 'O navegador cortou a comunicação. Verifique sua rede e tente novamente.', 'error');
+            });
         }
-    };
-
-    try {
-        const resRaw = await fetch(API_URL, { 
-            method: 'POST', 
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // Blindagem CORS
-            body: JSON.stringify(pacote) 
-        });
-
-        // 🕵️‍♂️ Lemos como texto primeiro para não quebrar se o Google mandar um HTML de erro!
-        const textoResposta = await resRaw.text();
-
-        try {
-            // Tenta transformar em JSON
-            const retorno = JSON.parse(textoResposta);
-            
-            if(retorno.status === "sucesso") {
-                Swal.fire('Sucesso!', retorno.mensagem, 'success');
-                cancelarEdicao(); 
-                carregarTabelaTurmas(idPlanilha); 
-            } else {
-                Swal.fire('Erro no Banco de Dados', retorno.mensagem, 'error');
-            }
-        } catch (eJSON) {
-            // Se não for JSON, o Google bloqueou a conexão ou o code.gs deu erro fatal
-            console.error("Erro devolvido pelo Google:", textoResposta);
-            Swal.fire('Falha na Conexão', 'O Google bloqueou a gravação. Verifique se a sua API_URL está correta e se a Nova Implantação foi gerada lá no Apps Script.', 'error');
-        }
-
-    } catch (err) {
-        Swal.fire('Erro de Rede', 'Não foi possível contatar o servidor. Verifique sua internet.', 'error');
-    }
-}
 
         // ==========================================
         // 4. PREPARAR EDIÇÃO

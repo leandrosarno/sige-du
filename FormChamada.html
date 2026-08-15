@@ -9,7 +9,7 @@
   
   <style>
     /* =========================================
-       🎨 TELA DO FORMULÁRIO (VISÃO DO USUÁRIO)
+       🎨 TELA DO FORMULÁRIO
        ========================================= */
     body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; }
     .card-premium { border: none; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); background: #fff; }
@@ -32,14 +32,43 @@
         #areaImpressao { display: block !important; }
 
         .folha-chamada { font-family: Arial, sans-serif; width: 100%; page-break-after: always; color: #000; }
-        .cabecalho-oficial { font-size: 13px; font-weight: bold; text-align: center; margin-bottom: 10px; line-height: 1.2; }
+        
+        /* CABEÇALHO AZUL OFICIAL */
+        .cabecalho-oficial { 
+            background-color: #0d6efd !important; 
+            color: white !important; 
+            font-size: 14px; 
+            font-weight: bold; 
+            text-align: center; 
+            padding: 8px; 
+            margin-bottom: 10px; 
+            border-radius: 5px;
+            line-height: 1.3;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
         
         .tabela-info { width: 100%; font-size: 10px; margin-bottom: 5px; border-collapse: collapse; }
         .tabela-info td { padding: 2px 5px; }
 
         .tabela-grid { width: 100%; border-collapse: collapse; font-size: 8px; text-align: center; }
         .tabela-grid th, .tabela-grid td { border: 1px solid #000; padding: 3px 2px; }
-        .tabela-grid th { background-color: #f0f0f0; font-weight: bold; }
+        
+        /* CABEÇALHO DA TABELA AZUL */
+        .tabela-grid th { 
+            background-color: #0d6efd !important; 
+            color: white !important; 
+            font-weight: bold; 
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        
+        /* CÉLULAS CINZAS PARA OS DIAS SEM AULA */
+        .bg-cinza { 
+            background-color: #d9d9d9 !important; 
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
         
         .col-numero { width: 2%; }
         .col-nome { width: 20%; text-align: left !important; padding-left: 5px !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; }
@@ -50,10 +79,8 @@
         .rodape-oficial { width: 100%; font-size: 10px; margin-top: 15px; border-collapse: collapse; }
         .rodape-oficial td { border: 1px solid #000; padding: 5px; vertical-align: top; }
         .box-obs { width: 30%; height: 60px; }
-        .box-ocorrencias { width: 50%; height: 60px; }
-        .box-assinatura { width: 20%; height: 60px; text-align: center; vertical-align: bottom !important; padding-bottom: 5px; }
-        
-        body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .box-ocorrencias { width: 45%; height: 60px; }
+        .box-assinatura { width: 25%; height: 60px; text-align: center; vertical-align: bottom; padding-bottom: 5px; }
     }
   </style>
 </head>
@@ -120,7 +147,6 @@
   </div>
 </div>
 
-<!-- ÁREA INVISÍVEL ONDE A MÁGICA DA IMPRESSÃO ACONTECE -->
 <div id="areaImpressao"></div>
 
 <script>
@@ -132,14 +158,9 @@
       carregarCombosDependencias();
   };
 
-  // 🧠 CARREGA NÚCLEOS E PROFESSORES AUTOMATICAMENTE
   async function carregarCombosDependencias() {
       try {
-          const pacote = {
-              acao: "buscarDependenciasTurma",
-              dados: { id_planilha: idPlanilhaCeu }
-          };
-          
+          const pacote = { acao: "buscarDependenciasTurma", dados: { id_planilha: idPlanilhaCeu } };
           const resRaw = await fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) });
           const res = await resRaw.json();
 
@@ -152,9 +173,7 @@
               res.nucleos.forEach(n => htmlNuc += `<option value="${n}">${n}</option>`);
               document.getElementById('nomeNucleo').innerHTML = htmlNuc;
           }
-      } catch (e) {
-          console.error("Erro ao carregar combos:", e);
-      }
+      } catch (e) { console.error("Erro ao carregar combos:", e); }
   }
 
   function alternarCampos() {
@@ -186,7 +205,6 @@
             acao: "buscarDadosChamadaHTML",
             dados: { idPlanilha: idPlanilhaCeu, tipoBusca: tipoBusca, valorBuscado: valorBuscado, mesAno: mesAno }
         };
-
         const resRaw = await fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) });
         const res = await resRaw.json();
 
@@ -196,9 +214,7 @@
         } else {
             Swal.fire('Atenção', res.mensagem, 'warning');
         }
-    } catch(err) {
-        Swal.fire('Erro', 'Falha na conexão com o servidor.', 'error');
-    }
+    } catch(err) { Swal.fire('Erro', 'Falha na conexão com o servidor.', 'error'); }
   }
 
   function desenharFolhas(dados) {
@@ -214,13 +230,34 @@
           const ALUNOS_POR_PAG = 25; 
           const paginas = Math.ceil(turma.alunos.length / ALUNOS_POR_PAG) || 1;
 
+          // 🧠 Lógica para pintar as células cinzas (Pula dias que não existem no mês ou dias que a turma não tem aula)
+          let diasFundo = [];
+          for (let d = 1; d <= 31; d++) {
+              if (d <= qtdDiasNoMes) {
+                  let objData = new Date(numAno, numMes, d, 12, 0, 0);
+                  if (turma.diasAtivos.length > 0 && !turma.diasAtivos.includes(objData.getDay())) {
+                      diasFundo.push("bg-cinza"); // Dia sem aula
+                  } else {
+                      diasFundo.push(""); // Dia com aula (fica em branco)
+                  }
+              } else {
+                  diasFundo.push("bg-cinza"); // Dia que não existe no mês (ex: 31 de fev)
+              }
+          }
+
+          // Montar o Cabeçalho (Puxando a coluna L do Banco)
+          let txtCabecalho = turma.cabecalho && turma.cabecalho !== "" ? turma.cabecalho : `SME/COCEU/${turma.sigla} - FREQUÊNCIA`;
+          
+          // Montar o Rodapé (Puxando a coluna M do Banco)
+          let txtRodape = turma.rodape && turma.rodape !== "" ? turma.rodape : "Carimbo e<br>assinatura do NEL";
+
           for (let p = 0; p < paginas; p++) {
               let chunk = turma.alunos.slice(p * ALUNOS_POR_PAG, (p + 1) * ALUNOS_POR_PAG);
               
               let htmlFolha = `
               <div class="folha-chamada">
                   <div class="cabecalho-oficial">
-                      SME/COCEU/${turma.sigla} - FREQUÊNCIA<br>
+                      ${txtCabecalho}<br>
                       CEU ${dados.nomeCeu}
                   </div>
 
@@ -228,15 +265,15 @@
                       <tr>
                           <td width="30%"><strong>NOME:</strong> ${turma.professor}</td>
                           <td width="30%"><strong>ATIVIDADE:</strong> ${turma.modalidade}</td>
-                          <td width="20%"><strong>TURMA:</strong> ${turma.sufixo}</td>
+                          <td width="20%"><strong>TURMA:</strong> </td> <!-- Em branco pro professor escrever -->
                           <td width="20%" rowspan="2" style="font-size:8px; border: 1px solid #000; text-align:center;">
                               <strong>Legenda:</strong><br>P - PRESENÇA<br>F - FALTA<br>FJ - FALTA JUSTIFICADA
                           </td>
                       </tr>
                       <tr>
-                          <td><strong>RESPONSÁVEL PARCEIRO (OSC):</strong> </td>
+                          <td><strong>PARCEIRO:</strong> </td> <!-- Alterado o rótulo -->
                           <td><strong>FAIXA ETÁRIA:</strong> ${turma.faixa}</td>
-                          <td><strong>CÓD. TURMA NO EOL:</strong> ${turma.id}</td>
+                          <td><strong>COD EOL + SUFIXO:</strong> ${turma.id}-${turma.sufixo}</td>
                       </tr>
                       <tr>
                           <td colspan="4"><strong>DIA/HORA DAS AULAS:</strong> ${turma.diasHora}</td>
@@ -275,11 +312,11 @@
                           <td>${numLista}</td>
                           <td class="col-nome">${aluno.nome}</td>
                           <td>${aluno.eol}</td>`;
-                      for (let d = 1; d <= 31; d++) htmlFolha += `<td></td>`; 
+                      for (let d = 1; d <= 31; d++) htmlFolha += `<td class="${diasFundo[d-1]}"></td>`; 
                       htmlFolha += `<td></td><td></td></tr>`;
                   } else {
                       htmlFolha += `<tr><td>${numLista}</td><td class="col-nome"></td><td></td>`;
-                      for (let d = 1; d <= 31; d++) htmlFolha += `<td></td>`;
+                      for (let d = 1; d <= 31; d++) htmlFolha += `<td class="${diasFundo[d-1]}"></td>`;
                       htmlFolha += `<td></td><td></td></tr>`;
                   }
               }
@@ -287,9 +324,11 @@
               htmlFolha += `</tbody></table>
                   <table class="rodape-oficial">
                       <tr>
-                          <td class="box-obs"><strong>Observação:</strong></td>
+                          <td class="box-obs"><strong>Observações:</strong></td>
                           <td class="box-ocorrencias"><strong>Ocorrências:</strong></td>
-                          <td class="box-assinatura">Carimbo e<br>assinatura do NEL</td>
+                          <td class="box-assinatura">
+                              <strong>${txtRodape}</strong>
+                          </td>
                       </tr>
                   </table>
               </div>`;

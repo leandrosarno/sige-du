@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Impressão de Envelopes</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #e2e8f0; margin: 0; padding: 20px; }
+        
+        .painel-controle { text-align: center; margin-bottom: 30px; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .btn-imprimir { background: #0d6efd; color: white; border: none; padding: 12px 25px; font-size: 18px; font-weight: bold; border-radius: 8px; cursor: pointer; transition: 0.3s; }
+        .btn-imprimir:hover { background: #0b5ed7; transform: translateY(-2px); }
+        .status-loading { font-size: 18px; color: #64748b; font-weight: bold; }
+
+        .container-folha { display: flex; flex-wrap: wrap; gap: 0; justify-content: center; }
+
+        /* A ETIQUETA DO ENVELOPE (Formato Retangular Largo) */
+        .etiqueta-envelope {
+            width: 10.5cm;
+            height: 6.0cm;
+            background: white;
+            border: 2px solid #000;
+            border-radius: 8px;
+            position: relative;
+            box-sizing: border-box;
+            padding: 0.4cm;
+            margin-bottom: 0.5cm;
+            margin-right: 0.5cm;
+            page-break-inside: avoid;
+        }
+
+        .et-topo { display: flex; justify-content: space-between; border-bottom: 2px solid #ccc; padding-bottom: 0.2cm; margin-bottom: 0.2cm; }
+        .et-titulo { font-size: 10px; font-weight: 900; color: #333; margin: 0; text-transform: uppercase; }
+        .et-sub { font-size: 14px; font-weight: 900; color: #000; margin: 0; }
+        
+        .et-corpo { display: flex; gap: 0.3cm; }
+        .et-dados { flex: 1; display: flex; flex-direction: column; gap: 0.15cm; }
+        
+        .et-campo { background: #f8fafc; padding: 4px; border-radius: 4px; border: 1px solid #e2e8f0; }
+        .et-label { font-size: 8px; font-weight: bold; color: #64748b; display: block; text-transform: uppercase; }
+        .et-valor { font-size: 11px; font-weight: 900; color: #000; display: block; }
+        
+        .et-nome { background: #e0e7ff; border-color: #c7d2fe; padding: 6px; }
+        .et-valor-nome { font-size: 13px; font-weight: 900; color: #1e3a8a; }
+
+        .foto-aluno { width: 2.8cm; height: 3.8cm; border: 2px solid #333; object-fit: cover; border-radius: 4px; background-color: #f1f5f9; }
+
+        @media print {
+            @page { margin: 0.5cm; size: A4 portrait; }
+            body { background: white; padding: 0; }
+            .painel-controle { display: none !important; }
+            .container-folha { gap: 0; justify-content: center; }
+            .etiqueta-envelope { margin: 0.1cm; width: 9.6cm; border: 2px solid #000; }
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="painel-controle">
+        <h2 id="msg-status" class="status-loading"><i class="fa-solid fa-envelope"></i> Processando Envelopes...</h2>
+        <button id="btn-print" class="btn-imprimir" style="display:none;" onclick="window.print()"><i class="fa-solid fa-print"></i> Imprimir Envelopes</button>
+    </div>
+
+    <div class="container-folha" id="area-etiquetas"></div>
+
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec"; 
+        const idPlanilhaCeu = localStorage.getItem('ceu_planilha_id');
+
+        window.onload = function() {
+            if(!idPlanilhaCeu) {
+                document.getElementById('msg-status').innerHTML = "Erro: Banco não conectado.";
+                return;
+            }
+            buscarDados();
+        };
+
+        async function buscarDados() {
+            try {
+                const pacote = {
+                    acao: "buscarDadosImpressaoHTML",
+                    dados: { idPlanilha: idPlanilhaCeu, tipo: "ENVELOPE" } // 👈 Gatilho para a Coluna S
+                };
+
+                const resRaw = await fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) });
+                const res = await resRaw.json();
+
+                if (res.status === "sucesso") {
+                    montarHTML(res);
+                } else {
+                    document.getElementById('msg-status').innerHTML = "<i class='fa-solid fa-circle-exclamation text-danger'></i> " + res.mensagem;
+                }
+            } catch (e) {
+                document.getElementById('msg-status').innerHTML = "Erro ao comunicar com o servidor.";
+            }
+        }
+
+        function montarHTML(dadosGerais) {
+            const area = document.getElementById('area-etiquetas');
+            let html = "";
+            const semFotoPlaceholder = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2394a3b8'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E";
+
+            dadosGerais.alunos.forEach(al => {
+                let fotoPronta = al.foto && al.foto.includes('http') ? al.foto : semFotoPlaceholder;
+
+                html += `
+                <div class="etiqueta-envelope">
+                    <div class="et-topo">
+                        <div>
+                            <p class="et-titulo">Prontuário</p>
+                            <p class="et-sub">${al.carteirinha}</p>
+                        </div>
+                        <div style="text-align: right;">
+                            <p class="et-titulo">Cód. EOL</p>
+                            <p class="et-sub">${al.eol}</p>
+                        </div>
+                    </div>
+
+                    <div class="et-corpo">
+                        <div class="et-dados">
+                            <div class="et-campo et-nome">
+                                <span class="et-label">Nome do Aluno</span>
+                                <span class="et-valor-nome">${al.nome}</span>
+                            </div>
+                            <div style="display: flex; gap: 0.1cm;">
+                                <div class="et-campo" style="flex: 1;">
+                                    <span class="et-label">Nascimento</span>
+                                    <span class="et-valor">${al.nascimento}</span>
+                                </div>
+                                <div class="et-campo" style="flex: 1;">
+                                    <span class="et-label">Telefone</span>
+                                    <span class="et-valor">${al.telefone}</span>
+                                </div>
+                            </div>
+                            <div class="et-campo">
+                                <span class="et-label">Unidade</span>
+                                <span class="et-valor" style="font-size: 8px;">${dadosGerais.ceu.nome}</span>
+                            </div>
+                        </div>
+                        <img src="${fotoPronta}" class="foto-aluno" onerror="this.src='${semFotoPlaceholder}'">
+                    </div>
+                </div>`;
+            });
+
+            area.innerHTML = html;
+            document.getElementById('msg-status').innerHTML = "✅ " + dadosGerais.alunos.length + " Envelopes Prontos!";
+            document.getElementById('btn-print').style.display = "inline-block";
+            
+            setTimeout(() => window.print(), 1000);
+        }
+    </script>
+</body>
+</html>

@@ -229,7 +229,7 @@
 // ==========================================
         // 3. SALVAR OU ATUALIZAR (O CÉREBRO DO FORM)
         // ==========================================
-        function processarFormulario() {
+        async function processarFormulario() {
             const idPlanilha = localStorage.getItem('ceu_planilha_id');
             const modo = document.getElementById('modo_form').value; 
             const acaoReal = (modo === "novo") ? "salvarTurma" : "atualizarTurma";
@@ -245,7 +245,7 @@
                     modalidade: document.getElementById('t_modalidade').value,
                     nucleo: document.getElementById('t_nucleo').value,
                     professor: document.getElementById('t_professor').value,
-                    tipo_resp: document.getElementById('t_tipo_resp').value, // NOVO CAMPO SALVO PERFEITAMENTE
+                    tipo_resp: document.getElementById('t_tipo_resp').value, // 📸 FOTOGRAFIA DO CARGO
                     espaco: document.getElementById('t_espaco').value,
                     vagas: document.getElementById('t_vagas').value,
                     faixa_etaria: document.getElementById('t_faixa').value,
@@ -254,21 +254,35 @@
                 }
             };
 
-            // FETCH SIMPLES, VELOZ E SEM HEADERS PROBLEMÁTICOS!
-            fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) })
-            .then(res => res.json())
-            .then(retorno => {
-                if(retorno.status === "sucesso") {
-                    Swal.fire('Sucesso!', retorno.mensagem, 'success');
-                    cancelarEdicao(); // Limpa a tela
-                    carregarTabelaTurmas(idPlanilha); // Atualiza a lista
-                } else {
-                    Swal.fire('Erro no Banco', retorno.mensagem, 'error');
+            try {
+                // 🛡️ BLINDAGEM MÁXIMA PARA O GITHUB (TEXT/PLAIN)
+                const resRaw = await fetch(API_URL, { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
+                    body: JSON.stringify(pacote) 
+                });
+
+                // 🕵️‍♂️ Lemos como texto primeiro para o navegador não engasgar se o Google mandar um HTML de erro
+                const textoResposta = await resRaw.text();
+
+                try {
+                    const retorno = JSON.parse(textoResposta);
+                    
+                    if(retorno.status === "sucesso") {
+                        Swal.fire('Sucesso!', retorno.mensagem, 'success');
+                        cancelarEdicao(); 
+                        carregarTabelaTurmas(idPlanilha); 
+                    } else {
+                        Swal.fire('Erro no Banco', retorno.mensagem, 'error');
+                    }
+                } catch (eJSON) {
+                    console.error("O Google respondeu com um erro escondido:", textoResposta);
+                    Swal.fire('Bloqueio do Google', 'A API recusou o salvamento. Verifique se o link da API_URL termina com /exec e se você gerou uma "Nova Implantação" no Apps Script!', 'error');
                 }
-            })
-            .catch(err => {
-                Swal.fire('Erro na Conexão', 'O navegador cortou a comunicação. Verifique sua rede e tente novamente.', 'error');
-            });
+
+            } catch (err) {
+                Swal.fire('Erro na Conexão', 'O navegador cortou a comunicação. Verifique a sua rede e tente novamente.', 'error');
+            }
         }
 
         // ==========================================

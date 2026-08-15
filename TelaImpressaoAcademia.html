@@ -79,6 +79,33 @@
             overflow: hidden;
         }
 
+/* =========================================
+           🏷️ SELOS DOS PROJETOS (BADGES)
+           ========================================= */
+        .selo-projeto {
+            position: absolute;
+            bottom: 1.1cm; /* Posicionado milimetricamente logo acima do nome */
+            left: 0.2cm;
+            font-size: 9px;
+            font-weight: 900;
+            text-transform: uppercase;
+            padding: 4px 8px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            letter-spacing: 0.5px;
+        }
+
+        /* Cores específicas para cada projeto */
+        .selo-raia { background: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd; }
+        .selo-academia { background: #ffedd5; color: #ea580c; border: 1px solid #fed7aa; }
+        .selo-geral { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+
+
+
+
+		
 @media print {
             @page { margin: 0.5cm; size: A4 portrait; }
             body { background: white; padding: 0; }

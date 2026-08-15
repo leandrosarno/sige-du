@@ -180,8 +180,13 @@
               res.nucleos.forEach(n => htmlNuc += `<option value="${n}">${n}</option>`);
               document.getElementById('nomeNucleo').innerHTML = htmlNuc;
           }
-      } catch (e) { console.error("Erro ao carregar combos:", e); }
-  }
+      } 
+      
+      catch(err) { 
+        Swal.fire('Detetive de Erros', 'O erro real que o Google devolveu foi: ' + err.message, 'error'); 
+    }
+      
+       }
 
   function alternarCampos() {
     const tipo = document.querySelector('input[name="tipoBusca"]:checked').value;

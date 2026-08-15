@@ -151,10 +151,20 @@
 
 <script>
   const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec"; 
-  const idPlanilhaCeu = localStorage.getItem('ceu_planilha_id');
+  
+  // 🛡️ BLINDAGEM MÁXIMA CONTRA A JANELA ANÔNIMA
+  let idPlanilhaCeu = "";
+  try {
+      idPlanilhaCeu = localStorage.getItem('ceu_planilha_id');
+  } catch(e) {
+      console.warn("Acesso ao armazenamento bloqueado pelo navegador.");
+  }
 
   window.onload = function() {
-      if(!idPlanilhaCeu) return;
+      if(!idPlanilhaCeu) {
+          Swal.fire('Aviso', 'Banco de dados não conectado. Por favor, feche e abra o sistema pela página inicial de login.', 'warning');
+          return;
+      }
       carregarCombosDependencias();
   };
 
@@ -162,7 +172,6 @@
       try {
           const pacote = { acao: "buscarDependenciasTurma", dados: { id_planilha: idPlanilhaCeu } };
           
-          // 🛡️ BLINDAGEM CORS INJETADA AQUI
           const resRaw = await fetch(API_URL, { 
               method: 'POST', 
               headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -180,13 +189,8 @@
               res.nucleos.forEach(n => htmlNuc += `<option value="${n}">${n}</option>`);
               document.getElementById('nomeNucleo').innerHTML = htmlNuc;
           }
-      } 
-      
-      catch(err) { 
-        Swal.fire('Detetive de Erros', 'O erro real que o Google devolveu foi: ' + err.message, 'error'); 
-    }
-      
-       }
+      } catch (e) { console.error("Erro ao carregar combos:", e); }
+  }
 
   function alternarCampos() {
     const tipo = document.querySelector('input[name="tipoBusca"]:checked').value;
@@ -197,10 +201,8 @@
 
   async function gerarListaHTML(e) {
     e.preventDefault();
-/*    if(!idPlanilhaCeu) return Swal.fire('Erro', 'Banco de dados não conectado.', 'error'); */
-catch(err) { 
-        Swal.fire('Detetive de Erros', 'O erro real que o Google devolveu foi: ' + err.message, 'error'); 
-    }
+    if(!idPlanilhaCeu) return Swal.fire('Erro', 'Banco de dados não conectado. Por favor, volte e faça login.', 'error');
+
     const tipoBusca = document.querySelector('input[name="tipoBusca"]:checked').value;
     const mesAno = document.getElementById("mesAno").value.trim();
     
@@ -220,7 +222,6 @@ catch(err) {
             dados: { idPlanilha: idPlanilhaCeu, tipoBusca: tipoBusca, valorBuscado: valorBuscado, mesAno: mesAno }
         };
         
-        // 🛡️ BLINDAGEM CORS INJETADA AQUI TAMBÉM
         const resRaw = await fetch(API_URL, { 
             method: 'POST', 
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -235,7 +236,7 @@ catch(err) {
         } else {
             Swal.fire('Atenção', res.mensagem, 'warning');
         }
-    } catch(err) { Swal.fire('Erro', 'Falha na conexão com o servidor. Verifique a permissão do Apps Script.', 'error'); }
+    } catch(err) { Swal.fire('Detetive de Erros', 'O erro real que o Google devolveu foi: ' + err.message, 'error'); }
   }
 
   function desenharFolhas(dados) {
@@ -251,25 +252,21 @@ catch(err) {
           const ALUNOS_POR_PAG = 25; 
           const paginas = Math.ceil(turma.alunos.length / ALUNOS_POR_PAG) || 1;
 
-          // 🧠 Lógica para pintar as células cinzas (Pula dias que não existem no mês ou dias que a turma não tem aula)
           let diasFundo = [];
           for (let d = 1; d <= 31; d++) {
               if (d <= qtdDiasNoMes) {
                   let objData = new Date(numAno, numMes, d, 12, 0, 0);
                   if (turma.diasAtivos.length > 0 && !turma.diasAtivos.includes(objData.getDay())) {
-                      diasFundo.push("bg-cinza"); // Dia sem aula
+                      diasFundo.push("bg-cinza"); 
                   } else {
-                      diasFundo.push(""); // Dia com aula (fica em branco)
+                      diasFundo.push(""); 
                   }
               } else {
-                  diasFundo.push("bg-cinza"); // Dia que não existe no mês (ex: 31 de fev)
+                  diasFundo.push("bg-cinza"); 
               }
           }
 
-          // Montar o Cabeçalho (Puxando a coluna L do Banco)
           let txtCabecalho = turma.cabecalho && turma.cabecalho !== "" ? turma.cabecalho : `SME/COCEU/${turma.sigla} - FREQUÊNCIA`;
-          
-          // Montar o Rodapé (Puxando a coluna M do Banco)
           let txtRodape = turma.rodape && turma.rodape !== "" ? turma.rodape : "Carimbo e<br>assinatura do NEL";
 
           for (let p = 0; p < paginas; p++) {
@@ -286,13 +283,13 @@ catch(err) {
                       <tr>
                           <td width="30%"><strong>NOME:</strong> ${turma.professor}</td>
                           <td width="30%"><strong>ATIVIDADE:</strong> ${turma.modalidade}</td>
-                          <td width="20%"><strong>TURMA:</strong> </td> <!-- Em branco pro professor escrever -->
+                          <td width="20%"><strong>TURMA:</strong> </td>
                           <td width="20%" rowspan="2" style="font-size:8px; border: 1px solid #000; text-align:center;">
                               <strong>Legenda:</strong><br>P - PRESENÇA<br>F - FALTA<br>FJ - FALTA JUSTIFICADA
                           </td>
                       </tr>
                       <tr>
-                          <td><strong>PARCEIRO:</strong> </td> <!-- Alterado o rótulo -->
+                          <td><strong>PARCEIRO:</strong> </td>
                           <td><strong>FAIXA ETÁRIA:</strong> ${turma.faixa}</td>
                           <td><strong>COD EOL + SUFIXO:</strong> ${turma.id}-${turma.sufixo}</td>
                       </tr>

@@ -263,7 +263,8 @@
               }
           }
 
-          let txtCabecalho = turma.cabecalho && turma.cabecalho !== "" ? turma.cabecalho : `SME/COCEU/${turma.sigla} - FREQUÊNCIA`;
+          let txtCabecalho = turma.cabecalho !== "" ? turma.cabecalho : `SME/COCEU/${turma.sigla} - FREQUÊNCIA`;
+/*          let txtCabecalho = turma.cabecalho && turma.cabecalho !== "" ? turma.cabecalho : `SME/COCEU/${turma.sigla} - FREQUÊNCIA`; */
           let txtRodape = turma.rodape && turma.rodape !== "" ? turma.rodape : "Carimbo e<br>assinatura do NEL";
 
           for (let p = 0; p < paginas; p++) {
@@ -273,7 +274,7 @@
               <div class="folha-chamada">
                   <div class="cabecalho-oficial">
                       ${txtCabecalho}<br>
-                      CEU ${dados.nomeCeu}
+                      ${dados.nomeCeu}
                   </div>
 
                   <table class="tabela-info">

@@ -22,6 +22,10 @@
         .btn-zip { background-color: #27ae60; color: white; font-weight: bold; border-radius: 8px; padding: 12px 20px; text-decoration: none; display: inline-block; margin-bottom: 15px; transition: 0.2s;}
         .btn-zip:hover { background-color: #219150; color: white; }
 
+        .botoes-paginas { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 15px; }
+        .btn-pag { background-color: #ecf0f1; color: #2c3e50; border: 1px solid #bdc3c7; padding: 8px 15px; border-radius: 6px; font-weight: bold; text-decoration: none; transition: 0.2s;}
+        .btn-pag:hover { background-color: #3498db; color: white; border-color: #3498db; }
+
         .btn-limpar { background-color: #e74c3c; color: white; border: none; padding: 10px 20px; font-weight: bold; border-radius: 8px; transition: 0.2s; margin-top: 25px;}
         .btn-limpar:hover { background-color: #c0392b; }
     </style>
@@ -32,17 +36,21 @@
 
     <div class="card-main">
         <p style="font-size: 15px; color: #7f8c8d; margin-bottom: 25px;">
-            Este módulo identifica todas as crianças marcadas com "SIM", cruza com as regras visuais da DRE, aciona o Motor Original da Planilha e compacta a fila num PDF ZIP com perfeição absoluta.
+            Este módulo identifica todas as crianças marcadas com "SIM" na planilha do CEU, cruza com as regras visuais da DRE e gera os crachás perfeitamente alinhados (8 por folha A4 para Crianças, e 10 para os Pais).
         </p>
 
         <button id="btnGatilho" class="btn-gerar" onclick="iniciarGeracao()"><i class="fas fa-print"></i> Processar Fila de Impressão</button>
 
         <div id="blocoResultado" class="bloco-sucesso">
             <h4 style="color: #27ae60; font-weight: 800;"><i class="fas fa-check-circle"></i> Sucesso! <span id="txtQtd"></span></h4>
-            <p style="color: #7f8c8d; font-size: 14px;">Os crachás das crianças e dos pais foram renderizados. Clique abaixo para baixar:</p>
+            <p style="color: #7f8c8d; font-size: 14px;">Seus crachás foram gerados e agrupados. Escolha como deseja baixar:</p>
             
             <a id="linkZip" href="#" target="_blank" class="btn-zip"><i class="fas fa-file-archive"></i> Baixar TODAS as páginas (.ZIP)</a>
             
+            <p style="font-size: 13px; font-weight: bold; margin-bottom: 5px;">Ou baixe individualmente:</p>
+            <div id="areaBotoesPag" class="botoes-paginas">
+            </div>
+
             <hr style="border-color: #ecf0f1; margin: 20px 0;">
             <p style="font-size: 13px; color: #e74c3c; font-weight: 700; margin-bottom: 5px;">A impressão ocorreu sem erros? Libere a fila para os próximos dias:</p>
             <button class="btn-limpar" onclick="limparFila()"><i class="fas fa-eraser"></i> Limpar Fila (Apagar os "SIM")</button>
@@ -54,12 +62,12 @@
 
         async function iniciarGeracao() {
             const idPlanilha = localStorage.getItem('ceu_planilha_id');
-            const nomeCeu = localStorage.getItem('ceu_nome_especifico') || "CEU";
+            const nomeCeu = localStorage.getItem('ceu_nome_especifico') || "CEU Padrão";
 
             if (!idPlanilha) { Swal.fire('Erro', 'Banco de Dados não conectado!', 'error'); return; }
 
             const btn = document.getElementById('btnGatilho');
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> O Motor Original está renderizando os PDFs...';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Desenhando Crachás... Aguarde!';
             btn.disabled = true;
             document.getElementById('blocoResultado').style.display = 'none';
 
@@ -71,6 +79,7 @@
             try {
                 const resRaw = await fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) });
                 const res = await resRaw.json();
+                
                 let respostaReal = res.dados || res;
 
                 btn.innerHTML = '<i class="fas fa-print"></i> Processar Fila de Impressão';
@@ -80,21 +89,33 @@
                     document.getElementById('blocoResultado').style.display = 'block';
                     document.getElementById('txtQtd').innerText = (respostaReal.quantidade || 0) + " Crachás Processados";
                     document.getElementById('linkZip').href = respostaReal.zip || "#";
+
+                    let divPags = document.getElementById('areaBotoesPag');
+                    divPags.innerHTML = "";
+                    if(respostaReal.paginas) {
+                        respostaReal.paginas.forEach(p => {
+                            divPags.innerHTML += `<a href="${p.link}" target="_blank" class="btn-pag"><i class="fas fa-file-pdf text-danger"></i> ${p.nome}</a>`;
+                        });
+                    }
                 } else {
-                    let mensagemErro = respostaReal.erro || res.mensagem || "Erro no servidor.";
-                    Swal.fire('Aviso', mensagemErro, 'error');
+                    let mensagemErro = respostaReal.erro || res.mensagem || "Erro não identificado pelo servidor.";
+                    Swal.fire('Aviso do Sistema', mensagemErro, 'error');
                 }
             } catch (e) {
                 btn.innerHTML = '<i class="fas fa-print"></i> Processar Fila de Impressão';
                 btn.disabled = false;
-                Swal.fire('Falha', 'Não foi possível conectar. ' + e.message, 'error');
+                Swal.fire('Falha de Conexão', 'Não foi possível comunicar com o servidor. ' + e.message, 'error');
             }
         }
 
         function limparFila() {
             Swal.fire({
-                title: 'Limpar a fila?', text: "Isso vai apagar a palavra SIM da coluna I.", icon: 'warning',
-                showCancelButton: true, confirmButtonColor: '#e74c3c', confirmButtonText: 'Sim, limpar!'
+                title: 'Limpar a fila?',
+                text: "Isso vai apagar a palavra SIM de todas as crianças na coluna I.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#e74c3c',
+                confirmButtonText: 'Sim, limpar fila!'
             }).then(async (result) => {
                 if (result.isConfirmed) {
                     Swal.fire({ title: 'Limpando...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
@@ -103,14 +124,18 @@
                     try {
                         const resRaw = await fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) });
                         const res = await resRaw.json();
-                        let r = res.dados || res;
-                        if (r.sucesso === true || res.status === "sucesso") {
-                            Swal.fire('Pronto!', r.mensagem || 'Fila limpa.', 'success');
+                        let respostaReal = res.dados || res;
+                        
+                        if (respostaReal.sucesso === true || res.status === "sucesso") {
+                            Swal.fire('Pronto!', respostaReal.mensagem || res.mensagem || 'Fila limpa com sucesso.', 'success');
                             document.getElementById('blocoResultado').style.display = 'none';
                         } else {
-                            Swal.fire('Erro', r.erro || res.mensagem, 'error');
+                            let mensagemErro = respostaReal.erro || res.mensagem || "Erro ao limpar fila.";
+                            Swal.fire('Erro', mensagemErro, 'error');
                         }
-                    } catch (e) { Swal.fire('Erro', 'Falha na conexão.', 'error'); }
+                    } catch (e) {
+                        Swal.fire('Erro', 'Falha na conexão.', 'error');
+                    }
                 }
             });
         }

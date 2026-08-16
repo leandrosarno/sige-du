@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard Analítico de Vagas</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <style>
+    body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; }
+    .header-relatorio { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; }
+    
+    .card-kpi { border: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); transition: 0.3s; padding: 20px; background: #fff; display: flex; align-items: center; }
+    .card-kpi:hover { transform: translateY(-3px); box-shadow: 0 6px 15px rgba(0,0,0,0.1); }
+    .kpi-icon { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-right: 15px; color: white; }
+    
+    .kpi-valor { font-size: 24px; font-weight: 800; margin: 0; line-height: 1; }
+    .kpi-titulo { font-size: 12px; font-weight: 600; color: #64748b; margin: 0; text-transform: uppercase; }
+
+    .card-chart { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px; }
+    
+    .tabela-custom { background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    .tabela-custom th { background-color: #f8fafc; color: #475569; font-size: 13px; text-transform: uppercase; padding: 15px; }
+    .tabela-custom td { padding: 12px 15px; vertical-align: middle; font-size: 14px; border-bottom: 1px solid #f1f5f9; }
+    
+    .badge-status { padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; }
+    .bg-livre { background-color: #d1e7dd; color: #0f5132; }
+    .bg-alerta { background-color: #fff3cd; color: #664d03; }
+    .bg-lotada { background-color: #f8d7da; color: #842029; }
+
+    /* =========================================
+       🖨️ MODO DE IMPRESSÃO (PDF LIMPO)
+       ========================================= */
+    @media print {
+        body { background: white; padding: 0; }
+        .no-print { display: none !important; }
+        .card-kpi, .card-chart, .tabela-custom { box-shadow: none !important; border: 1px solid #ccc; }
+        .tabela-custom th { background-color: #eee !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        @page { size: A4 portrait; margin: 10mm; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container-fluid">
+    <div class="header-relatorio">
+        <div>
+            <h3 class="fw-bold text-primary m-0"><i class="fas fa-chart-line me-2"></i> Relatório Analítico de Vagas</h3>
+            <p class="text-muted m-0">Acompanhamento de Ocupação e Disponibilidade em Tempo Real</p>
+        </div>
+        <button class="btn btn-secondary fw-bold no-print" onclick="window.print()">
+            <i class="fas fa-file-pdf me-2"></i> Gerar PDF
+        </button>
+    </div>
+
+    <!-- 🌟 KPIs SUPERIORES -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card-kpi">
+                <div class="kpi-icon" style="background: #0d6efd;"><i class="fas fa-chalkboard-teacher"></i></div>
+                <div><p class="kpi-titulo">Total de Turmas</p><p class="kpi-valor text-primary" id="kpiTurmas">0</p></div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card-kpi">
+                <div class="kpi-icon" style="background: #6f42c1;"><i class="fas fa-bullseye"></i></div>
+                <div><p class="kpi-titulo">Vagas Oferecidas</p><p class="kpi-valor" id="kpiVagas" style="color: #6f42c1;">0</p></div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card-kpi">
+                <div class="kpi-icon" style="background: #fd7e14;"><i class="fas fa-user-check"></i></div>
+                <div><p class="kpi-titulo">Matriculados</p><p class="kpi-valor" id="kpiMatriculados" style="color: #fd7e14;">0</p></div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card-kpi">
+                <div class="kpi-icon" style="background: #198754;"><i class="fas fa-door-open"></i></div>
+                <div><p class="kpi-titulo">Vagas Livres</p><p class="kpi-valor text-success" id="kpiLivres">0</p></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🌟 FILTROS (ESCONDIDOS NA IMPRESSÃO) -->
+    <div class="row g-2 mb-4 no-print bg-white p-3 rounded shadow-sm border">
+        <div class="col-md-3">
+            <label class="form-label fw-bold text-muted" style="font-size: 12px;">NÚCLEO</label>
+            <select class="form-select" id="filtroNucleo" onchange="aplicarFiltros()"><option value="TODOS">Todos</option></select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label fw-bold text-muted" style="font-size: 12px;">MODALIDADE</label>
+            <select class="form-select" id="filtroModalidade" onchange="aplicarFiltros()"><option value="TODOS">Todas</option></select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label fw-bold text-muted" style="font-size: 12px;">PROFESSOR</label>
+            <select class="form-select" id="filtroProfessor" onchange="aplicarFiltros()"><option value="TODOS">Todos</option></select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label fw-bold text-muted" style="font-size: 12px;">BUSCA LIVRE</label>
+            <input type="text" class="form-control" id="filtroTexto" placeholder="Ex: Futsal, João..." onkeyup="aplicarFiltros()">
+        </div>
+    </div>
+
+    <!-- 🌟 GRÁFICOS -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <div class="card-chart">
+                <h6 class="fw-bold text-secondary mb-3"><i class="fas fa-chart-bar me-2 text-primary"></i> Vagas Livres por Modalidade</h6>
+                <canvas id="graficoModalidade" height="200"></canvas>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card-chart">
+                <h6 class="fw-bold text-secondary mb-3"><i class="fas fa-chart-pie me-2 text-warning"></i> Ocupação Geral do CEU</h6>
+                <canvas id="graficoOcupacao" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🌟 TABELA DE DETALHES -->
+    <div class="tabela-custom">
+        <table class="table table-hover m-0">
+            <thead>
+                <tr>
+                    <th>Turma</th>
+                    <th>Modalidade</th>
+                    <th>Professor</th>
+                    <th>Núcleo</th>
+                    <th class="text-center">Oferecidas</th>
+                    <th class="text-center">Matriculados</th>
+                    <th class="text-center">Saldo</th>
+                    <th class="text-center">Status</th>
+                </tr>
+            </thead>
+            <tbody id="corpoTabela">
+                <tr><td colspan="8" class="text-center py-4 text-muted"><i class="fas fa-spinner fa-spin me-2"></i> Calculando estatísticas...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec";
+    const idPlanilhaCeu = localStorage.getItem('ceu_planilha_id');
+    
+    let dadosGlobais = [];
+    let graficos = {};
+
+    window.onload = async function() {
+        if(!idPlanilhaCeu) return Swal.fire('Erro', 'Faça login novamente.', 'error');
+        
+        try {
+            const pacote = { acao: "buscarEstatisticasVagas", dados: { idPlanilha: idPlanilhaCeu } };
+            const resRaw = await fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) });
+            const res = await resRaw.json();
+
+            if (res.status === "sucesso") {
+                dadosGlobais = res.dados;
+                preencherFiltros();
+                aplicarFiltros();
+            } else {
+                Swal.fire('Erro', res.mensagem, 'error');
+            }
+        } catch(e) { console.error(e); Swal.fire('Erro', 'Falha na conexão.', 'error'); }
+    };
+
+    function preencherFiltros() {
+        let nucleos = new Set(), mods = new Set(), profs = new Set();
+        
+        dadosGlobais.forEach(t => {
+            if(t.nucleo) nucleos.add(t.nucleo);
+            if(t.modalidade) mods.add(t.modalidade);
+            if(t.professor) profs.add(t.professor);
+        });
+
+        const preencher = (id, lista) => {
+            const combo = document.getElementById(id);
+            Array.from(lista).sort().forEach(item => combo.innerHTML += `<option value="${item}">${item}</option>`);
+        };
+
+        preencher('filtroNucleo', nucleos);
+        preencher('filtroModalidade', mods);
+        preencher('filtroProfessor', profs);
+    }
+
+    function aplicarFiltros() {
+        const vNuc = document.getElementById('filtroNucleo').value;
+        const vMod = document.getElementById('filtroModalidade').value;
+        const vProf = document.getElementById('filtroProfessor').value;
+        const vTxt = document.getElementById('filtroTexto').value.toUpperCase();
+
+        const filtrados = dadosGlobais.filter(t => {
+            let bNuc = (vNuc === 'TODOS' || t.nucleo === vNuc);
+            let bMod = (vMod === 'TODOS' || t.modalidade === vMod);
+            let bProf = (vProf === 'TODOS' || t.professor === vProf);
+            let bTxt = (vTxt === '' || t.codigo.includes(vTxt) || t.modalidade.includes(vTxt) || t.professor.includes(vTxt));
+            return bNuc && bMod && bProf && bTxt;
+        });
+
+        atualizarTela(filtrados);
+    }
+
+    function atualizarTela(dados) {
+        // 1. Atualizar KPIs
+        let tVagas = 0, tMat = 0, tLivres = 0;
+        dados.forEach(t => { tVagas += t.vagas; tMat += t.matriculados; tLivres += t.disponiveis; });
+        
+        document.getElementById('kpiTurmas').innerText = dados.length;
+        document.getElementById('kpiVagas').innerText = tVagas;
+        document.getElementById('kpiMatriculados').innerText = tMat;
+        document.getElementById('kpiLivres').innerText = tLivres;
+
+        // 2. Atualizar Tabela
+        let html = "";
+        dados.forEach(t => {
+            let corBadge = t.disponiveis === 0 ? "bg-lotada" : (t.disponiveis <= 5 ? "bg-alerta" : "bg-livre");
+            
+            html += `<tr>
+                <td class="fw-bold">${t.codigo}</td>
+                <td class="text-primary fw-bold">${t.modalidade}</td>
+                <td>${t.professor}</td>
+                <td style="font-size:12px;">${t.nucleo}</td>
+                <td class="text-center">${t.vagas}</td>
+                <td class="text-center fw-bold" style="color: #fd7e14;">${t.matriculados}</td>
+                <td class="text-center fw-bold text-success">${t.disponiveis}</td>
+                <td class="text-center"><span class="badge-status ${corBadge}">${t.status}</span></td>
+            </tr>`;
+        });
+        document.getElementById('corpoTabela').innerHTML = html || "<tr><td colspan='8' class='text-center'>Nenhuma turma encontrada.</td></tr>";
+
+        // 3. Desenhar Gráficos
+        desenharGraficos(dados, tMat, tLivres);
+    }
+
+    function desenharGraficos(dados, totalMat, totalLivres) {
+        // Preparar Dados - Vagas Livres por Modalidade
+        let mapaMods = {};
+        dados.forEach(t => { mapaMods[t.modalidade] = (mapaMods[t.modalidade] || 0) + t.disponiveis; });
+        
+        let labelsMod = Object.keys(mapaMods).slice(0, 10); // Top 10
+        let dataMod = Object.values(mapaMods).slice(0, 10);
+
+        renderChart('graficoModalidade', 'bar', labelsMod, [{ label: 'Vagas Disponíveis', data: dataMod, backgroundColor: '#0d6efd', borderRadius: 4 }]);
+        renderChart('graficoOcupacao', 'doughnut', ['Vagas Ocupadas', 'Vagas Livres'], [{ data: [totalMat, totalLivres], backgroundColor: ['#fd7e14', '#198754'] }]);
+    }
+
+    function renderChart(canvasId, type, labels, datasets) {
+        if (graficos[canvasId]) graficos[canvasId].destroy();
+        
+        const ctx = document.getElementById(canvasId).getContext('2d');
+        graficos[canvasId] = new Chart(ctx, {
+            type: type,
+            data: { labels: labels, datasets: datasets },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+        });
+    }
+</script>
+
+</body>
+</html>

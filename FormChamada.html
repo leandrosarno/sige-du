@@ -270,8 +270,8 @@
                   diasFundo.push("bg-cinza"); 
               }
           }
-        let txtCabecalho = turma.cabecalho && turma.cabecalho !== "" ? turma.cabecalho.split("/").pop().trim() : `SME/COCEU/${turma.sigla} - FREQUÊNCIA`;  
- //       let txtCabecalho = turma.cabecalho && turma.cabecalho !== "" ? turma.cabecalho : `SME/COCEU/${turma.sigla} - FREQUÊNCIA`;
+ //       let txtCabecalho = turma.cabecalho && turma.cabecalho !== "" ? turma.cabecalho.split("/").pop().trim() : `SME/COCEU/${turma.sigla} - FREQUÊNCIA`;  
+        let txtCabecalho = turma.cabecalho && turma.cabecalho !== "" ? turma.cabecalho : `SME/COCEU/${turma.sigla} - FREQUÊNCIA`;
           let txtRodape = turma.rodape && turma.rodape !== "" ? turma.rodape : "Carimbo e<br>assinatura do NEL";
 
           for (let p = 0; p < paginas; p++) {

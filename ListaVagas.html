@@ -15,11 +15,12 @@
     .card-premium { border: none; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); background: #fff; max-width: 600px; margin: 0 auto; }
     .card-header-custom { background: linear-gradient(135deg, #198754, #146c43); color: white; border-radius: 15px 15px 0 0 !important; padding: 20px; text-align: center; }
     .btn-acao { color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: 600; transition: 0.3s; width: 100%; font-size: 16px; margin-bottom: 10px; }
+    .btn-pacote { background: linear-gradient(135deg, #10b981, #059669); font-size: 18px; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2); } .btn-pacote:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(16, 185, 129, 0.3); color: white; }
     .btn-lista { background: #0d6efd; } .btn-lista:hover { background: #0b5ed7; transform: translateY(-2px); }
     .btn-senha { background: #fd7e14; } .btn-senha:hover { background: #e37012; transform: translateY(-2px); }
     
     /* =========================================
-       🖨️ MODO DE IMPRESSÃO (MAGIA ACONTECE AQUI)
+       🖨️ MODO DE IMPRESSÃO
        ========================================= */
     #areaImpressao { display: none; }
     
@@ -28,17 +29,19 @@
         #areaFormulario { display: none !important; }
         #areaImpressao { display: block !important; }
         
+        .quebra-pagina { page-break-before: always !important; }
+
         /* -------------------------------------
            1. LAYOUT DA LISTA DE VAGAS (RETRATO)
            ------------------------------------- */
-        .folha-lista { page-break-after: always; width: 100%; font-family: Arial, sans-serif; }
-        .cabecalho-lista { text-align: center; border: 2px solid #000; padding: 10px; border-radius: 8px; margin-bottom: 15px; background-color: #f8f9fa !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-        .titulo-lista { font-size: 18px; font-weight: bold; margin: 0 0 5px 0; text-transform: uppercase; }
-        .sub-lista { font-size: 12px; margin: 0; line-height: 1.4; }
+        .folha-lista { width: 100%; font-family: Arial, sans-serif; }
+        .cabecalho-lista { text-align: center; border: 2px solid #000; padding: 8px; border-radius: 8px; margin-bottom: 10px; background-color: #f8f9fa !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .titulo-lista { font-size: 16px; font-weight: bold; margin: 0 0 5px 0; text-transform: uppercase; }
+        .sub-lista { font-size: 11px; margin: 0; line-height: 1.3; }
         
-        .tabela-vagas { width: 100%; border-collapse: collapse; font-size: 12px; }
-        .tabela-vagas th { background-color: #e9ecef !important; border: 1px solid #000; padding: 6px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-        .tabela-vagas td { border: 1px solid #000; padding: 7px; height: 22px; }
+        .tabela-vagas { width: 100%; border-collapse: collapse; font-size: 11px; margin: 0; }
+        .tabela-vagas th { background-color: #e9ecef !important; border: 1px solid #000; padding: 4px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .tabela-vagas td { border: 1px solid #000; padding: 5px; height: 20px; }
         .linha-bloqueada { background-color: #d1d5db !important; color: #64748b !important; text-align: center; font-style: italic; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 
         /* -------------------------------------
@@ -46,8 +49,8 @@
            ------------------------------------- */
         .grid-senhas { display: flex; flex-wrap: wrap; gap: 15px; justify-content: space-between; font-family: Arial, sans-serif; }
         .ticket { 
-            width: 48%; /* 2 por linha */
-            border: 2px dashed #000; /* Borda de Tesourinha */
+            width: 48%; 
+            border: 2px dashed #000; 
             border-radius: 10px; 
             padding: 10px; 
             box-sizing: border-box; 
@@ -84,7 +87,7 @@
 
         <div class="mb-3">
           <label class="form-label fw-bold"><i class="fas fa-users text-primary me-1"></i> Quantidade de Vagas Abertas</label>
-          <input type="number" class="form-control form-control-lg text-center" id="qtdVagas" required min="1" max="35" placeholder="Máximo 35">
+          <input type="number" class="form-control form-control-lg text-center" id="qtdVagas" required min="1" max="25" placeholder="Máximo 25">
         </div>
 
         <div class="mb-4">
@@ -92,15 +95,21 @@
           <input type="text" class="form-control text-center" id="regraData" placeholder="Ex: Válida apenas para 24/07 das 08h às 18h">
         </div>
 
-        <div class="row">
+        <!-- 🌟 OS BOTÕES DE MESTRE -->
+        <div class="row g-2">
+            <div class="col-md-12 mb-2">
+                <button type="button" class="btn-acao btn-pacote" onclick="gerarDocumento('combo')">
+                    <i class="fas fa-file-pdf me-2"></i> IMPRIMIR PACOTE (Lista + Senhas)
+                </button>
+            </div>
             <div class="col-md-6">
                 <button type="button" class="btn-acao btn-lista" onclick="gerarDocumento('lista')">
-                    <i class="fas fa-list-ol me-2"></i> Imprimir Lista
+                    <i class="fas fa-list-ol me-2"></i> Apenas a Lista
                 </button>
             </div>
             <div class="col-md-6">
                 <button type="button" class="btn-acao btn-senha" onclick="gerarDocumento('senha')">
-                    <i class="fas fa-ticket-alt me-2"></i> Imprimir Senhas
+                    <i class="fas fa-ticket-alt me-2"></i> Apenas as Senhas
                 </button>
             </div>
         </div>
@@ -113,7 +122,7 @@
 <div id="areaImpressao"></div>
 
 <script>
-  const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec"; // LINK AQUI
+  const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec"; 
   const idPlanilhaCeu = localStorage.getItem('ceu_planilha_id');
 
   window.onload = function() {
@@ -128,7 +137,9 @@
       const regraData = document.getElementById("regraData").value.trim() || "Consulte as regras na Secretaria";
 
       if(!idTurma || isNaN(qtdVagas)) return Swal.fire('Aviso', 'Preencha o ID da Turma e a Quantidade de Vagas!', 'warning');
-      if(qtdVagas < 1 || qtdVagas > 35) return Swal.fire('Aviso', 'A quantidade de vagas deve ser entre 1 e 35.', 'warning');
+      
+      // 🌟 TRAVA DE 30 LINHAS (Para não vazar a página)
+      if(qtdVagas < 1 || qtdVagas > 30) return Swal.fire('Aviso', 'A quantidade de vagas deve ser entre 1 e 30.', 'warning');
 
       Swal.fire({ title: 'Buscando Dados...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
 
@@ -139,8 +150,19 @@
 
           if (res.status === "sucesso") {
               Swal.close();
-              if(tipo === 'lista') desenharLista(res.turma, res.nomeCeu, qtdVagas);
-              if(tipo === 'senha') desenharSenhas(res.turma, res.nomeCeu, qtdVagas, regraData);
+              
+              // 🌟 O ROTEADOR DO PACOTE
+              if(tipo === 'lista') {
+                  imprimirNaTela(obterHTMLLista(res.turma, res.nomeCeu, qtdVagas));
+              } else if(tipo === 'senha') {
+                  imprimirNaTela(obterHTMLSenhas(res.turma, res.nomeCeu, qtdVagas, regraData));
+              } else if(tipo === 'combo') {
+                  let htmlCompleto = obterHTMLLista(res.turma, res.nomeCeu, qtdVagas) + 
+                                     "<div class='quebra-pagina'></div>" + 
+                                     obterHTMLSenhas(res.turma, res.nomeCeu, qtdVagas, regraData);
+                  imprimirNaTela(htmlCompleto);
+              }
+              
           } else {
               Swal.fire('Atenção', res.mensagem, 'warning');
           }
@@ -148,9 +170,9 @@
   }
 
   // ==========================================
-  // 1. DESENHAR A LISTA DE VAGAS (35 LINHAS)
+  // 1. GERADOR DO HTML DA LISTA (30 LINHAS)
   // ==========================================
-  function desenharLista(t, nomeCeu, vagas) {
+  function obterHTMLLista(t, nomeCeu, vagas) {
       let html = `
       <div class="folha-lista">
           <div class="cabecalho-lista">
@@ -173,25 +195,23 @@
               </thead>
               <tbody>`;
 
-      for (let i = 1; i <= 35; i++) {
+      // 🌟 AGORA CRAVADO EM 30 LINHAS!
+      for (let i = 1; i <= 30; i++) {
           if (i <= vagas) {
-              // Linha Branca Livre
               html += `<tr><td style="text-align: center; font-weight: bold;">${i}</td><td></td><td></td><td></td></tr>`;
           } else {
-              // Linha Cinza Bloqueada
               html += `<tr><td class="linha-bloqueada">${i}</td><td colspan="3" class="linha-bloqueada">VAGA BLOQUEADA</td></tr>`;
           }
       }
 
       html += `</tbody></table></div>`;
-      
-      imprimirNaTela(html);
+      return html;
   }
 
   // ==========================================
-  // 2. DESENHAR OS TICKETS DE SENHA
+  // 2. GERADOR DO HTML DOS TICKETS
   // ==========================================
-  function desenharSenhas(t, nomeCeu, vagas, regra) {
+  function obterHTMLSenhas(t, nomeCeu, vagas, regra) {
       let html = `<div class="grid-senhas">`;
 
       for (let i = 1; i <= vagas; i++) {
@@ -216,20 +236,20 @@
       }
 
       html += `</div>`;
-      imprimirNaTela(html);
+      return html;
   }
 
   // ==========================================
-  // FUNÇÃO MESTRE PARA IMPRIMIR E RECARREGAR
+  // FUNÇÃO MESTRE PARA IMPRIMIR SEM APAGAR A TELA
   // ==========================================
   function imprimirNaTela(conteudoHTML) {
       document.getElementById("areaImpressao").innerHTML = conteudoHTML;
       
-      // Delay para garantir que o DOM renderizou
       setTimeout(() => {
           window.print();
-          // Recarrega a página para voltar ao formulário limpo
-          setTimeout(() => { location.reload(); }, 1000);
+          // 🌟 MÁGICA: Limpa os papéis do fundo para não duplicar, mas NÃO recarrega a página! 
+          // O formulário continua lá intacto para você gerar de novo!
+          setTimeout(() => { document.getElementById("areaImpressao").innerHTML = ""; }, 1000);
       }, 500);
   }
 </script>

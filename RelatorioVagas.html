@@ -103,7 +103,7 @@
         </div>
     </div>
 
-    <!-- 🌟 GRÁFICOS -->
+    <!-- 🌟 GRÁFICOS
     <div class="row g-3 mb-4">
         <div class="col-md-6">
             <div class="card-chart">
@@ -117,7 +117,7 @@
                 <canvas id="graficoOcupacao" height="200"></canvas>
             </div>
         </div>
-    </div>
+    </div> -->
 
     <!-- 🌟 TABELA DE DETALHES -->
     <div class="tabela-custom">
@@ -142,6 +142,7 @@
 </div>
 
 <script>
+
     const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec";
     const idPlanilhaCeu = localStorage.getItem('ceu_planilha_id');
     
@@ -229,11 +230,11 @@
             </tr>`;
         });
         document.getElementById('corpoTabela').innerHTML = html || "<tr><td colspan='8' class='text-center'>Nenhuma turma encontrada.</td></tr>";
-
-        // 3. Desenhar Gráficos
-        desenharGraficos(dados, tMat, tLivres);
     }
-
+        // 3. Desenhar Gráficos
+  //      desenharGraficos(dados, tMat, tLivres);
+    
+/*
     function desenharGraficos(dados, totalMat, totalLivres) {
         // Preparar Dados - Vagas Livres por Modalidade
         let mapaMods = {};
@@ -255,7 +256,7 @@
             data: { labels: labels, datasets: datasets },
             options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
         });
-    }
+    } */
 </script>
 
 </body>

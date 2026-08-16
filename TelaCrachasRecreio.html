@@ -24,8 +24,7 @@
         #areaImpressao { display: none; }
         
         @media print {
-            /* 🚨 A ORDEM SUPREMA PARA O NAVEGADOR NÃO ROUBAR NOSSA COR */
-            body { background: white; margin: 0; padding: 0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            body { background: white; margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             #areaFormulario { display: none !important; }
             #areaImpressao { display: block !important; }
             
@@ -44,29 +43,11 @@
             .c-dados { font-size: 9px; margin: 0; line-height: 1.4; }
             
             .c-icones { display: flex; justify-content: space-between; margin-bottom: 2mm; }
-            
-            /* BLINDANDO A COR DA CAIXA DOS ÍCONES TAMBÉM */
-            .icon-box { width: 18mm; height: 18mm; border: 1px solid #ccc; border-radius: 4px; display: flex; align-items: center; justify-content: center; background-color: #fff; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .icon-box { width: 18mm; height: 18mm; border: 1px solid #ccc; border-radius: 4px; display: flex; align-items: center; justify-content: center; }
             .icon-box img { max-width: 16mm; max-height: 16mm; object-fit: contain; }
 
-            /* 🚨 AQUI ESTÁ A CORREÇÃO: FORÇANDO A PINTURA DA FAIXA INFERIOR */
-            .c-footer {
-                width: 100%;
-                padding: 2.5mm 0;
-                text-align: center;
-                border-radius: 4px;
-                font-weight: 900;
-                font-size: 10px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                gap: 5px;
-                color: #000;
-                border: 1px solid #000;
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-            }
-            .c-footer img { width: 14px; height: 14px; }
+            .c-footer { width: 100%; padding: 2mm 0; text-align: center; border-radius: 4px; font-weight: bold; font-size: 9px; display: flex; align-items: center; justify-content: center; gap: 5px; color: #000; border: 1px solid #000;}
+            .c-footer img { width: 12px; height: 12px; }
 
             /* CRACHÁ PAI (10 POR PÁGINA) */
             .cracha-pai { width: 90mm; height: 52mm; border: 2px dashed #999; border-radius: 8px; padding: 4mm; box-sizing: border-box; display: flex; flex-direction: column; position: relative; overflow: hidden; background: #fff; page-break-inside: avoid; justify-content: space-between;}
@@ -104,7 +85,7 @@
     <div id="areaImpressao"></div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec"; // SEU LINK AQUI
         
         async function iniciarGeracao() {
             const idPlanilha = localStorage.getItem('ceu_planilha_id');
@@ -121,7 +102,7 @@
             try {
                 const resRaw = await fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) });
                 const res = await resRaw.json();
-                let r = res.dados || res;
+                let r = res.dados || res; // Antibug do wrapper
 
                 btn.innerHTML = '<i class="fas fa-print me-2"></i> IMPRIMIR CRACHÁS (CRIANÇAS + PAIS)';
                 btn.disabled = false;
@@ -158,10 +139,7 @@
                     let imgInc   = aluno.inclusao ? regras.inclusao.sim : regras.inclusao.nao;
                     let imgPisc  = aluno.piscina ? regras.piscina.sim : regras.piscina.nao;
                     
-                    // Tratamento Blindado para a Cor da Faixa Inferior
-                    let corVindaDaPlanilha = aluno.sozinho ? regras.sozinho.simCor : regras.sozinho.naoCor;
-                    let bgSozinho = (corVindaDaPlanilha && corVindaDaPlanilha !== "") ? corVindaDaPlanilha : "#ffffff";
-                    
+                    let bgSozinho = aluno.sozinho ? regras.sozinho.simCor : regras.sozinho.naoCor;
                     let imgSozinho = aluno.sozinho ? regras.sozinho.simIcone : regras.sozinho.naoIcone;
                     let tagImgSozinho = imgSozinho ? `<img src="${imgSozinho}">` : '';
 
@@ -183,9 +161,7 @@
                             <div class="icon-box">${imgInc ? `<img src="${imgInc}">` : ''}</div>
                             <div class="icon-box">${imgPisc ? `<img src="${imgPisc}">` : ''}</div>
                         </div>
-                        
-                        <!-- A MÁGICA DA COR ACONTECE AQUI NO FOOTER -->
-                        <div class="c-footer" style="background-color: ${bgSozinho} !important;">
+                        <div class="c-footer" style="background-color: ${bgSozinho};">
                             ${tagImgSozinho} VAI DESACOMPANHADO? ${aluno.sozinho ? 'SIM' : 'NÃO'}
                         </div>
                     </div>`;

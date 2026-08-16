@@ -79,6 +79,557 @@
                             <label class="form-label">E-mail</label>
                             <input type="email" class="form-control" id="p_email" style="text-transform: lowercase;">
                         </div>
+                        <div class="col-12">
+                            <label class="form-label">Reunião Coletiva</label>
+                            <input type="text" class="form-control uppercase-field" id="p_reuniao" placeholder="Ex: SEG QUA DAS 10H ÀS 11H">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Planejamento</label>
+                            <input type="text" class="form-control uppercase-field" id="p_planejamento" placeholder="Ex: SEX DAS 13H ÀS 14H">
+                        </div>
+
+                        <!-- 🌟 NOVO BLOCO INTELIGENTE DE FALTAS E FÉRIAS -->
+                        <div class="col-12 mt-3">
+                            <div class="p-3 rounded" style="background-color: #fff3cd; border-left: 5px solid #ffc107;">
+                                <h6 class="fw-bold" style="color:#856404; margin-bottom: 5px;">
+                                    <span class="material-icons align-middle" style="font-size: 18px;">tv</span> Controle de Presença (TV)
+                                </h6>
+                                <p style="font-size: 11px; color: #666; margin-bottom: 15px;">As ausências cadastradas aqui atualizarão as turmas deste professor automaticamente.</p>
+                                
+                                <div class="p-3 bg-white rounded border border-warning mb-3">
+                                    <label class="form-label fw-bold text-danger mb-2" style="font-size: 12px;"><span class="material-icons align-middle text-danger" style="font-size: 14px;">event_busy</span> Faltas Programadas (Até 5 datas)</label>
+                                    <div id="boxFaltas">
+                                        <!-- O JavaScript vai construir as 5 linhas aqui dentro! -->
+                                    </div>
+                                </div>
+
+                                <div class="p-3 bg-white rounded border border-success">
+                                    <label class="form-label fw-bold text-success mb-2" style="font-size: 12px;"><span class="material-icons align-middle text-success" style="font-size: 14px;">flight_takeoff</span> Férias do Professor</label>
+                                    <input type="text" class="form-control uppercase-field" id="p_ferias" placeholder="Ex: DE 15/07 ATÉ 30/07">
+                                </div>
+                            </div>
+                        </div>
+                        <!-- FIM DO BLOCO -->
+
+                    </div>
+                    
+                    <button type="submit" class="btn-salvar" id="btn-submit-form"><span class="material-icons align-middle" style="font-size: 18px;">save</span> GRAVAR PROFESSOR</button>
+                    <button type="button" class="btn-cancelar" id="btn-cancelar" onclick="cancelarEdicao()">CANCELAR EDIÇÃO</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- LISTAGEM -->
+        <div class="col-md-7">
+            <div class="card-custom">
+                <h3 class="titulo-tela">
+                    <span class="material-icons text-success">list_alt</span> Professores Cadastrados
+                    <span id="contador-prof" class="badge bg-success ms-auto" style="font-size: 14px;">0</span>
+                </h3>
+
+                <!-- MOTOR DE BUSCA -->
+                <div class="busca-container">
+                    <i class="material-icons">search</i>
+                    <input type="text" id="campo-busca" class="form-control busca-input uppercase-field" placeholder="Buscar por nome ou tipo..." onkeyup="filtrarProfs()">
+                </div>
+
+                <div id="lista-prof">
+                    <p class="text-center text-muted mt-4"><i class="material-icons spin">sync</i> Lendo banco de dados...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec"; 
+        let profsGlobais = [];
+        let fotoBase64 = null;
+        let nomeArquivoFoto = null;
+
+        window.onload = function() {
+            const idPlanilha = localStorage.getItem('ceu_planilha_id');
+            if (!idPlanilha) return document.getElementById('lista-prof').innerHTML = `<div class="alert alert-danger text-center">Faça login novamente.</div>`;
+            carregarComboResponsaveis(idPlanilha);
+            carregarTabelaProf(idPlanilha);
+            gerarLinhasDeFaltas(); // Monta as 5 caixinhas
+        };
+
+        // ==========================================
+        // MÁGICA 1: DESENHA AS 5 CAIXINHAS DE FALTA
+        // ==========================================
+        function gerarLinhasDeFaltas() {
+            let html = "";
+            for(let i=1; i<=5; i++) {
+                html += `
+                <div class="row g-2 mb-2 align-items-center">
+                    <div class="col-md-4">
+                        <input type="date" class="form-control form-control-sm" id="fData${i}" style="font-size: 12px; padding: 6px;">
+                    </div>
+                    <div class="col-md-4">
+                        <select class="form-select form-select-sm" id="fTurno${i}" onchange="verificarFaltaPersonalizada(${i})" style="font-size: 12px; padding: 6px;">
+                            <option value="">(Sem falta)</option>
+                            <option value="Dia Todo">O dia todo</option>
+                            <option value="Manhã">Só de manhã</option>
+                            <option value="Tarde">Só à tarde</option>
+                            <option value="Noite">Só à noite</option>
+                            <option value="Personalizado">Digitar Horário...</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <input type="text" class="form-control form-control-sm uppercase-field" id="fTexto${i}" placeholder="Ex: das 14h às 16h" style="display:none; font-size: 12px; padding: 6px;">
+                    </div>
+                </div>
+                `;
+            }
+            document.getElementById('boxFaltas').innerHTML = html;
+        }
+
+        function verificarFaltaPersonalizada(index) {
+            const turno = document.getElementById('fTurno' + index).value;
+            const txt = document.getElementById('fTexto' + index);
+            if (turno === "Personalizado") {
+                txt.style.display = 'block';
+            } else {
+                txt.style.display = 'none';
+                txt.value = '';
+            }
+        }
+
+        // ==========================================
+        // CARREGAR DEPENDÊNCIAS E FOTO
+        // ==========================================
+        function carregarComboResponsaveis(idPlanilha) {
+            fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "listarTipoResp", dados: { id_planilha: idPlanilha } }) })
+            .then(res => res.json())
+            .then(retorno => {
+                const combo = document.getElementById('p_resp');
+                combo.innerHTML = '<option value="">Selecione...</option>';
+                if(retorno.status === "sucesso" && retorno.tipos.length > 0) {
+                    retorno.tipos.forEach(t => { combo.innerHTML += `<option value="${t.nome}">${t.nome}</option>`; });
+                }
+            });
+        }
+
+        function carregarPreview(event) {
+            const file = event.target.files[0];
+            if(file) {
+                nomeArquivoFoto = file.name;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('preview-foto').src = e.target.result;
+                    fotoBase64 = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // ==========================================
+        // BUSCA E LISTAGEM
+        // ==========================================
+        function carregarTabelaProf(idPlanilha) {
+            fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "listarProfessores", dados: { id_planilha: idPlanilha } }) })
+            .then(res => res.json())
+            .then(retorno => {
+                if(retorno.status === "sucesso") {
+                    profsGlobais = retorno.professores;
+                    desenharProfs(profsGlobais);
+                }
+            });
+        }
+
+        function filtrarProfs() {
+            const termo = document.getElementById('campo-busca').value.toUpperCase();
+            const filtrados = profsGlobais.filter(p => String(p.nome).toUpperCase().includes(termo) || String(p.responsavel).toUpperCase().includes(termo));
+            desenharProfs(filtrados);
+        }
+
+        function desenharProfs(lista) {
+            const div = document.getElementById('lista-prof');
+            document.getElementById('contador-prof').innerText = lista.length;
+
+            if(lista.length === 0) {
+                div.innerHTML = `<div class="alert alert-light text-center border">Nenhum professor encontrado.</div>`;
+                return;
+            }
+
+            div.innerHTML = lista.map(p => {
+                let imgHtml = (p.foto && p.foto !== "") 
+                    ? `<img src="${p.foto}" style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid #0d6efd;">` 
+                    : `<span class="material-icons" style="font-size: 45px; color: #cbd5e1;">account_circle</span>`;
+                
+                return `
+                <div class="prof-item">
+                    <div style="display: flex; align-items: center; gap: 15px; flex-grow: 1;">
+                        ${imgHtml}
+                        <div>
+                            <strong class="text-primary" style="font-size: 15px;">${p.nome}</strong><br>
+                            <span style="font-size:12px; color:#64748b; font-weight: bold;">
+                                <i class="material-icons align-middle text-secondary" style="font-size:14px;">badge</i> ${p.responsavel || 'N/I'} &nbsp;|&nbsp;
+                                <i class="material-icons align-middle text-success" style="font-size:14px;">phone</i> ${p.telefone || 'Sem Tel'}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="text-end" style="min-width: 120px;">
+                        <button class="acoes-btn" style="color: #6f42c1;" title="Imprimir Ficha" onclick="imprimirFichaProf('${p.id}')"><i class="material-icons">print</i></button>
+                        
+                        <button class="acoes-btn" title="Editar" onclick="prepararEdicao('${p.id}')"><i class="material-icons">edit</i></button>
+                        <button class="acoes-btn btn-del" title="Excluir" onclick="confirmarExclusao('${p.id}')"><i class="material-icons">delete</i></button>
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        // ==========================================
+        // 3. SALVAR / ATUALIZAR / EDITAR
+        // ==========================================
+        function processarFormulario() {
+            const idPlanilha = localStorage.getItem('ceu_planilha_id');
+            const modo = document.getElementById('modo_form').value; 
+            const acaoReal = (modo === "novo") ? "salvarProfessor" : "atualizarProfessor";
+
+            // 🛠️ MÁGICA 2: COMPILA AS FALTAS NUMA FRASE SÓ
+            let listaFaltasCompletas = [];
+            for (let i = 1; i <= 5; i++) {
+                let dataCampo = document.getElementById('fData' + i).value; // 2026-07-05
+                let turno = document.getElementById('fTurno' + i).value;
+                let texto = document.getElementById('fTexto' + i).value;
+
+                if (dataCampo) {
+                    let partes = dataCampo.split("-");
+                    let dataPtBr = partes[2] + "/" + partes[1]; // Vira "05/07"
+                    let desc = (turno === "Personalizado" && texto !== "") ? texto : (turno || "Dia Todo");
+                    listaFaltasCompletas.push(`${dataPtBr} (${desc})`);
+                }
+            }
+            let resultadoFaltas = listaFaltasCompletas.length > 0 ? listaFaltasCompletas.join(" | ") : "NÃO";
+
+            Swal.fire({ title: 'Enviando dados...', text: 'Pode demorar uns segundos por causa da foto.', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+
+            const pacote = {
+                acao: acaoReal,
+                dados: {
+                    id_planilha: idPlanilha,
+                    id_prof: document.getElementById('p_id').value,
+                    nome: document.getElementById('p_nome').value,
+                    responsavel: document.getElementById('p_resp').value,
+                    telefone: document.getElementById('p_tel').value,
+                    email: document.getElementById('p_email').value,
+                    falta: resultadoFaltas, // ENVIANDO COMO O MOTOR ESPERA
+                    ferias: document.getElementById('p_ferias').value,
+                    reuniao: document.getElementById('p_reuniao').value,
+                    planejamento: document.getElementById('p_planejamento').value,
+                    fotoBase64: fotoBase64,
+                    nomeArquivo: nomeArquivoFoto
+                }
+            };
+
+            fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) })
+            .then(res => res.json())
+            .then(retorno => {
+                if(retorno.status === "sucesso") {
+                    Swal.fire('Sucesso!', retorno.mensagem, 'success');
+                    cancelarEdicao(); 
+                    carregarTabelaProf(idPlanilha); 
+                } else Swal.fire('Erro', retorno.mensagem, 'error');
+            });
+        }
+
+        function prepararEdicao(idProf) {
+            const idPlanilha = localStorage.getItem('ceu_planilha_id');
+            Swal.fire({ title: 'Carregando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+
+            fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "buscarProfessorPorId", dados: { id_planilha: idPlanilha, id_prof: idProf } }) })
+            .then(res => res.json())
+            .then(retorno => {
+                if(retorno.status === "sucesso") {
+                    const p = retorno.professor;
+                    document.getElementById('p_id').value = p.id;
+                    document.getElementById('p_nome').value = p.nome;
+                    
+                    let combo = document.getElementById('p_resp');
+                    let existe = Array.from(combo.options).some(opt => opt.value === p.responsavel);
+                    if(!existe && p.responsavel) combo.innerHTML += `<option value="${p.responsavel}">${p.responsavel}</option>`;
+                    combo.value = p.responsavel;
+
+                    document.getElementById('p_tel').value = p.telefone;
+                    document.getElementById('p_email').value = p.email;
+                    document.getElementById('p_ferias').value = p.ferias || "";
+                    document.getElementById('p_reuniao').value = p.reuniao || "";
+                    document.getElementById('p_planejamento').value = p.planejamento || "";
+
+                    // 🛠️ MÁGICA 3: DESCOMPILA A FRASE E PREENCHE AS CAIXINHAS
+                    for(let i=1; i<=5; i++){
+                        document.getElementById('fData'+i).value = "";
+                        document.getElementById('fTurno'+i).value = "";
+                        document.getElementById('fTexto'+i).value = "";
+                        document.getElementById('fTexto'+i).style.display = "none";
+                    }
+
+                    let faltaBanco = p.falta || "NÃO";
+                    if (faltaBanco !== "NÃO") {
+                        let arraysFaltas = faltaBanco.split(" | ");
+                        let anoAtual = new Date().getFullYear();
+
+                        for (let i = 0; i < arraysFaltas.length && i < 5; i++) {
+                            let info = arraysFaltas[i].trim();
+                            let match = info.match(/^(\d{2}\/\d{2})\s*\((.*)\)$/);
+                            
+                            if (match) {
+                                let dataBR = match[1].split("/"); // ["05", "07"]
+                                document.getElementById('fData' + (i+1)).value = `${anoAtual}-${dataBR[1]}-${dataBR[0]}`;
+                                
+                                let turnoSalvo = match[2];
+                                let comboT = document.getElementById('fTurno' + (i+1));
+                                let textoT = document.getElementById('fTexto' + (i+1));
+
+                                if (["Dia Todo", "Manhã", "Tarde", "Noite"].includes(turnoSalvo)) {
+                                    comboT.value = turnoSalvo;
+                                } else {
+                                    comboT.value = "Personalizado";
+                                    textoT.style.display = "block";
+                                    textoT.value = turnoSalvo;
+                                }
+                            }
+                        }
+                    }
+
+                    // Mostra a foto atual no form
+                    document.getElementById('preview-foto').src = (p.foto && p.foto !== "") ? p.foto : 'https://via.placeholder.com/150/e2e8f0/94a3b8?text=FOTO';
+                    fotoBase64 = null; 
+                    nomeArquivoFoto = null;
+
+                    document.getElementById('modo_form').value = "editar";
+                    document.getElementById('titulo-form').innerHTML = `<span class="material-icons text-warning">edit</span> Editar Professor`;
+                    document.getElementById('btn-submit-form').className = "btn-salvar bg-warning text-dark";
+                    document.getElementById('btn-submit-form').innerHTML = `<span class="material-icons align-middle" style="font-size: 18px;">update</span> SALVAR ALTERAÇÃO`;
+                    document.getElementById('btn-cancelar').style.display = "block";
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    
+                    Swal.close();
+                } else Swal.fire('Erro', retorno.mensagem, 'error');
+            });
+        }
+
+        function cancelarEdicao() {
+            document.getElementById('formProf').reset();
+            document.getElementById('p_id').value = "";
+            document.getElementById('preview-foto').src = "https://via.placeholder.com/150/e2e8f0/94a3b8?text=FOTO";
+            fotoBase64 = null; nomeArquivoFoto = null;
+            document.getElementById('modo_form').value = "novo";
+            document.getElementById('titulo-form').innerHTML = `<span class="material-icons text-primary">school</span> Cadastrar Professor`;
+            document.getElementById('btn-submit-form').className = "btn-salvar";
+            document.getElementById('btn-submit-form').innerHTML = `<span class="material-icons align-middle" style="font-size: 18px;">save</span> GRAVAR PROFESSOR`;
+            document.getElementById('btn-cancelar').style.display = "none";
+            
+            // Limpa caixinhas
+            for(let i=1; i<=5; i++){
+                document.getElementById('fData'+i).value = "";
+                document.getElementById('fTurno'+i).value = "";
+                document.getElementById('fTexto'+i).value = "";
+                document.getElementById('fTexto'+i).style.display = "none";
+            }
+        }
+
+        function confirmarExclusao(idProf) {
+            Swal.fire({
+                title: 'Atenção!', text: 'Deseja apagar este professor?',
+                icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc3545', cancelButtonColor: '#6c757d', confirmButtonText: 'Sim, apagar!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const idPlanilha = localStorage.getItem('ceu_planilha_id');
+                    Swal.fire({ title: 'Apagando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+                    fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "excluirProfessor", dados: { id_planilha: idPlanilha, id_prof: idProf } }) })
+                    .then(res => res.json())
+                    .then(retorno => {
+                        if(retorno.status === "sucesso") {
+                            Swal.fire('Excluído!', retorno.mensagem, 'success');
+                            carregarTabelaProf(idPlanilha);
+                        } else Swal.fire('Erro', retorno.mensagem, 'error');
+                    });
+                }
+            });
+        }
+        function imprimirFichaProf(idProf) {
+            window.open(`ficha_professor.html?id=${idProf}`, '_blank');
+        }
+        
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!--
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Professores</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body { background-color: #f4f7f6; font-family: 'Segoe UI', sans-serif; padding: 20px; }
+        .card-custom { background: #ffffff; border-radius: 16px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04); border: none; padding: 25px; margin-bottom: 25px; }
+        .titulo-tela { color: #2c3e50; font-weight: 800; font-size: 24px; display: flex; align-items: center; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #edf2f7; padding-bottom: 15px; }
+        .form-label { font-weight: 600; color: #4a5568; font-size: 13px; margin-bottom: 6px; }
+        .form-control, .form-select { border-radius: 8px; padding: 10px 15px; font-size: 14px; background-color: #f8fafc; border: 1px solid #cbd5e1; }
+        .form-control:focus, .form-select:focus { border-color: #0d6efd; box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.1); background-color: #ffffff; }
+        
+        .btn-salvar { background: #0d6efd; color: white; border: none; border-radius: 8px; padding: 10px 24px; font-weight: 700; width: 100%; margin-top: 15px; transition: 0.3s; }
+        .btn-salvar:hover { background: #0b5ed7; transform: translateY(-2px); }
+        .btn-cancelar { background: #6c757d; color: white; border: none; border-radius: 8px; padding: 10px 24px; font-weight: 700; width: 100%; margin-top: 10px; transition: 0.3s; display: none;}
+        
+        input.uppercase-field { text-transform: uppercase; }
+        
+        .busca-container { position: relative; margin-bottom: 20px; }
+        .busca-container .material-icons { position: absolute; left: 15px; top: 12px; color: #94a3b8; }
+        .busca-input { padding-left: 45px !important; border-radius: 50px !important; background-color: #f1f5f9; border: none; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
+        
+        .prof-item { padding: 15px; border: 1px solid #edf2f7; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; background: #fff; transition: 0.2s; }
+        .prof-item:hover { border-color: #b6d4fe; background: #f8fafc; }
+        .acoes-btn { background: transparent; border: none; padding: 5px; color: #64748b; transition: 0.2s; border-radius: 6px; }
+        .acoes-btn:hover { background: #e2e8f0; color: #0d6efd; }
+        .acoes-btn.btn-del:hover { background: #fee2e2; color: #dc3545; }
+
+        /* Estilo da Foto de Upload */
+        .foto-upload-container { text-align: center; margin-bottom: 20px; }
+        .foto-preview { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid #e2e8f0; margin-bottom: 10px; background: #f8fafc; }
+        .foto-btn-wrapper { position: relative; display: inline-block; }
+        .foto-btn-badge { position: absolute; bottom: 10px; right: 0; background: #0d6efd; color: white; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 2px solid white; }
+    </style>
+</head>
+<body>
+
+    <div class="row">
+        <!-- FORMULÁRIO
+        <div class="col-md-5">
+            <div class="card-custom">
+                <h3 class="titulo-tela" id="titulo-form"><span class="material-icons text-primary">school</span> Cadastrar Professor</h3>
+                
+                <input type="hidden" id="modo_form" value="novo">
+                <input type="hidden" id="p_id"> 
+                
+                <form id="formProf" onsubmit="event.preventDefault(); processarFormulario();">
+                    
+                    <!-- UPLOAD DE FOTO 
+                    <div class="foto-upload-container">
+                        <div class="foto-btn-wrapper">
+                            <img id="preview-foto" src="https://via.placeholder.com/150/e2e8f0/94a3b8?text=FOTO" class="foto-preview" alt="Foto">
+                            <label for="input-foto" class="foto-btn-badge" title="Enviar Foto"><span class="material-icons" style="font-size:16px;">camera_alt</span></label>
+                            <input type="file" id="input-foto" style="display: none;" accept="image/*" onchange="carregarPreview(event)">
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">Nome do Professor *</label>
+                            <input type="text" class="form-control uppercase-field" id="p_nome" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Tipo de Responsável *</label>
+                            <select class="form-select" id="p_resp" required>
+                                <option value="">Carregando...</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Telefone</label>
+                            <input type="text" class="form-control uppercase-field" id="p_tel">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">E-mail</label>
+                            <input type="email" class="form-control" id="p_email" style="text-transform: lowercase;">
+                        </div>
                         <div class="col-6">
                             <label class="form-label">Tipo de Falta</label>
                             <input type="text" class="form-control uppercase-field" id="p_falta">
@@ -103,7 +654,7 @@
             </div>
         </div>
 
-        <!-- LISTAGEM -->
+        <!-- LISTAGEM 
         <div class="col-md-7">
             <div class="card-custom">
                 <h3 class="titulo-tela">
@@ -111,7 +662,7 @@
                     <span id="contador-prof" class="badge bg-success ms-auto" style="font-size: 14px;">0</span>
                 </h3>
 
-                <!-- MOTOR DE BUSCA -->
+                <!-- MOTOR DE BUSCA
                 <div class="busca-container">
                     <i class="material-icons">search</i>
                     <input type="text" id="campo-busca" class="form-control busca-input uppercase-field" placeholder="Buscar por nome ou tipo..." onkeyup="filtrarProfs()">
@@ -212,7 +763,7 @@ function desenharProfs(lista) {
                         </div>
                     </div>
                     <div class="text-end" style="min-width: 120px;">
-                        <!-- BOTÃO DE IMPRIMIR ADICIONADO AQUI 👇 -->
+                        <!-- BOTÃO DE IMPRIMIR ADICIONADO AQUI 👇 
                         <button class="acoes-btn" style="color: #6f42c1;" title="Imprimir Ficha" onclick="imprimirFichaProf('${p.id}')"><i class="material-icons">print</i></button>
                         
                         <button class="acoes-btn" title="Editar" onclick="prepararEdicao('${p.id}')"><i class="material-icons">edit</i></button>

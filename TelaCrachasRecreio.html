@@ -36,6 +36,202 @@
 
     <div class="card-main">
         <p style="font-size: 15px; color: #7f8c8d; margin-bottom: 25px;">
+            Este módulo identifica todas as crianças marcadas com "SIM" na planilha do CEU, cruza com as regras visuais da DRE e gera os crachás perfeitamente alinhados (8 por folha A4 para Crianças, e 10 para os Pais).
+        </p>
+
+        <button id="btnGatilho" class="btn-gerar" onclick="iniciarGeracao()"><i class="fas fa-print"></i> Processar Fila de Impressão</button>
+
+        <div id="blocoResultado" class="bloco-sucesso">
+            <h4 style="color: #27ae60; font-weight: 800;"><i class="fas fa-check-circle"></i> Sucesso! <span id="txtQtd"></span></h4>
+            <p style="color: #7f8c8d; font-size: 14px;">Seus crachás foram gerados e agrupados. Escolha como deseja baixar:</p>
+            
+            <a id="linkZip" href="#" target="_blank" class="btn-zip"><i class="fas fa-file-archive"></i> Baixar TODAS as páginas (.ZIP)</a>
+            
+            <p style="font-size: 13px; font-weight: bold; margin-bottom: 5px;">Ou baixe individualmente:</p>
+            <div id="areaBotoesPag" class="botoes-paginas">
+            </div>
+
+            <hr style="border-color: #ecf0f1; margin: 20px 0;">
+            <p style="font-size: 13px; color: #e74c3c; font-weight: 700; margin-bottom: 5px;">A impressão ocorreu sem erros? Libere a fila para os próximos dias:</p>
+            <button class="btn-limpar" onclick="limparFila()"><i class="fas fa-eraser"></i> Limpar Fila (Apagar os "SIM")</button>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec";
+
+        async function iniciarGeracao() {
+            const idPlanilha = localStorage.getItem('ceu_planilha_id');
+            const nomeCeu = localStorage.getItem('ceu_nome_especifico') || "CEU Padrão";
+
+            if (!idPlanilha) { Swal.fire('Erro', 'Banco de Dados não conectado!', 'error'); return; }
+
+            const btn = document.getElementById('btnGatilho');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Desenhando Crachás... Aguarde!';
+            btn.disabled = true;
+            document.getElementById('blocoResultado').style.display = 'none';
+
+            const pacote = {
+                acao: "gerarCrachasRecreio",
+                dados: { idPlanilha: idPlanilha, nomeCeu: nomeCeu }
+            };
+
+            try {
+                const resRaw = await fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) });
+                const res = await resRaw.json();
+                
+                let respostaReal = res.dados || res;
+
+                btn.innerHTML = '<i class="fas fa-print"></i> Processar Fila de Impressão';
+                btn.disabled = false;
+
+                if (respostaReal.sucesso === true || res.status === "sucesso") {
+                    document.getElementById('blocoResultado').style.display = 'block';
+                    document.getElementById('txtQtd').innerText = (respostaReal.quantidade || 0) + " Crachás Processados";
+                    document.getElementById('linkZip').href = respostaReal.zip || "#";
+
+                    let divPags = document.getElementById('areaBotoesPag');
+                    divPags.innerHTML = "";
+                    if(respostaReal.paginas) {
+                        respostaReal.paginas.forEach(p => {
+                            divPags.innerHTML += `<a href="${p.link}" target="_blank" class="btn-pag"><i class="fas fa-file-pdf text-danger"></i> ${p.nome}</a>`;
+                        });
+                    }
+                } else {
+                    let mensagemErro = respostaReal.erro || res.mensagem || "Erro não identificado pelo servidor.";
+                    Swal.fire('Aviso do Sistema', mensagemErro, 'error');
+                }
+            } catch (e) {
+                btn.innerHTML = '<i class="fas fa-print"></i> Processar Fila de Impressão';
+                btn.disabled = false;
+                Swal.fire('Falha de Conexão', 'Não foi possível comunicar com o servidor. ' + e.message, 'error');
+            }
+        }
+
+        function limparFila() {
+            Swal.fire({
+                title: 'Limpar a fila?',
+                text: "Isso vai apagar a palavra SIM de todas as crianças na coluna I.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#e74c3c',
+                confirmButtonText: 'Sim, limpar fila!'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({ title: 'Limpando...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                    const pacote = { acao: "limparFilaCrachasRecreio", dados: { idPlanilha: localStorage.getItem('ceu_planilha_id') } };
+                    
+                    try {
+                        const resRaw = await fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) });
+                        const res = await resRaw.json();
+                        let respostaReal = res.dados || res;
+                        
+                        if (respostaReal.sucesso === true || res.status === "sucesso") {
+                            Swal.fire('Pronto!', respostaReal.mensagem || res.mensagem || 'Fila limpa com sucesso.', 'success');
+                            document.getElementById('blocoResultado').style.display = 'none';
+                        } else {
+                            let mensagemErro = respostaReal.erro || res.mensagem || "Erro ao limpar fila.";
+                            Swal.fire('Erro', mensagemErro, 'error');
+                        }
+                    } catch (e) {
+                        Swal.fire('Erro', 'Falha na conexão.', 'error');
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!--
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Crachás - Recreio</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body { font-family: 'Nunito', sans-serif; background-color: #f4f7f6; padding: 20px; color: #2c3e50; }
+        .page-title { color: #8e44ad; font-weight: 800; display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+        .card-main { background: white; border-radius: 15px; padding: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: center; }
+        
+        .btn-gerar { background: linear-gradient(135deg, #8e44ad, #9b59b6); color: white; border: none; padding: 16px 20px; font-size: 18px; font-weight: 800; border-radius: 12px; width: 100%; transition: 0.3s; }
+        .btn-gerar:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(142, 68, 173, 0.4); color: white;}
+        .btn-gerar:disabled { background: #bdc3c7; cursor: not-allowed; box-shadow: none; transform: none; }
+
+        .bloco-sucesso { display: none; background: #fdfdfd; border: 2px dashed #27ae60; border-radius: 12px; padding: 20px; margin-top: 20px; }
+        
+        .btn-zip { background-color: #27ae60; color: white; font-weight: bold; border-radius: 8px; padding: 12px 20px; text-decoration: none; display: inline-block; margin-bottom: 15px; transition: 0.2s;}
+        .btn-zip:hover { background-color: #219150; color: white; }
+
+        .botoes-paginas { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 15px; }
+        .btn-pag { background-color: #ecf0f1; color: #2c3e50; border: 1px solid #bdc3c7; padding: 8px 15px; border-radius: 6px; font-weight: bold; text-decoration: none; transition: 0.2s;}
+        .btn-pag:hover { background-color: #3498db; color: white; border-color: #3498db; }
+
+        .btn-limpar { background-color: #e74c3c; color: white; border: none; padding: 10px 20px; font-weight: bold; border-radius: 8px; transition: 0.2s; margin-top: 25px;}
+        .btn-limpar:hover { background-color: #c0392b; }
+    </style>
+</head>
+<body>
+
+    <h3 class="page-title"><i class="fas fa-id-badge"></i> Gerador de Crachás</h3>
+
+    <div class="card-main">
+        <p style="font-size: 15px; color: #7f8c8d; margin-bottom: 25px;">
             Este módulo identifica todas as crianças marcadas com "SIM" na planilha do CEU, cruza com as regras visuais da DRE e gera os crachás perfeitamente alinhados (8 por folha A4).
         </p>
 

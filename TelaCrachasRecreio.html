@@ -32,7 +32,7 @@
 </head>
 <body>
 
-    <h3 class="page-title"><i class="fas fa-id-badge"></i> Gerador de Crachás - teste</h3>
+    <h3 class="page-title"><i class="fas fa-id-badge"></i> Gerador de Crachás - teste 001 </h3>
 
     <div class="card-main">
         <p style="font-size: 15px; color: #7f8c8d; margin-bottom: 25px;">
@@ -86,30 +86,23 @@
                 btn.innerHTML = '<i class="fas fa-print"></i> Processar Fila de Impressão';
                 btn.disabled = false;
 
-                // 🛡️ ARMADURA ANTIBUG: Lê a resposta, não importa a forma como o Google Apps Script embrulhou!
-                let respostaReal = res.dados || res;
-
-                if (respostaReal.sucesso === true || res.status === "sucesso") {
+                if (res.sucesso) {
                     document.getElementById('blocoResultado').style.display = 'block';
-                    document.getElementById('txtQtd').innerText = (respostaReal.quantidade || 0) + " Crachás Processados";
-                    document.getElementById('linkZip').href = respostaReal.zip || "#";
+                    document.getElementById('txtQtd').innerText = res.quantidade + " Crachás Processados";
+                    document.getElementById('linkZip').href = res.zip;
 
                     let divPags = document.getElementById('areaBotoesPag');
                     divPags.innerHTML = "";
-                    if(respostaReal.paginas) {
-                        respostaReal.paginas.forEach(p => {
-                            divPags.innerHTML += `<a href="${p.link}" target="_blank" class="btn-pag"><i class="fas fa-file-pdf text-danger"></i> ${p.nome}</a>`;
-                        });
-                    }
+                    res.paginas.forEach(p => {
+                        divPags.innerHTML += `<a href="${p.link}" target="_blank" class="btn-pag"><i class="fas fa-file-pdf text-danger"></i> ${p.nome}</a>`;
+                    });
                 } else {
-                    // O erro de verdade finalmente vai aparecer na tela!
-                    let mensagemErro = respostaReal.erro || res.mensagem || "Erro não identificado pelo servidor.";
-                    Swal.fire('Aviso do Sistema', mensagemErro, 'error');
+                    Swal.fire('Erro', res.erro, 'error');
                 }
             } catch (e) {
                 btn.innerHTML = '<i class="fas fa-print"></i> Processar Fila de Impressão';
                 btn.disabled = false;
-                Swal.fire('Falha de Conexão', 'Não foi possível comunicar com o servidor. ' + e.message, 'error');
+                Swal.fire('Falha de Conexão', 'Não foi possível comunicar com o servidor.', 'error');
             }
         }
 
@@ -130,14 +123,11 @@
                         const resRaw = await fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) });
                         const res = await resRaw.json();
                         
-                        let respostaReal = res.dados || res;
-
-                        if (respostaReal.sucesso === true || res.status === "sucesso") {
-                            Swal.fire('Pronto!', respostaReal.mensagem || res.mensagem || 'Fila limpa com sucesso.', 'success');
-                            document.getElementById('blocoResultado').style.display = 'none'; 
+                        if (res.sucesso) {
+                            Swal.fire('Pronto!', res.mensagem, 'success');
+                            document.getElementById('blocoResultado').style.display = 'none'; // Esconde os botões para não baixar de novo
                         } else {
-                            let mensagemErro = respostaReal.erro || res.mensagem || "Erro ao limpar fila.";
-                            Swal.fire('Erro', mensagemErro, 'error');
+                            Swal.fire('Erro', res.erro, 'error');
                         }
                     } catch (e) {
                         Swal.fire('Erro', 'Falha na conexão.', 'error');

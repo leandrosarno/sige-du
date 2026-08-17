@@ -230,37 +230,46 @@
             elemento.classList.remove('ativo');
         }
 
-        window.onload = function() {
+window.onload = function() {
             try {
                 const idPlanilha = localStorage.getItem('ceu_planilha_id');
                 const rfLogado = localStorage.getItem('ceu_rf_logado');
                 const nomeUsuario = localStorage.getItem('ceu_nome_usuario');
                 const nomeCeu = localStorage.getItem('ceu_nome_especifico');
                 const codigoCeuUniversal = localStorage.getItem('ceu_id') || sessionStorage.getItem('ceu_id') || localStorage.getItem('ceu_codigo_eol');
+                
+                // 🌟 A NOSSA CHAVE MESTRA AQUI!
+                const perfilUsuario = localStorage.getItem('ceu_perfil') || "CEU"; 
 
                 if (!rfLogado) {
                     window.location.href = "index.html"; 
                     return;
                 }
 
-                if (String(codigoCeuUniversal) === "777777") {
+                // 🚦 CONTROLE DE VISIBILIDADE POR PERFIL
+                if (perfilUsuario === "DRE" || perfilUsuario === "SME") {
+                    // 1. Exibe APENAS a opção da DRE (Regras Globais)
                     const btnRF = document.getElementById('btnRegrasRF');
                     if (btnRF) btnRF.style.display = 'flex';
 
-                    const elAlunos = document.getElementById('link-alunos');
-                    const elTurmas = document.getElementById('link-turmas');
-                    const elCadastros = document.getElementById('link-cadastros');
-                    const elSubmenu = document.getElementById('submenuCadastros');
-                    const elImpressao = document.getElementById('link-impressao');
-                    const elSubmenuImpressao = document.getElementById('submenuImpressao');
+                    // 2. Oculta TUDO o que é do CEU comum (incluindo as gavetas)
+                    const itensParaOcultar = [
+                        'link-alunos', 
+                        'link-turmas', 
+                        'link-cadastros', 
+                        'submenuCadastros', 
+                        'link-impressao', 
+                        'submenuImpressao',
+                        'link-recreio',       // 🚨 Esconde o Botão do Recreio nas Férias
+                        'submenuRecreio'      // 🚨 Esconde a gaveta inteira com as opções!
+                    ];
 
-                    if (elAlunos) elAlunos.style.display = 'none';
-                    if (elTurmas) elTurmas.style.display = 'none';
-                    if (elCadastros) elCadastros.style.display = 'none';
-                    if (elSubmenu) elSubmenu.style.display = 'none';
-                    if (elImpressao) elImpressao.style.display = 'none';
-                    if (elSubmenuImpressao) elSubmenuImpressao.style.display = 'none';
+                    itensParaOcultar.forEach(id => {
+                        const elemento = document.getElementById(id);
+                        if (elemento) elemento.style.display = 'none';
+                    });
                 } else {
+                    // É um CEU normal
                     if (!idPlanilha || idPlanilha.trim() === "") {
                         alert("⚠️ Atenção: A sua Unidade (CEU) ainda não tem um Banco de Dados configurado.");
                         window.location.href = "index.html";
@@ -268,6 +277,7 @@
                     }
                 }
 
+                // O restante do preenchimento da tela
                 if (codigoCeuUniversal && nomeCeu && nomeCeu.trim() !== "") {
                     document.getElementById('lbl-ceu').innerText = codigoCeuUniversal + " - " + nomeCeu;
                 } else if (codigoCeuUniversal) {

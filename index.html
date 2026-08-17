@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <title>SIG-EDU - Login1</title>
+    <title>SIG-EDU - Login</title>
     
-    <!-- Bloqueadores de Cache -->
+    <!-- Bloqueadores de Cache para garantir sempre a versão mais recente -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
@@ -40,7 +40,7 @@
         <!-- 🛡️ TRAVA INFALÍVEL PARA NÃO PISCAR -->
         <form id="formLogin" onsubmit="event.preventDefault(); fazerLogin();">
             <div class="mb-3">
-                <label class="form-label fw-bold">Código EOL do CEU</label>
+                <label class="form-label fw-bold">Código EOL da Unidade</label>
                 <input type="number" class="form-control" id="id_ceu" placeholder="Ex: 123456" required>
             </div>
             <div class="mb-3">
@@ -57,19 +57,20 @@
         </form>
     </div>
 
-<script>
-        // O link oficial com /exec
+    <script>
+        // ==========================================
+        // 🔗 LIGAÇÃO COM A API DO GOOGLE SHEETS
+        // ==========================================
         const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec"; 
 
         window.onload = function() {
-            localStorage.removeItem('ceu_codigo_eol'); 
+            localStorage.clear(); // Limpa sujeiras antigas de outros logins na máquina da escola
 
             // ==========================================
             // LOGO: Carrega as configs sem travar a tela
             // ==========================================
             fetch(API_URL, {
                 method: 'POST',
-                // O Google Apps Script adora receber o Content-Type como text/plain para não dar erro de CORS!
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify({ acao: "obterConfiguracoes", dados: {} })
             })
@@ -95,7 +96,7 @@
             })
             .catch(erro => console.error("Aviso: Falha ao puxar a Logo. Sistema continua rodando."));
         };
-        
+
         // ==========================================
         // O MOTOR BLINDADO DE LOGIN
         // ==========================================
@@ -116,7 +117,7 @@
                 didOpen: () => { Swal.showLoading(); }
             });
 
-            // 🛡️ O TRUQUE MÁGICO DO CONTENT-TYPE (Evita o Erro de CORS do Google)
+            // 🛡️ O TRUQUE MÁGICO DO CONTENT-TYPE
             fetch(API_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -135,18 +136,25 @@
                 } 
                 else if (retorno.status === "sucesso") {
                     
-                    // 🎉 AGORA SIM! SALVA AS CHAVES E ABRE O SISTEMA
-                    localStorage.setItem('ceu_codigo_eol', document.getElementById('id_ceu').value);
-                    localStorage.setItem('ceu_rf_logado', document.getElementById('rf_usuario').value); 
+                    // 🎉 A MÁGICA SALVADORA DO SISTEMA - Todas as mochilas sendo preenchidas!
+                    localStorage.setItem('ceu_codigo_eol', ceu);
+                    localStorage.setItem('ceu_rf_logado', rf); 
+                    
                     localStorage.setItem('ceu_planilha_id', retorno.token.id_planilha_banco);
                     localStorage.setItem('ceu_nome', retorno.token.nome_ceu);
                     localStorage.setItem('ceu_nome_especifico', retorno.token.nome_ceu);
-                    localStorage.setItem('ceu_logo', retorno.token.logo_ceu);
                     localStorage.setItem('ceu_nome_usuario', retorno.token.nome_usuario);
-                    localStorage.setItem('ceu_foto_usuario', retorno.token.foto_usuario);
                     
-                    Swal.close(); 
-                    window.location.href = "dashboard.html"; 
+                    // Salva a Foto e a Logo se elas existirem na planilha
+                    if(retorno.token.logo_ceu) localStorage.setItem('ceu_logo', retorno.token.logo_ceu);
+                    if(retorno.token.foto_usuario) localStorage.setItem('ceu_foto_usuario', retorno.token.foto_usuario);
+                    
+                    // 🌟 A ESTRELA DO SHOW: O nosso Perfil para identificar a DRE!
+                    localStorage.setItem('ceu_perfil', retorno.token.perfil_usuario); 
+                    
+                    Swal.fire('Bem-vindo!', retorno.mensagem, 'success').then(() => { 
+                        window.location.href = "dashboard.html"; 
+                    }); 
                 } 
                 else {
                     Swal.fire('Acesso Negado', retorno.mensagem || retorno.erro || 'Credenciais inválidas.', 'error');
@@ -159,7 +167,7 @@
         }
 
         // ==========================================
-        // PRIMEIRO ACESSO (Opcional, se o usuário precisar trocar a senha)
+        // PRIMEIRO ACESSO
         // ==========================================
         function tratarPrimeiroAcesso(mensagemDoServidor, dadosUsuario) {
             Swal.fire({

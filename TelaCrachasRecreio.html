@@ -32,7 +32,7 @@
 </head>
 <body>
 
-    <h3 class="page-title"><i class="fas fa-id-badge"></i> Gerador de Crachás </h3>
+    <h3 class="page-title"><i class="fas fa-id-badge"></i> Gerador de Crachás</h3>
 
     <div class="card-main">
         <p style="font-size: 15px; color: #7f8c8d; margin-bottom: 25px;">
@@ -49,7 +49,7 @@
             
             <p style="font-size: 13px; font-weight: bold; margin-bottom: 5px;">Ou baixe individualmente:</p>
             <div id="areaBotoesPag" class="botoes-paginas">
-                </div>
+            </div>
 
             <hr style="border-color: #ecf0f1; margin: 20px 0;">
             <p style="font-size: 13px; color: #e74c3c; font-weight: 700; margin-bottom: 5px;">A impressão ocorreu sem erros? Libere a fila para os próximos dias:</p>
@@ -58,9 +58,6 @@
     </div>
 
     <script>
-        // ====================================================
-        // 🚨 COLOQUE O LINK DA SUA API (DO DASHBOARD) AQUI
-        // ====================================================
         const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec";
 
         async function iniciarGeracao() {
@@ -86,23 +83,28 @@
                 btn.innerHTML = '<i class="fas fa-print"></i> Processar Fila de Impressão';
                 btn.disabled = false;
 
-                if (res.sucesso) {
+                let respostaReal = res.dados || res;
+
+                if (respostaReal.sucesso === true || res.status === "sucesso") {
                     document.getElementById('blocoResultado').style.display = 'block';
-                    document.getElementById('txtQtd').innerText = res.quantidade + " Crachás Processados";
-                    document.getElementById('linkZip').href = res.zip;
+                    document.getElementById('txtQtd').innerText = (respostaReal.quantidade || 0) + " Crachás Processados";
+                    document.getElementById('linkZip').href = respostaReal.zip || "#";
 
                     let divPags = document.getElementById('areaBotoesPag');
                     divPags.innerHTML = "";
-                    res.paginas.forEach(p => {
-                        divPags.innerHTML += `<a href="${p.link}" target="_blank" class="btn-pag"><i class="fas fa-file-pdf text-danger"></i> ${p.nome}</a>`;
-                    });
+                    if(respostaReal.paginas) {
+                        respostaReal.paginas.forEach(p => {
+                            divPags.innerHTML += `<a href="${p.link}" target="_blank" class="btn-pag"><i class="fas fa-file-pdf text-danger"></i> ${p.nome}</a>`;
+                        });
+                    }
                 } else {
-                    Swal.fire('Erro', res.erro, 'error');
+                    let mensagemErro = respostaReal.erro || res.mensagem || "Erro não identificado pelo servidor.";
+                    Swal.fire('Aviso do Sistema', mensagemErro, 'error');
                 }
             } catch (e) {
                 btn.innerHTML = '<i class="fas fa-print"></i> Processar Fila de Impressão';
                 btn.disabled = false;
-                Swal.fire('Falha de Conexão', 'Não foi possível comunicar com o servidor.', 'error');
+                Swal.fire('Falha de Conexão', 'Não foi possível comunicar com o servidor. ' + e.message, 'error');
             }
         }
 
@@ -122,12 +124,14 @@
                     try {
                         const resRaw = await fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) });
                         const res = await resRaw.json();
-                        
-                        if (res.sucesso) {
-                            Swal.fire('Pronto!', res.mensagem, 'success');
-                            document.getElementById('blocoResultado').style.display = 'none'; // Esconde os botões para não baixar de novo
+                        let respostaReal = res.dados || res;
+
+                        if (respostaReal.sucesso === true || res.status === "sucesso") {
+                            Swal.fire('Pronto!', respostaReal.mensagem || res.mensagem || 'Fila limpa com sucesso.', 'success');
+                            document.getElementById('blocoResultado').style.display = 'none'; 
                         } else {
-                            Swal.fire('Erro', res.erro, 'error');
+                            let mensagemErro = respostaReal.erro || res.mensagem || "Erro ao limpar fila.";
+                            Swal.fire('Erro', mensagemErro, 'error');
                         }
                     } catch (e) {
                         Swal.fire('Erro', 'Falha na conexão.', 'error');

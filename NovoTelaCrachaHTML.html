@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡ Crachás V2 (Turbo HTML)</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        /* =========================================
+           TELA DE CONTROLE (Oculta na impressão)
+           ========================================= */
+        body { background-color: #f4f7f6; font-family: 'Segoe UI', sans-serif; padding: 20px; color: #2c3e50; }
+        .card-main { background: white; border-radius: 15px; padding: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); max-width: 600px; margin: 0 auto; text-align: center; }
+        .btn-gerar { background: linear-gradient(135deg, #2980b9, #3498db); color: white; border: none; padding: 16px 20px; font-size: 18px; font-weight: 800; border-radius: 12px; width: 100%; transition: 0.3s; margin-bottom: 15px; }
+        .btn-gerar:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(41, 128, 185, 0.4); color: white;}
+
+        /* =========================================
+           🖨️ CSS DE IMPRESSÃO (A MÁGICA DA FOLHA A4)
+           ========================================= */
+        #areaImpressao { display: none; }
+        
+        @media print {
+            body { background: white; margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            #areaFormulario { display: none !important; }
+            #areaImpressao { display: block !important; }
+            
+            @page { size: A4 portrait; margin: 8mm; }
+
+            .folha { page-break-after: always; display: flex; flex-wrap: wrap; gap: 5mm; justify-content: space-between; align-content: flex-start; font-family: Arial, sans-serif; }
+            
+            /* --- CRACHÁ DA CRIANÇA (8 POR PÁGINA) --- */
+            .cracha-crianca { width: 90mm; height: 60mm; border: 1px dashed #777; border-radius: 6px; box-sizing: border-box; display: flex; flex-direction: column; position: relative; overflow: hidden; background: #fff; page-break-inside: avoid; }
+            
+            .c-cabecalho { text-align: center; padding: 2mm; padding-bottom: 1mm; }
+            .c-ceu { font-size: 11px; font-weight: 900; margin: 0; text-transform: uppercase; }
+            .c-periodo { font-size: 8px; font-weight: bold; margin: 0; color: #333; }
+            
+            /* O Famoso Bloco A4:Q8 (Com a cor da idade) */
+            .c-bloco-nome { text-align: center; padding: 4mm 2mm; margin-bottom: 2mm; display: flex; align-items: center; justify-content: center; height: 16mm; border-top: 1px solid #ddd; border-bottom: 1px solid #ddd;}
+            .c-nome { font-size: 13px; font-weight: 900; margin: 0; text-transform: uppercase; color: #000; line-height: 1.1; }
+            
+            .c-dados-container { display: flex; justify-content: space-between; padding: 0 3mm; font-size: 9px; margin-bottom: 2mm; }
+            .c-dados-texto p { margin: 0 0 1px 0; }
+            .c-dados-idade { font-size: 11px; font-weight: 900; text-align: right; }
+
+            .c-icones { display: flex; justify-content: space-between; padding: 0 3mm; margin-bottom: auto; }
+            .icon-box { width: 14mm; height: 14mm; display: flex; align-items: center; justify-content: center; border-radius: 4px; }
+            .icon-box img { max-width: 14mm; max-height: 14mm; object-fit: contain; }
+
+            /* A Faixa Vai Desacompanhado */
+            .c-footer { width: 100%; padding: 2mm; text-align: left; font-weight: 900; font-size: 9px; display: flex; align-items: center; gap: 2mm; color: #000; margin-top: auto; border-top: 1px solid #333;}
+            .c-footer img { width: 10px; height: 10px; }
+
+            /* --- CRACHÁ DO PAI (10 POR PÁGINA) --- */
+            .cracha-pai { width: 90mm; height: 50mm; border: 1px dashed #777; border-radius: 6px; padding: 3mm; box-sizing: border-box; display: flex; flex-direction: column; position: relative; overflow: hidden; background: #fff; page-break-inside: avoid; justify-content: space-between;}
+            .p-header { text-align: center; border-bottom: 1px solid #ccc; padding-bottom: 2mm; }
+            .p-ceu { font-size: 12px; font-weight: 900; margin: 0; text-transform: uppercase; }
+            .p-periodo { font-size: 9px; font-weight: bold; margin: 0; color: #444; }
+            .p-titulo { font-size: 11px; font-weight: 900; margin: 2mm 0 0 0; text-decoration: underline;}
+            
+            .p-body { font-size: 10px; line-height: 1.5; }
+            .p-destaque { font-weight: 900; font-size: 13px; text-transform: uppercase; color: #000;}
+        }
+    </style>
+</head>
+<body>
+
+    <div id="areaFormulario" class="container">
+        <div class="card-main mt-5">
+            <h3 class="mb-3" style="color: #2980b9; font-weight: 900;"><i class="fas fa-bolt"></i> Crachás Turbo (V2)</h3>
+            <p style="font-size: 14px; color: #7f8c8d; margin-bottom: 25px;">
+                Esta é a nova versão de alta velocidade baseada em HTML. O sistema fará a leitura da planilha e desenhará os crachás coloridos diretamente na sua tela em 1 segundo.
+            </p>
+
+            <button id="btnGatilho" class="btn-gerar" onclick="iniciarGeracaoHTML()">
+                <i class="fas fa-print me-2"></i> DESENHAR E IMPRIMIR CRACHÁS
+            </button>
+            <p style="font-size: 12px; color: #95a5a6; margin-top: 10px;">
+                <b>Dica:</b> Na tela de impressão, certifique-se de marcar a opção <b>"Gráficos de Fundo"</b> para as cores aparecerem!
+            </p>
+        </div>
+    </div>
+
+    <!-- O CONTEÚDO HTML VAI RENDERIZAR AQUI DENTRO PARA IMPRESSÃO -->
+    <div id="areaImpressao"></div>
+
+    <script>
+        // 🚨 COLOQUE O LINK DA SUA API (DO DASHBOARD) AQUI
+        const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec";
+        
+        async function iniciarGeracaoHTML() {
+            const idPlanilha = localStorage.getItem('ceu_planilha_id');
+            const nomeCeu = localStorage.getItem('ceu_nome_especifico') || "CEU";
+
+            if (!idPlanilha) return Swal.fire('Erro', 'Banco de Dados não conectado!', 'error');
+
+            const btn = document.getElementById('btnGatilho');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Extraindo dados...';
+            btn.disabled = true;
+
+            const pacote = { acao: "buscarDadosNovoCrachaHTML", dados: { idPlanilha: idPlanilha, nomeCeu: nomeCeu } };
+
+            try {
+                const resRaw = await fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) });
+                const res = await resRaw.json();
+                let r = res.dados || res;
+
+                btn.innerHTML = '<i class="fas fa-print me-2"></i> DESENHAR E IMPRIMIR CRACHÁS';
+                btn.disabled = false;
+
+                if (r.sucesso === true || res.status === "sucesso") {
+                    montarHTMLImpressao(r.fila, r.regras, r.nomeCeu);
+                } else {
+                    Swal.fire('Aviso', r.erro || res.mensagem || 'Erro desconhecido', 'error');
+                }
+            } catch (e) {
+                btn.innerHTML = '<i class="fas fa-print me-2"></i> DESENHAR E IMPRIMIR CRACHÁS';
+                btn.disabled = false;
+                Swal.fire('Erro de Conexão', 'Não foi possível comunicar com o servidor.', 'error');
+            }
+        }
+
+        function montarHTMLImpressao(fila, regras, nomeCeu) {
+            let htmlHTML = "";
+
+            // ==========================================
+            // 1. GERAR PÁGINAS DAS CRIANÇAS (8 por folha)
+            // ==========================================
+            const paginasCriancas = Math.ceil(fila.length / 8);
+            for (let p = 0; p < paginasCriancas; p++) {
+                htmlHTML += `<div class="folha">`;
+                for (let c = 0; c < 8; c++) {
+                    let index = (p * 8) + c;
+                    if (index >= fila.length) break;
+                    let aluno = fila[index];
+
+                    let imgDieta = aluno.dieta ? regras.dieta.sim : regras.dieta.nao;
+                    let imgFoto  = aluno.restImg ? regras.img.sim : regras.img.nao;
+                    let imgInc   = aluno.inclusao ? regras.inclusao.sim : regras.inclusao.nao;
+                    let imgPisc  = aluno.piscina ? regras.piscina.sim : regras.piscina.nao;
+                    
+                    let bgSozinho = aluno.sozinho ? regras.sozinho.simCor : regras.sozinho.naoCor;
+                    let imgSozinho = aluno.sozinho ? regras.sozinho.simIcone : regras.sozinho.naoIcone;
+                    let tagImgSozinho = imgSozinho ? `<img src="${imgSozinho}">` : '';
+
+                    htmlHTML += `
+                    <div class="cracha-crianca">
+                        <div class="c-cabecalho">
+                            <p class="c-ceu">${nomeCeu}</p>
+                            <p class="c-periodo">${regras.periodo}</p>
+                        </div>
+                        
+                        <!-- O Bloco A4:Q8 (Fundo com a Cor da Idade) -->
+                        <div class="c-bloco-nome" style="background-color: ${aluno.corIdade};">
+                            <p class="c-nome">${aluno.nome}</p>
+                        </div>
+                        
+                        <div class="c-dados-container">
+                            <div class="c-dados-texto">
+                                <p><b>RESP:</b> ${aluno.resp}</p>
+                                <p><b>TEL:</b> ${aluno.tel}</p>
+                            </div>
+                            <div class="c-dados-idade">
+                                IDADE: ${aluno.idade}
+                            </div>
+                        </div>
+
+                        <div class="c-icones">
+                            <div class="icon-box">${imgDieta ? `<img src="${imgDieta}">` : ''}</div>
+                            <div class="icon-box">${imgFoto ? `<img src="${imgFoto}">` : ''}</div>
+                            <div class="icon-box">${imgInc ? `<img src="${imgInc}">` : ''}</div>
+                            <div class="icon-box">${imgPisc ? `<img src="${imgPisc}">` : ''}</div>
+                        </div>
+
+                        <div class="c-footer" style="background-color: ${bgSozinho};">
+                            ${tagImgSozinho} VAI DESACOMPANHADO? ${aluno.sozinho ? 'SIM' : 'NÃO'}
+                        </div>
+                    </div>`;
+                }
+                htmlHTML += `</div>`;
+            }
+
+            // ==========================================
+            // 2. GERAR PÁGINAS DOS PAIS (10 por folha)
+            // ==========================================
+            const paginasPais = Math.ceil(fila.length / 10);
+            for (let p = 0; p < paginasPais; p++) {
+                htmlHTML += `<div class="folha">`;
+                for (let c = 0; c < 10; c++) {
+                    let index = (p * 10) + c;
+                    if (index >= fila.length) break;
+                    let aluno = fila[index];
+
+                    htmlHTML += `
+                    <div class="cracha-pai">
+                        <div class="p-header">
+                            <p class="p-ceu">${nomeCeu}</p>
+                            <p class="p-periodo">${regras.periodo}</p>
+                            <p class="p-titulo">CRACHÁ DO RESPONSÁVEL</p>
+                        </div>
+                        <div class="p-body">
+                            <div>CRIANÇA:<br><span class="p-destaque">${aluno.nome}</span></div>
+                            <div style="margin-top:2mm; display:flex; justify-content: space-between;">
+                                <span>RESPONSÁVEL:<br><span class="p-destaque">${aluno.resp}</span></span>
+                                <span style="text-align: right;">IDADE:<br><span class="p-destaque">${aluno.idade}</span></span>
+                            </div>
+                        </div>
+                    </div>`;
+                }
+                htmlHTML += `</div>`;
+            }
+
+            // Manda para a tela e aciona a impressora
+            document.getElementById("areaImpressao").innerHTML = htmlHTML;
+            setTimeout(() => {
+                window.print();
+                // Limpa a tela após a impressão sem precisar recarregar o sistema
+                setTimeout(() => { document.getElementById("areaImpressao").innerHTML = ""; }, 1000);
+            }, 500);
+        }
+    </script>
+</body>
+</html>

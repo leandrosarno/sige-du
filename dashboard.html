@@ -115,17 +115,24 @@
             <span class="material-icons">people</span> Alunos
         </a>
         
-        <a href="javascript:void(0)" id="link-turmas" onclick="abrirFormFilho('turmas.html', this)">
-            <span class="material-icons">class</span> Turmas
+<!-- 🏫 GAVETA: TURMAS E MATRÍCULAS -->
+        <a href="#submenuTurmas" id="link-turmas" data-bs-toggle="collapse" style="justify-content: space-between;" onclick="removerAtivo(this)">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <span class="material-icons">school</span> Turmas e Matrículas
+            </div>
+            <span class="material-icons" style="font-size: 18px;">expand_more</span>
         </a>
-
-        <a href="javascript:void(0)" id="link-turmas" onclick="abrirFormFilho('FormMatricula.html', this)">
-            <span class="material-icons">class</span> Fazer Matrículas
-        </a>
-
-       <a href="javascript:void(0)" id="link-turmas" onclick="abrirFormFilho('GerenciadorMatriculas.html', this)">
-            <span class="material-icons">class</span> Gerenciar Matrículas
-        </a>
+        <div class="collapse submenu" id="submenuTurmas">
+            <a href="javascript:void(0)" onclick="abrirFormFilho('turmas.html', this)">
+                <span class="material-icons" style="font-size: 18px;">class</span> Turmas
+            </a>
+            <a href="javascript:void(0)" onclick="abrirFormFilho('FormMatricula.html', this)">
+                <span class="material-icons" style="font-size: 18px;">how_to_reg</span> Fazer Matrículas
+            </a>
+            <a href="javascript:void(0)" onclick="abrirFormFilho('GerenciadorMatriculas.html', this)">
+                <span class="material-icons" style="font-size: 18px;">manage_accounts</span> Gerenciar Matrículas
+            </a>
+        </div>
 
         
         <!-- 🖨️ GAVETA: IMPRESSÃO E EXPEDIÇÃO -->
@@ -265,7 +272,8 @@ window.onload = function() {
                     // 2. Oculta TUDO o que é do CEU comum (incluindo as gavetas)
                     const itensParaOcultar = [
                         'link-alunos', 
-                        'link-turmas', 
+                        'link-turmas',
+                        'submenuTurmas',
                         'link-cadastros', 
                         'submenuCadastros', 
                         'link-impressao', 

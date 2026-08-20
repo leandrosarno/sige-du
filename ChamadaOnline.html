@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Chamada On-line</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body { background-color: #f0f2f5; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding-bottom: 80px;}
+        .card-chamada { border-radius: 12px; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.08); margin-bottom: 20px;}
+        .top-header { background: linear-gradient(135deg, #0d6efd, #0b5ed7); color: white; padding: 15px; border-radius: 12px 12px 0 0; text-align: center;}
+        
+        .aluno-row { background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; border-left: 5px solid #ccc; transition: 0.3s;}
+        .aluno-row.presente { border-left-color: #198754; background-color: #f8fff9;}
+        .aluno-row.falta { border-left-color: #dc3545; background-color: #fffafb;}
+        
+        .nome-aluno { font-weight: 700; font-size: 15px; color: #333; margin: 0; line-height: 1.2;}
+        .id-aluno { font-size: 11px; color: #888; margin: 0;}
+        
+        .btn-status { width: 45px; height: 45px; border-radius: 50%; display: inline-flex; justify-content: center; align-items: center; font-size: 20px; border: 2px solid transparent; cursor: pointer; transition: 0.2s;}
+        
+        .btn-p { background: #e9ecef; color: #198754; border-color: #198754;}
+        .btn-p.ativo { background: #198754; color: white; box-shadow: 0 0 10px rgba(25, 135, 84, 0.4);}
+        
+        .btn-f { background: #e9ecef; color: #dc3545; border-color: #dc3545;}
+        .btn-f.ativo { background: #dc3545; color: white; box-shadow: 0 0 10px rgba(220, 53, 69, 0.4);}
+
+        .floating-btn-save { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; padding: 15px; font-size: 18px; font-weight: bold; border-radius: 30px; box-shadow: 0 5px 15px rgba(13, 110, 253, 0.4); z-index: 1000;}
+        
+        select.form-control, input[type="date"].form-control { height: 50px; font-size: 16px; font-weight: bold;}
+    </style>
+</head>
+<body>
+
+<div class="container mt-3" style="max-width: 600px;">
+    
+    <a href="dashboard.html" class="btn btn-outline-secondary mb-3 rounded-pill" style="font-weight: 600;">
+        <i class="fas fa-arrow-left me-1"></i> Voltar
+    </a>
+
+    <div class="card card-chamada">
+        <div class="top-header">
+            <h4 class="mb-0"><i class="fas fa-clipboard-user me-2"></i> Chamada On-line</h4>
+            <small id="lbl-ceu">Carregando unidade...</small>
+        </div>
+        <div class="card-body">
+            
+            <div class="mb-3">
+                <label class="text-muted fw-bold mb-1"><i class="fas fa-calendar-day me-1"></i> Data da Aula</label>
+                <input type="date" id="dataAula" class="form-control text-center text-primary">
+            </div>
+
+            <div class="mb-3">
+                <label class="text-muted fw-bold mb-1"><i class="fas fa-users-class me-1"></i> Selecione a Turma</label>
+                <select id="comboTurmas" class="form-control" onchange="carregarAlunos()">
+                    <option value="">Aguarde, carregando turmas...</option>
+                </select>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="statusLoader" class="text-center text-primary my-4" style="display: none;">
+        <i class="fas fa-circle-notch fa-spin fa-2x"></i>
+        <p class="mt-2 fw-bold">Buscando alunos da turma...</p>
+    </div>
+
+    <div id="listaAlunosContainer"></div>
+
+</div>
+
+<button class="btn btn-primary floating-btn-save" id="btnSalvar" style="display: none;" onclick="salvarChamada()">
+    <i class="fas fa-cloud-upload-alt me-2"></i> SALVAR CHAMADA
+</button>
+
+<script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec";
+    const idPlanilhaCeu = localStorage.getItem('ceu_planilha_id');
+    const nomeCeu = localStorage.getItem('ceu_nome_especifico') || "Unidade Não Identificada";
+    const usuarioAtual = localStorage.getItem('ceu_nome_usuario') || "Professor";
+
+    let alunosAtuais = [];
+    let presencas = {}; // Guarda { idAluno: 'P' ou 'F' }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        document.getElementById('lbl-ceu').innerText = nomeCeu;
+        
+        // Define a data de hoje por padrão
+        const hoje = new Date();
+        document.getElementById('dataAula').value = hoje.toISOString().split('T')[0];
+
+        carregarTurmas();
+    });
+
+    async function carregarTurmas() {
+        if (!idPlanilhaCeu) return Swal.fire('Erro', 'Unidade não conectada.', 'error');
+        
+        try {
+            const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "buscarTurmasParaChamadaNovoSistema", dados: { idPlanilha: idPlanilhaCeu } }) });
+            const data = await res.json();
+            
+            const combo = document.getElementById('comboTurmas');
+            combo.innerHTML = '<option value="">-- Toque para selecionar a turma --</option>';
+            
+            if (data.sucesso) {
+                data.turmas.forEach(t => {
+                    combo.innerHTML += `<option value="${t.id}">${t.modalidade} - ${t.professor} [${t.id}]</option>`;
+                });
+            }
+        } catch (e) {
+            Swal.fire('Erro de Conexão', 'Não foi possível carregar as turmas.', 'error');
+        }
+    }
+
+    async function carregarAlunos() {
+        const idTurma = document.getElementById('comboTurmas').value;
+        const container = document.getElementById('listaAlunosContainer');
+        const loader = document.getElementById('statusLoader');
+        const btnSalvar = document.getElementById('btnSalvar');
+
+        container.innerHTML = "";
+        presencas = {}; // Zera as marcações
+        btnSalvar.style.display = "none";
+
+        if (!idTurma) return;
+
+        loader.style.display = "block";
+
+        try {
+            const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "buscarAlunosParaChamadaNovoSistema", dados: { idPlanilha: idPlanilhaCeu, idTurma: idTurma } }) });
+            const data = await res.json();
+            
+            loader.style.display = "none";
+
+            if (data.sucesso) {
+                alunosAtuais = data.alunos;
+                if (alunosAtuais.length === 0) {
+                    container.innerHTML = `<div class="alert alert-warning text-center"><i class="fas fa-exclamation-triangle"></i> Nenhum aluno matriculado nesta turma.</div>`;
+                    return;
+                }
+
+                // Por padrão, já vamos marcar todo mundo como PRESENTE (P) para facilitar para o professor
+                let html = `<div class="d-flex justify-content-between mb-2 px-2 text-muted fw-bold" style="font-size: 12px;"><span>ALUNO</span> <span>P / F</span></div>`;
+                
+                alunosAtuais.forEach((al, index) => {
+                    presencas[al.idAluno] = 'P'; // Presença padrão
+                    
+                    html += `
+                    <div class="aluno-row presente" id="row-${al.idAluno}">
+                        <div>
+                            <p class="nome-aluno">${al.nomeAluno}</p>
+                            <p class="id-aluno">ID: ${al.idAluno}</p>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <div class="btn-status btn-p ativo" id="btn-p-${al.idAluno}" onclick="marcar('${al.idAluno}', 'P')"><i class="fas fa-check"></i></div>
+                            <div class="btn-status btn-f" id="btn-f-${al.idAluno}" onclick="marcar('${al.idAluno}', 'F')"><i class="fas fa-times"></i></div>
+                        </div>
+                    </div>`;
+                });
+
+                container.innerHTML = html;
+                btnSalvar.style.display = "block"; // Mostra o botão flutuante
+            }
+        } catch (e) {
+            loader.style.display = "none";
+            Swal.fire('Erro', 'Falha ao buscar os alunos.', 'error');
+        }
+    }
+
+    function marcar(idAluno, status) {
+        presencas[idAluno] = status;
+        
+        const row = document.getElementById(`row-${idAluno}`);
+        const btnP = document.getElementById(`btn-p-${idAluno}`);
+        const btnF = document.getElementById(`btn-f-${idAluno}`);
+
+        if (status === 'P') {
+            row.className = "aluno-row presente";
+            btnP.classList.add('ativo');
+            btnF.classList.remove('ativo');
+        } else {
+            row.className = "aluno-row falta";
+            btnF.classList.add('ativo');
+            btnP.classList.remove('ativo');
+        }
+    }
+
+    async function salvarChamada() {
+        const dataAulaRaw = document.getElementById('dataAula').value;
+        const idTurma = document.getElementById('comboTurmas').value;
+
+        if (!dataAulaRaw || !idTurma) return Swal.fire('Atenção', 'Selecione a data e a turma.', 'warning');
+
+        // Arruma a data para o padrão Brasileiro DD/MM/YYYY
+        const [ano, mes, dia] = dataAulaRaw.split('-');
+        const dataAulaBR = `${dia}/${mes}/${ano}`;
+
+        // Transforma o objeto presencas num Array para o Apps Script ler
+        let listaFrequencia = [];
+        alunosAtuais.forEach(al => {
+            listaFrequencia.push({
+                idAluno: al.idAluno,
+                nomeAluno: al.nomeAluno,
+                status: presencas[al.idAluno]
+            });
+        });
+
+        const btn = document.getElementById('btnSalvar');
+        const txtAnterior = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> SALVANDO...';
+        btn.disabled = true;
+
+        const pacote = {
+            acao: "salvarChamadaOnlineNovoSistema",
+            dados: {
+                idPlanilha: idPlanilhaCeu,
+                dataAula: dataAulaBR,
+                idTurma: idTurma,
+                operador: usuarioAtual,
+                frequencia: listaFrequencia
+            }
+        };
+
+        try {
+            const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) });
+            const obj = await res.json();
+
+            if (obj.sucesso) {
+                Swal.fire({
+                    title: 'Chamada Salva!',
+                    text: 'A frequência foi enviada para a central.',
+                    icon: 'success',
+                    timer: 2500,
+                    showConfirmButton: false
+                }).then(() => {
+                    // Limpa a tela após salvar
+                    document.getElementById('comboTurmas').value = "";
+                    document.getElementById('listaAlunosContainer').innerHTML = "";
+                    btn.style.display = "none";
+                });
+            } else {
+                Swal.fire('Erro ao Salvar', obj.erro, 'error');
+            }
+        } catch (e) {
+            Swal.fire('Erro de Rede', 'Não foi possível enviar a chamada.', 'error');
+        } finally {
+            btn.innerHTML = txtAnterior;
+            btn.disabled = false;
+        }
+    }
+</script>
+</body>
+</html>

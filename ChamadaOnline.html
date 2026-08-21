@@ -9,49 +9,62 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         body { background-color: #f0f2f5; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding-bottom: 80px;}
-        .card-chamada { border-radius: 12px; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.08); margin-bottom: 20px;}
-        .top-header { background: linear-gradient(135deg, #0d6efd, #0b5ed7); color: white; padding: 15px; border-radius: 12px 12px 0 0; text-align: center;}
+        .card-chamada { border-radius: 12px; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.08); margin-bottom: 20px; overflow: hidden;}
+        .top-header { background: linear-gradient(135deg, #0d6efd, #0b5ed7); color: white; padding: 12px 15px;}
         
-        .aluno-row { background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 10px; border-left: 5px solid #ccc; transition: 0.3s;}
+        .aluno-row { background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 12px; border-left: 5px solid #ccc; transition: 0.3s;}
         .aluno-row.presente { border-left-color: #198754; background-color: #f8fff9;}
         .aluno-row.falta { border-left-color: #dc3545; background-color: #fffafb;}
         .aluno-row.fj { border-left-color: #fd7e14; background-color: #fffaf0;}
         
-        .nome-aluno { font-weight: 700; font-size: 15px; color: #333; margin: 0;}
-        .id-aluno { font-size: 11px; color: #888; margin: 0;}
+        .nome-aluno { font-weight: 700; font-size: 16px; color: #333; margin: 0; line-height: 1.1;}
+        .id-aluno { font-size: 12px; color: #888; margin: 0; margin-top: 3px;}
         
-        .botoes-status { display: flex; justify-content: space-between; gap: 5px; width: 100%;}
-        .btn-status { flex-grow: 1; height: 40px; border-radius: 6px; display: inline-flex; justify-content: center; align-items: center; font-size: 15px; font-weight: bold; border: 2px solid transparent; cursor: pointer; transition: 0.2s;}
+        .botoes-status { display: flex; justify-content: space-between; gap: 8px; width: 100%;}
+        .btn-status { flex-grow: 1; height: 45px; border-radius: 8px; display: inline-flex; justify-content: center; align-items: center; font-size: 14px; font-weight: bold; border: 2px solid transparent; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.05);}
         
         .btn-p { background: #e9ecef; color: #198754; border-color: #198754;}
-        .btn-p.ativo { background: #198754; color: white; box-shadow: 0 0 10px rgba(25, 135, 84, 0.4);}
+        .btn-p.ativo { background: #198754; color: white; box-shadow: 0 4px 10px rgba(25, 135, 84, 0.4); transform: scale(1.02);}
         
         .btn-f { background: #e9ecef; color: #dc3545; border-color: #dc3545;}
-        .btn-f.ativo { background: #dc3545; color: white; box-shadow: 0 0 10px rgba(220, 53, 69, 0.4);}
+        .btn-f.ativo { background: #dc3545; color: white; box-shadow: 0 4px 10px rgba(220, 53, 69, 0.4); transform: scale(1.02);}
 
         .btn-fj { background: #e9ecef; color: #fd7e14; border-color: #fd7e14;}
-        .btn-fj.ativo { background: #fd7e14; color: white; box-shadow: 0 0 10px rgba(253, 126, 20, 0.4);}
+        .btn-fj.ativo { background: #fd7e14; color: white; box-shadow: 0 4px 10px rgba(253, 126, 20, 0.4); transform: scale(1.02);}
 
         .floating-btn-save { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; padding: 15px; font-size: 18px; font-weight: bold; border-radius: 30px; box-shadow: 0 5px 15px rgba(13, 110, 253, 0.4); z-index: 1000;}
+        
+        select.form-control { height: 50px; font-size: 15px; font-weight: bold;}
     </style>
 </head>
 <body>
 
 <div class="container mt-3" style="max-width: 600px;">
+    
     <div class="card card-chamada">
-        <div class="top-header">
-            <h4 class="mb-0"><i class="fas fa-clipboard-user me-2"></i> Chamada On-line</h4>
-            <small id="lbl-ceu">Carregando unidade...</small>
+        <!-- 🌟 O NOVO CABEÇALHO COM BOTÕES DE AÇÃO -->
+        <div class="top-header d-flex justify-content-between align-items-center">
+            <button class="btn btn-sm text-white" style="background: rgba(255,255,255,0.2); border: none;" onclick="abrirPerfil()">
+                <i class="fas fa-user-cog"></i> Perfil
+            </button>
+            <h5 class="mb-0 mx-2 text-center" style="font-size: 16px; font-weight: bold;">
+                <i class="fas fa-clipboard-user"></i> Chamada
+            </h5>
+            <button class="btn btn-sm text-white" style="background: rgba(220,53,69,0.9); border: none; font-weight: bold;" onclick="sairApp()">
+                <i class="fas fa-sign-out-alt"></i> Sair
+            </button>
         </div>
+        <div class="text-center p-1" style="background: #0a53be; color: white; font-size: 11px; font-weight: bold;" id="lbl-ceu">Carregando unidade...</div>
+        
         <div class="card-body">
             <div class="mb-3">
                 <label class="text-muted fw-bold mb-1"><i class="fas fa-calendar-day me-1"></i> Data da Aula (Hoje) *</label>
-                <!-- O comando 'readonly' impede a digitação e a troca da data -->
                 <input type="text" id="dataAula" class="form-control text-center fw-bold fs-5" style="background-color: #e9ecef; color: #495057; border: 1px solid #ced4da;" readonly>
             </div>
+
             <div class="mb-3">
-                <label class="text-muted fw-bold mb-1"><i class="fas fa-users-class me-1"></i> Minhas Turmas</label>
-                <select id="comboTurmas" class="form-control" style="height: 50px; font-weight: bold;" onchange="carregarAlunos()">
+                <label class="text-muted fw-bold mb-1"><i class="fas fa-users-class me-1"></i> Minhas Turmas *</label>
+                <select id="comboTurmas" class="form-control" onchange="carregarAlunos()">
                     <option value="">Aguarde, carregando turmas...</option>
                 </select>
             </div>
@@ -74,14 +87,33 @@
     const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec";
     const idPlanilhaCeu = localStorage.getItem('ceu_planilha_id');
     const nomeCeu = localStorage.getItem('ceu_nome_especifico') || "Unidade Não Identificada";
-    const usuarioAtual = localStorage.getItem('ceu_nome_usuario') || "ADMIN"; 
+    const usuarioAtual = localStorage.getItem('ceu_nome_usuario') || "Professor"; 
     
-    // As credenciais de segurança!
+    // 🛡️ A CHAVE DE ACESSO
     const rfLogadoAtual = localStorage.getItem('ceu_rf_logado') || ""; 
-    const perfilAtual = localStorage.getItem('ceu_perfil') || ""; 
 
     let alunosAtuais = [];
     let presencas = {}; 
+
+    // ==========================================
+    // 🔗 INTEGRAÇÃO COM O DASHBOARD (PAI)
+    // ==========================================
+    function abrirPerfil() {
+        if(window.parent && typeof window.parent.abrirTrocaSenhaLogado === "function") {
+            window.parent.abrirTrocaSenhaLogado();
+        } else {
+            Swal.fire('Aviso', 'Função indisponível fora do painel principal.', 'info');
+        }
+    }
+
+    function sairApp() {
+        if(window.parent && typeof window.parent.fazerLogout === "function") {
+            window.parent.fazerLogout();
+        } else {
+            localStorage.clear();
+            window.location.href = "index.html";
+        }
+    }
 
     document.addEventListener("DOMContentLoaded", () => {
         document.getElementById('lbl-ceu').innerText = nomeCeu;
@@ -98,17 +130,15 @@
     function carregarTurmas() {
         if (!idPlanilhaCeu) return Swal.fire('Erro', 'Unidade não conectada.', 'error');
         
+        // 🌟 BATE NA ROTA EXCLUSIVA DO APP PROFESSOR!
         const pacote = { 
             acao: "buscarTurmasAPPProfessor", 
             dados: { 
                 idPlanilha: idPlanilhaCeu, 
-                operador: usuarioAtual, 
-                rfLogado: rfLogadoAtual,
-                perfil: perfilAtual 
+                rfLogado: rfLogadoAtual // MANDANDO SÓ O RF DE SEGURANÇA!
             } 
         };
         
-        // 🛡️ O TRUQUE DO CONTENT-TYPE VOLTOU!
         fetch(API_URL, { 
             method: 'POST', 
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -119,26 +149,23 @@
             const combo = document.getElementById('comboTurmas');
             combo.innerHTML = '<option value="">-- Toque para selecionar a turma --</option>';
             
-            // Aceita tanto sucesso direto quanto status="sucesso"
             if (data.sucesso || data.status === "sucesso") {
                 let lista = data.turmas || (data.dados ? data.dados.turmas : []) || [];
                 
                 if (lista.length === 0) {
-                    combo.innerHTML = '<option value="">Nenhuma turma vinculada a você.</option>';
+                    combo.innerHTML = '<option value="">Nenhuma turma vinculada ao seu RF.</option>';
                 } else {
                     lista.forEach(t => {
                         combo.innerHTML += `<option value="${t.id}">${t.modalidade} - [${t.id}]</option>`;
                     });
                 }
             } else {
-                // 🚨 SE O GOOGLE RECUSAR, A TELA AVISA NA HORA!
-                Swal.fire('Aviso do Servidor', data.erro || data.mensagem || 'Ação desconhecida! (Você gerou a Nova Implantação?)', 'warning');
+                Swal.fire('Aviso', data.erro || 'Erro ao carregar as turmas.', 'warning');
                 combo.innerHTML = '<option value="">Erro ao carregar</option>';
             }
         })
         .catch(e => { 
-            Swal.fire('Erro de Conexão', 'Não foi possível conversar com o Google.', 'error'); 
-            document.getElementById('comboTurmas').innerHTML = '<option value="">Falha na conexão</option>';
+            Swal.fire('Erro', 'Não foi possível carregar as turmas.', 'error'); 
         });
     }
 
@@ -236,8 +263,7 @@
         const idTurma = document.getElementById('comboTurmas').value;
         
         if (!dataAulaRaw || !idTurma) return Swal.fire('Atenção', 'Selecione a data e a turma.', 'warning');
-        if (dataAulaRaw.length < 10) return Swal.fire('Atenção', 'A data deve estar no formato DD/MM/AAAA.', 'warning');
-
+        
         let listaFrequencia = [];
         alunosAtuais.forEach(al => {
             listaFrequencia.push({

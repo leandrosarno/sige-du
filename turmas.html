@@ -88,9 +88,31 @@
                             <input type="text" class="form-control uppercase-field" id="t_faixa" placeholder="Ex: 10 A 15 ANOS">
                         </div>
 
+                            <!-- 🌟 NOVO CAMPO BLINDADO DE DIAS DA SEMANA -->
                         <div class="col-6">
-                            <label class="form-label">Dias (X Semana)</label>
-                            <input type="text" class="form-control uppercase-field" id="t_xsemana" placeholder="Ex: 2X, 3X, SAB">
+                            <label class="form-label text-primary">Dias da Aula *</label>
+                            <div class="d-flex flex-wrap gap-1">
+                                <input type="checkbox" class="btn-check dia-aula" id="diaSEG" value="SEG">
+                                <label class="btn btn-outline-secondary btn-sm flex-grow-1 p-1" for="diaSEG">Seg</label>
+
+                                <input type="checkbox" class="btn-check dia-aula" id="diaTER" value="TER">
+                                <label class="btn btn-outline-secondary btn-sm flex-grow-1 p-1" for="diaTER">Ter</label>
+
+                                <input type="checkbox" class="btn-check dia-aula" id="diaQUA" value="QUA">
+                                <label class="btn btn-outline-secondary btn-sm flex-grow-1 p-1" for="diaQUA">Qua</label>
+
+                                <input type="checkbox" class="btn-check dia-aula" id="diaQUI" value="QUI">
+                                <label class="btn btn-outline-secondary btn-sm flex-grow-1 p-1" for="diaQUI">Qui</label>
+
+                                <input type="checkbox" class="btn-check dia-aula" id="diaSEX" value="SEX">
+                                <label class="btn btn-outline-secondary btn-sm flex-grow-1 p-1" for="diaSEX">Sex</label>
+
+                                <input type="checkbox" class="btn-check dia-aula" id="diaSAB" value="SÁB">
+                                <label class="btn btn-outline-secondary btn-sm flex-grow-1 p-1" for="diaSAB">Sáb</label>
+                                
+                                <input type="checkbox" class="btn-check dia-aula" id="diaDOM" value="DOM">
+                                <label class="btn btn-outline-secondary btn-sm flex-grow-1 p-1" for="diaDOM" style="flex-basis: 100%;">Dom</label>
+                            </div>
                         </div>
                         <div class="col-6">
                             <label class="form-label">Horário das Aulas</label>

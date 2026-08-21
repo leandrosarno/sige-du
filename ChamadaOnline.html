@@ -85,26 +85,37 @@
         carregarTurmas();
     });
 
-    async function carregarTurmas() {
+function carregarTurmas() {
         if (!idPlanilhaCeu) return Swal.fire('Erro', 'Unidade não conectada.', 'error');
         
-        try {
-            // Mandamos o nome do usuarioAtual para o backend filtrar só as dele!
-            const pacote = { acao: "buscarTurmasParaChamadaNovoSistema", dados: { idPlanilha: idPlanilhaCeu, operador: usuarioAtual } };
-            const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) });
-            const data = await res.json();
-            
+        // 🌟 AGORA A TELA ACIONA A FUNÇÃO EXCLUSIVA DELA:
+        const pacote = { 
+            acao: "buscarTurmasAPPProfessor", // <--- MUDAMOS AQUI!
+            dados: { 
+                idPlanilha: idPlanilhaCeu, 
+                operador: usuarioAtual, 
+                rfLogado: rfLogadoAtual,
+                perfil: perfilAtual 
+            } 
+        };
+        
+        fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) })
+        .then(res => res.json())
+        .then(data => {
             const combo = document.getElementById('comboTurmas');
             combo.innerHTML = '<option value="">-- Toque para selecionar a turma --</option>';
             
             if (data.sucesso) {
-                data.turmas.forEach(t => {
-                    combo.innerHTML += `<option value="${t.id}">${t.modalidade} - [${t.id}]</option>`;
-                });
+                if (data.turmas.length === 0) {
+                    combo.innerHTML = '<option value="">Nenhuma turma vinculada a você.</option>';
+                } else {
+                    data.turmas.forEach(t => {
+                        combo.innerHTML += `<option value="${t.id}">${t.modalidade} - [${t.id}]</option>`;
+                    });
+                }
             }
-        } catch (e) {
-            Swal.fire('Erro', 'Não foi possível carregar as turmas.', 'error');
-        }
+        })
+        .catch(e => { Swal.fire('Erro', 'Não foi possível carregar as turmas.', 'error'); });
     }
 
     async function carregarAlunos() {

@@ -232,12 +232,21 @@
             `).join('');
         }
 
-        async function processarFormulario() {
+async function processarFormulario() {
             const idPlanilha = localStorage.getItem('ceu_planilha_id');
             const modo = document.getElementById('modo_form').value; 
             const acaoReal = (modo === "novo") ? "salvarTurma" : "atualizarTurma";
 
             const valorCargo = document.getElementById('t_tipo_resp') ? document.getElementById('t_tipo_resp').value : "";
+            
+            // 🧠 SEPARADOR INTELIGENTE: Pega o ID e o Nome do Professor ao mesmo tempo!
+            const comboProf = document.getElementById('t_professor');
+            let idProf = "";
+            let nomeProf = "";
+            if (comboProf && comboProf.selectedIndex >= 0) {
+                idProf = comboProf.value; // Esse vai para a Coluna R
+                nomeProf = comboProf.options[comboProf.selectedIndex].text; // Esse vai para a Coluna F
+            }
 
             Swal.fire({ title: 'Salvando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
 
@@ -249,8 +258,9 @@
                     sufixo: document.getElementById('t_sufixo').value,
                     modalidade: document.getElementById('t_modalidade').value,
                     nucleo: document.getElementById('t_nucleo').value,
-                    professor: document.getElementById('t_professor').value, // 🤖 Aqui o sistema envia o ID oculto!
-                    tipo_resp: valorCargo, 
+                    professorId: idProf,         // 🛡️ O ID seguro
+                    professorNome: nomeProf,     // 👁️ O Nome visual
+                    tipo_resp: valorCargo,       // 📸 A fotografia do cargo
                     espaco: document.getElementById('t_espaco').value,
                     vagas: document.getElementById('t_vagas').value,
                     faixa_etaria: document.getElementById('t_faixa').value,
@@ -264,12 +274,8 @@
                 const textoPuro = await resRaw.text();
 
                 let retorno;
-                try {
-                    retorno = JSON.parse(textoPuro);
-                } catch (eParse) {
-                    Swal.fire('🚨 Erro de Servidor', 'O Google falhou em responder corretamente.', 'error');
-                    return; 
-                }
+                try { retorno = JSON.parse(textoPuro); } 
+                catch (eParse) { Swal.fire('🚨 Erro de Servidor', 'O Google falhou.', 'error'); return; }
 
                 if(retorno.status === "sucesso") {
                     Swal.fire('Sucesso!', retorno.mensagem, 'success');
@@ -278,9 +284,7 @@
                 } else {
                     Swal.fire('Erro no Banco', retorno.mensagem, 'error');
                 }
-            } catch (err) {
-                Swal.fire('Erro na Internet', 'A sua conexão oscilou ou o link da API está incorreto.', 'error');
-            }
+            } catch (err) { Swal.fire('Erro na Internet', 'Oscilação na conexão.', 'error'); }
         }
 
         function prepararEdicao(idTurma) {
@@ -288,37 +292,51 @@
             Swal.fire({ title: 'Carregando dados...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
 
             fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "buscarTurmaPorId", dados: { id_planilha: idPlanilha, id_turma: idTurma } }) })
-            .then(res => res.text()) 
-            .then(texto => {
-                try {
-                    const retorno = JSON.parse(texto);
-                    if(retorno.status === "sucesso") {
-                        const t = retorno.turma;
-                        document.getElementById('t_id').value = t.id;
-                        document.getElementById('t_id').readOnly = true; 
-                        document.getElementById('t_sufixo').value = t.sufixo;
-                        
-                        setValorCampo('t_modalidade', t.modalidade);
-                        setValorCampo('t_nucleo', t.nucleo);
-                        setValorCampo('t_professor', t.professor); // Lê o ID e casa com o select
-                        setValorCampo('t_tipo_resp', t.tipo_resp);
-                        setValorCampo('t_espaco', t.espaco);
-                        
-                        document.getElementById('t_vagas').value = t.vagas;
-                        document.getElementById('t_faixa').value = t.faixa;
-                        document.getElementById('t_xsemana').value = t.xsemana;
-                        document.getElementById('t_horario').value = t.horario;
+            .then(res => res.json()) 
+            .then(retorno => {
+                if(retorno.status === "sucesso") {
+                    const t = retorno.turma;
+                    document.getElementById('t_id').value = t.id;
+                    document.getElementById('t_id').readOnly = true; 
+                    document.getElementById('t_sufixo').value = t.sufixo;
+                    
+                    setValorCampo('t_modalidade', t.modalidade);
+                    setValorCampo('t_nucleo', t.nucleo);
+                    
+                    // 🧠 Lê o ID, se não tiver (turma velha), usa o nome para tentar achar
+                    setValorCampo('t_professor', t.professorId || t.professorNome, t.professorNome); 
+                    
+                    setValorCampo('t_tipo_resp', t.tipo_resp);
+                    setValorCampo('t_espaco', t.espaco);
+                    
+                    document.getElementById('t_vagas').value = t.vagas;
+                    document.getElementById('t_faixa').value = t.faixa;
+                    document.getElementById('t_xsemana').value = t.xsemana;
+                    document.getElementById('t_horario').value = t.horario;
 
-                        document.getElementById('modo_form').value = "editar";
-                        document.getElementById('titulo-form').innerHTML = `<span class="material-icons text-warning">edit</span> Editar Turma`;
-                        document.getElementById('btn-submit-form').className = "btn-salvar bg-warning text-dark";
-                        document.getElementById('btn-submit-form').innerHTML = `<span class="material-icons align-middle" style="font-size: 18px;">update</span> SALVAR ALTERAÇÃO`;
-                        document.getElementById('btn-cancelar').style.display = "block";
-                        
-                        Swal.close();
-                    } else Swal.fire('Erro', retorno.mensagem, 'error');
-                } catch(e) { Swal.fire('Erro', 'O Google bloqueou a busca dos dados.', 'error'); }
+                    document.getElementById('modo_form').value = "editar";
+                    document.getElementById('titulo-form').innerHTML = `<span class="material-icons text-warning">edit</span> Editar Turma`;
+                    document.getElementById('btn-submit-form').className = "btn-salvar bg-warning text-dark";
+                    document.getElementById('btn-submit-form').innerHTML = `<span class="material-icons align-middle" style="font-size: 18px;">update</span> SALVAR ALTERAÇÃO`;
+                    document.getElementById('btn-cancelar').style.display = "block";
+                    
+                    Swal.close();
+                } else Swal.fire('Erro', retorno.mensagem, 'error');
             }).catch(err => Swal.fire('Erro de Rede', 'Falha ao buscar os dados da turma.', 'error'));
+        }
+
+        function setValorCampo(id, valor, textoFallback) {
+            const campo = document.getElementById(id);
+            if (!campo) return;
+            if(campo.tagName === 'SELECT') {
+                let existe = Array.from(campo.options).some(opt => opt.value === valor);
+                // Se a turma for antiga, ele insere o nome como opção quebra-galho
+                if(!existe && valor) {
+                    let textVisivel = textoFallback || valor;
+                    campo.innerHTML += `<option value="${valor}">${textVisivel}</option>`;
+                }
+            }
+            campo.value = valor;
         }
 
         function setValorCampo(id, valor) {

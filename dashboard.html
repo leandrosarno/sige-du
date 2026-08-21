@@ -284,24 +284,23 @@ window.onload = function() {
                     });
 
                 } else if (perfilUsuario === "PROFESSOR") {
-                    // 👨‍🏫 VISÃO EXCLUSIVA DO PROFESSOR
-                    const btnProf = document.getElementById('link-chamada-prof');
-                    if (btnProf) {
-                        btnProf.style.display = 'flex';
-                        btnProf.classList.add('ativo');
-                    }
+                    // 👨‍🏫 VISÃO EXCLUSIVA DO PROFESSOR (TELA CHEIA NO CELULAR!)
+                    
+                    // Esconde a Barra Lateral (Menu)
+                    const sidebar = document.querySelector('.sidebar');
+                    if (sidebar) sidebar.style.display = 'none';
+                    
+                    // Esconde a Barra Superior (TopBar)
+                    const topbar = document.querySelector('.topbar');
+                    if (topbar) topbar.style.display = 'none';
+                    
+                    // Expande o painel para ocupar 100% da tela
+                    const mainContent = document.querySelector('.main-content');
+                    if (mainContent) mainContent.style.width = '100%';
+                    
+                    document.body.style.backgroundColor = '#f0f2f5';
 
-                    const itensSecretaria = [
-                        'link-inicio', 'link-alunos', 'link-turmas', 'submenuTurmas',
-                        'link-cadastros', 'submenuCadastros', 'link-impressao', 'submenuImpressao',
-                        'link-recreio', 'submenuRecreio'
-                    ];
-                    itensSecretaria.forEach(id => {
-                        const elemento = document.getElementById(id);
-                        if (elemento) elemento.style.display = 'none';
-                    });
-
-                    // Abre a tela direto!
+                    // Abre a tela de chamada direto!
                     document.getElementById('frame-filho').src = "ChamadaOnline.html";
 
                 } else {

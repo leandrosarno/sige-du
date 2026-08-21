@@ -244,7 +244,7 @@
         else { row.className = "aluno-row falta"; btnF.classList.add('ativo'); }
     }
 
-    function salvarChamada() {
+function salvarChamada() {
         const dataAulaRaw = document.getElementById('dataAula').value.trim();
         const idTurma = document.getElementById('comboTurmas').value;
         if (!dataAulaRaw || !idTurma) return Swal.fire('Atenção', 'Selecione a turma.', 'warning');
@@ -257,7 +257,17 @@
         btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> SALVANDO...'; btn.disabled = true;
 
         fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({ acao: "salvarChamadaOnlineNovoSistema", dados: { idPlanilha: idPlanilhaCeu, dataAula: dataAulaRaw, idTurma: idTurma, operador: rfLogadoAtual, frequencia: listaFrequencia } }) 
+            body: JSON.stringify({ 
+                acao: "salvarChamadaOnlineNovoSistema", 
+                dados: { 
+                    idPlanilha: idPlanilhaCeu, 
+                    dataAula: dataAulaRaw, 
+                    idTurma: idTurma, 
+                    nomeProfessor: usuarioAtual, // 👤 O Nome para a Coluna C
+                    idProfessor: rfLogadoAtual,  // 🛡️ O RF para a Coluna H
+                    frequencia: listaFrequencia 
+                } 
+            }) 
         })
         .then(res => res.json())
         .then(obj => {

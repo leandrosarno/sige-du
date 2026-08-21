@@ -33,6 +33,12 @@
         .acoes-btn { background: transparent; border: none; padding: 5px; color: #64748b; transition: 0.2s; border-radius: 6px; }
         .acoes-btn:hover { background: #e2e8f0; color: #0d6efd; }
         .acoes-btn.btn-del:hover { background: #fee2e2; color: #dc3545; }
+        
+        /* Estilos da Paginação */
+        .paginacao-container { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding-top: 15px; border-top: 1px solid #edf2f7; }
+        .btn-paginacao { background: #f1f5f9; border: 1px solid #cbd5e1; padding: 5px 15px; border-radius: 6px; font-weight: bold; color: #4a5568; cursor: pointer; transition: 0.2s; }
+        .btn-paginacao:hover:not(:disabled) { background: #e2e8f0; color: #0d6efd; }
+        .btn-paginacao:disabled { opacity: 0.5; cursor: not-allowed; }
     </style>
 </head>
 <body>
@@ -87,6 +93,7 @@
                             <input type="text" class="form-control uppercase-field" id="t_faixa" placeholder="Ex: 10 A 15 ANOS">
                         </div>
 
+                        <!-- 🌟 CAIXINHAS DE DIAS DA SEMANA BLINDADAS -->
                         <div class="col-12">
                             <label class="form-label text-primary">Dias da Aula *</label>
                             <div class="d-flex flex-wrap gap-1">
@@ -113,6 +120,7 @@
                             </div>
                         </div>
 
+                        <!-- 🌟 HORÁRIO RESTAURADO PARA TEXTO LIVRE ("14H00 ÀS 15H00") -->
                         <div class="col-12">
                             <label class="form-label">Horário das Aulas *</label>
                             <input type="text" class="form-control uppercase-field" id="t_horario" required placeholder="Ex: 14H00 ÀS 15H00">
@@ -146,7 +154,12 @@
 
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec"; 
+        
+        // 🧠 VARIÁVEIS GLOBAIS PARA PAGINAÇÃO
         let turmasGlobais = []; 
+        let turmasFiltradas = []; 
+        let paginaAtual = 1;
+        const ITENS_POR_PAGINA = 15;
 
         window.onload = function() {
             const idPlanilha = localStorage.getItem('ceu_planilha_id');
@@ -195,7 +208,9 @@
             .then(retorno => {
                 if(retorno.status === "sucesso") {
                     turmasGlobais = retorno.turmas; 
-                    desenharTurmas(turmasGlobais);
+                    turmasFiltradas = [...turmasGlobais]; // Copia todas para a lista filtrada inicial
+                    paginaAtual = 1;
+                    desenharTurmasPaginadas();
                 }
             })
             .catch(e => console.log("Falha ao ler turmas."));
@@ -203,24 +218,34 @@
 
         function filtrarTurmas() {
             const termo = document.getElementById('campo-busca').value.toUpperCase();
-            const filtradas = turmasGlobais.filter(t => 
+            turmasFiltradas = turmasGlobais.filter(t => 
                 String(t.modalidade).toUpperCase().includes(termo) || 
                 String(t.professor).toUpperCase().includes(termo) || 
                 String(t.id).toUpperCase().includes(termo)
             );
-            desenharTurmas(filtradas);
+            paginaAtual = 1; // Reseta para a primeira página sempre que pesquisar
+            desenharTurmasPaginadas();
         }
 
-        function desenharTurmas(lista) {
+        // 🧠 NOVO MOTOR: DESENHA APENAS 15 ITENS E COLOCA OS BOTÕES
+        function desenharTurmasPaginadas() {
             const div = document.getElementById('lista-turmas');
-            document.getElementById('contador-turmas').innerText = lista.length;
+            document.getElementById('contador-turmas').innerText = turmasFiltradas.length;
 
-            if(lista.length === 0) {
+            if(turmasFiltradas.length === 0) {
                 div.innerHTML = `<div class="alert alert-light text-center border">Nenhuma turma encontrada.</div>`;
                 return;
             }
 
-            div.innerHTML = lista.map(t => `
+            // A Mágica Matemática da Paginação!
+            const totalPaginas = Math.ceil(turmasFiltradas.length / ITENS_POR_PAGINA);
+            const inicio = (paginaAtual - 1) * ITENS_POR_PAGINA;
+            const fim = inicio + ITENS_POR_PAGINA;
+            
+            // Recorta (Slice) apenas as 15 turmas da página atual
+            const turmasPagina = turmasFiltradas.slice(inicio, fim);
+
+            let html = turmasPagina.map(t => `
                 <div class="turma-item">
                     <div style="flex-grow: 1;">
                         <strong class="text-primary">${t.modalidade}</strong> <span class="turma-tag">${t.id}</span><br>
@@ -244,16 +269,34 @@
                     </div>
                 </div>
             `).join('');
+
+            // Adiciona os Controles de Paginação se houver mais de 1 página
+            if (totalPaginas > 1) {
+                html += `
+                <div class="paginacao-container">
+                    <button class="btn-paginacao" onclick="mudarPagina(-1)" ${paginaAtual === 1 ? 'disabled' : ''}>
+                        <i class="fas fa-chevron-left"></i> Anterior
+                    </button>
+                    <span style="font-size: 13px; font-weight: bold; color: #64748b;">Página ${paginaAtual} de ${totalPaginas}</span>
+                    <button class="btn-paginacao" onclick="mudarPagina(1)" ${paginaAtual === totalPaginas ? 'disabled' : ''}>
+                        Próxima <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>`;
+            }
+
+            div.innerHTML = html;
         }
 
-        // ==========================================
-        // 🧠 MOTOR INTELIGENTE: Puxa IDs de Turmas Antigas
-        // ==========================================
+        // Função que é ativada quando clica nos botões Anterior/Próxima
+        function mudarPagina(direcao) {
+            paginaAtual += direcao;
+            desenharTurmasPaginadas();
+        }
+
         function selecionarProfessorInteligente(idSalvo, nomeSalvo) {
             const combo = document.getElementById('t_professor');
             if (!combo) return;
             
-            // 1. Tenta achar pelo ID da Coluna R (Turmas Novas)
             if (idSalvo) {
                 for (let i = 0; i < combo.options.length; i++) {
                     if (combo.options[i].value === idSalvo) {
@@ -263,7 +306,6 @@
                 }
             }
             
-            // 2. Se a turma é Antiga e não tem ID, procura pelo NOME (Coluna F)
             if (nomeSalvo) {
                 for (let i = 0; i < combo.options.length; i++) {
                     if (combo.options[i].text.toUpperCase() === String(nomeSalvo).toUpperCase()) {
@@ -273,7 +315,6 @@
                 }
             }
             
-            // 3. Fallback (Para professores que já saíram do CEU e não estão na lista)
             let valVisivel = idSalvo || nomeSalvo || "Desconhecido";
             let textVisivel = nomeSalvo || idSalvo || "Desconhecido";
             combo.innerHTML += `<option value="${valVisivel}">${textVisivel}</option>`;
@@ -352,10 +393,7 @@
                     
                     setValorCampo('t_modalidade', t.modalidade);
                     setValorCampo('t_nucleo', t.nucleo);
-                    
-                    // 🧠 Agora a seleção do Professor é 100% inteligente!
                     selecionarProfessorInteligente(t.professorId, t.professorNome);
-                    
                     setValorCampo('t_tipo_resp', t.tipo_resp);
                     setValorCampo('t_espaco', t.espaco);
                     

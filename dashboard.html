@@ -268,28 +268,42 @@ window.onload = function() {
                 }
 
                 // 🚦 CONTROLE DE VISIBILIDADE POR PERFIL
+// 🚦 CONTROLE DE VISIBILIDADE POR PERFIL
                 if (perfilUsuario === "DRE" || perfilUsuario === "SME") {
-                    // 1. Exibe APENAS a opção da DRE (Regras Globais)
                     const btnRF = document.getElementById('btnRegrasRF');
                     if (btnRF) btnRF.style.display = 'flex';
 
-                    // 2. Oculta TUDO o que é do CEU comum (incluindo as gavetas)
                     const itensParaOcultar = [
-                        'link-alunos', 
-                        'link-turmas',
-                        'submenuTurmas',
-                        'link-cadastros', 
-                        'submenuCadastros', 
-                        'link-impressao', 
-                        'submenuImpressao',
-                        'link-recreio',       // 🚨 Esconde o Botão do Recreio nas Férias
-                        'submenuRecreio'      // 🚨 Esconde a gaveta inteira com as opções!
+                        'link-inicio', 'link-alunos', 'link-turmas', 'submenuTurmas',
+                        'link-cadastros', 'submenuCadastros', 'link-impressao', 'submenuImpressao',
+                        'link-recreio', 'submenuRecreio'
                     ];
-
                     itensParaOcultar.forEach(id => {
                         const elemento = document.getElementById(id);
                         if (elemento) elemento.style.display = 'none';
                     });
+
+                } else if (perfilUsuario === "PROFESSOR") {
+                    // 👨‍🏫 VISÃO EXCLUSIVA DO PROFESSOR
+                    const btnProf = document.getElementById('link-chamada-prof');
+                    if (btnProf) {
+                        btnProf.style.display = 'flex';
+                        btnProf.classList.add('ativo');
+                    }
+
+                    const itensSecretaria = [
+                        'link-inicio', 'link-alunos', 'link-turmas', 'submenuTurmas',
+                        'link-cadastros', 'submenuCadastros', 'link-impressao', 'submenuImpressao',
+                        'link-recreio', 'submenuRecreio'
+                    ];
+                    itensSecretaria.forEach(id => {
+                        const elemento = document.getElementById(id);
+                        if (elemento) elemento.style.display = 'none';
+                    });
+
+                    // Abre a tela direto!
+                    document.getElementById('frame-filho').src = "ChamadaOnline.html";
+
                 } else {
                     // É um CEU normal
                     if (!idPlanilha || idPlanilha.trim() === "") {

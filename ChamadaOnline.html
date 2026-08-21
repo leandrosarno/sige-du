@@ -12,14 +12,16 @@
         .card-chamada { border-radius: 12px; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.08); margin-bottom: 20px;}
         .top-header { background: linear-gradient(135deg, #0d6efd, #0b5ed7); color: white; padding: 15px; border-radius: 12px 12px 0 0; text-align: center;}
         
-        .aluno-row { background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; border-left: 5px solid #ccc; transition: 0.3s;}
+        .aluno-row { background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 10px; border-left: 5px solid #ccc; transition: 0.3s;}
         .aluno-row.presente { border-left-color: #198754; background-color: #f8fff9;}
         .aluno-row.falta { border-left-color: #dc3545; background-color: #fffafb;}
+        .aluno-row.fj { border-left-color: #fd7e14; background-color: #fffaf0;}
         
-        .nome-aluno { font-weight: 700; font-size: 15px; color: #333; margin: 0; line-height: 1.2;}
+        .nome-aluno { font-weight: 700; font-size: 15px; color: #333; margin: 0;}
         .id-aluno { font-size: 11px; color: #888; margin: 0;}
         
-        .btn-status { width: 45px; height: 45px; border-radius: 50%; display: inline-flex; justify-content: center; align-items: center; font-size: 20px; border: 2px solid transparent; cursor: pointer; transition: 0.2s;}
+        .botoes-status { display: flex; justify-content: space-between; gap: 5px; width: 100%;}
+        .btn-status { flex-grow: 1; height: 40px; border-radius: 6px; display: inline-flex; justify-content: center; align-items: center; font-size: 15px; font-weight: bold; border: 2px solid transparent; cursor: pointer; transition: 0.2s;}
         
         .btn-p { background: #e9ecef; color: #198754; border-color: #198754;}
         .btn-p.ativo { background: #198754; color: white; box-shadow: 0 0 10px rgba(25, 135, 84, 0.4);}
@@ -27,38 +29,31 @@
         .btn-f { background: #e9ecef; color: #dc3545; border-color: #dc3545;}
         .btn-f.ativo { background: #dc3545; color: white; box-shadow: 0 0 10px rgba(220, 53, 69, 0.4);}
 
+        .btn-fj { background: #e9ecef; color: #fd7e14; border-color: #fd7e14;}
+        .btn-fj.ativo { background: #fd7e14; color: white; box-shadow: 0 0 10px rgba(253, 126, 20, 0.4);}
+
         .floating-btn-save { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; padding: 15px; font-size: 18px; font-weight: bold; border-radius: 30px; box-shadow: 0 5px 15px rgba(13, 110, 253, 0.4); z-index: 1000;}
-        
-        select.form-control, input[type="date"].form-control { height: 50px; font-size: 16px; font-weight: bold;}
     </style>
 </head>
 <body>
 
 <div class="container mt-3" style="max-width: 600px;">
-    
-    <a href="dashboard.html" class="btn btn-outline-secondary mb-3 rounded-pill" style="font-weight: 600;">
-        <i class="fas fa-arrow-left me-1"></i> Voltar
-    </a>
-
     <div class="card card-chamada">
         <div class="top-header">
             <h4 class="mb-0"><i class="fas fa-clipboard-user me-2"></i> Chamada On-line</h4>
             <small id="lbl-ceu">Carregando unidade...</small>
         </div>
         <div class="card-body">
-            
             <div class="mb-3">
                 <label class="text-muted fw-bold mb-1"><i class="fas fa-calendar-day me-1"></i> Data da Aula</label>
-                <input type="date" id="dataAula" class="form-control text-center text-primary">
+                <input type="date" id="dataAula" class="form-control text-center text-primary" style="height: 50px; font-weight: bold;">
             </div>
-
             <div class="mb-3">
-                <label class="text-muted fw-bold mb-1"><i class="fas fa-users-class me-1"></i> Selecione a Turma</label>
-                <select id="comboTurmas" class="form-control" onchange="carregarAlunos()">
+                <label class="text-muted fw-bold mb-1"><i class="fas fa-users-class me-1"></i> Minhas Turmas</label>
+                <select id="comboTurmas" class="form-control" style="height: 50px; font-weight: bold;" onchange="carregarAlunos()">
                     <option value="">Aguarde, carregando turmas...</option>
                 </select>
             </div>
-
         </div>
     </div>
 
@@ -68,7 +63,6 @@
     </div>
 
     <div id="listaAlunosContainer"></div>
-
 </div>
 
 <button class="btn btn-primary floating-btn-save" id="btnSalvar" style="display: none;" onclick="salvarChamada()">
@@ -79,18 +73,15 @@
     const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec";
     const idPlanilhaCeu = localStorage.getItem('ceu_planilha_id');
     const nomeCeu = localStorage.getItem('ceu_nome_especifico') || "Unidade Não Identificada";
-    const usuarioAtual = localStorage.getItem('ceu_nome_usuario') || "Professor";
+    const usuarioAtual = localStorage.getItem('ceu_nome_usuario') || "ADMIN"; // Será o nome do professor logado
 
     let alunosAtuais = [];
-    let presencas = {}; // Guarda { idAluno: 'P' ou 'F' }
+    let presencas = {}; 
 
     document.addEventListener("DOMContentLoaded", () => {
         document.getElementById('lbl-ceu').innerText = nomeCeu;
-        
-        // Define a data de hoje por padrão
         const hoje = new Date();
         document.getElementById('dataAula').value = hoje.toISOString().split('T')[0];
-
         carregarTurmas();
     });
 
@@ -98,7 +89,9 @@
         if (!idPlanilhaCeu) return Swal.fire('Erro', 'Unidade não conectada.', 'error');
         
         try {
-            const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "buscarTurmasParaChamadaNovoSistema", dados: { idPlanilha: idPlanilhaCeu } }) });
+            // Mandamos o nome do usuarioAtual para o backend filtrar só as dele!
+            const pacote = { acao: "buscarTurmasParaChamadaNovoSistema", dados: { idPlanilha: idPlanilhaCeu, operador: usuarioAtual } };
+            const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) });
             const data = await res.json();
             
             const combo = document.getElementById('comboTurmas');
@@ -106,11 +99,11 @@
             
             if (data.sucesso) {
                 data.turmas.forEach(t => {
-                    combo.innerHTML += `<option value="${t.id}">${t.modalidade} - ${t.professor} [${t.id}]</option>`;
+                    combo.innerHTML += `<option value="${t.id}">${t.modalidade} - [${t.id}]</option>`;
                 });
             }
         } catch (e) {
-            Swal.fire('Erro de Conexão', 'Não foi possível carregar as turmas.', 'error');
+            Swal.fire('Erro', 'Não foi possível carregar as turmas.', 'error');
         }
     }
 
@@ -121,7 +114,7 @@
         const btnSalvar = document.getElementById('btnSalvar');
 
         container.innerHTML = "";
-        presencas = {}; // Zera as marcações
+        presencas = {}; 
         btnSalvar.style.display = "none";
 
         if (!idTurma) return;
@@ -141,27 +134,25 @@
                     return;
                 }
 
-                // Por padrão, já vamos marcar todo mundo como PRESENTE (P) para facilitar para o professor
-                let html = `<div class="d-flex justify-content-between mb-2 px-2 text-muted fw-bold" style="font-size: 12px;"><span>ALUNO</span> <span>P / F</span></div>`;
-                
-                alunosAtuais.forEach((al, index) => {
-                    presencas[al.idAluno] = 'P'; // Presença padrão
-                    
+                let html = ``;
+                alunosAtuais.forEach(al => {
+                    presencas[al.idAluno] = 'P'; 
                     html += `
                     <div class="aluno-row presente" id="row-${al.idAluno}">
                         <div>
                             <p class="nome-aluno">${al.nomeAluno}</p>
                             <p class="id-aluno">ID: ${al.idAluno}</p>
                         </div>
-                        <div style="display: flex; gap: 8px;">
-                            <div class="btn-status btn-p ativo" id="btn-p-${al.idAluno}" onclick="marcar('${al.idAluno}', 'P')"><i class="fas fa-check"></i></div>
-                            <div class="btn-status btn-f" id="btn-f-${al.idAluno}" onclick="marcar('${al.idAluno}', 'F')"><i class="fas fa-times"></i></div>
+                        <div class="botoes-status">
+                            <div class="btn-status btn-p ativo" id="btn-p-${al.idAluno}" onclick="marcar('${al.idAluno}', 'P')">PRESENTE</div>
+                            <div class="btn-status btn-fj" id="btn-fj-${al.idAluno}" onclick="marcar('${al.idAluno}', 'FJ')">F. JUSTIFICADA</div>
+                            <div class="btn-status btn-f" id="btn-f-${al.idAluno}" onclick="marcar('${al.idAluno}', 'F')">FALTA</div>
                         </div>
                     </div>`;
                 });
 
                 container.innerHTML = html;
-                btnSalvar.style.display = "block"; // Mostra o botão flutuante
+                btnSalvar.style.display = "block";
             }
         } catch (e) {
             loader.style.display = "none";
@@ -175,29 +166,32 @@
         const row = document.getElementById(`row-${idAluno}`);
         const btnP = document.getElementById(`btn-p-${idAluno}`);
         const btnF = document.getElementById(`btn-f-${idAluno}`);
+        const btnFj = document.getElementById(`btn-fj-${idAluno}`);
+
+        btnP.classList.remove('ativo');
+        btnF.classList.remove('ativo');
+        btnFj.classList.remove('ativo');
 
         if (status === 'P') {
             row.className = "aluno-row presente";
             btnP.classList.add('ativo');
-            btnF.classList.remove('ativo');
+        } else if (status === 'FJ') {
+            row.className = "aluno-row fj";
+            btnFj.classList.add('ativo');
         } else {
             row.className = "aluno-row falta";
             btnF.classList.add('ativo');
-            btnP.classList.remove('ativo');
         }
     }
 
     async function salvarChamada() {
         const dataAulaRaw = document.getElementById('dataAula').value;
         const idTurma = document.getElementById('comboTurmas').value;
-
         if (!dataAulaRaw || !idTurma) return Swal.fire('Atenção', 'Selecione a data e a turma.', 'warning');
 
-        // Arruma a data para o padrão Brasileiro DD/MM/YYYY
         const [ano, mes, dia] = dataAulaRaw.split('-');
         const dataAulaBR = `${dia}/${mes}/${ano}`;
 
-        // Transforma o objeto presencas num Array para o Apps Script ler
         let listaFrequencia = [];
         alunosAtuais.forEach(al => {
             listaFrequencia.push({
@@ -214,13 +208,7 @@
 
         const pacote = {
             acao: "salvarChamadaOnlineNovoSistema",
-            dados: {
-                idPlanilha: idPlanilhaCeu,
-                dataAula: dataAulaBR,
-                idTurma: idTurma,
-                operador: usuarioAtual,
-                frequencia: listaFrequencia
-            }
+            dados: { idPlanilha: idPlanilhaCeu, dataAula: dataAulaBR, idTurma: idTurma, operador: usuarioAtual, frequencia: listaFrequencia }
         };
 
         try {
@@ -228,27 +216,14 @@
             const obj = await res.json();
 
             if (obj.sucesso) {
-                Swal.fire({
-                    title: 'Chamada Salva!',
-                    text: 'A frequência foi enviada para a central.',
-                    icon: 'success',
-                    timer: 2500,
-                    showConfirmButton: false
-                }).then(() => {
-                    // Limpa a tela após salvar
+                Swal.fire({ title: 'Chamada Salva!', icon: 'success', timer: 2000, showConfirmButton: false }).then(() => {
                     document.getElementById('comboTurmas').value = "";
                     document.getElementById('listaAlunosContainer').innerHTML = "";
                     btn.style.display = "none";
                 });
-            } else {
-                Swal.fire('Erro ao Salvar', obj.erro, 'error');
-            }
-        } catch (e) {
-            Swal.fire('Erro de Rede', 'Não foi possível enviar a chamada.', 'error');
-        } finally {
-            btn.innerHTML = txtAnterior;
-            btn.disabled = false;
-        }
+            } else { Swal.fire('Erro', obj.erro, 'error'); }
+        } catch (e) { Swal.fire('Erro', 'Não foi possível enviar a chamada.', 'error'); } 
+        finally { btn.innerHTML = txtAnterior; btn.disabled = false; }
     }
 </script>
 </body>

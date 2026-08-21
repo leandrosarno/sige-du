@@ -22,7 +22,6 @@
 
         input.uppercase-field { text-transform: uppercase; }
         
-        /* Estilos da Lista e Busca */
         .busca-container { position: relative; margin-bottom: 20px; }
         .busca-container .material-icons { position: absolute; left: 15px; top: 12px; color: #94a3b8; }
         .busca-input { padding-left: 45px !important; border-radius: 50px !important; background-color: #f1f5f9; border: none; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
@@ -88,8 +87,8 @@
                             <input type="text" class="form-control uppercase-field" id="t_faixa" placeholder="Ex: 10 A 15 ANOS">
                         </div>
 
-                            <!-- 🌟 NOVO CAMPO BLINDADO DE DIAS DA SEMANA -->
-                        <div class="col-6">
+                        <!-- 🌟 CAIXINHAS DE DIAS DA SEMANA BLINDADAS -->
+                        <div class="col-12">
                             <label class="form-label text-primary">Dias da Aula *</label>
                             <div class="d-flex flex-wrap gap-1">
                                 <input type="checkbox" class="btn-check dia-aula" id="diaSEG" value="SEG">
@@ -114,9 +113,11 @@
                                 <label class="btn btn-outline-secondary btn-sm flex-grow-1 p-1" for="diaDOM" style="flex-basis: 100%;">Dom</label>
                             </div>
                         </div>
-                        <div class="col-6">
-                            <label class="form-label">Horário das Aulas</label>
-                            <input type="text" class="form-control uppercase-field" id="t_horario" placeholder="Ex: 14:00 AS 15:00">
+
+                        <!-- 🌟 HORÁRIO RESTAURADO PARA TEXTO LIVRE ("14H00 ÀS 15H00") -->
+                        <div class="col-12">
+                            <label class="form-label">Horário das Aulas *</label>
+                            <input type="text" class="form-control uppercase-field" id="t_horario" required placeholder="Ex: 14H00 ÀS 15H00">
                         </div>
                     </div>
                     
@@ -158,22 +159,19 @@
 
         function carregarDependencias(idPlanilha) {
             fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "buscarDependenciasTurma", dados: { id_planilha: idPlanilha } }) })
-            .then(res => res.text())
-            .then(texto => {
-                try {
-                    const retorno = JSON.parse(texto);
-                    if(retorno.status === "sucesso") {
-                        preencherCombo('t_modalidade', retorno.modalidades, "Digite a modalidade");
-                        preencherCombo('t_nucleo', retorno.nucleos, "Digite o núcleo");
-                        preencherCombo('t_professor', retorno.professores, "Digite o professor"); // Lógica Inteligente ativada
-                        preencherCombo('t_tipo_resp', retorno.tiposResp, "Digite o cargo"); 
-                        preencherCombo('t_espaco', retorno.espacos, "Digite o espaço");
-                    }
-                } catch(e) { console.log("Dependências falharam."); }
-            });
+            .then(res => res.json())
+            .then(retorno => {
+                if(retorno.status === "sucesso") {
+                    preencherCombo('t_modalidade', retorno.modalidades, "Digite a modalidade");
+                    preencherCombo('t_nucleo', retorno.nucleos, "Digite o núcleo");
+                    preencherCombo('t_professor', retorno.professores, "Digite o professor"); 
+                    preencherCombo('t_tipo_resp', retorno.tiposResp, "Digite o cargo"); 
+                    preencherCombo('t_espaco', retorno.espacos, "Digite o espaço");
+                }
+            })
+            .catch(e => console.log("Dependências falharam."));
         }
 
-        // 🧠 O CÉREBRO DA CAIXINHA DE SELEÇÃO: Sabe diferenciar ID e Texto
         function preencherCombo(idElemento, lista, placeholderSeVazio) {
             const combo = document.getElementById(idElemento);
             if (!combo) return;
@@ -184,11 +182,9 @@
             } else {
                 combo.innerHTML = '<option value="">Selecione...</option>';
                 lista.forEach(item => { 
-                    // Se for Professor (veio com ID e Nome do Backend)
                     if (typeof item === 'object' && item !== null && item.id) {
                         combo.innerHTML += `<option value="${item.id}">${item.nome}</option>`;
                     } else {
-                        // Se for texto normal (Modalidade, Núcleo, etc)
                         combo.innerHTML += `<option value="${item}">${item}</option>`;
                     }
                 });
@@ -197,16 +193,14 @@
 
         function carregarTabelaTurmas(idPlanilha) {
             fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "listarTurmas", dados: { id_planilha: idPlanilha } }) })
-            .then(res => res.text())
-            .then(texto => {
-                try {
-                    const retorno = JSON.parse(texto);
-                    if(retorno.status === "sucesso") {
-                        turmasGlobais = retorno.turmas; 
-                        desenharTurmas(turmasGlobais);
-                    }
-                } catch(e) {}
-            });
+            .then(res => res.json())
+            .then(retorno => {
+                if(retorno.status === "sucesso") {
+                    turmasGlobais = retorno.turmas; 
+                    desenharTurmas(turmasGlobais);
+                }
+            })
+            .catch(e => console.log("Falha ao ler turmas."));
         }
 
         function filtrarTurmas() {
@@ -254,20 +248,28 @@
             `).join('');
         }
 
-async function processarFormulario() {
+        // ==========================================
+        // O MOTOR BLINDADO QUE NÃO TRAVA MAIS
+        // ==========================================
+        function processarFormulario() {
             const idPlanilha = localStorage.getItem('ceu_planilha_id');
             const modo = document.getElementById('modo_form').value; 
             const acaoReal = (modo === "novo") ? "salvarTurma" : "atualizarTurma";
 
             const valorCargo = document.getElementById('t_tipo_resp') ? document.getElementById('t_tipo_resp').value : "";
             
-            // 🧠 SEPARADOR INTELIGENTE: Pega o ID e o Nome do Professor ao mesmo tempo!
             const comboProf = document.getElementById('t_professor');
             let idProf = "";
             let nomeProf = "";
             if (comboProf && comboProf.selectedIndex >= 0) {
-                idProf = comboProf.value; // Esse vai para a Coluna R
-                nomeProf = comboProf.options[comboProf.selectedIndex].text; // Esse vai para a Coluna F
+                idProf = comboProf.value; 
+                nomeProf = comboProf.options[comboProf.selectedIndex].text; 
+            }
+
+            // Lê as bolinhas (checkboxes) que o funcionário marcou
+            const diasSelecionados = Array.from(document.querySelectorAll('.dia-aula:checked')).map(cb => cb.value).join(' ');
+            if (diasSelecionados === "") {
+                return Swal.fire('Atenção', 'Você precisa selecionar pelo menos um Dia da Aula!', 'warning');
             }
 
             Swal.fire({ title: 'Salvando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
@@ -280,25 +282,21 @@ async function processarFormulario() {
                     sufixo: document.getElementById('t_sufixo').value,
                     modalidade: document.getElementById('t_modalidade').value,
                     nucleo: document.getElementById('t_nucleo').value,
-                    professorId: idProf,         // 🛡️ O ID seguro
-                    professorNome: nomeProf,     // 👁️ O Nome visual
-                    tipo_resp: valorCargo,       // 📸 A fotografia do cargo
+                    professorId: idProf,         
+                    professorNome: nomeProf,     
+                    tipo_resp: valorCargo,       
                     espaco: document.getElementById('t_espaco').value,
                     vagas: document.getElementById('t_vagas').value,
                     faixa_etaria: document.getElementById('t_faixa').value,
-                    x_semana: document.getElementById('t_xsemana').value,
-                    horario: document.getElementById('t_horario').value
+                    x_semana: diasSelecionados,  // Mandando os dias perfeitos (ex: "SEG QUA")
+                    horario: document.getElementById('t_horario').value // Mandando o horário raiz (ex: "14H00 ÀS 15H00")
                 }
             };
 
-            try {
-                const resRaw = await fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) });
-                const textoPuro = await resRaw.text();
-
-                let retorno;
-                try { retorno = JSON.parse(textoPuro); } 
-                catch (eParse) { Swal.fire('🚨 Erro de Servidor', 'O Google falhou.', 'error'); return; }
-
+            // 🛡️ Comunicação direta e limpa!
+            fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) })
+            .then(res => res.json())
+            .then(retorno => {
                 if(retorno.status === "sucesso") {
                     Swal.fire('Sucesso!', retorno.mensagem, 'success');
                     cancelarEdicao(); 
@@ -306,7 +304,10 @@ async function processarFormulario() {
                 } else {
                     Swal.fire('Erro no Banco', retorno.mensagem, 'error');
                 }
-            } catch (err) { Swal.fire('Erro na Internet', 'Oscilação na conexão.', 'error'); }
+            })
+            .catch(err => {
+                Swal.fire('Erro de Rede', 'O navegador não obteve resposta. Verifique a internet e tente novamente.', 'error');
+            });
         }
 
         function prepararEdicao(idTurma) {
@@ -324,17 +325,22 @@ async function processarFormulario() {
                     
                     setValorCampo('t_modalidade', t.modalidade);
                     setValorCampo('t_nucleo', t.nucleo);
-                    
-                    // 🧠 Lê o ID, se não tiver (turma velha), usa o nome para tentar achar
                     setValorCampo('t_professor', t.professorId || t.professorNome, t.professorNome); 
-                    
                     setValorCampo('t_tipo_resp', t.tipo_resp);
                     setValorCampo('t_espaco', t.espaco);
                     
                     document.getElementById('t_vagas').value = t.vagas;
                     document.getElementById('t_faixa').value = t.faixa;
-                    document.getElementById('t_xsemana').value = t.xsemana;
-                    document.getElementById('t_horario').value = t.horario;
+                    document.getElementById('t_horario').value = t.horario; // Horário raiz puxado do banco!
+
+                    // Marcar os botões dos dias automaticamente!
+                    document.querySelectorAll('.dia-aula').forEach(cb => cb.checked = false);
+                    if (t.xsemana) {
+                        let diasSalvos = t.xsemana.toUpperCase();
+                        document.querySelectorAll('.dia-aula').forEach(cb => {
+                            if (diasSalvos.includes(cb.value)) cb.checked = true;
+                        });
+                    }
 
                     document.getElementById('modo_form').value = "editar";
                     document.getElementById('titulo-form').innerHTML = `<span class="material-icons text-warning">edit</span> Editar Turma`;
@@ -352,7 +358,6 @@ async function processarFormulario() {
             if (!campo) return;
             if(campo.tagName === 'SELECT') {
                 let existe = Array.from(campo.options).some(opt => opt.value === valor);
-                // Se a turma for antiga, ele insere o nome como opção quebra-galho
                 if(!existe && valor) {
                     let textVisivel = textoFallback || valor;
                     campo.innerHTML += `<option value="${valor}">${textVisivel}</option>`;
@@ -361,19 +366,9 @@ async function processarFormulario() {
             campo.value = valor;
         }
 
-        function setValorCampo(id, valor) {
-            const campo = document.getElementById(id);
-            if (!campo) return;
-            if(campo.tagName === 'SELECT') {
-                let existe = Array.from(campo.options).some(opt => opt.value === valor);
-                // Se a opção não existir, ele exibe como texto fallback
-                if(!existe && valor) campo.innerHTML += `<option value="${valor}">${valor}</option>`;
-            }
-            campo.value = valor;
-        }
-
         function cancelarEdicao() {
             document.getElementById('formTurma').reset();
+            document.querySelectorAll('.dia-aula').forEach(cb => cb.checked = false); // Limpa as caixinhas de dias
             document.getElementById('t_id').readOnly = false;
             document.getElementById('modo_form').value = "novo";
             document.getElementById('titulo-form').innerHTML = `<span class="material-icons text-primary">school</span> Cadastrar Turma`;

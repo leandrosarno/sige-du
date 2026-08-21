@@ -73,24 +73,32 @@
     const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec";
     const idPlanilhaCeu = localStorage.getItem('ceu_planilha_id');
     const nomeCeu = localStorage.getItem('ceu_nome_especifico') || "Unidade Não Identificada";
-    const usuarioAtual = localStorage.getItem('ceu_nome_usuario') || "ADMIN"; // Será o nome do professor logado
+    const usuarioAtual = localStorage.getItem('ceu_nome_usuario') || "ADMIN"; 
+    
+    // As credenciais de segurança!
+    const rfLogadoAtual = localStorage.getItem('ceu_rf_logado') || ""; 
+    const perfilAtual = localStorage.getItem('ceu_perfil') || ""; 
 
     let alunosAtuais = [];
     let presencas = {}; 
 
     document.addEventListener("DOMContentLoaded", () => {
         document.getElementById('lbl-ceu').innerText = nomeCeu;
+        
         const hoje = new Date();
-        document.getElementById('dataAula').value = hoje.toISOString().split('T')[0];
+        const dia = String(hoje.getDate()).padStart(2, '0');
+        const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+        const ano = hoje.getFullYear();
+        document.getElementById('dataAula').value = `${dia}/${mes}/${ano}`;
+
         carregarTurmas();
     });
 
-function carregarTurmas() {
+    function carregarTurmas() {
         if (!idPlanilhaCeu) return Swal.fire('Erro', 'Unidade não conectada.', 'error');
         
-        // 🌟 AGORA A TELA ACIONA A FUNÇÃO EXCLUSIVA DELA:
         const pacote = { 
-            acao: "buscarTurmasAPPProfessor", // <--- MUDAMOS AQUI!
+            acao: "buscarTurmasAPPProfessor", 
             dados: { 
                 idPlanilha: idPlanilhaCeu, 
                 operador: usuarioAtual, 
@@ -99,26 +107,41 @@ function carregarTurmas() {
             } 
         };
         
-        fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) })
+        // 🛡️ O TRUQUE DO CONTENT-TYPE VOLTOU!
+        fetch(API_URL, { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(pacote) 
+        })
         .then(res => res.json())
         .then(data => {
             const combo = document.getElementById('comboTurmas');
             combo.innerHTML = '<option value="">-- Toque para selecionar a turma --</option>';
             
-            if (data.sucesso) {
-                if (data.turmas.length === 0) {
+            // Aceita tanto sucesso direto quanto status="sucesso"
+            if (data.sucesso || data.status === "sucesso") {
+                let lista = data.turmas || (data.dados ? data.dados.turmas : []) || [];
+                
+                if (lista.length === 0) {
                     combo.innerHTML = '<option value="">Nenhuma turma vinculada a você.</option>';
                 } else {
-                    data.turmas.forEach(t => {
+                    lista.forEach(t => {
                         combo.innerHTML += `<option value="${t.id}">${t.modalidade} - [${t.id}]</option>`;
                     });
                 }
+            } else {
+                // 🚨 SE O GOOGLE RECUSAR, A TELA AVISA NA HORA!
+                Swal.fire('Aviso do Servidor', data.erro || data.mensagem || 'Ação desconhecida! (Você gerou a Nova Implantação?)', 'warning');
+                combo.innerHTML = '<option value="">Erro ao carregar</option>';
             }
         })
-        .catch(e => { Swal.fire('Erro', 'Não foi possível carregar as turmas.', 'error'); });
+        .catch(e => { 
+            Swal.fire('Erro de Conexão', 'Não foi possível conversar com o Google.', 'error'); 
+            document.getElementById('comboTurmas').innerHTML = '<option value="">Falha na conexão</option>';
+        });
     }
 
-    async function carregarAlunos() {
+    function carregarAlunos() {
         const idTurma = document.getElementById('comboTurmas').value;
         const container = document.getElementById('listaAlunosContainer');
         const loader = document.getElementById('statusLoader');
@@ -132,15 +155,18 @@ function carregarTurmas() {
 
         loader.style.display = "block";
 
-        try {
-            const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "buscarAlunosParaChamadaNovoSistema", dados: { idPlanilha: idPlanilhaCeu, idTurma: idTurma } }) });
-            const data = await res.json();
-            
+        fetch(API_URL, { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ acao: "buscarAlunosParaChamadaNovoSistema", dados: { idPlanilha: idPlanilhaCeu, idTurma: idTurma } }) 
+        })
+        .then(res => res.json())
+        .then(data => {
             loader.style.display = "none";
 
-            if (data.sucesso) {
-                alunosAtuais = data.alunos;
-                if (alunosAtuais.length === 0) {
+            if (data.sucesso || data.status === "sucesso") {
+                alunosAtuais = data.alunos || (data.dados ? data.dados.alunos : []);
+                if (!alunosAtuais || alunosAtuais.length === 0) {
                     container.innerHTML = `<div class="alert alert-warning text-center"><i class="fas fa-exclamation-triangle"></i> Nenhum aluno matriculado nesta turma.</div>`;
                     return;
                 }
@@ -152,23 +178,32 @@ function carregarTurmas() {
                     <div class="aluno-row presente" id="row-${al.idAluno}">
                         <div>
                             <p class="nome-aluno">${al.nomeAluno}</p>
-                            <p class="id-aluno">ID: ${al.idAluno}</p>
+                            <p class="id-aluno">CÓD. EOL: ${al.idAluno}</p>
                         </div>
                         <div class="botoes-status">
-                            <div class="btn-status btn-p ativo" id="btn-p-${al.idAluno}" onclick="marcar('${al.idAluno}', 'P')">PRESENTE</div>
-                            <div class="btn-status btn-fj" id="btn-fj-${al.idAluno}" onclick="marcar('${al.idAluno}', 'FJ')">F. JUSTIFICADA</div>
-                            <div class="btn-status btn-f" id="btn-f-${al.idAluno}" onclick="marcar('${al.idAluno}', 'F')">FALTA</div>
+                            <div class="btn-status btn-p ativo" id="btn-p-${al.idAluno}" onclick="marcar('${al.idAluno}', 'P')" title="Presente">
+                                <i class="fas fa-check-circle me-1"></i> P
+                            </div>
+                            <div class="btn-status btn-fj" id="btn-fj-${al.idAluno}" onclick="marcar('${al.idAluno}', 'FJ')" title="Falta Justificada">
+                                <i class="fas fa-file-medical me-1"></i> FJ
+                            </div>
+                            <div class="btn-status btn-f" id="btn-f-${al.idAluno}" onclick="marcar('${al.idAluno}', 'F')" title="Falta">
+                                <i class="fas fa-times-circle me-1"></i> F
+                            </div>
                         </div>
                     </div>`;
                 });
 
                 container.innerHTML = html;
                 btnSalvar.style.display = "block";
+            } else {
+                Swal.fire('Aviso', data.erro || data.mensagem, 'warning');
             }
-        } catch (e) {
+        })
+        .catch(e => {
             loader.style.display = "none";
             Swal.fire('Erro', 'Falha ao buscar os alunos.', 'error');
-        }
+        });
     }
 
     function marcar(idAluno, status) {
@@ -195,13 +230,12 @@ function carregarTurmas() {
         }
     }
 
-    async function salvarChamada() {
-        const dataAulaRaw = document.getElementById('dataAula').value;
+    function salvarChamada() {
+        const dataAulaRaw = document.getElementById('dataAula').value.trim();
         const idTurma = document.getElementById('comboTurmas').value;
+        
         if (!dataAulaRaw || !idTurma) return Swal.fire('Atenção', 'Selecione a data e a turma.', 'warning');
-
-        const [ano, mes, dia] = dataAulaRaw.split('-');
-        const dataAulaBR = `${dia}/${mes}/${ano}`;
+        if (dataAulaRaw.length < 10) return Swal.fire('Atenção', 'A data deve estar no formato DD/MM/AAAA.', 'warning');
 
         let listaFrequencia = [];
         alunosAtuais.forEach(al => {
@@ -219,22 +253,28 @@ function carregarTurmas() {
 
         const pacote = {
             acao: "salvarChamadaOnlineNovoSistema",
-            dados: { idPlanilha: idPlanilhaCeu, dataAula: dataAulaBR, idTurma: idTurma, operador: usuarioAtual, frequencia: listaFrequencia }
+            dados: { idPlanilha: idPlanilhaCeu, dataAula: dataAulaRaw, idTurma: idTurma, operador: usuarioAtual, frequencia: listaFrequencia }
         };
 
-        try {
-            const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) });
-            const obj = await res.json();
-
-            if (obj.sucesso) {
+        fetch(API_URL, { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(pacote) 
+        })
+        .then(res => res.json())
+        .then(obj => {
+            if (obj.sucesso || obj.status === "sucesso") {
                 Swal.fire({ title: 'Chamada Salva!', icon: 'success', timer: 2000, showConfirmButton: false }).then(() => {
                     document.getElementById('comboTurmas').value = "";
                     document.getElementById('listaAlunosContainer').innerHTML = "";
                     btn.style.display = "none";
                 });
-            } else { Swal.fire('Erro', obj.erro, 'error'); }
-        } catch (e) { Swal.fire('Erro', 'Não foi possível enviar a chamada.', 'error'); } 
-        finally { btn.innerHTML = txtAnterior; btn.disabled = false; }
+            } else { 
+                Swal.fire('Erro', obj.erro || obj.mensagem, 'error'); 
+            }
+        })
+        .catch(e => { Swal.fire('Erro de Rede', 'Não foi possível enviar a chamada.', 'error'); })
+        .finally(() => { btn.innerHTML = txtAnterior; btn.disabled = false; });
     }
 </script>
 </body>

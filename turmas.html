@@ -87,7 +87,6 @@
                             <input type="text" class="form-control uppercase-field" id="t_faixa" placeholder="Ex: 10 A 15 ANOS">
                         </div>
 
-                        <!-- 🌟 CAIXINHAS DE DIAS DA SEMANA BLINDADAS -->
                         <div class="col-12">
                             <label class="form-label text-primary">Dias da Aula *</label>
                             <div class="d-flex flex-wrap gap-1">
@@ -114,7 +113,6 @@
                             </div>
                         </div>
 
-                        <!-- 🌟 HORÁRIO RESTAURADO PARA TEXTO LIVRE ("14H00 ÀS 15H00") -->
                         <div class="col-12">
                             <label class="form-label">Horário das Aulas *</label>
                             <input type="text" class="form-control uppercase-field" id="t_horario" required placeholder="Ex: 14H00 ÀS 15H00">
@@ -249,8 +247,39 @@
         }
 
         // ==========================================
-        // O MOTOR BLINDADO QUE NÃO TRAVA MAIS
+        // 🧠 MOTOR INTELIGENTE: Puxa IDs de Turmas Antigas
         // ==========================================
+        function selecionarProfessorInteligente(idSalvo, nomeSalvo) {
+            const combo = document.getElementById('t_professor');
+            if (!combo) return;
+            
+            // 1. Tenta achar pelo ID da Coluna R (Turmas Novas)
+            if (idSalvo) {
+                for (let i = 0; i < combo.options.length; i++) {
+                    if (combo.options[i].value === idSalvo) {
+                        combo.selectedIndex = i;
+                        return;
+                    }
+                }
+            }
+            
+            // 2. Se a turma é Antiga e não tem ID, procura pelo NOME (Coluna F)
+            if (nomeSalvo) {
+                for (let i = 0; i < combo.options.length; i++) {
+                    if (combo.options[i].text.toUpperCase() === String(nomeSalvo).toUpperCase()) {
+                        combo.selectedIndex = i;
+                        return;
+                    }
+                }
+            }
+            
+            // 3. Fallback (Para professores que já saíram do CEU e não estão na lista)
+            let valVisivel = idSalvo || nomeSalvo || "Desconhecido";
+            let textVisivel = nomeSalvo || idSalvo || "Desconhecido";
+            combo.innerHTML += `<option value="${valVisivel}">${textVisivel}</option>`;
+            combo.value = valVisivel;
+        }
+
         function processarFormulario() {
             const idPlanilha = localStorage.getItem('ceu_planilha_id');
             const modo = document.getElementById('modo_form').value; 
@@ -266,7 +295,6 @@
                 nomeProf = comboProf.options[comboProf.selectedIndex].text; 
             }
 
-            // Lê as bolinhas (checkboxes) que o funcionário marcou
             const diasSelecionados = Array.from(document.querySelectorAll('.dia-aula:checked')).map(cb => cb.value).join(' ');
             if (diasSelecionados === "") {
                 return Swal.fire('Atenção', 'Você precisa selecionar pelo menos um Dia da Aula!', 'warning');
@@ -288,12 +316,11 @@
                     espaco: document.getElementById('t_espaco').value,
                     vagas: document.getElementById('t_vagas').value,
                     faixa_etaria: document.getElementById('t_faixa').value,
-                    x_semana: diasSelecionados,  // Mandando os dias perfeitos (ex: "SEG QUA")
-                    horario: document.getElementById('t_horario').value // Mandando o horário raiz (ex: "14H00 ÀS 15H00")
+                    x_semana: diasSelecionados,  
+                    horario: document.getElementById('t_horario').value 
                 }
             };
 
-            // 🛡️ Comunicação direta e limpa!
             fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) })
             .then(res => res.json())
             .then(retorno => {
@@ -306,7 +333,7 @@
                 }
             })
             .catch(err => {
-                Swal.fire('Erro de Rede', 'O navegador não obteve resposta. Verifique a internet e tente novamente.', 'error');
+                Swal.fire('Erro de Rede', 'O navegador não obteve resposta.', 'error');
             });
         }
 
@@ -325,15 +352,17 @@
                     
                     setValorCampo('t_modalidade', t.modalidade);
                     setValorCampo('t_nucleo', t.nucleo);
-                    setValorCampo('t_professor', t.professorId || t.professorNome, t.professorNome); 
+                    
+                    // 🧠 Agora a seleção do Professor é 100% inteligente!
+                    selecionarProfessorInteligente(t.professorId, t.professorNome);
+                    
                     setValorCampo('t_tipo_resp', t.tipo_resp);
                     setValorCampo('t_espaco', t.espaco);
                     
                     document.getElementById('t_vagas').value = t.vagas;
                     document.getElementById('t_faixa').value = t.faixa;
-                    document.getElementById('t_horario').value = t.horario; // Horário raiz puxado do banco!
+                    document.getElementById('t_horario').value = t.horario; 
 
-                    // Marcar os botões dos dias automaticamente!
                     document.querySelectorAll('.dia-aula').forEach(cb => cb.checked = false);
                     if (t.xsemana) {
                         let diasSalvos = t.xsemana.toUpperCase();
@@ -368,7 +397,7 @@
 
         function cancelarEdicao() {
             document.getElementById('formTurma').reset();
-            document.querySelectorAll('.dia-aula').forEach(cb => cb.checked = false); // Limpa as caixinhas de dias
+            document.querySelectorAll('.dia-aula').forEach(cb => cb.checked = false); 
             document.getElementById('t_id').readOnly = false;
             document.getElementById('modo_form').value = "novo";
             document.getElementById('titulo-form').innerHTML = `<span class="material-icons text-primary">school</span> Cadastrar Turma`;

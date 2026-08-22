@@ -618,21 +618,29 @@
         }
 
         // ==========================================
-        // 🖨️ IMPRESSÃO RÁPIDA 
+        // 🖨️ IMPRESSÃO RÁPIDA COM MODALIDADES
         // ==========================================
         function imprimirFichaAtual() {
             const dadosAlvo = sessionStorage.getItem('alunoAtualCompleto');
             if(dadosAlvo) {
-                // Salva na memória do GitHub
-                localStorage.setItem('alunoParaImpressao', dadosAlvo);
+                let alunoObj = JSON.parse(dadosAlvo);
                 
-                // Abre o arquivo ficha_impressao.html que agora mora no GitHub!
+                // 🌟 MÁGICA: Puxa o visual das modalidades direto da tela!
+                const divMod = document.getElementById('lista-modalidades-ativas');
+                const divHist = document.getElementById('lista-modalidades-historico');
+                
+                alunoObj.htmlModalidades = divMod ? divMod.innerHTML : "Nenhuma modalidade.";
+                alunoObj.htmlHistorico = divHist ? divHist.innerHTML : "Nenhum histórico.";
+
+                // Salva na memória do GitHub com as modalidades embutidas
+                localStorage.setItem('alunoParaImpressao', JSON.stringify(alunoObj));
+                
+                // Abre o arquivo ficha_impressao.html
                 window.open('ficha_impressao.html', '_blank');
             } else {
                 Swal.fire('Atenção', 'Os dados não foram carregados completamente para impressão.', 'warning');
             }
         }
-    
     // ==========================================
         // 🗑️ EXCLUSÃO DE ALUNO
         // ==========================================

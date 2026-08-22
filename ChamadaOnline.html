@@ -54,7 +54,6 @@
                 <i class="fas fa-user-cog"></i> Perfil
             </button>
             
-            <!-- 🌟 NOVO BOTÃO: DIÁRIO DE CLASSE -->
             <button class="btn btn-sm text-white" style="background: rgba(255, 255, 255, 0.3); border: 1px solid white; font-weight: bold;" onclick="abrirModalDiario()">
                 <i class="fas fa-table"></i> Diário
             </button>
@@ -115,12 +114,8 @@
 
         <div class="table-responsive" id="tabelaDiarioContainer" style="max-height: 60vh; border-radius: 8px; box-shadow: inset 0 0 10px rgba(0,0,0,0.05); display: none;">
             <table class="table table-bordered table-striped table-hover table-diario bg-white m-0" id="tabelaDiario">
-                <thead class="table-dark" id="tabelaDiarioHead">
-                    <!-- Gerado via JS -->
-                </thead>
-                <tbody id="tabelaDiarioBody">
-                    <!-- Gerado via JS -->
-                </tbody>
+                <thead class="table-dark" id="tabelaDiarioHead"></thead>
+                <tbody id="tabelaDiarioBody"></tbody>
             </table>
         </div>
 
@@ -139,9 +134,10 @@
     const rfLogadoAtual = localStorage.getItem('ceu_rf_logado') || ""; 
     const perfilAtual = localStorage.getItem('ceu_perfil') || ""; 
 
+    let turmasGlobais = []; // 🌟 GUARDA OS DIAS E HORÁRIOS AQUI!
     let alunosAtuais = [];
     let presencas = {}; 
-    let htmlOpcoesTurmaCache = '<option value="">-- Toque para selecionar a turma --</option>'; // Guarda as opções p/ o Modal
+    let htmlOpcoesTurmaCache = '<option value="">-- Toque para selecionar a turma --</option>'; 
 
     function abrirPerfil() {
         if(window.parent && typeof window.parent.abrirTrocaSenhaLogado === "function") window.parent.abrirTrocaSenhaLogado();
@@ -173,16 +169,57 @@
             const combo = document.getElementById('comboTurmas');
             
             if (data.sucesso || data.status === "sucesso") {
-                let lista = data.turmas || (data.dados ? data.dados.turmas : []) || [];
-                if (lista.length === 0) {
+                turmasGlobais = data.turmas || (data.dados ? data.dados.turmas : []) || [];
+                
+                if (turmasGlobais.length === 0) {
                     htmlOpcoesTurmaCache = '<option value="">Nenhuma turma vinculada ao seu RF.</option>';
                 } else {
                     htmlOpcoesTurmaCache = '<option value="">-- Toque para selecionar a turma --</option>';
-                    lista.forEach(t => { htmlOpcoesTurmaCache += `<option value="${t.id}">${t.modalidade} - [${t.id}]</option>`; });
+                    turmasGlobais.forEach(t => { htmlOpcoesTurmaCache += `<option value="${t.id}">${t.modalidade} - [${t.id}]</option>`; });
                 }
                 combo.innerHTML = htmlOpcoesTurmaCache;
             }
         });
+    }
+
+    // ==========================================
+    // ⏳ O CADEADO TEMPORAL DE 2 MINUTOS
+    // ==========================================
+    function isChamadaLiberada(diasString, horarioString) {
+        const diasMapa = ["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SÁB"];
+        const hoje = new Date();
+        const diaAtual = diasMapa[hoje.getDay()];
+
+        // 1. O DIA ESTÁ CORRETO?
+        if (!diasString.toUpperCase().includes(diaAtual)) {
+            return { liberado: false, motivo: `Esta turma só tem aulas nos dias: <b>${diasString}</b>.<br>Hoje é <b>${diaAtual}</b>.` };
+        }
+
+        // 2. O HORÁRIO BATE? (Vamos ler o texto "14H00 ÀS 15H00")
+        const regex = /(\d{1,2})[H:](\d{2})\s*(?:ÀS|AS|-)\s*(\d{1,2})[H:](\d{2})/i;
+        const match = horarioString.match(regex);
+
+        if (!match) return { liberado: true }; // Se o horário foi escrito diferente, o sistema não bloqueia.
+
+        const horaInicio = parseInt(match[1], 10);
+        const minInicio = parseInt(match[2], 10);
+        const horaFim = parseInt(match[3], 10);
+        const minFim = parseInt(match[4], 10);
+
+        const tempoAtualMinutos = hoje.getHours() * 60 + hoje.getMinutes();
+        const tempoInicioMinutos = horaInicio * 60 + minInicio;
+        const tempoFimMinutos = horaFim * 60 + minFim;
+
+        // Janela de Liberação: -2 e +2 minutos!
+        if (tempoAtualMinutos < (tempoInicioMinutos - 2)) {
+            return { liberado: false, motivo: `A chamada só será liberada às <b>${String(horaInicio).padStart(2, '0')}:${String(minInicio).padStart(2, '0')}</b><br><small>(Liberado 2 minutos antes do início).</small>` };
+        }
+        
+        if (tempoAtualMinutos > (tempoFimMinutos + 2)) {
+            return { liberado: false, motivo: `A chamada foi encerrada às <b>${String(horaFim).padStart(2, '0')}:${String(minFim).padStart(2, '0')}</b><br><small>(Bloqueado 2 minutos após o término).</small>` };
+        }
+
+        return { liberado: true };
     }
 
     function carregarAlunos() {
@@ -196,6 +233,23 @@
         btnSalvar.style.display = "none";
 
         if (!idTurma) return;
+
+        // 🛡️ APLICAÇÃO DA TRAVA TEMPORAL AQUI!
+        const turma = turmasGlobais.find(t => t.id === idTurma);
+        if (turma) {
+            const validacao = isChamadaLiberada(turma.dias, turma.horario);
+            if (!validacao.liberado) {
+                Swal.fire({
+                    title: 'Acesso Bloqueado ⏳',
+                    html: validacao.motivo,
+                    icon: 'warning',
+                    confirmButtonColor: '#0d6efd'
+                });
+                document.getElementById('comboTurmas').value = ""; // Tira a seleção
+                return;
+            }
+        }
+
         loader.style.display = "block";
 
         fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -244,7 +298,7 @@
         else { row.className = "aluno-row falta"; btnF.classList.add('ativo'); }
     }
 
-function salvarChamada() {
+    function salvarChamada() {
         const dataAulaRaw = document.getElementById('dataAula').value.trim();
         const idTurma = document.getElementById('comboTurmas').value;
         if (!dataAulaRaw || !idTurma) return Swal.fire('Atenção', 'Selecione a turma.', 'warning');
@@ -263,8 +317,8 @@ function salvarChamada() {
                     idPlanilha: idPlanilhaCeu, 
                     dataAula: dataAulaRaw, 
                     idTurma: idTurma, 
-                    nomeProfessor: usuarioAtual, // 👤 O Nome para a Coluna C
-                    idProfessor: rfLogadoAtual,  // 🛡️ O RF para a Coluna H
+                    nomeProfessor: usuarioAtual, 
+                    idProfessor: rfLogadoAtual,  
                     frequencia: listaFrequencia 
                 } 
             }) 
@@ -287,7 +341,6 @@ function salvarChamada() {
         document.getElementById('comboTurmasModal').innerHTML = htmlOpcoesTurmaCache;
         document.getElementById('tabelaDiarioContainer').style.display = 'none';
         
-        // Se já tiver uma turma selecionada na tela principal, já abre o diário dela!
         const turmaAtual = document.getElementById('comboTurmas').value;
         if(turmaAtual) {
             document.getElementById('comboTurmasModal').value = turmaAtual;
@@ -327,13 +380,11 @@ function salvarChamada() {
         const head = document.getElementById('tabelaDiarioHead');
         const body = document.getElementById('tabelaDiarioBody');
         
-        // Cabeçalho (Dias)
         let trHead = `<tr><th style="min-width: 150px;">NOME DO ALUNO</th>`;
-        datas.forEach(d => { trHead += `<th>${d.substring(0,5)}</th>`; }); // Mostra só DD/MM
+        datas.forEach(d => { trHead += `<th>${d.substring(0,5)}</th>`; }); 
         trHead += `</tr>`;
         head.innerHTML = trHead;
 
-        // Corpo (Alunos x Presença)
         let trBody = ``;
         alunos.forEach(al => {
             trBody += `<tr><td class="text-start" style="font-size: 11px;">${al.nome}</td>`;

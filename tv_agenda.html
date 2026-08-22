@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Agenda Rolante da TV - CEU</title>
+  <style>
+    :root { 
+      --bg-color: #0b132b; 
+      --text-color: #ffffff; 
+      --table-bg: #1c2541; 
+      --highlight-text: #000000; 
+      --border-color: #3a506b; 
+    }
+    body { 
+      margin: 0; padding: 0; 
+      background-color: var(--bg-color); 
+      color: var(--text-color); 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+      overflow: hidden; 
+    }
+
+    /* Cabeçalho Fixo Mais Fino e Alinhado */
+    .header { 
+      background-color: #000000; position: fixed; 
+      top: 0; width: 100%; z-index: 1000; box-shadow: 0 4px 6px rgba(0,0,0,0.5); 
+      padding: 10px 2vw 0 2vw; box-sizing: border-box; 
+    }
+    
+    /* 🌟 Título, Logo e Relógio na Mesma Linha */
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .header-top-left {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    #logo-ceu-tv { max-height: 45px; object-fit: contain; display: none; }
+    .header-top h1 { margin: 0; font-size: 1.8vw; font-weight: 700; color: #ffffff; }
+    #relogio { font-size: 2vw; color: #6fffe9; font-weight: 800; margin: 0; }
+    
+    table { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 1.2vw; }
+    .tabela-cabecalho { background-color: var(--border-color); }
+    th { 
+      padding: 8px 10px; text-align: center; font-weight: bold; 
+      text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid #fff; font-size: 1.1vw; 
+    }
+    
+    .container { 
+      margin-top: 105px; height: calc(100vh - 105px); overflow-y: auto; 
+      padding: 0 2vw; padding-bottom: 50vh; box-sizing: border-box; 
+    }
+    .container::-webkit-scrollbar { display: none; }
+    
+    td { padding: 10px; text-align: center; border-bottom: 1px solid var(--border-color); word-wrap: break-word; }
+    
+    tr { background-color: var(--table-bg); transition: all 0.5s ease; opacity: 0.4; font-size: 1.2vw; transform: scale(0.98); }
+    
+    tr.highlight { 
+      font-size: 2vw !important; font-weight: bold; opacity: 1 !important; transform: scale(1) !important; 
+      box-shadow: 0px 8px 16px rgba(0,0,0,0.6); z-index: 10; position: relative;
+    }
+    tr.highlight td { border-top: 2px solid #000000; border-bottom: 2px solid #000000; }
+    
+    .horario-col { font-weight: bold; color: #6fffe9; }
+    
+    tr.aula-cancelada { background-color: #3a0000; color: #ffb3b3; }
+    tr.aula-cancelada td { border-bottom: 1px solid #7a0000; }
+    
+    .badge-alerta { 
+      background-color: #ff0000; color: #ffffff; font-size: 1vw; font-weight: bold; padding: 3px 8px; border-radius: 4px; 
+      display: inline-block; margin-top: 5px; letter-spacing: 1px; box-shadow: 0 2px 4px rgba(0,0,0,0.5); 
+    }
+    
+    .tempo-restante { font-size: 1.1vw; font-weight: bold; color: #000; display: inline-block; margin-top: 5px; background: rgba(255, 255, 255, 0.85); padding: 3px 8px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+    .tempo-restante-cancelada { font-size: 1.1vw; font-weight: bold; color: #ffeb3b; display: inline-block; margin-top: 5px; background: rgba(0, 0, 0, 0.7); padding: 3px 8px; border-radius: 6px; border: 1px solid #ff0000; }
+
+    .badge-alunos { color: #fb8500; font-weight: 800; font-size: 1.3vw; }
+    tr.highlight .badge-alunos { color: #8338ec; }
+    tr.aula-cancelada .badge-alunos { color: #ffb3b3; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-top">
+      <div class="header-top-left">
+        <img id="logo-ceu-tv" src="" alt="Logo CEU">
+        <h1><span id="nome-ceu-tv" style="color: #6fffe9;">CEU</span> - ATIVIDADES DE HOJE - <span id="dia-semana-titulo"></span></h1>
+      </div>
+      <div id="relogio">00:00:00</div>
+    </div>
+    
+    <table class="tabela-cabecalho">
+      <colgroup><col style="width: 14%;"><col style="width: 25%;"><col style="width: 20%;"><col style="width: 16%;"><col style="width: 15%;"><col style="width: 10%;"></colgroup>
+      <thead><tr><th>Horário</th><th>Modalidade (Alunos)</th><th>Professor</th><th>Espaço</th><th>Núcleo</th><th>Faixa</th></tr></thead>
+    </table>
+  </div>
+  
+  <div class="container" id="scroll-container">
+    <table class="tabela-corpo">
+      <colgroup><col style="width: 14%;"><col style="width: 25%;"><col style="width: 20%;"><col style="width: 16%;"><col style="width: 15%;"><col style="width: 10%;"></colgroup>
+      <tbody id="agenda-body"><tr><td colspan="6" style="padding: 40px; font-size: 20px;">Carregando horários mágicos...</td></tr></tbody>
+    </table>
+  </div>
+
+  <script>
+    // 🚨 COLOQUE AQUI O SEU LINK DO GOOGLE APPS SCRIPT:
+    const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec"; 
+
+    const HORA_INICIO = 6; 
+    const HORA_FIM = 22; 
+    let diaSemanaAtual = 0;
+
+    // Puxa as memórias do CEU
+    const idPlanilhaCeu = localStorage.getItem('ceu_planilha_id');
+    const nomeCeu = localStorage.getItem('ceu_nome_especifico') || localStorage.getItem('ceu_nome') || "SISTEMA";
+    const logoCeu = localStorage.getItem('ceu_logo_url') || localStorage.getItem('ceu_logo') || "";
+
+    function iniciar() {
+      // 🌟 Configura o Nome e Logo na TV
+      document.getElementById('nome-ceu-tv').innerText = nomeCeu.toUpperCase();
+      if(logoCeu !== "") {
+          const imgLogo = document.getElementById('logo-ceu-tv');
+          imgLogo.src = logoCeu;
+          imgLogo.style.display = 'block';
+      }
+
+      if(!idPlanilhaCeu) {
+          document.getElementById('agenda-body').innerHTML = '<tr><td colspan="6" style="color:#ffb3b3; padding: 40px; font-size: 20px;">ERRO: Faça o login no sistema primeiro para a TV saber qual é o CEU.</td></tr>';
+          return;
+      }
+
+      atualizarRelogio(); 
+      setInterval(atualizarRelogio, 1000);
+      buscarDadosTV();
+      setInterval(buscarDadosTV, 600000); // Atualiza as aulas a cada 10 min
+    }
+
+    // 🌟 A MÁGICA DE BUSCA DO NOVO SISTEMA!
+    function buscarDadosTV() {
+        fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ acao: "buscarAgendaTV", dados: { idPlanilha: idPlanilhaCeu } })
+        })
+        .then(res => res.json())
+        .then(retorno => {
+            if(retorno.sucesso) montarAgenda(retorno.agenda);
+            else console.log("Erro na TV:", retorno.erro);
+        })
+        .catch(err => console.log("Erro de Conexão na TV"));
+    }
+
+    function extrairHorarios(textoHorario) {
+      let inicio = "", fim = "";
+      if (!textoHorario) return { inicio, fim };
+      const regex = /(\d{1,2})[Hh:](\d{2})/g;
+      let matches = [];
+      let m;
+      while ((m = regex.exec(textoHorario)) !== null) {
+        matches.push(String(m[1]).padStart(2, '0') + ':' + m[2]);
+      }
+      if (matches.length >= 1) inicio = matches[0];
+      if (matches.length >= 2) fim = matches[1];
+
+      if (inicio && !fim) {
+        let h = parseInt(inicio.split(':')[0]);
+        let min = inicio.split(':')[1];
+        fim = String(h + 1).padStart(2, '0') + ':' + min;
+      }
+      return { inicio, fim };
+    }
+
+    function getDiaString(index) {
+       const mapa = ["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SÁB"];
+       return mapa[index];
+    }
+
+    function formatarTextoModalidade(textoBruto) {
+        const match = textoBruto.match(/(.*)(\(\d+\))/);
+        if (match) {
+            return `${match[1].trim()} <span class="badge-alunos">${match[2]}</span>`;
+        }
+        return textoBruto;
+    }
+
+    function montarAgenda(dados) {
+      const tbody = document.getElementById('agenda-body');
+      tbody.innerHTML = '';
+
+      const agora = new Date().toLocaleString("en-US", {timeZone: "America/Sao_Paulo"});
+      const dataSP = new Date(agora);
+      const diaSemanaIndex = dataSP.getDay(); 
+      let diaHojeStr = getDiaString(diaSemanaIndex);
+      
+      let diaNum = String(dataSP.getDate()).padStart(2, '0');
+      let mesNum = String(dataSP.getMonth() + 1).padStart(2, '0');
+      let dataHojeFormatada = `${diaNum}/${mesNum}`; 
+      let dataHojeObjeto = new Date(dataSP.getFullYear(), dataSP.getMonth(), dataSP.getDate(), 12, 0, 0);
+      
+      document.getElementById('dia-semana-titulo').innerText = diaHojeStr;
+
+      const coresDestaque = ['#fca311', '#00f5d4', '#f15bb5', '#06d6a0', '#9b5de5', '#fee440', '#00bbff'];
+      let contadorCores = 0;
+
+      for (let h = HORA_INICIO; h <= HORA_FIM; h++) {
+        for (let m of ['00', '30']) {
+          if (h === HORA_FIM && m === '30') continue;
+          const timeString = String(h).padStart(2, '0') + ':' + m;
+          
+          const atividades = dados.filter(row => {
+            const diasAula = String(row[8] || "").toUpperCase();
+            let ehHoje = diasAula.includes(diaHojeStr);
+            if (diaSemanaIndex === 3) ehHoje = diasAula.includes("QUA") || diasAula.includes("QUE");
+            const horarioInicio = extrairHorarios(row[9]).inicio;
+            return ehHoje && horarioInicio === timeString;
+          });
+
+          if (atividades.length > 0) {
+            atividades.forEach((ativ, index) => {
+              const tr = document.createElement('tr');
+              
+              const horariosAula = extrairHorarios(ativ[9]);
+              const startTime = horariosAula.inicio || timeString;
+              const endTime = horariosAula.fim || timeString;
+              
+              tr.setAttribute('data-start', startTime);
+              tr.setAttribute('data-end', endTime);
+              tr.setAttribute('data-texto-horario', ativ[9] || timeString);
+              
+              let corBase = coresDestaque[contadorCores % coresDestaque.length];
+              tr.setAttribute('data-cor-base', corBase);
+              contadorCores++;
+
+              if(index === 0) tr.setAttribute('data-scroll-alvo', 'sim');
+              
+              const faltasCadastradas = String(ativ[13] || "NÃO").trim();
+              const feriasTexto = String(ativ[14] || "").trim().toUpperCase();
+              
+              let aplicarFalta = false;
+              let textoAlerta = "";
+
+              if (feriasTexto !== "") {
+                 let regexF = /(\d{2})\/(\d{2})/g;
+                 let mFerias; let datasFerias = [];
+                 while ((mFerias = regexF.exec(feriasTexto)) !== null) {
+                     datasFerias.push({ dia: parseInt(mFerias[1], 10), mes: parseInt(mFerias[2], 10) - 1 });
+                 }
+                 let anoAtualC = dataSP.getFullYear();
+                 if (datasFerias.length >= 1) {
+                     let feriasStart = new Date(anoAtualC, datasFerias[0].mes, datasFerias[0].dia, 0, 0, 0);
+                     let feriasEnd = new Date(anoAtualC, datasFerias[0].mes, datasFerias[0].dia, 23, 59, 59);
+                     if (datasFerias.length >= 2) feriasEnd = new Date(anoAtualC, datasFerias[1].mes, datasFerias[1].dia, 23, 59, 59);
+                     if (dataHojeObjeto >= feriasStart && dataHojeObjeto <= feriasEnd) {
+                         aplicarFalta = true; textoAlerta = "FÉRIAS: " + feriasTexto;
+                     }
+                 }
+              }
+
+              if (!aplicarFalta && faltasCadastradas !== "NÃO") {
+                 if (faltasCadastradas === "SIM") {
+                     aplicarFalta = true; textoAlerta = "PROFESSOR AUSENTE";
+                 } else {
+                     let listaFaltas = [];
+                     let regexFaltas = /(\d{2}\/\d{2})\s*\((.*?)\)/g;
+                     let matchFalta;
+                     while ((matchFalta = regexFaltas.exec(faltasCadastradas)) !== null) {
+                         listaFaltas.push({ data: matchFalta[1], turno: matchFalta[2].trim() });
+                     }
+                     if (listaFaltas.length === 0) {
+                         let regexData = /(\d{2})\/(\d{2})/g;
+                         let mF2;
+                         while ((mF2 = regexData.exec(faltasCadastradas)) !== null) {
+                             listaFaltas.push({ data: mF2[1] + "/" + mF2[2], turno: "Dia Todo" }); 
+                         }
+                     }
+
+                     let faltasDeHoje = listaFaltas.filter(f => f.data === dataHojeFormatada);
+                     
+                     if (faltasDeHoje.length > 0) {
+                         let horaNum = parseInt(timeString.split(':')[0], 10);
+                         let minNum = parseInt(timeString.split(':')[1], 10);
+                         let turnoDaAula = "Personalizado";
+                         
+                         if (horaNum >= 6 && horaNum < 12) turnoDaAula = "Manhã";
+                         else if (horaNum === 12 && minNum === 0) turnoDaAula = "Manhã";
+                         else if ((horaNum === 12 && minNum > 0) || (horaNum > 12 && horaNum < 18)) turnoDaAula = "Tarde";
+                         else if (horaNum >= 18 && horaNum <= 23) turnoDaAula = "Noite";
+
+                         for (let faltaObj of faltasDeHoje) {
+                             let fT = faltaObj.turno;
+                             let matchTurno = false;
+                             
+                             if (fT === "Dia Todo") { matchTurno = true; textoAlerta = "FALTA O DIA TODO"; }
+                             else if ((fT === "Só de manhã" || fT === "Manhã") && turnoDaAula === "Manhã") { matchTurno = true; textoAlerta = "FALTA DE MANHÃ"; }
+                             else if ((fT === "Só à tarde" || fT === "Tarde") && turnoDaAula === "Tarde") { matchTurno = true; textoAlerta = "FALTA À TARDE"; }
+                             else if ((fT === "Só à noite" || fT === "Noite") && turnoDaAula === "Noite") { matchTurno = true; textoAlerta = "FALTA À NOITE"; }
+                             else if (!["Manhã", "Tarde", "Noite", "Dia Todo", "Só de manhã", "Só à tarde", "Só à noite"].includes(fT)) {
+                                 matchTurno = true; textoAlerta = fT.toUpperCase();
+                             }
+
+                             if (matchTurno) { aplicarFalta = true; break; }
+                         }
+                     }
+                 }
+              }
+
+              if (aplicarFalta) tr.classList.add('aula-cancelada');
+
+              let profCel = ativ[5] || '-';
+              if (aplicarFalta) profCel = `${profCel}<br><span class="badge-alerta">🚫 ${textoAlerta}</span>`;                
+
+              let nomeModalidadeCompleto = formatarTextoModalidade(ativ[2] || '-');
+
+              tr.innerHTML = `
+                <td class="horario-col">${tr.getAttribute('data-texto-horario')}</td>
+                <td>${nomeModalidadeCompleto}</td>
+                <td>${profCel}</td>
+                <td>${ativ[6] || '-'}</td>
+                <td>${ativ[4] || '-'}</td>
+                <td>${ativ[3] || '-'}</td>
+              `;
+              tbody.appendChild(tr);
+            });
+          } else {
+            const tr = document.createElement('tr');
+            let hE = parseInt(timeString.split(':')[0]);
+            let mE = parseInt(timeString.split(':')[1]);
+            mE += 30;
+            if (mE >= 60) { hE += 1; mE -= 60; }
+            let endStr = String(hE).padStart(2,'0') + ':' + String(mE).padStart(2,'0');
+
+            tr.setAttribute('data-start', timeString);
+            tr.setAttribute('data-end', endStr);
+            tr.setAttribute('data-texto-horario', timeString);
+            tr.setAttribute('data-cor-base', '#3a506b'); 
+            tr.setAttribute('data-scroll-alvo', 'sim');
+
+            tr.innerHTML = `<td class="horario-col">${timeString}</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>`;
+            tbody.appendChild(tr);
+          }
+        }
+      }
+      focarHorarioAtual();
+    }
+
+    function atualizarRelogio() {
+      const agora = new Date().toLocaleString("en-US", {timeZone: "America/Sao_Paulo"});
+      const dataSP = new Date(agora);
+      const horas = String(dataSP.getHours()).padStart(2, '0');
+      const minutos = String(dataSP.getMinutes()).padStart(2, '0');
+      const segundos = String(dataSP.getSeconds()).padStart(2, '0');
+      
+      document.getElementById('relogio').innerText = `${horas}:${minutos}:${segundos}`;
+
+      if (dataSP.getDay() !== diaSemanaAtual && segundos === '00' && minutos === '00') {
+         diaSemanaAtual = dataSP.getDay();
+         buscarDadosTV();
+      }
+
+      if (segundos === '00') focarHorarioAtual(dataSP);
+    }
+
+    function focarHorarioAtual(dataObj) {
+      let dataSP = dataObj;
+      if(!dataSP) {
+        const agora = new Date().toLocaleString("en-US", {timeZone: "America/Sao_Paulo"});
+        dataSP = new Date(agora);
+      }
+      
+      const agoraMinutos = dataSP.getHours() * 60 + dataSP.getMinutes();
+      const linhas = document.querySelectorAll('tr[data-start]');
+      let rolou = false;
+
+      linhas.forEach(linha => {
+        let startStr = linha.getAttribute('data-start');
+        let endStr = linha.getAttribute('data-end');
+
+        if (startStr && endStr) {
+          let startMin = parseInt(startStr.split(':')[0]) * 60 + parseInt(startStr.split(':')[1]);
+          let endMin = parseInt(endStr.split(':')[0]) * 60 + parseInt(endStr.split(':')[1]);
+
+          if (agoraMinutos >= startMin && agoraMinutos < endMin) {
+            linha.classList.add('highlight');
+            
+            let totalDuracao = endMin - startMin;
+            let decorrido = agoraMinutos - startMin;
+            let porcentagem = Math.floor((decorrido / totalDuracao) * 100);
+            let minutosFaltantes = totalDuracao - decorrido;
+            
+            let corBase = linha.getAttribute('data-cor-base');
+            let txtHorario = linha.getAttribute('data-texto-horario');
+            const colHorario = linha.querySelector('.horario-col');
+            
+            if (linha.classList.contains('aula-cancelada')) {
+               linha.style.background = `linear-gradient(90deg, #ff0000 ${porcentagem}%, #4a0000 ${porcentagem}%)`;
+               linha.style.color = '#ffffff';
+               linha.style.borderTop = '2px solid #ffffff'; 
+               linha.style.borderBottom = '2px solid #ffffff';
+               
+               if(colHorario) {
+                   colHorario.style.color = '#ffffff';
+                   colHorario.innerHTML = `${txtHorario}<br><span class="tempo-restante-cancelada">⏱️ Encerrando em ${minutosFaltantes} min</span>`;
+               }
+            } else {
+               linha.style.background = `linear-gradient(90deg, ${corBase} ${porcentagem}%, #7a8b99 ${porcentagem}%)`;
+               linha.style.color = '#000000'; 
+               linha.style.borderTop = '2px solid #000000'; 
+               linha.style.borderBottom = '2px solid #000000';
+               
+               if(colHorario) {
+                   colHorario.style.color = '#000000';
+                   colHorario.innerHTML = `${txtHorario}<br><span class="tempo-restante">⏱️ Faltam ${minutosFaltantes} min</span>`;
+               }
+            }
+
+            if (!rolou && linha.getAttribute('data-scroll-alvo') === 'sim') {
+              linha.scrollIntoView({ behavior: 'smooth', block: 'start' }); 
+              rolou = true;
+            }
+            
+          } else {
+            linha.classList.remove('highlight'); 
+            linha.style.background = ''; 
+            linha.style.color = '';
+            linha.style.borderTop = ''; 
+            linha.style.borderBottom = '';
+            
+            const colHorario = linha.querySelector('.horario-col'); 
+            if(colHorario) {
+                colHorario.style.color = ''; 
+                colHorario.innerHTML = linha.getAttribute('data-texto-horario'); 
+            }
+          }
+        }
+      });
+    }
+
+    window.onload = function() {
+       const agora = new Date().toLocaleString("en-US", {timeZone: "America/Sao_Paulo"});
+       diaSemanaAtual = new Date(agora).getDay();
+       iniciar();
+    };
+  </script>
+</body>
+</html>

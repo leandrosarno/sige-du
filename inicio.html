@@ -180,21 +180,15 @@
                 </div>
             </div>
 
-            
-            <div class="col-md-3 col-sm-6 mb-4">
-    <div class="card h-100 border-0 shadow-sm" style="border-radius: 12px; transition: transform 0.3s; cursor: pointer;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'" onclick="window.open('tv_agenda.html', '_blank')">
-        <div class="card-body text-center p-4">
-            <div class="mb-3">
-                <i class="fas fa-tv" style="font-size: 40px; color: #000000;"></i>
+            <!-- 🌟 CARD DA TV CORRIGIDO E ALINHADO -->
+            <div style="background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; cursor: pointer; transition: transform 0.2s; border: 2px solid transparent;" onmouseover="this.style.transform='translateY(-5px)'; this.style.border='2px solid #0d6efd';" onmouseout="this.style.transform='translateY(0)'; this.style.border='2px solid transparent';" onclick="window.open('tv_agenda.html', '_blank')">
+                <div style="width: 60px; height: 60px; border-radius: 15px; background: #2c3e50; display: flex; align-items: center; justify-content: center; color: white; margin-bottom: 12px;">
+                    <span class="material-icons" style="font-size: 32px;">live_tv</span>
+                </div>
+                <h3 style="margin: 0; font-size: 18px; font-weight: 700; color: #2c3e50;">Agenda da TV</h3>
+                <p style="margin: 0; margin-top: 5px; color: #6c757d; font-size: 12px; font-weight: 600; text-transform: uppercase;">Acompanhamento ao Vivo</p>
             </div>
-            <h6 class="fw-bold mb-1">Agenda da TV</h6>
-            <small class="text-muted">Acompanhamento ao vivo</small>
-        </div>
-    </div>
-</div>
-        
-        
-        
+            
         </div>
     </div>
 
@@ -419,7 +413,6 @@
             
             const ceuLogado = String(localStorage.getItem('ceu_id') || sessionStorage.getItem('ceu_id') || localStorage.getItem('ceu_codigo_eol')).trim();
             
-            // 🌟 A MÁGICA FINAL: Lendo o perfil em vez de olhar para o 777777!
             const perfilUsuario = localStorage.getItem('ceu_perfil') || "CEU"; 
             
             if (perfilUsuario === "DRE" || perfilUsuario === "SME") {

@@ -9,14 +9,8 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   
   <style>
-    /* =========================================
-       ESTILOS PADRÕES DO SISTEMA
-       ========================================= */
     body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; }
-    
     .card-premium { border: none; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); background: #fff; }
-    
-    /* Gradiente Roxo para destacar que é a tela de Turmas/Matrículas */
     .card-header-custom { background: linear-gradient(135deg, #6f42c1, #8e44ad); color: white; border-radius: 15px 15px 0 0 !important; padding: 20px; }
     
     .btn-salvar { background: #6f42c1; color: white; border: none; padding: 12px 25px; border-radius: 8px; font-weight: 600; transition: 0.3s; width: 100%; font-size: 16px; }
@@ -27,9 +21,6 @@
     .btn-voltar { background: white; color: #444; border: 1px solid #ccc; font-weight: 600; border-radius: 20px; padding: 8px 20px; transition: 0.3s; box-shadow: 0 2px 5px rgba(0,0,0,0.05); text-decoration: none; }
     .btn-voltar:hover { background: #e9ecef; color: #000; }
     
-    /* =========================================
-       ESTILOS ESPECÍFICOS DA LISTA DE MATRÍCULA
-       ========================================= */
     input[readonly] { background-color: #e9ecef; cursor: not-allowed; color: #555; font-weight: bold; }
     
     .btn-add { background: #28a745; color: white; border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; width: 100%; margin-top: 5px; transition: 0.3s; }
@@ -47,13 +38,6 @@
 
 <div class="container" style="max-width: 700px;">
 
-  <div class="mt-2 mb-3">
-    <!-- Botão de voltar ajustado para o GitHub Pages
-    <a href="dashboard.html" class="btn-voltar d-inline-block">
-      <i class="fas fa-arrow-left me-2"></i> Voltar ao Menu Principal -1
-    </a>  -->
-  </div>
-
   <div class="card card-premium mt-2 mb-5">
     <div class="card-header-custom text-center">
       <h4><i class="fas fa-user-plus me-2"></i> Realizar Matrículas</h4>
@@ -66,20 +50,20 @@
 
       <div class="mb-4 pb-3 border-bottom">
         <label class="form-label fw-bold"><i class="fas fa-chalkboard text-purple me-1" style="color: #6f42c1;"></i> ID da Turma de Destino</label>
-        <input type="text" class="form-control form-control-lg text-center fw-bold" id="idTurma" placeholder="Ex: T-001" style="letter-spacing: 2px;">
+        <input type="text" class="form-control form-control-lg text-center fw-bold text-uppercase" id="idTurma" placeholder="Ex: T-001" style="letter-spacing: 2px;">
       </div>
 
       <div class="row align-items-end mb-4">
         <div class="col-md-7 mb-3 mb-md-0">
           <label class="form-label fw-bold"><i class="fas fa-search text-secondary me-1"></i> Buscar Aluno</label>
-          <input type="text" class="form-control" id="nomeAlunoInput" list="opcoesAlunos" placeholder="Digite o nome completo...">
+          <input type="text" class="form-control text-uppercase" id="nomeAlunoInput" list="opcoesAlunos" placeholder="Digite o nome completo...">
           <datalist id="opcoesAlunos"></datalist>
         </div>
         
         <div class="col-md-5">
           <label class="form-label fw-bold"><i class="fas fa-id-card text-secondary me-1"></i> ID Detectado</label>
           <input type="text" class="form-control text-center" id="idAlunoInput" placeholder="Aguardando..." readonly>
-          <button class="btn btn-add mt-2 shadow-sm restrito-bases" onclick="adicionarAluno()">
+          <button class="btn btn-add mt-2 shadow-sm" onclick="adicionarAluno()">
             <i class="fas fa-plus-circle me-1"></i> Incluir na Lista
           </button>
         </div>
@@ -95,7 +79,7 @@
       </div>
 
       <div class="mt-4 pt-3 text-center">
-        <button onclick="enviarMatriculas()" class="btn btn-salvar restrito-bases" id="btnEnviar">
+        <button onclick="enviarMatriculas()" class="btn btn-salvar" id="btnEnviar" style="display: none;">
           <i class="fas fa-paper-plane me-2"></i> PROCESSAR MATRÍCULAS
         </button>
       </div>
@@ -115,42 +99,53 @@
   // 1. CARREGA OS NOMES ASSIM QUE ABRIR A PÁGINA USANDO O FETCH
   document.addEventListener("DOMContentLoaded", async function() {
     if (!idPlanilhaCeu) {
-      document.getElementById('statusAlert').innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> ERRO: Planilha do CEU não conectada. Volte e faça login novamente.</div>`;
+      document.getElementById('statusAlert').innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> ERRO: Planilha do CEU não conectada. Faça login novamente.</div>`;
       return;
     }
 
     try {
-      // Usamos a rota que já existe para listar os alunos do CEU
+      // 🌟 MÁGICA 1: Aviso de Carregamento para segurar a ansiedade dos 10.500 alunos
+      document.getElementById('statusAlert').innerHTML = `<div class="alert alert-info"><i class="fas fa-spinner fa-spin me-2"></i> Sincronizando base de alunos...</div>`;
+
       const pacote = { acao: "listarAlunosNovoSistema", dados: { idPlanilha: idPlanilhaCeu } };
       
-      const resRaw = await fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) });
+      // 🌟 MÁGICA 2: O Truque do Content-Type inserido aqui!
+      const resRaw = await fetch(API_URL, { 
+          method: 'POST', 
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(pacote) 
+      });
       const res = await resRaw.json();
 
       if (res.sucesso || res.status === "sucesso") {
-        // Pega os dados que vieram do servidor
         let lista = res.dados || res.alunos || [];
         
-        // Mapeia para o formato que a tela espera
         dadosBanco = lista.map(a => ({
-          nome: a.nome || a[3] || "Nome Não Encontrado", 
-          id: a.id || a.prontuario || a[0] || "ID Não Encontrado"
+          nome: (a.nome || a[3] || "Nome Não Encontrado").toUpperCase(), 
+          id: a.idAluno || a.prontuario || a.id || a[0] || "ID Não Encontrado"
         }));
 
+        // 🌟 MÁGICA 3: Renderização Turbo! Injetando HTML gigante de uma vez só!
         const datalist = document.getElementById('opcoesAlunos');
+        let opcoesHTML = "";
         dadosBanco.forEach(aluno => {
-          let option = document.createElement('option');
-          option.value = aluno.nome; 
-          datalist.appendChild(option);
+          opcoesHTML += `<option value="${aluno.nome}"></option>`;
         });
+        datalist.innerHTML = opcoesHTML;
+
+        // Limpa o aviso
+        document.getElementById('statusAlert').innerHTML = ``;
+      } else {
+        document.getElementById('statusAlert').innerHTML = `<div class="alert alert-warning"><i class="fas fa-bug"></i> ${res.mensagem || res.erro}</div>`;
       }
     } catch (e) {
-      document.getElementById('statusAlert').innerHTML = `<div class="alert alert-danger"><i class="fas fa-bug"></i> Falha ao carregar a lista de alunos do banco de dados.</div>`;
+      document.getElementById('statusAlert').innerHTML = `<div class="alert alert-danger"><i class="fas fa-wifi"></i> Falha ao carregar a lista de alunos do banco de dados.</div>`;
     }
   });
 
   // 2. DETECTA SE O USUÁRIO DIGITOU/ESCOLHEU UM NOME E PREENCHE O ID
   document.getElementById('nomeAlunoInput').addEventListener('input', function(e) {
-    const nomeDigitado = e.target.value.trim();
+    const nomeDigitado = e.target.value.trim().toUpperCase();
     const alunoEncontrado = dadosBanco.find(a => a.nome === nomeDigitado);
     
     if (alunoEncontrado) {
@@ -175,7 +170,7 @@
     const inputNome = document.getElementById('nomeAlunoInput');
     
     const id = inputId.value.trim();
-    const nome = inputNome.value.trim();
+    const nome = inputNome.value.trim().toUpperCase();
 
     const jaExiste = alunos.some(a => a.id === id);
 
@@ -186,6 +181,10 @@
       inputId.value = '';
       inputNome.value = '';
       inputNome.focus();
+    } else if (jaExiste) {
+      Swal.fire('Aviso', 'Este aluno já está na fila de matrícula!', 'info');
+    } else {
+      Swal.fire('Aviso', 'Selecione um aluno válido na lista.', 'warning');
     }
   }
 
@@ -196,17 +195,22 @@
 
   function renderizarLista() {
     const lista = document.getElementById('listaAlunos');
+    const btnEnviar = document.getElementById('btnEnviar');
+    
     document.getElementById('contadorFila').innerText = alunos.length;
     lista.innerHTML = '';
     
     if (alunos.length === 0) {
       lista.innerHTML = `<div class="text-center text-muted mt-5" id="msgListaVazia" style="font-style: italic;">Nenhum aluno na fila. Busque e adicione acima.</div>`;
+      btnEnviar.style.display = 'none';
       return;
     }
 
+    btnEnviar.style.display = 'inline-block'; // Só mostra o botão se tiver alunos
+
     alunos.forEach((aluno, index) => {
       lista.innerHTML += `
-        <div class="item-aluno">
+        <div class="item-aluno animate__animated animate__fadeIn">
           <div><i class="fas fa-user-check text-success me-2"></i> <strong>${aluno.nome}</strong> <span class="text-muted ms-2" style="font-size: 0.85em;">(ID: ${aluno.id})</span></div>
           <span class="remove" onclick="removerAluno(${index})" title="Remover da fila"><i class="fas fa-times"></i></span>
         </div>`;
@@ -215,12 +219,12 @@
 
   // 5. ENVIA PARA A PLANILHA VIA FETCH E MOSTRA MENSAGENS
   async function enviarMatriculas() {
-    const idTurma = document.getElementById('idTurma').value.trim();
+    const idTurma = document.getElementById('idTurma').value.trim().toUpperCase();
     const btn = document.getElementById('btnEnviar');
     const alertBox = document.getElementById('statusAlert');
     
     if (!idTurma || alunos.length === 0) {
-      alertBox.innerHTML = `<div class="alert alert-warning"><i class="fas fa-exclamation-triangle me-2"></i> Você precisa preencher o ID da Turma e adicionar pelo menos um aluno na fila.</div>`;
+      Swal.fire('Atenção', 'Você precisa preencher o ID da Turma e adicionar alunos na fila.', 'warning');
       return;
     }
 
@@ -241,22 +245,26 @@
     };
 
     try {
-        const resRaw = await fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) });
+        // 🌟 MÁGICA 4: O Truque do Content-Type também ao Salvar!
+        const resRaw = await fetch(API_URL, { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(pacote) 
+        });
         const res = await resRaw.json();
 
         if (res.sucesso || res.status === "sucesso") {
-            alertBox.innerHTML = `<div class="alert alert-success"><i class="fas fa-check-circle me-2"></i> <strong>Sucesso!</strong> Alunos matriculados com sucesso!</div>`;
-            Swal.fire('Matrículas Realizadas!', 'Os alunos foram inseridos na turma com sucesso.', 'success');
+            Swal.fire('Sucesso!', 'Os alunos foram inseridos na turma.', 'success');
             
             // Limpa o formulário
             alunos = [];
             document.getElementById('idTurma').value = '';
             renderizarLista();
         } else {
-            alertBox.innerHTML = `<div class="alert alert-danger"><i class="fas fa-bug me-2"></i> <strong>Erro:</strong> ${res.erro || res.mensagem}</div>`;
+            Swal.fire('Atenção', res.erro || res.mensagem, 'warning');
         }
     } catch (err) {
-        alertBox.innerHTML = `<div class="alert alert-danger"><i class="fas fa-wifi me-2"></i> <strong>Erro de Conexão:</strong> Falha ao comunicar com o servidor.</div>`;
+        Swal.fire('Erro de Conexão', 'Falha ao comunicar com o servidor.', 'error');
     } finally {
         btn.disabled = false;
         btn.innerHTML = `<i class="fas fa-paper-plane me-2"></i> PROCESSAR MATRÍCULAS`;

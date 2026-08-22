@@ -91,25 +91,33 @@
 <script>
   // 🚨 LINK DO SEU MOTOR GOOGLE APPS SCRIPT
   const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec"; 
+  
+  // 🌟 A CHAVE MESTRA DUPLA! Pegamos os DOIS códigos!
   const idPlanilhaCeu = localStorage.getItem('ceu_planilha_id');
+  const codigoCeu = localStorage.getItem('ceu_codigo_eol');
 
   let alunos = []; 
   let dadosBanco = []; 
 
   // 1. CARREGA OS NOMES ASSIM QUE ABRIR A PÁGINA USANDO O FETCH
   document.addEventListener("DOMContentLoaded", async function() {
-    if (!idPlanilhaCeu) {
+    if (!idPlanilhaCeu || !codigoCeu) {
       document.getElementById('statusAlert').innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> ERRO: Planilha do CEU não conectada. Faça login novamente.</div>`;
       return;
     }
 
     try {
-      // 🌟 MÁGICA 1: Aviso de Carregamento para segurar a ansiedade dos 10.500 alunos
       document.getElementById('statusAlert').innerHTML = `<div class="alert alert-info"><i class="fas fa-spinner fa-spin me-2"></i> Sincronizando base de alunos...</div>`;
 
-      const pacote = { acao: "listarAlunosNovoSistema", dados: { idPlanilha: idPlanilhaCeu } };
+      // 🌟 MÁGICA 1: Mandando o idCeu no pacote para o robô não reclamar!
+      const pacote = { 
+          acao: "listarAlunosNovoSistema", 
+          dados: { 
+              idPlanilha: idPlanilhaCeu,
+              idCeu: codigoCeu 
+          } 
+      };
       
-      // 🌟 MÁGICA 2: O Truque do Content-Type inserido aqui!
       const resRaw = await fetch(API_URL, { 
           method: 'POST', 
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -125,7 +133,6 @@
           id: a.idAluno || a.prontuario || a.id || a[0] || "ID Não Encontrado"
         }));
 
-        // 🌟 MÁGICA 3: Renderização Turbo! Injetando HTML gigante de uma vez só!
         const datalist = document.getElementById('opcoesAlunos');
         let opcoesHTML = "";
         dadosBanco.forEach(aluno => {
@@ -133,7 +140,6 @@
         });
         datalist.innerHTML = opcoesHTML;
 
-        // Limpa o aviso
         document.getElementById('statusAlert').innerHTML = ``;
       } else {
         document.getElementById('statusAlert').innerHTML = `<div class="alert alert-warning"><i class="fas fa-bug"></i> ${res.mensagem || res.erro}</div>`;
@@ -206,7 +212,7 @@
       return;
     }
 
-    btnEnviar.style.display = 'inline-block'; // Só mostra o botão se tiver alunos
+    btnEnviar.style.display = 'inline-block'; 
 
     alunos.forEach((aluno, index) => {
       lista.innerHTML += `
@@ -234,18 +240,18 @@
 
     const apenasIds = alunos.map(a => a.id);
 
-    // PACOTE PARA A API NO GOOGLE
+    // 🌟 MÁGICA 2: Mandando o idCeu no salvamento também!
     const pacote = {
         acao: "processarMatriculaNovoSistema",
         dados: {
             idPlanilha: idPlanilhaCeu,
+            idCeu: codigoCeu, // <-- O SEGREDO AQUI!
             idTurma: idTurma,
             alunosIds: apenasIds
         }
     };
 
     try {
-        // 🌟 MÁGICA 4: O Truque do Content-Type também ao Salvar!
         const resRaw = await fetch(API_URL, { 
             method: 'POST', 
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -256,7 +262,6 @@
         if (res.sucesso || res.status === "sucesso") {
             Swal.fire('Sucesso!', 'Os alunos foram inseridos na turma.', 'success');
             
-            // Limpa o formulário
             alunos = [];
             document.getElementById('idTurma').value = '';
             renderizarLista();

@@ -96,29 +96,37 @@
             carregarAlunos();
         };
 
-        function carregarAlunos() {
+function carregarAlunos() {
+            // 🚀 Pegamos as duas chaves por segurança: O código EOL e o ID da Planilha!
             const codigoCeu = localStorage.getItem('ceu_codigo_eol');
-            if(!codigoCeu) return Swal.fire('Erro', 'CEU não identificado.', 'error');
+            const idPlanilhaCeu = localStorage.getItem('ceu_planilha_id'); 
+            
+            if(!codigoCeu && !idPlanilhaCeu) return Swal.fire('Erro', 'CEU não identificado.', 'error');
 
             fetch(API_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify({
                     acao: "listarAlunosNovoSistema",
-                    dados: { idCeu: codigoCeu }
+                    dados: { 
+                        idCeu: codigoCeu, 
+                        idPlanilha: idPlanilhaCeu // A Mágica da Velocidade!
+                    }
                 })
             })
             .then(res => res.json())
             .then(retorno => {
-                if(retorno.status === "sucesso") {
+                if(retorno.status === "sucesso" || retorno.sucesso) {
                     alunosGlobais = retorno.alunos || [];
                     renderizarTabela(alunosGlobais);
                 } else {
-                    document.getElementById('corpo-tabela').innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">${retorno.mensagem}</td></tr>`;
+                    // 👻 O EXTERMINADOR DE UNDEFINED! Se não tiver 'mensagem', ele acha o 'erro'!
+                    let msgErro = retorno.mensagem || retorno.erro || "Erro desconhecido. Você fez a Nova Implantação?";
+                    document.getElementById('corpo-tabela').innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4 fw-bold"><i class="fas fa-exclamation-triangle"></i> ${msgErro}</td></tr>`;
                 }
             })
             .catch(err => {
-                document.getElementById('corpo-tabela').innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">Erro de conexão. Tente novamente.</td></tr>`;
+                document.getElementById('corpo-tabela').innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">Erro de conexão com o banco. Tente novamente.</td></tr>`;
             });
         }
 

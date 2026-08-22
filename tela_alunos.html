@@ -525,7 +525,7 @@
             }
         };
 
-        function carregarDadosDoAluno(idAluno) {
+function carregarDadosDoAluno(idAluno) {
             const codigoCeu = localStorage.getItem('ceu_codigo_eol'); 
 
             Swal.fire({ title: 'Buscando Prontuário...', text: 'Resgatando os dados...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
@@ -542,15 +542,48 @@
                 if (retorno.status === "sucesso") {
                     Swal.close(); 
                     
-                    // 🌟 MÁGICA 2: O Banco de Dados voltou e trouxe o nome!
-                    document.querySelector('.titulo-tela').innerHTML = `<span class="material-icons" style="font-size: 32px; color: #ff9800;">edit_document</span> Editando: ${idAluno} - <span class="text-primary">${retorno.aluno.nomeCompleto}</span>`;
+                    document.querySelector('.titulo-tela').innerHTML = `<span class="material-icons align-middle" style="font-size: 32px; color: #ff9800;">edit_document</span> Editando: ${idAluno} - <span class="text-primary">${retorno.aluno.nomeCompleto}</span>`;
 
                     preencherFormulario(retorno.aluno);
+                    
+                    // 🌟 MÁGICA: Assim que ele preenche a ficha, manda o Radar buscar as modalidades!
+                    carregarModalidades(idAluno);
+
                 } else {
                     Swal.fire('Erro', retorno.mensagem, 'error');
                 }
             })
             .catch(err => Swal.fire('Erro', 'Falha na conexão.', 'error'));
+        }
+
+        // ==========================================
+        // 🏆 RADAR DE MATRÍCULAS (NOVO)
+        // ==========================================
+        function carregarModalidades(idAluno) {
+            const idPlanilhaCeu = localStorage.getItem('ceu_planilha_id');
+            const codigoCeu = localStorage.getItem('ceu_codigo_eol');
+
+            // Coloca um aviso de "Buscando" na caixinha
+            document.getElementById('lista-modalidades-ativas').innerHTML = '<div class="p-3 bg-white rounded border text-center text-muted"><div class="spinner-border spinner-border-sm text-success me-2"></div> Buscando matrículas...</div>';
+
+            fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({
+                    acao: "buscarModalidadesDoAluno",
+                    dados: { idPlanilha: idPlanilhaCeu, idCeu: codigoCeu, idAluno: idAluno }
+                })
+            })
+            .then(res => res.json())
+            .then(retorno => {
+                if(retorno.sucesso || retorno.status === "sucesso") {
+                    // Joga o visual bonitão na tela!
+                    document.getElementById('lista-modalidades-ativas').innerHTML = retorno.htmlAtivas;
+                    document.getElementById('lista-modalidades-historico').innerHTML = retorno.htmlHistorico;
+                } else {
+                    document.getElementById('lista-modalidades-ativas').innerHTML = `<div class="p-3 bg-white rounded border text-center text-danger"><i class="fas fa-exclamation-triangle"></i> Falha ao buscar matrículas.</div>`;
+                }
+            }).catch(e => console.error("Erro ao buscar modalidades:", e));
         }
 
         function preencherFormulario(aluno) {

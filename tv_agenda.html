@@ -106,7 +106,7 @@
     </table>
   </div>
 
-  <script>
+ <script>
     // 🚨 COLOQUE AQUI O SEU LINK DO GOOGLE APPS SCRIPT:
     const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec"; 
 
@@ -114,13 +114,14 @@
     const HORA_FIM = 22; 
     let diaSemanaAtual = 0;
 
-    // Puxa as memórias do CEU
+    // 🌟 A CHAVE MESTRA DUPLA DA TV
     const idPlanilhaCeu = localStorage.getItem('ceu_planilha_id');
+    const codigoCeu = localStorage.getItem('ceu_codigo_eol') || localStorage.getItem('ceu_id') || sessionStorage.getItem('ceu_id');
+    
     const nomeCeu = localStorage.getItem('ceu_nome_especifico') || localStorage.getItem('ceu_nome') || "SISTEMA";
     const logoCeu = localStorage.getItem('ceu_logo_url') || localStorage.getItem('ceu_logo') || "";
 
     function iniciar() {
-      // 🌟 Configura o Nome e Logo na TV
       document.getElementById('nome-ceu-tv').innerText = nomeCeu.toUpperCase();
       if(logoCeu !== "") {
           const imgLogo = document.getElementById('logo-ceu-tv');
@@ -128,30 +129,38 @@
           imgLogo.style.display = 'block';
       }
 
-      if(!idPlanilhaCeu) {
-          document.getElementById('agenda-body').innerHTML = '<tr><td colspan="6" style="color:#ffb3b3; padding: 40px; font-size: 20px;">ERRO: Faça o login no sistema primeiro para a TV saber qual é o CEU.</td></tr>';
+      if(!idPlanilhaCeu && !codigoCeu) {
+          document.getElementById('agenda-body').innerHTML = '<tr><td colspan="6" style="color:#ffb3b3; padding: 40px; font-size: 20px;">🚨 ERRO DE CONEXÃO: A TV não sabe qual é o seu CEU. Abra o sistema nesta mesma aba, faça o Login e depois volte para a TV!</td></tr>';
           return;
       }
 
       atualizarRelogio(); 
       setInterval(atualizarRelogio, 1000);
       buscarDadosTV();
-      setInterval(buscarDadosTV, 600000); // Atualiza as aulas a cada 10 min
+      setInterval(buscarDadosTV, 600000); 
     }
 
-    // 🌟 A MÁGICA DE BUSCA DO NOVO SISTEMA!
+    // 🌟 A MÁGICA: O Fetch da TV agora manda a chave dupla e mostra erros na tela!
     function buscarDadosTV() {
         fetch(API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({ acao: "buscarAgendaTV", dados: { idPlanilha: idPlanilhaCeu } })
+            body: JSON.stringify({ 
+                acao: "buscarAgendaTV", 
+                dados: { idPlanilha: idPlanilhaCeu, idCeu: codigoCeu } 
+            })
         })
         .then(res => res.json())
         .then(retorno => {
-            if(retorno.sucesso) montarAgenda(retorno.agenda);
-            else console.log("Erro na TV:", retorno.erro);
+            if(retorno.sucesso) {
+                montarAgenda(retorno.agenda);
+            } else {
+                document.getElementById('agenda-body').innerHTML = `<tr><td colspan="6" style="color:#ffb3b3; padding: 40px; font-size: 20px;">🚨 ERRO DO BANCO DE DADOS: ${retorno.erro}</td></tr>`;
+            }
         })
-        .catch(err => console.log("Erro de Conexão na TV"));
+        .catch(err => {
+            document.getElementById('agenda-body').innerHTML = `<tr><td colspan="6" style="color:#ffb3b3; padding: 40px; font-size: 20px;">🚨 ERRO DE INTERNET: Falha ao se conectar com o Google. O sistema tentará novamente em 10 minutos.</td></tr>`;
+        });
     }
 
     function extrairHorarios(textoHorario) {
@@ -191,6 +200,11 @@
       const tbody = document.getElementById('agenda-body');
       tbody.innerHTML = '';
 
+      if (dados.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="6" style="padding: 40px; font-size: 20px; color: #6c757d;">Nenhuma turma encontrada no Banco de Dados para a TV.</td></tr>`;
+          return;
+      }
+
       const agora = new Date().toLocaleString("en-US", {timeZone: "America/Sao_Paulo"});
       const dataSP = new Date(agora);
       const diaSemanaIndex = dataSP.getDay(); 
@@ -205,6 +219,7 @@
 
       const coresDestaque = ['#fca311', '#00f5d4', '#f15bb5', '#06d6a0', '#9b5de5', '#fee440', '#00bbff'];
       let contadorCores = 0;
+      let temAulasHoje = false;
 
       for (let h = HORA_INICIO; h <= HORA_FIM; h++) {
         for (let m of ['00', '30']) {
@@ -220,6 +235,7 @@
           });
 
           if (atividades.length > 0) {
+            temAulasHoje = true;
             atividades.forEach((ativ, index) => {
               const tr = document.createElement('tr');
               
@@ -344,6 +360,11 @@
           }
         }
       }
+      
+      if (!temAulasHoje) {
+          tbody.innerHTML = `<tr><td colspan="6" style="padding: 40px; font-size: 20px; color: #6c757d;">Não há aulas programadas para o dia de hoje.</td></tr>`;
+      }
+
       focarHorarioAtual();
     }
 

@@ -52,6 +52,11 @@
             </h3>
             
             <div style="display: flex; gap: 10px;">
+                <!-- 🗑️ NOVO BOTÃO DE EXCLUIR (Invisível por padrão) -->
+                <button class="btn btn-danger" onclick="confirmarExclusao()" id="btn-excluir-aluno" style="display: none; align-items: center; gap: 8px; font-weight: bold; border-radius: 8px;">
+                    <span class="material-icons">delete_forever</span> Excluir
+                </button>
+                
                 <button class="btn btn-outline-secondary" onclick="imprimirFichaAtual()" id="btn-imprimir-ficha" style="display: none; align-items: center; gap: 8px; font-weight: bold;">
                     <span class="material-icons">print</span> Imprimir Ficha
                 </button>
@@ -556,6 +561,9 @@
             const btnImprimir = document.getElementById('btn-imprimir-ficha');
             if (btnImprimir) btnImprimir.style.display = 'flex';
 
+            const btnExcluir = document.getElementById('btn-excluir-aluno');
+            if (btnExcluir) btnExcluir.style.display = 'flex';
+            
             if (aluno.linkFoto && aluno.linkFoto !== "") {
                 const matchF = aluno.linkFoto.match(/(?:id=|file\/d\/|d\/)([^&\/]+)/);
                 if (matchF && matchF[1]) {
@@ -624,663 +632,59 @@
                 Swal.fire('Atenção', 'Os dados não foram carregados completamente para impressão.', 'warning');
             }
         }
-    </script>
-</body>
-</html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<!--
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cadastro de Alunos</title>
     
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-    <style>
-        body { background-color: #f4f7f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; }
-        .card-form { background: #ffffff; border-radius: 16px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04); border: none; overflow: hidden; }
-        .card-header-custom { background: #ffffff; border-bottom: 1px solid #edf2f7; padding: 25px 30px; display: flex; justify-content: space-between; align-items: center; }
-        .titulo-tela { margin: 0; color: #2c3e50; font-weight: 800; font-size: 24px; display: flex; align-items: center; gap: 10px; }
-        
-        .btn-salvar { background: #0d6efd; color: white; border: none; border-radius: 8px; padding: 10px 24px; font-weight: 700; font-size: 15px; display: flex; align-items: center; gap: 8px; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(13, 110, 253, 0.2); }
-        .btn-salvar:hover { background: #0b5ed7; transform: translateY(-2px); box-shadow: 0 6px 15px rgba(13, 110, 253, 0.3); }
-        
-        .custom-tabs { border-bottom: 2px solid #edf2f7; padding: 0 20px; background: #f8fafc; }
-        .custom-tabs .nav-link { color: #64748b; border: none; font-weight: 600; padding: 15px 20px; font-size: 14px; display: flex; align-items: center; gap: 8px; border-bottom: 3px solid transparent; transition: all 0.3s ease; }
-        .custom-tabs .nav-link:hover { color: #0d6efd; border-bottom: 3px solid #b6d4fe; }
-        .custom-tabs .nav-link.active { color: #0d6efd; background: transparent; border-bottom: 3px solid #0d6efd; }
-        
-        .tab-content-custom { padding: 30px; }
-        .form-label { font-weight: 600; color: #4a5568; font-size: 13px; margin-bottom: 6px; }
-        .form-control, .form-select { border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 15px; font-size: 14px; background-color: #f8fafc; color: #1e293b; transition: all 0.2s; }
-        .form-control:focus, .form-select:focus { background-color: #ffffff; border-color: #0d6efd; box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.1); }
-        
-        .avatar-container { position: relative; display: inline-block; margin-bottom: 15px; }
-        .avatar-preview { width: 140px; height: 140px; border-radius: 50%; object-fit: cover; border: 4px solid #ffffff; box-shadow: 0 4px 15px rgba(0,0,0,0.1); background-color: #f1f5f9; }
-        .btn-camera { position: absolute; bottom: 5px; right: 5px; background: #0d6efd; color: white; border-radius: 50%; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.2); transition: 0.3s; }
-        .btn-camera:hover { background: #0b5ed7; transform: scale(1.1); }
-        
-        .section-title { color: #0d6efd; font-weight: 700; font-size: 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid #edf2f7; padding-bottom: 10px; }
-    
-            input[type="text"], textarea {
-                                            text-transform: uppercase;
-                                         }
-    
-    
-    
-    </style>
-</head>
-<body>
-
-    <div class="card-form animate__animated animate__fadeIn">
-        
-        <div class="card-header-custom">
-            <h3 class="titulo-tela">
-                <span class="material-icons" style="font-size: 32px; color: #0d6efd;">person_add</span> 
-                Cadastro de Munícipe
-            </h3>
-            
-            <div style="display: flex; gap: 10px;">
-                <button class="btn btn-outline-secondary" onclick="imprimirFichaAtual()" id="btn-imprimir-ficha" style="display: none; align-items: center; gap: 8px; font-weight: bold;">
-                    <span class="material-icons">print</span> Imprimir Ficha
-                </button>
-
-                <button class="btn-salvar" onclick="salvarNovoAluno()" id="btn-salvar-aluno">
-                    <span class="material-icons">save</span> Gravar Ficha
-                </button>
-            </div>
-        </div>
-
-        <ul class="nav custom-tabs" id="tabsCadastroAluno" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#ident" type="button" role="tab"><span class="material-icons">badge</span> Identificação</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#contato" type="button" role="tab"><span class="material-icons">contact_phone</span> Endereço e Contato</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#saude" type="button" role="tab"><span class="material-icons">health_and_safety</span> Saúde e Responsável</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#admin" type="button" role="tab"><span class="material-icons">admin_panel_settings</span> Administrativo (Carteirinhas)</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#modalidades" type="button" role="tab"><span class="material-icons">sports_score</span> Modalidades</button>
-            </li>
-        </ul>
-
-        <div class="tab-content tab-content-custom" id="conteudoTabsAluno">
-            
-            <div class="tab-pane fade show active" id="ident" role="tabpanel">
-                <div class="row">
-                    <div class="col-md-3 text-center d-flex flex-column align-items-center justify-content-start pt-3">
-                        <div class="avatar-container">
-                            <img id="aluno-preview-foto" src="https://via.placeholder.com/150/cbd5e1/ffffff?text=SEM+FOTO" class="avatar-preview">
-                            <label for="aluno-foto" class="btn-camera" title="Adicionar Foto">
-                                <span class="material-icons" style="font-size: 20px;">camera_alt</span>
-                            </label>
-                            <input type="file" id="aluno-foto" style="display: none;" accept="image/*" onchange="previewFotoAluno(event)">
-                        </div>
-                        <span class="text-muted small fw-bold">Foto do Aluno</span>
-                    </div>
-
-                    <div class="col-md-9">
-                        <div class="row g-4">
-                            <div class="col-md-4">
-                                <label class="form-label">Código EOL</label>
-                                <input type="number" id="aluno-eol" class="form-control" placeholder="Apenas números">
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">CIN (CPF ou RG) <span class="text-danger">*</span></label>
-                                <input type="text" id="aluno-cin" class="form-control" placeholder="000.000.000-00">
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Data de Nascimento <span class="text-danger">*</span></label>
-                                <input type="date" id="aluno-nasc" class="form-control">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Nome Completo <span class="text-danger">*</span></label>
-                                <input type="text" id="aluno-nome" class="form-control text-uppercase" placeholder="Nome de registro">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Nome Social</label>
-                                <input type="text" id="aluno-social" class="form-control text-uppercase" placeholder="Preencha se houver">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="tab-pane fade" id="contato" role="tabpanel">
-                <h6 class="section-title"><span class="material-icons">location_on</span> Dados Residenciais</h6>
-                <div class="row g-3 mb-4">
-                    <div class="col-md-2">
-                        <label class="form-label">CEP</label>
-                        <input type="text" id="aluno-cep" class="form-control" placeholder="Somente números" onblur="buscarCEP(this.value)">
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Logradouro (Ex: Rua)</label>
-                        <input type="text" id="aluno-logradouro" class="form-control text-uppercase">
-                    </div>
-                    <div class="col-md-5">
-                        <label class="form-label">Endereço</label>
-                        <input type="text" id="aluno-endereco" class="form-control text-uppercase">
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label text-primary">Número</label>
-                        <input type="text" id="aluno-numero" class="form-control">
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Complemento</label>
-                        <input type="text" id="aluno-complemento" class="form-control text-uppercase" placeholder="Apto, Bloco, etc.">
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Bairro</label>
-                        <input type="text" id="aluno-bairro" class="form-control text-uppercase">
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Cidade</label>
-                        <input type="text" id="aluno-cidade" class="form-control text-uppercase">
-                    </div>
-                    <div class="col-md-1">
-                        <label class="form-label">UF</label>
-                        <input type="text" id="aluno-estado" class="form-control text-uppercase" maxlength="2" placeholder="SP">
-                    </div>
-                </div>
-
-                <h6 class="section-title"><span class="material-icons">phone_in_talk</span> Contatos</h6>
-                <div class="row g-3">
-                    <div class="col-md-3">
-                        <label class="form-label">Telefone Próprio</label>
-                        <input type="text" id="aluno-tel1" class="form-control" placeholder="(11) 90000-0000">
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Tipo de Contato</label>
-                        <select id="aluno-tipo-tel1" class="form-select">
-                            <option value="">Selecione...</option>
-                            <option value="LIGAÇÃO E WHATSAPP">Ligação e WhatsApp</option>
-                            <option value="APENAS LIGAÇÃO">Apenas Ligação</option>
-                            <option value="APENAS WHATSAPP">Apenas WhatsApp</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Tel. Recados</label>
-                        <input type="text" id="aluno-tel-recado" class="form-control" placeholder="(11) 0000-0000">
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Falar com (Recado)</label>
-                        <input type="text" id="aluno-recado-com" class="form-control text-uppercase" placeholder="Nome da pessoa">
-                    </div>
-                </div>
-            </div>
-
-            <div class="tab-pane fade" id="saude" role="tabpanel">
-                <h6 class="section-title"><span class="material-icons">family_restroom</span> Responsáveis e Permissões</h6>
-                <div class="row g-3 mb-4">
-                    <div class="col-md-6">
-                        <label class="form-label">Responsável Legal (Obrigatório p/ Menores)</label>
-                        <input type="text" id="aluno-resp" class="form-control text-uppercase" placeholder="Nome Completo">
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Autoriza Saída Sozinho?</label>
-                        <select id="aluno-saida" class="form-select">
-                            <option value="NÃO">NÃO</option>
-                            <option value="SIM">SIM</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Quem Autorizou?</label>
-                        <select id="aluno-quem-autorizou" class="form-select">
-                            <option value="">N/A</option>
-                            <option value="PAI">PAI</option>
-                            <option value="MÃE">MÃE</option>
-                            <option value="RESPONSÁVEL LEGAL">RESPONSÁVEL LEGAL</option>
-                        </select>
-                    </div>
-                </div>
-
-                <h6 class="section-title text-danger" style="border-color: #f8d7da;"><span class="material-icons">medical_information</span> Informações Médicas (Atenção)</h6>
-                <div class="row g-3">
-                    <div class="col-md-2">
-                        <label class="form-label">É PCD?</label>
-                        <select id="aluno-pcd" class="form-select">
-                            <option value="NÃO">NÃO</option>
-                            <option value="SIM">SIM</option>
-                        </select>
-                    </div>
-                    <div class="col-md-7">
-                        <label class="form-label">Especificar a Deficiência</label>
-                        <input type="text" id="aluno-def-qual" class="form-control text-uppercase" placeholder="Se aplicável">
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Entregou Laudo PCD?</label>
-                        <select id="aluno-laudo-pcd" class="form-select">
-                            <option value="NÃO">NÃO</option>
-                            <option value="SIM">SIM</option>
-                        </select>
-                    </div>
-
-                    <div class="col-md-2">
-                        <label class="form-label">Restrição Alimentar?</label>
-                        <select id="aluno-restr" class="form-select">
-                            <option value="NÃO">NÃO</option>
-                            <option value="SIM">SIM</option>
-                        </select>
-                    </div>
-                    <div class="col-md-7">
-                        <label class="form-label">Especificar a Restrição</label>
-                        <input type="text" id="aluno-restr-qual" class="form-control text-uppercase" placeholder="Alergia a corantes, lactose, etc.">
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Tem Laudo (Alimentar)?</label>
-                        <select id="aluno-laudo-restr" class="form-select">
-                            <option value="NÃO">NÃO</option>
-                            <option value="SIM">SIM</option>
-                        </select>
-                    </div>
-
-                    <div class="col-md-12 mt-4">
-                        <div class="alert" style="background-color: #fff3cd; border-left: 5px solid #ffc107; color: #856404; display: flex; align-items: center; justify-content: space-between;">
-                            <div>
-                                <i class="material-icons align-middle me-2">warning</i>
-                                <strong>Questionário de Prontidão (PAR-Q)</strong> - O aluno preencheu e assinou o questionário de saúde para atividades físicas?
-                            </div>
-                            <div class="form-check form-switch fs-5 mb-0">
-                                <input class="form-check-input" type="checkbox" id="aluno-parq" value="SIM" style="cursor: pointer;">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="tab-pane fade" id="admin" role="tabpanel">
-                <h6 class="section-title"><span class="material-icons">badge</span> Controle de Impressão e Permissões</h6>
-                
-                <div class="p-3 mb-3 border rounded-3 bg-light">
-                    <h6 class="text-primary fw-bold mb-3"><i class="material-icons align-middle fs-5">stars</i> Carteirinha de Uso Geral</h6>
-                    <div class="row align-items-center">
-                        <div class="col-md-6">
-                            <label class="form-label text-muted">Imprimir Carteirinha? (Coluna O)</label>
-                            <select id="aluno-print-geral" class="form-select border-primary fw-bold">
-                                <option value="">NÃO</option>
-                                <option value="SIM">SIM</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label text-muted">Número da Via (Automático)</label>
-                            <input type="number" id="aluno-via-geral" class="form-control w-25 text-center fw-bold text-primary" value="0" readonly style="background-color: #e2e8f0; cursor: not-allowed;" title="Controle automático do sistema">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="p-3 mb-3 border rounded-3 bg-light">
-                    <h6 class="text-danger fw-bold mb-3"><i class="material-icons align-middle fs-5">fitness_center</i> Permissão e Carteirinha - Academia</h6>
-                    <div class="row align-items-center">
-                        <div class="col-md-4">
-                            <label class="form-label text-muted">Tem Permissão? (Coluna R)</label>
-                            <select id="aluno-perm-academia" class="form-select border-danger fw-bold">
-                                <option value="">NÃO</option>
-                                <option value="SIM">SIM</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label text-muted">Imprimir Carteirinha? (Coluna N)</label>
-                            <select id="aluno-print-academia" class="form-select border-danger fw-bold">
-                                <option value="">NÃO</option>
-                                <option value="SIM">SIM</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label text-muted">Número da Via (Automático)</label>
-                            <input type="number" id="aluno-via-academia" class="form-control w-25 text-center fw-bold text-danger" value="0" readonly style="background-color: #e2e8f0; cursor: not-allowed;" title="Controle automático do sistema">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="p-3 mb-4 border rounded-3 bg-light">
-                    <h6 class="text-info fw-bold mb-3"><i class="material-icons align-middle fs-5">pool</i> Permissão e Carteirinha - Raia Livre (Piscina)</h6>
-                    <div class="row align-items-center">
-                        <div class="col-md-4">
-                            <label class="form-label text-muted">Tem Permissão? (Coluna Q)</label>
-                            <select id="aluno-perm-raia" class="form-select border-info fw-bold">
-                                <option value="">NÃO</option>
-                                <option value="SIM">SIM</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label text-muted">Imprimir Carteirinha? (Coluna M)</label>
-                            <select id="aluno-print-raia" class="form-select border-info fw-bold">
-                                <option value="">NÃO</option>
-                                <option value="SIM">SIM</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label text-muted">Número da Via (Automático)</label>
-                            <input type="number" id="aluno-via-piscina" class="form-control w-25 text-center fw-bold text-info" value="0" readonly style="background-color: #e2e8f0; cursor: not-allowed;" title="Controle automático do sistema">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-12">
-                        <label class="form-label fw-bold">Observações Internas (Secretaria)</label>
-                        <textarea id="aluno-obs" class="form-control" rows="3" placeholder="Digite anotações sobre documentos pendentes, comportamento ou outros avisos..."></textarea>
-                    </div>
-                </div>
-            </div>
-
-            <div class="tab-pane fade" id="modalidades" role="tabpanel">
-                <h6 class="section-title"><span class="material-icons">sports_kabaddi</span> Histórico de Modalidades e Matrículas</h6>
-                
-                <div class="card mb-4 border-0 shadow-sm bg-light">
-                    <div class="card-body">
-                        <h6 class="fw-bold text-success mb-3 d-flex align-items-center gap-2">
-                            <span class="material-icons">check_circle</span> Modalidades Ativas (Atual)
-                        </h6>
-                        <div id="lista-modalidades-ativas" class="text-muted small">
-                            <div class="p-3 bg-white rounded border text-center">
-                                <span class="material-icons text-muted fs-4">info</span><br>
-                                Nenhuma modalidade ativa carregada no momento.
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card border-0 shadow-sm bg-light">
-                    <div class="card-body">
-                        <h6 class="fw-bold text-secondary mb-3 d-flex align-items-center gap-2">
-                            <span class="material-icons">history</span> Histórico de Matrículas Anteriores
-                        </h6>
-                        <div id="lista-modalidades-historico" class="text-muted small">
-                            <div class="p-3 bg-white rounded border text-center">
-                                <span class="material-icons text-muted fs-4">history_toggle_off</span><br>
-                                Nenhum histórico anterior registrado.
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-        </div> </div>
-
-    <script>
-        // AQUI FICA O LINK OFICIAL DO SEU SERVIDOR
-        const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec"; 
-
-        function previewFotoAluno(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('aluno-preview-foto').src = e.target.result;
-                }
-                reader.readAsDataURL(file);
-            }
-        }
-
-        async function buscarCEP(cep) {
-            const cepLimpo = cep.replace(/\D/g, '');
-            if (cepLimpo.length === 8) {
-                try {
-                    const res = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`);
-                    const dados = await res.json();
-                    if (!dados.erro) {
-                        document.getElementById('aluno-logradouro').value = (dados.logradouro.split(' ')[0] || "").toUpperCase();
-                        document.getElementById('aluno-endereco').value = (dados.logradouro.substring(dados.logradouro.indexOf(' ') + 1) || "").toUpperCase();
-                        document.getElementById('aluno-bairro').value = dados.bairro.toUpperCase();
-                        document.getElementById('aluno-cidade').value = dados.localidade.toUpperCase();
-                        document.getElementById('aluno-estado').value = dados.uf.toUpperCase();
-                        document.getElementById('aluno-numero').focus(); 
-                    }
-                } catch(e) { console.log("Erro ao buscar CEP"); }
-            }
-        }
-
-        async function salvarNovoAluno() {
-            const codigoCeu = localStorage.getItem('ceu_codigo_eol'); 
-            if(!codigoCeu) return Swal.fire('Acesso Negado', 'Você precisa estar logado num CEU.', 'error');
-
-            const nome = document.getElementById('aluno-nome').value.trim();
-            const cin = document.getElementById('aluno-cin').value.trim();
-            
-            if(!nome || !cin) {
-                return Swal.fire('Atenção', 'Nome Completo e CIN (CPF/RG) são obrigatórios!', 'warning');
-            }
-
-            const fotoInput = document.getElementById('aluno-foto');
-            let fotoBase64 = null;
-            let nomeArquivo = null;
-
-            if (fotoInput.files.length > 0) {
-                const file = fotoInput.files[0];
-                nomeArquivo = file.name;
-                fotoBase64 = await new Promise((resolve) => {
-                    const reader = new FileReader();
-                    reader.onload = e => resolve(e.target.result);
-                    reader.readAsDataURL(file);
-                });
-            }
-
-            const pacoteAluno = {
-                idCeu: codigoCeu,
-                eolAluno: document.getElementById('aluno-eol').value,
-                nomeCompleto: nome,
-                nomeSocial: document.getElementById('aluno-social').value,
-                cin: cin,
-                dataNascimento: document.getElementById('aluno-nasc').value,
-                respLegal: document.getElementById('aluno-resp').value,
-                logradouro: document.getElementById('aluno-logradouro').value,
-                endereco: document.getElementById('aluno-endereco').value,
-                numero: document.getElementById('aluno-numero').value,
-                complemento: document.getElementById('aluno-complemento').value,
-                bairro: document.getElementById('aluno-bairro').value,
-                cep: document.getElementById('aluno-cep').value,
-                cidade: document.getElementById('aluno-cidade').value,
-                estado: document.getElementById('aluno-estado').value,
-                telProprio: document.getElementById('aluno-tel1').value,
-                telPligWaths: document.getElementById('aluno-tipo-tel1').value,
-                telRecados: document.getElementById('aluno-tel-recado').value,
-                recadosCom: document.getElementById('aluno-recado-com').value,
-                obs: document.getElementById('aluno-obs').value,
-                pcd: document.getElementById('aluno-pcd').value,
-                especificarDeficiencia: document.getElementById('aluno-def-qual').value,
-                laudoPcd: document.getElementById('aluno-laudo-pcd').value,
-                restricaoAlimentar: document.getElementById('aluno-restr').value,
-                especificarRestricao: document.getElementById('aluno-restr-qual').value,
-                laudoRestricao: document.getElementById('aluno-laudo-restr').value,
-                autorizacaoSaida: document.getElementById('aluno-saida').value,
-                quemAutorizou: document.getElementById('aluno-quem-autorizou').value,
-                parq: document.getElementById('aluno-parq').checked ? "SIM" : "NÃO",
-                imprimirCG: document.getElementById('aluno-print-geral').value,
-                imprimirCAL: document.getElementById('aluno-print-academia').value,
-                permissaoAcademia: document.getElementById('aluno-perm-academia').value,
-                imprimirCRL: document.getElementById('aluno-print-raia').value,
-                permissaoRaia: document.getElementById('aluno-perm-raia').value,
-                viaGeral: document.getElementById('aluno-via-geral').value,
-                viaAcademia: document.getElementById('aluno-via-academia').value,
-                viaPiscina: document.getElementById('aluno-via-piscina').value,
-                fotoBase64: fotoBase64,
-                nomeArquivoFoto: nomeArquivo
-            };
-
+    // ==========================================
+        // 🗑️ EXCLUSÃO DE ALUNO
+        // ==========================================
+        function confirmarExclusao() {
             const idEdicao = document.body.getAttribute('data-id-edicao');
-            let acaoParaServidor = "salvarAlunoNovoSistema"; 
+            if (!idEdicao) return;
 
-            if (idEdicao) {
-                pacoteAluno.idAluno = idEdicao; 
-                acaoParaServidor = "atualizarAlunoNovoSistema"; 
-            }
-
-            Swal.fire({ title: idEdicao ? 'A atualizar Ficha...' : 'A gravar Munícipe...', text: 'Processando dados seguros.', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
-
-            fetch(API_URL, {
-                method: 'POST',
-                body: JSON.stringify({ acao: acaoParaServidor, dados: pacoteAluno })
-            })
-            .then(res => res.json())
-            .then(retorno => {
-                if (retorno.status === "sucesso") {
-                    Swal.fire('Perfeito!', retorno.mensagem, 'success').then(() => {
-                        if(!idEdicao) location.reload(); 
-                    });
-                } else {
-                    Swal.fire('Atenção', retorno.mensagem, 'warning');
+            Swal.fire({
+                title: 'Atenção MÁXIMA!',
+                text: "Você está prestes a apagar este aluno definitivamente. Esta ação não pode ser desfeita!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sim, Excluir!',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    executarExclusao(idEdicao);
                 }
-            })
-            .catch(err => Swal.fire('Erro', 'Falha ao comunicar com o servidor.', 'error'));
+            });
         }
 
-        // ==========================================
-        // 🔎 INICIALIZAÇÃO E CARREGAMENTO DE EDIÇÃO
-        // ==========================================
-        window.onload = function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const idEdicao = urlParams.get('id');
-
-            if (idEdicao) {
-                document.querySelector('.titulo-tela').innerHTML = `<span class="material-icons" style="font-size: 32px; color: #ff9800;">edit_document</span> Editando: ${idEdicao}`;
-                document.getElementById('btn-salvar-aluno').innerHTML = `<span class="material-icons">update</span> Atualizar Ficha`;
-                document.body.setAttribute('data-id-edicao', idEdicao);
-
-                carregarDadosDoAluno(idEdicao);
-            }
-        };
-
-        function carregarDadosDoAluno(idAluno) {
-            const codigoCeu = localStorage.getItem('ceu_codigo_eol'); 
-
-            Swal.fire({ title: 'Buscando Prontuário...', text: 'Resgatando os dados...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+        function executarExclusao(idAluno) {
+            const codigoCeu = localStorage.getItem('ceu_codigo_eol');
+            Swal.fire({ title: 'Excluindo...', text: 'Apagando registro no banco de dados...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
 
             fetch(API_URL, {
                 method: 'POST',
                 body: JSON.stringify({
-                    acao: "buscarAlunoParaEdicao",
+                    acao: "excluirAlunoNovoSistema",
                     dados: { idCeu: codigoCeu, idAluno: idAluno }
                 })
             })
             .then(res => res.json())
             .then(retorno => {
                 if (retorno.status === "sucesso") {
-                    Swal.close(); 
-                    preencherFormulario(retorno.aluno);
+                    Swal.fire('Excluído!', retorno.mensagem, 'success').then(() => {
+                        // Fecha a ficha e volta para a lista de alunos
+                        window.parent.abrirFormFilho('alunos.html', document.querySelector('.sidebar a.ativo'));
+                    });
                 } else {
                     Swal.fire('Erro', retorno.mensagem, 'error');
                 }
             })
-            .catch(err => Swal.fire('Erro', 'Falha na conexão.', 'error'));
+            .catch(err => Swal.fire('Erro', 'Falha na conexão com o servidor.', 'error'));
         }
-
-        function preencherFormulario(aluno) {
-            // Guarda para a Ficha de Impressão
-            sessionStorage.setItem('alunoAtualCompleto', JSON.stringify(aluno));
-            
-            // Exibe o botão de imprimir com segurança
-            const btnImprimir = document.getElementById('btn-imprimir-ficha');
-            if (btnImprimir) btnImprimir.style.display = 'flex';
-
-            if (aluno.linkFoto && aluno.linkFoto !== "") {
-                const matchF = aluno.linkFoto.match(/(?:id=|file\/d\/|d\/)([^&\/]+)/);
-                if (matchF && matchF[1]) {
-                    document.getElementById('aluno-preview-foto').src = "https://drive.google.com/thumbnail?id=" + matchF[1] + "&sz=w300"; 
-                }
-            }
-
-            document.getElementById('aluno-eol').value = aluno.eolAluno || "";
-            document.getElementById('aluno-cin').value = aluno.cin || "";
-            document.getElementById('aluno-nasc').value = aluno.dataNascimento || "";
-            document.getElementById('aluno-nome').value = aluno.nomeCompleto || "";
-            document.getElementById('aluno-social').value = aluno.nomeSocial || "";
-            
-            document.getElementById('aluno-cep').value = aluno.cep || "";
-            document.getElementById('aluno-logradouro').value = aluno.logradouro || "";
-            document.getElementById('aluno-endereco').value = aluno.endereco || "";
-            document.getElementById('aluno-numero').value = aluno.numero || "";
-            document.getElementById('aluno-complemento').value = aluno.complemento || "";
-            document.getElementById('aluno-bairro').value = aluno.bairro || "";
-            document.getElementById('aluno-cidade').value = aluno.cidade || "";
-            document.getElementById('aluno-estado').value = aluno.estado || "";
-
-            document.getElementById('aluno-tel1').value = aluno.telProprio || "";
-            document.getElementById('aluno-tipo-tel1').value = aluno.telPligWaths || "";
-            document.getElementById('aluno-tel-recado').value = aluno.telRecados || "";
-            document.getElementById('aluno-recado-com').value = aluno.recadosCom || "";
-
-            document.getElementById('aluno-resp').value = aluno.respLegal || "";
-            document.getElementById('aluno-saida').value = aluno.autorizacaoSaida || "NÃO";
-            document.getElementById('aluno-quem-autorizou').value = aluno.quemAutorizou || "";
-            document.getElementById('aluno-pcd').value = aluno.pcd || "NÃO";
-            document.getElementById('aluno-def-qual').value = aluno.especificarDeficiencia || "";
-            document.getElementById('aluno-laudo-pcd').value = aluno.laudoPcd || "NÃO";
-            document.getElementById('aluno-restr').value = aluno.restricaoAlimentar || "NÃO";
-            document.getElementById('aluno-restr-qual').value = aluno.especificarRestricao || "";
-            document.getElementById('aluno-laudo-restr').value = aluno.laudoRestricao || "NÃO";
-            
-            if (aluno.parq === "SIM") { document.getElementById('aluno-parq').checked = true; }
-
-            document.getElementById('aluno-print-geral').value = aluno.imprimirCG || "NÃO";
-            document.getElementById('aluno-via-geral').value = aluno.viaGeral || 0;
-            
-            document.getElementById('aluno-perm-academia').value = aluno.permissaoAcademia || "NÃO";
-            document.getElementById('aluno-print-academia').value = aluno.imprimirCAL || "NÃO";
-            document.getElementById('aluno-via-academia').value = aluno.viaAcademia || 0;
-
-            document.getElementById('aluno-perm-raia').value = aluno.permissaoRaia || "NÃO";
-            document.getElementById('aluno-print-raia').value = aluno.imprimirCRL || "NÃO";
-            document.getElementById('aluno-via-piscina').value = aluno.viaPiscina || 0;
-
-            document.getElementById('aluno-obs').value = aluno.obs || "";
-        }
-
-// ==========================================
-        // 🖨️ IMPRESSÃO RÁPIDA 
-        // ==========================================
-        function imprimirFichaAtual() {
-            const dadosAlvo = sessionStorage.getItem('alunoAtualCompleto');
-            if(dadosAlvo) {
-                // Salva na memória do GitHub
-                localStorage.setItem('alunoParaImpressao', dadosAlvo);
-                
-                // Abre o arquivo ficha_impressao.html que agora mora no GitHub!
-                window.open('ficha_impressao.html', '_blank');
-            } else {
-                Swal.fire('Atenção', 'Os dados não foram carregados completamente para impressão.', 'warning');
-            }
-        }
+    
+    
+    
+    
+    
     </script>
 </body>
 </html>

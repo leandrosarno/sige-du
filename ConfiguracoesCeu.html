@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurações do CEU</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body { background-color: #f4f7f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; }
+        .card-config { border-radius: 15px; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.05); background: white; margin-bottom: 25px; overflow: hidden; }
+        .card-header-custom { background: linear-gradient(135deg, #2c3e50, #34495e); color: white; padding: 20px 25px; border-bottom: none; }
+        .form-label { font-weight: 600; color: #4a5568; font-size: 14px; margin-bottom: 8px; }
+        .form-control { border-radius: 8px; border: 1px solid #cbd5e1; padding: 12px 15px; background-color: #f8fafc; transition: all 0.2s; }
+        .form-control:focus { border-color: #0d6efd; box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.1); background-color: #ffffff; }
+        .input-group-text { background-color: #f1f5f9; border-color: #cbd5e1; border-radius: 8px 0 0 8px; font-size: 20px; }
+        .btn-salvar { background: #0d6efd; color: white; border: none; border-radius: 8px; padding: 12px 30px; font-weight: 700; font-size: 16px; transition: 0.3s; box-shadow: 0 4px 12px rgba(13, 110, 253, 0.2); }
+        .btn-salvar:hover { background: #0b5ed7; transform: translateY(-2px); box-shadow: 0 6px 15px rgba(13, 110, 253, 0.3); }
+        .section-title { color: #2c3e50; font-weight: 700; font-size: 18px; margin-bottom: 20px; border-bottom: 2px solid #edf2f7; padding-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container" style="max-width: 800px;">
+    <div class="card-config">
+        <div class="card-header-custom d-flex justify-content-between align-items-center">
+            <h4 class="m-0 fw-bold"><i class="fas fa-cogs me-2 text-info"></i> Portal do Munícipe - Configurações</h4>
+        </div>
+        
+        <div class="card-body p-4 p-md-5">
+            <div id="loading" class="text-center text-primary mb-4" style="display: none;">
+                <i class="fas fa-circle-notch fa-spin fa-2x"></i><br>Carregando configurações...
+            </div>
+
+            <form id="formConfig" style="display: none;">
+                
+                <h5 class="section-title"><i class="fas fa-bullhorn me-2 text-warning"></i> Regras e Avisos Locais do CEU</h5>
+                <div class="mb-4">
+                    <label class="form-label">Regras Específicas para Matrícula (Aparecerá no site público)</label>
+                    <textarea class="form-control" id="REGRAS_LOCAIS" rows="4" placeholder="Ex: Para a natação é obrigatório apresentar exame médico dermatológico recente..."></textarea>
+                    <small class="text-muted">As regras gerais da Rede (RG, Comprovante de Endereço) já aparecerão automaticamente. Escreva aqui apenas as regras específicas do seu CEU.</small>
+                </div>
+
+                <h5 class="section-title mt-5"><i class="fas fa-share-alt me-2 text-success"></i> Redes Sociais Oficiais</h5>
+                
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">WhatsApp da Secretaria</label>
+                        <div class="input-group mb-3">
+                            <span class="input-group-text text-success"><i class="fab fa-whatsapp"></i></span>
+                            <input type="text" class="form-control" id="WHATSAPP" placeholder="Link (wa.me) ou Número">
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label class="form-label">Instagram</label>
+                        <div class="input-group mb-3">
+                            <span class="input-group-text text-danger"><i class="fab fa-instagram"></i></span>
+                            <input type="text" class="form-control" id="INSTAGRAM" placeholder="Link do Perfil">
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Página do Facebook</label>
+                        <div class="input-group mb-3">
+                            <span class="input-group-text text-primary"><i class="fab fa-facebook-f"></i></span>
+                            <input type="text" class="form-control" id="FACEBOOK" placeholder="Link da Página">
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Canal do YouTube</label>
+                        <div class="input-group mb-3">
+                            <span class="input-group-text text-danger"><i class="fab fa-youtube"></i></span>
+                            <input type="text" class="form-control" id="YOUTUBE" placeholder="Link do Canal">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center mt-5">
+                    <button type="button" class="btn-salvar w-100" id="btnSalvar" onclick="salvarDados()">
+                        <i class="fas fa-save me-2"></i> SALVAR CONFIGURAÇÕES NO PORTAL
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 🚨 SEU LINK DO GOOGLE APPS SCRIPT AQUI
+    const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec";
+    const idPlanilhaCeu = localStorage.getItem('ceu_planilha_id');
+
+    document.addEventListener("DOMContentLoaded", () => {
+        if (!idPlanilhaCeu) {
+            Swal.fire('Acesso Negado', 'Faça login no sistema primeiro.', 'error');
+            return;
+        }
+        carregarDados();
+    });
+
+    function carregarDados() {
+        document.getElementById('loading').style.display = 'block';
+        document.getElementById('formConfig').style.display = 'none';
+
+        fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ acao: "carregarConfigCEU", dados: { idPlanilha: idPlanilhaCeu } })
+        })
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('loading').style.display = 'none';
+            if (data.sucesso) {
+                // Preenche os campos se houver dados salvos
+                document.getElementById('REGRAS_LOCAIS').value = data.config.REGRAS_LOCAIS || "";
+                document.getElementById('WHATSAPP').value = data.config.WHATSAPP || "";
+                document.getElementById('INSTAGRAM').value = data.config.INSTAGRAM || "";
+                document.getElementById('FACEBOOK').value = data.config.FACEBOOK || "";
+                document.getElementById('YOUTUBE').value = data.config.YOUTUBE || "";
+                
+                document.getElementById('formConfig').style.display = 'block';
+            } else {
+                Swal.fire('Erro', data.erro, 'error');
+            }
+        })
+        .catch(err => Swal.fire('Erro de Conexão', 'Falha ao buscar configurações.', 'error'));
+    }
+
+    function salvarDados() {
+        const btn = document.getElementById('btnSalvar');
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Salvando...';
+        btn.disabled = true;
+
+        const configAtualizadas = {
+            REGRAS_LOCAIS: document.getElementById('REGRAS_LOCAIS').value,
+            WHATSAPP: document.getElementById('WHATSAPP').value,
+            INSTAGRAM: document.getElementById('INSTAGRAM').value,
+            FACEBOOK: document.getElementById('FACEBOOK').value,
+            YOUTUBE: document.getElementById('YOUTUBE').value
+        };
+
+        fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ acao: "salvarConfigCEU", dados: { idPlanilha: idPlanilhaCeu, configuracoes: configAtualizadas } })
+        })
+        .then(res => res.json())
+        .then(data => {
+            btn.innerHTML = '<i class="fas fa-save me-2"></i> SALVAR CONFIGURAÇÕES NO PORTAL';
+            btn.disabled = false;
+            
+            if (data.sucesso) {
+                Swal.fire('Perfeito!', data.mensagem, 'success');
+            } else {
+                Swal.fire('Erro', data.erro, 'error');
+            }
+        })
+        .catch(err => {
+            btn.innerHTML = '<i class="fas fa-save me-2"></i> SALVAR CONFIGURAÇÕES NO PORTAL';
+            btn.disabled = false;
+            Swal.fire('Erro de Conexão', 'Falha ao salvar configurações.', 'error');
+        });
+    }
+</script>
+</body>
+</html>
+
+
+

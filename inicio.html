@@ -7,6 +7,7 @@
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         body {
             background-color: #f4f7f6;
@@ -155,7 +156,7 @@
             </button>
         </div>
         
-<div class="dashboard-cards">
+        <div class="dashboard-cards">
             
             <div class="stat-card">
                 <div class="stat-icon bg-blue"><span class="material-icons">people</span></div>
@@ -181,7 +182,7 @@
                 </div>
             </div>
 
-            <!-- ⏳ CARTÃO FILA DE ESPERA (Agora no padrão perfeito!) -->
+            <!-- ⏳ CARTÃO FILA DE ESPERA (No padrão perfeito!) -->
             <div class="stat-card">
                 <div class="stat-icon" style="background-color: #f59e0b; color: white;"><span class="material-icons">hourglass_empty</span></div>
                 <div class="stat-info">
@@ -190,21 +191,18 @@
                 </div>
             </div>
 
-        </div>
+        </div> <!-- Fim do Dashboard Cards -->
 
-
-            
-            <!-- 🌟 CARD DA TV CORRIGIDO E ALINHADO -->
-            <div style="background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; cursor: pointer; transition: transform 0.2s; border: 2px solid transparent;" onmouseover="this.style.transform='translateY(-5px)'; this.style.border='2px solid #0d6efd';" onmouseout="this.style.transform='translateY(0)'; this.style.border='2px solid transparent';" onclick="window.open('tv_agenda.html', '_blank')">
-                <div style="width: 60px; height: 60px; border-radius: 15px; background: #2c3e50; display: flex; align-items: center; justify-content: center; color: white; margin-bottom: 12px;">
-                    <span class="material-icons" style="font-size: 32px;">live_tv</span>
-                </div>
-                <h3 style="margin: 0; font-size: 18px; font-weight: 700; color: #2c3e50;">Agenda da TV</h3>
-                <p style="margin: 0; margin-top: 5px; color: #6c757d; font-size: 12px; font-weight: 600; text-transform: uppercase;">Acompanhamento ao Vivo</p>
+        <!-- 🌟 CARD DA TV CORRIGIDO E ALINHADO -->
+        <div style="background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; cursor: pointer; transition: transform 0.2s; border: 2px solid transparent;" onmouseover="this.style.transform='translateY(-5px)'; this.style.border='2px solid #0d6efd';" onmouseout="this.style.transform='translateY(0)'; this.style.border='2px solid transparent';" onclick="window.open('tv_agenda.html', '_blank')">
+            <div style="width: 60px; height: 60px; border-radius: 15px; background: #2c3e50; display: flex; align-items: center; justify-content: center; color: white; margin-bottom: 12px;">
+                <span class="material-icons" style="font-size: 32px;">live_tv</span>
             </div>
-            
+            <h3 style="margin: 0; font-size: 18px; font-weight: 700; color: #2c3e50;">Agenda da TV</h3>
+            <p style="margin: 0; margin-top: 5px; color: #6c757d; font-size: 12px; font-weight: 600; text-transform: uppercase;">Acompanhamento ao Vivo</p>
         </div>
-    </div>
+            
+    </div> <!-- Fim do Painel CEU -->
 
     <!-- 🌟 PAINEL DA DRE -->
     <div id="painel-dre" style="display: none;">
@@ -360,9 +358,13 @@
             .then(retorno => {
                 document.getElementById('area-loading').style.display = 'none';
                 if (retorno.status === "sucesso") {
-                    document.getElementById('stat-alunos').innerText = retorno.estatisticas.cadastros;
-                    document.getElementById('stat-turmas').innerText = retorno.estatisticas.turmas;
-                    document.getElementById('stat-matriculas').innerText = retorno.estatisticas.matriculas;
+                    document.getElementById('stat-alunos').innerText = retorno.estatisticas.cadastros || 0;
+                    document.getElementById('stat-turmas').innerText = retorno.estatisticas.turmas || 0;
+                    document.getElementById('stat-matriculas').innerText = retorno.estatisticas.matriculas || 0;
+                    
+                    // 🌟 A MÁGICA FINAL AQUI: Preenchendo o número na fila de espera!
+                    document.getElementById('dash-fila-espera').innerText = retorno.estatisticas.fila || 0;
+                    
                     document.getElementById('painel-ceu').style.display = 'block';
                 } else {
                     alert("Erro ao carregar métricas da unidade: " + retorno.mensagem);

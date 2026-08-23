@@ -33,6 +33,627 @@
         .acoes-btn { background: transparent; border: none; padding: 5px; color: #64748b; transition: 0.2s; border-radius: 6px; }
         .acoes-btn:hover { background: #e2e8f0; color: #0d6efd; }
         .acoes-btn.btn-del:hover { background: #fee2e2; color: #dc3545; }
+        .acoes-btn.btn-print:hover { background: #e0f2fe; color: #0284c7; }
+        
+        .paginacao-container { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding-top: 15px; border-top: 1px solid #edf2f7; }
+        .btn-paginacao { background: #f1f5f9; border: 1px solid #cbd5e1; padding: 5px 15px; border-radius: 6px; font-weight: bold; color: #4a5568; cursor: pointer; transition: 0.2s; }
+        .btn-paginacao:hover:not(:disabled) { background: #e2e8f0; color: #0d6efd; }
+        .btn-paginacao:disabled { opacity: 0.5; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+
+    <div class="row">
+        <!-- FORMULÁRIO DE CADASTRO -->
+        <div class="col-md-5">
+            <div class="card-custom" id="card-formulario">
+                <h3 class="titulo-tela" id="titulo-form"><span class="material-icons text-primary">school</span> Cadastrar Turma</h3>
+                
+                <input type="hidden" id="modo_form" value="novo">
+
+                <form id="formTurma" onsubmit="event.preventDefault(); processarFormulario();">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label class="form-label">ID da Turma (Cód. EOL) *</label>
+                            <input type="number" class="form-control" id="t_id" required placeholder="Apenas números">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Sufixo da Turma *</label>
+                            <input type="text" class="form-control uppercase-field" id="t_sufixo" required placeholder="Ex: 01, A">
+                        </div>
+                        
+                        <div class="col-12">
+                            <label class="form-label">Modalidade *</label>
+                            <select class="form-select" id="t_modalidade" required><option value="">Carregando...</option></select>
+                        </div>
+
+                        <div class="col-6">
+                            <label class="form-label">Núcleo *</label>
+                            <select class="form-select" id="t_nucleo" required><option value="">Carregando...</option></select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Professor *</label>
+                            <select class="form-select" id="t_professor" required><option value="">Carregando...</option></select>
+                        </div>
+
+                        <div class="col-6">
+                            <label class="form-label text-primary">Cargo na Turma *</label>
+                            <select class="form-select border-primary" id="t_tipo_resp" required><option value="">Carregando...</option></select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Espaço/Sala *</label>
+                            <select class="form-select" id="t_espaco" required><option value="">Carregando...</option></select>
+                        </div>
+
+                        <div class="col-6">
+                            <label class="form-label">Qtd. Vagas *</label>
+                            <input type="number" class="form-control" id="t_vagas" required placeholder="Ex: 30">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Faixa Etária</label>
+                            <input type="text" class="form-control uppercase-field" id="t_faixa" placeholder="Ex: 10 A 15 ANOS">
+                        </div>
+
+                        <!-- 🌟 NOVO CAMPO: STATUS DA LISTA DE ESPERA -->
+                        <div class="col-12">
+                            <label class="form-label text-success fw-bold"><i class="fas fa-door-open"></i> Status Fila (Lista de Espera) *</label>
+                            <select class="form-select border-success" id="t_status_fila" required>
+                                <option value="FECHADA">FECHADA - Não mostrar vagas no portal</option>
+                                <option value="ABERTA">ABERTA - Permitir fila de espera</option>
+                            </select>
+                        </div>
+
+                        <!-- DIAS DA SEMANA -->
+                        <div class="col-12">
+                            <label class="form-label text-primary">Dias da Aula *</label>
+                            <div class="d-flex flex-wrap gap-1">
+                                <input type="checkbox" class="btn-check dia-aula" id="diaSEG" value="SEG"><label class="btn btn-outline-secondary btn-sm flex-grow-1 p-1" for="diaSEG">Seg</label>
+                                <input type="checkbox" class="btn-check dia-aula" id="diaTER" value="TER"><label class="btn btn-outline-secondary btn-sm flex-grow-1 p-1" for="diaTER">Ter</label>
+                                <input type="checkbox" class="btn-check dia-aula" id="diaQUA" value="QUA"><label class="btn btn-outline-secondary btn-sm flex-grow-1 p-1" for="diaQUA">Qua</label>
+                                <input type="checkbox" class="btn-check dia-aula" id="diaQUI" value="QUI"><label class="btn btn-outline-secondary btn-sm flex-grow-1 p-1" for="diaQUI">Qui</label>
+                                <input type="checkbox" class="btn-check dia-aula" id="diaSEX" value="SEX"><label class="btn btn-outline-secondary btn-sm flex-grow-1 p-1" for="diaSEX">Sex</label>
+                                <input type="checkbox" class="btn-check dia-aula" id="diaSAB" value="SÁB"><label class="btn btn-outline-secondary btn-sm flex-grow-1 p-1" for="diaSAB">Sáb</label>
+                                <input type="checkbox" class="btn-check dia-aula" id="diaDOM" value="DOM"><label class="btn btn-outline-secondary btn-sm flex-grow-1 p-1" for="diaDOM" style="flex-basis: 100%;">Dom</label>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">Horário das Aulas *</label>
+                            <input type="text" class="form-control uppercase-field" id="t_horario" required placeholder="Ex: 14H00 ÀS 15H00">
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn-salvar" id="btn-submit-form"><span class="material-icons align-middle" style="font-size: 18px;">save</span> GRAVAR TURMA</button>
+                    <button type="button" class="btn-cancelar" id="btn-cancelar" onclick="cancelarEdicao()">CANCELAR EDIÇÃO</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- LISTA DE TURMAS -->
+        <div class="col-md-7">
+            <div class="card-custom">
+                <h3 class="titulo-tela">
+                    <span class="material-icons text-success">list_alt</span> Turmas Cadastradas
+                    <span id="contador-turmas" class="badge bg-success ms-auto" style="font-size: 14px;">0</span>
+                </h3>
+
+                <div class="busca-container">
+                    <i class="material-icons">search</i>
+                    <input type="text" id="campo-busca" class="form-control busca-input uppercase-field" placeholder="Buscar por modalidade, professor ou ID..." onkeyup="filtrarTurmas()">
+                </div>
+
+                <div id="lista-turmas">
+                    <p class="text-center text-muted mt-4"><i class="material-icons spin">sync</i> Lendo banco de dados...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec"; 
+        
+        let turmasGlobais = []; 
+        let turmasFiltradas = []; 
+        let paginaAtual = 1;
+        const ITENS_POR_PAGINA = 15;
+
+        window.onload = function() {
+            const idPlanilha = localStorage.getItem('ceu_planilha_id');
+            if (!idPlanilha) return document.getElementById('lista-turmas').innerHTML = `<div class="alert alert-danger text-center">Faça login novamente.</div>`;
+            carregarDependencias(idPlanilha);
+            carregarTabelaTurmas(idPlanilha);
+        };
+
+        function carregarDependencias(idPlanilha) {
+            fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "buscarDependenciasTurma", dados: { id_planilha: idPlanilha } }) })
+            .then(res => res.json())
+            .then(retorno => {
+                if(retorno.status === "sucesso") {
+                    preencherCombo('t_modalidade', retorno.modalidades, "Digite a modalidade");
+                    preencherCombo('t_nucleo', retorno.nucleos, "Digite o núcleo");
+                    preencherCombo('t_professor', retorno.professores, "Digite o professor"); 
+                    preencherCombo('t_tipo_resp', retorno.tiposResp, "Digite o cargo"); 
+                    preencherCombo('t_espaco', retorno.espacos, "Digite o espaço");
+                }
+            }).catch(e => console.log("Dependências falharam."));
+        }
+
+        function preencherCombo(idElemento, lista, placeholderSeVazio) {
+            const combo = document.getElementById(idElemento);
+            if (!combo) return;
+            if (!lista || lista.length === 0) {
+                const input = document.createElement('input');
+                input.type = 'text'; input.className = 'form-control uppercase-field'; input.id = idElemento; input.placeholder = placeholderSeVazio; input.required = true;
+                combo.parentNode.replaceChild(input, combo);
+            } else {
+                combo.innerHTML = '<option value="">Selecione...</option>';
+                lista.forEach(item => { 
+                    if (typeof item === 'object' && item !== null && item.id) {
+                        combo.innerHTML += `<option value="${item.id}">${item.nome}</option>`;
+                    } else {
+                        combo.innerHTML += `<option value="${item}">${item}</option>`;
+                    }
+                });
+            }
+        }
+
+        function carregarTabelaTurmas(idPlanilha) {
+            fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "listarTurmas", dados: { id_planilha: idPlanilha } }) })
+            .then(res => res.json())
+            .then(retorno => {
+                if(retorno.status === "sucesso") {
+                    turmasGlobais = retorno.turmas; 
+                    turmasFiltradas = [...turmasGlobais]; 
+                    paginaAtual = 1;
+                    desenharTurmasPaginadas();
+                }
+            }).catch(e => console.log("Falha ao ler turmas."));
+        }
+
+        function filtrarTurmas() {
+            const termo = document.getElementById('campo-busca').value.toUpperCase();
+            turmasFiltradas = turmasGlobais.filter(t => 
+                String(t.modalidade).toUpperCase().includes(termo) || 
+                String(t.professor).toUpperCase().includes(termo) || 
+                String(t.id).toUpperCase().includes(termo)
+            );
+            paginaAtual = 1;
+            desenharTurmasPaginadas();
+        }
+
+        function desenharTurmasPaginadas() {
+            const div = document.getElementById('lista-turmas');
+            document.getElementById('contador-turmas').innerText = turmasFiltradas.length;
+
+            if(turmasFiltradas.length === 0) {
+                div.innerHTML = `<div class="alert alert-light text-center border">Nenhuma turma encontrada.</div>`;
+                return;
+            }
+
+            const totalPaginas = Math.ceil(turmasFiltradas.length / ITENS_POR_PAGINA);
+            const inicio = (paginaAtual - 1) * ITENS_POR_PAGINA;
+            const fim = inicio + ITENS_POR_PAGINA;
+            const turmasPagina = turmasFiltradas.slice(inicio, fim);
+
+            let html = turmasPagina.map(t => {
+                // Prepara a tag de Status (Se não existir no BD ainda, trata como fechada)
+                let statusBd = t.status_fila ? t.status_fila.toUpperCase() : 'FECHADA';
+                let corStatus = statusBd === 'ABERTA' ? 'bg-success text-white' : 'bg-secondary text-white';
+
+                return `
+                <div class="turma-item">
+                    <div style="flex-grow: 1;">
+                        <strong class="text-primary">${t.modalidade}</strong> <span class="turma-tag">${t.id}</span><br>
+                        
+                        <div style="font-size:12.5px; color:#475569; margin-top: 5px;">
+                            <i class="material-icons align-middle text-primary" style="font-size:15px;">person</i> <b>${t.professor || 'Sem Prof.'}</b> <i class="text-muted" style="font-size: 11px;">(${t.tipo_resp || 'Sem cargo'})</i> &nbsp;|&nbsp; 
+                            <i class="material-icons align-middle text-secondary" style="font-size:15px;">domain</i> ${t.nucleo || 'Sem Núcleo'}
+                        </div>
+                        
+                        <div style="font-size:12px; color:#64748b; margin-top: 3px;">
+                            <i class="material-icons align-middle text-success" style="font-size:15px;">place</i> ${t.espaco || 'Sem Espaço'} &nbsp;|&nbsp;
+                            <i class="material-icons align-middle text-warning" style="font-size:15px;">event</i> ${t.xsemana || 'Sem Dia'} &nbsp;|&nbsp;
+                            <i class="material-icons align-middle text-danger" style="font-size:15px;">schedule</i> ${t.horario || 'Sem Horário'}
+                        </div>
+                    </div>
+                    
+                    <div class="text-end ms-3" style="min-width: 100px;">
+                        <!-- Tag Status Fila -->
+                        <span class="turma-tag ${corStatus} mb-1 d-inline-block px-2 py-1 shadow-sm" style="font-size: 10px; width: 100%;"><i class="material-icons align-middle" style="font-size:12px;">people</i> ${statusBd}</span><br>
+                        
+                        <button class="acoes-btn" title="Editar" onclick="prepararEdicao('${t.id}')"><i class="material-icons">edit</i></button>
+                        
+                        <!-- 🖨️ NOVO BOTÃO DE RELATÓRIO -->
+                        <button class="acoes-btn btn-print" title="Imprimir Fila de Espera" onclick="imprimirListaEspera('${t.id}', '${t.modalidade}')"><i class="material-icons text-info">print</i></button>
+                        
+                        <button class="acoes-btn btn-del" title="Excluir" onclick="confirmarExclusao('${t.id}')"><i class="material-icons">delete</i></button>
+                    </div>
+                </div>
+            `}).join('');
+
+            if (totalPaginas > 1) {
+                html += `
+                <div class="paginacao-container">
+                    <button class="btn-paginacao" onclick="mudarPagina(-1)" ${paginaAtual === 1 ? 'disabled' : ''}>
+                        Anterior
+                    </button>
+                    <span style="font-size: 13px; font-weight: bold; color: #64748b;">Página ${paginaAtual} de ${totalPaginas}</span>
+                    <button class="btn-paginacao" onclick="mudarPagina(1)" ${paginaAtual === totalPaginas ? 'disabled' : ''}>
+                        Próxima
+                    </button>
+                </div>`;
+            }
+            div.innerHTML = html;
+        }
+
+        function mudarPagina(direcao) {
+            paginaAtual += direcao;
+            desenharTurmasPaginadas();
+        }
+
+        function selecionarProfessorInteligente(idSalvo, nomeSalvo) {
+            const combo = document.getElementById('t_professor');
+            if (!combo) return;
+            if (idSalvo) {
+                for (let i = 0; i < combo.options.length; i++) {
+                    if (combo.options[i].value === idSalvo) { combo.selectedIndex = i; return; }
+                }
+            }
+            if (nomeSalvo) {
+                for (let i = 0; i < combo.options.length; i++) {
+                    if (combo.options[i].text.toUpperCase() === String(nomeSalvo).toUpperCase()) { combo.selectedIndex = i; return; }
+                }
+            }
+            let valVisivel = idSalvo || nomeSalvo || "Desconhecido";
+            let textVisivel = nomeSalvo || idSalvo || "Desconhecido";
+            combo.innerHTML += `<option value="${valVisivel}">${textVisivel}</option>`;
+            combo.value = valVisivel;
+        }
+
+        function processarFormulario() {
+            const idPlanilha = localStorage.getItem('ceu_planilha_id');
+            const modo = document.getElementById('modo_form').value; 
+            const acaoReal = (modo === "novo") ? "salvarTurma" : "atualizarTurma";
+
+            const valorCargo = document.getElementById('t_tipo_resp') ? document.getElementById('t_tipo_resp').value : "";
+            
+            const comboProf = document.getElementById('t_professor');
+            let idProf = ""; let nomeProf = "";
+            if (comboProf && comboProf.selectedIndex >= 0) {
+                idProf = comboProf.value; 
+                nomeProf = comboProf.options[comboProf.selectedIndex].text; 
+            }
+
+            const diasSelecionados = Array.from(document.querySelectorAll('.dia-aula:checked')).map(cb => cb.value).join(' ');
+            if (diasSelecionados === "") return Swal.fire('Atenção', 'Você precisa selecionar pelo menos um Dia da Aula!', 'warning');
+
+            Swal.fire({ title: 'Salvando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+
+            const pacote = {
+                acao: acaoReal,
+                dados: {
+                    id_planilha: idPlanilha,
+                    id_turma: document.getElementById('t_id').value,
+                    sufixo: document.getElementById('t_sufixo').value,
+                    modalidade: document.getElementById('t_modalidade').value,
+                    nucleo: document.getElementById('t_nucleo').value,
+                    professorId: idProf,         
+                    professorNome: nomeProf,     
+                    tipo_resp: valorCargo,       
+                    espaco: document.getElementById('t_espaco').value,
+                    vagas: document.getElementById('t_vagas').value,
+                    faixa_etaria: document.getElementById('t_faixa').value,
+                    x_semana: diasSelecionados,  
+                    horario: document.getElementById('t_horario').value,
+                    status_fila: document.getElementById('t_status_fila').value // 🌟 NOVO CAMPO ENVIADO
+                }
+            };
+
+            fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) })
+            .then(res => res.json())
+            .then(retorno => {
+                if(retorno.status === "sucesso") {
+                    Swal.fire('Sucesso!', retorno.mensagem, 'success');
+                    cancelarEdicao(); 
+                    carregarTabelaTurmas(idPlanilha); 
+                } else Swal.fire('Erro no Banco', retorno.mensagem, 'error');
+            }).catch(err => Swal.fire('Erro de Rede', 'O navegador não obteve resposta.', 'error'));
+        }
+
+        function prepararEdicao(idTurma) {
+            const idPlanilha = localStorage.getItem('ceu_planilha_id');
+            Swal.fire({ title: 'Carregando dados...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+
+            fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "buscarTurmaPorId", dados: { id_planilha: idPlanilha, id_turma: idTurma } }) })
+            .then(res => res.json()) 
+            .then(retorno => {
+                if(retorno.status === "sucesso") {
+                    const t = retorno.turma;
+                    document.getElementById('t_id').value = t.id;
+                    document.getElementById('t_id').readOnly = true; 
+                    document.getElementById('t_sufixo').value = t.sufixo;
+                    
+                    setValorCampo('t_modalidade', t.modalidade);
+                    setValorCampo('t_nucleo', t.nucleo);
+                    selecionarProfessorInteligente(t.professorId, t.professorNome);
+                    setValorCampo('t_tipo_resp', t.tipo_resp);
+                    setValorCampo('t_espaco', t.espaco);
+                    
+                    document.getElementById('t_vagas').value = t.vagas;
+                    document.getElementById('t_faixa').value = t.faixa;
+                    document.getElementById('t_horario').value = t.horario; 
+                    
+                    // 🌟 PREENCHE O STATUS DA FILA (Se existir)
+                    document.getElementById('t_status_fila').value = t.status_fila ? t.status_fila.toUpperCase() : "FECHADA";
+
+                    document.querySelectorAll('.dia-aula').forEach(cb => cb.checked = false);
+                    if (t.xsemana) {
+                        let diasSalvos = t.xsemana.toUpperCase();
+                        document.querySelectorAll('.dia-aula').forEach(cb => {
+                            if (diasSalvos.includes(cb.value)) cb.checked = true;
+                        });
+                    }
+
+                    document.getElementById('modo_form').value = "editar";
+                    document.getElementById('titulo-form').innerHTML = `<span class="material-icons text-warning">edit</span> Editar Turma`;
+                    document.getElementById('btn-submit-form').className = "btn-salvar bg-warning text-dark";
+                    document.getElementById('btn-submit-form').innerHTML = `<span class="material-icons align-middle" style="font-size: 18px;">update</span> SALVAR ALTERAÇÃO`;
+                    document.getElementById('btn-cancelar').style.display = "block";
+                    
+                    Swal.close();
+                } else Swal.fire('Erro', retorno.mensagem, 'error');
+            }).catch(err => Swal.fire('Erro de Rede', 'Falha ao buscar os dados da turma.', 'error'));
+        }
+
+        function setValorCampo(id, valor, textoFallback) {
+            const campo = document.getElementById(id);
+            if (!campo) return;
+            if(campo.tagName === 'SELECT') {
+                let existe = Array.from(campo.options).some(opt => opt.value === valor);
+                if(!existe && valor) {
+                    let textVisivel = textoFallback || valor;
+                    campo.innerHTML += `<option value="${valor}">${textVisivel}</option>`;
+                }
+            }
+            campo.value = valor;
+        }
+
+        function cancelarEdicao() {
+            document.getElementById('formTurma').reset();
+            document.querySelectorAll('.dia-aula').forEach(cb => cb.checked = false); 
+            document.getElementById('t_id').readOnly = false;
+            document.getElementById('t_status_fila').value = "FECHADA"; // Reseta status
+            document.getElementById('modo_form').value = "novo";
+            document.getElementById('titulo-form').innerHTML = `<span class="material-icons text-primary">school</span> Cadastrar Turma`;
+            document.getElementById('btn-submit-form').className = "btn-salvar";
+            document.getElementById('btn-submit-form').innerHTML = `<span class="material-icons align-middle" style="font-size: 18px;">save</span> GRAVAR TURMA`;
+            document.getElementById('btn-cancelar').style.display = "none";
+        }
+
+        function confirmarExclusao(idTurma) {
+            Swal.fire({
+                title: 'Atenção!', text: `Tem certeza que deseja apagar a turma ${idTurma}? Esta ação não pode ser desfeita.`,
+                icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc3545', cancelButtonColor: '#6c757d', confirmButtonText: 'Sim, apagar!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const idPlanilha = localStorage.getItem('ceu_planilha_id');
+                    Swal.fire({ title: 'Apagando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+                    
+                    fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "excluirTurma", dados: { id_planilha: idPlanilha, id_turma: idTurma } }) })
+                    .then(res => res.json())
+                    .then(retorno => {
+                        if(retorno.status === "sucesso") {
+                            Swal.fire('Excluída!', retorno.mensagem, 'success');
+                            carregarTabelaTurmas(idPlanilha);
+                        } else Swal.fire('Erro', retorno.mensagem, 'error');
+                    }).catch(err => Swal.fire('Erro', 'Falha ao tentar excluir a turma.', 'error'));
+                }
+            });
+        }
+
+        // ========================================================
+        // 🖨️ A MÁGICA: GERADOR DE RELATÓRIO HTML PURO
+        // ========================================================
+        function imprimirListaEspera(idTurma, modalidade) {
+            const idPlanilha = localStorage.getItem('ceu_planilha_id');
+            Swal.fire({ title: 'Buscando lista de interessados...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+
+            fetch(API_URL, { 
+                method: 'POST', 
+                body: JSON.stringify({ acao: "buscarListaEspera", dados: { id_planilha: idPlanilha, id_turma: idTurma } }) 
+            })
+            .then(res => res.json())
+            .then(data => {
+                Swal.close();
+                if(data.sucesso && data.lista && data.lista.length > 0) {
+                    gerarRelatorioHTML(idTurma, modalidade, data.lista);
+                } else {
+                    Swal.fire('Fila Vazia', 'Ainda não há nenhum munícipe na fila de espera para esta turma.', 'info');
+                }
+            }).catch(e => Swal.fire('Erro', 'Não foi possível buscar a lista.', 'error'));
+        }
+
+        function gerarRelatorioHTML(idTurma, modalidade, lista) {
+            // Cria a tabela
+            let linhas = '';
+            lista.forEach((item, index) => {
+                linhas += `
+                    <tr>
+                        <td style="text-align: center;">${index + 1}</td>
+                        <td>${item.data}</td>
+                        <td><strong>${item.nome}</strong></td>
+                        <td>${item.telefone}</td>
+                        <td>${item.documento}</td>
+                    </tr>`;
+            });
+
+            // Constrói a página de impressão
+            let janela = window.open('', '_blank', 'width=900,height=600');
+            let html = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Lista de Espera - ${idTurma}</title>
+                    <style>
+                        body { font-family: 'Segoe UI', Arial, sans-serif; padding: 30px; color: #333; }
+                        .cabecalho { border-bottom: 3px solid #0d6efd; padding-bottom: 15px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: flex-end;}
+                        .titulo { margin: 0; font-size: 24px; color: #0d6efd; text-transform: uppercase; }
+                        .subtitulo { margin: 5px 0 0 0; font-size: 16px; color: #555; }
+                        .info-data { font-size: 12px; color: #777; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px;}
+                        th, td { border: 1px solid #ddd; padding: 10px 12px; text-align: left; }
+                        th { background-color: #f8f9fa; color: #333; font-weight: bold; text-transform: uppercase; font-size: 12px;}
+                        tr:nth-child(even) { background-color: #fcfcfc; }
+                        .rodape { margin-top: 40px; font-size: 11px; text-align: center; color: #888; border-top: 1px solid #ddd; padding-top: 10px;}
+                    </style>
+                </head>
+                <body>
+                    <div class="cabecalho">
+                        <div>
+                            <h1 class="titulo">Relatório de Lista de Espera</h1>
+                            <p class="subtitulo">Atividade: <strong>${modalidade}</strong> | Turma: <strong>${idTurma}</strong></p>
+                        </div>
+                        <div class="info-data">Impresso em: ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}</div>
+                    </div>
+                    
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 50px; text-align: center;">Nº</th>
+                                <th style="width: 120px;">Data/Hora</th>
+                                <th>Nome do Munícipe</th>
+                                <th>Telefone</th>
+                                <th>Documento</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${linhas}
+                        </tbody>
+                    </table>
+
+                    <div class="rodape">Documento gerado automaticamente pelo Sistema Integrado de Gestão Educacional (SIG-EDU)</div>
+                    
+                    <script>
+                        // Aciona a impressão automática após a página carregar
+                        setTimeout(function() { window.print(); }, 800);
+                    <\/script>
+                </body>
+                </html>
+            `;
+            janela.document.write(html);
+            janela.document.close();
+        }
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!--
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Turmas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body { background-color: #f4f7f6; font-family: 'Segoe UI', sans-serif; padding: 20px; }
+        .card-custom { background: #ffffff; border-radius: 16px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04); border: none; padding: 25px; margin-bottom: 25px; }
+        .titulo-tela { color: #2c3e50; font-weight: 800; font-size: 24px; display: flex; align-items: center; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #edf2f7; padding-bottom: 15px; }
+        .form-label { font-weight: 600; color: #4a5568; font-size: 13px; margin-bottom: 6px; }
+        .form-control, .form-select { border-radius: 8px; padding: 10px 15px; font-size: 14px; background-color: #f8fafc; border: 1px solid #cbd5e1; }
+        .form-control:focus, .form-select:focus { border-color: #0d6efd; box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.1); background-color: #ffffff; }
+        
+        .btn-salvar { background: #0d6efd; color: white; border: none; border-radius: 8px; padding: 10px 24px; font-weight: 700; width: 100%; margin-top: 15px; transition: 0.3s; }
+        .btn-salvar:hover { background: #0b5ed7; transform: translateY(-2px); }
+        .btn-cancelar { background: #6c757d; color: white; border: none; border-radius: 8px; padding: 10px 24px; font-weight: 700; width: 100%; margin-top: 10px; transition: 0.3s; display: none;}
+        .btn-cancelar:hover { background: #5a6268; }
+
+        input.uppercase-field { text-transform: uppercase; }
+        
+        .busca-container { position: relative; margin-bottom: 20px; }
+        .busca-container .material-icons { position: absolute; left: 15px; top: 12px; color: #94a3b8; }
+        .busca-input { padding-left: 45px !important; border-radius: 50px !important; background-color: #f1f5f9; border: none; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
+        
+        .turma-item { padding: 15px; border: 1px solid #edf2f7; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; background: #fff; transition: 0.2s; }
+        .turma-item:hover { border-color: #b6d4fe; background: #f8fafc; }
+        .turma-tag { font-size: 11px; padding: 4px 8px; border-radius: 4px; font-weight: bold; background: #e2e8f0; color: #475569; }
+        
+        .acoes-btn { background: transparent; border: none; padding: 5px; color: #64748b; transition: 0.2s; border-radius: 6px; }
+        .acoes-btn:hover { background: #e2e8f0; color: #0d6efd; }
+        .acoes-btn.btn-del:hover { background: #fee2e2; color: #dc3545; }
         
         /* Estilos da Paginação */
         .paginacao-container { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding-top: 15px; border-top: 1px solid #edf2f7; }
@@ -94,7 +715,7 @@
                         </div>
 
                         <!-- 🌟 CAIXINHAS DE DIAS DA SEMANA BLINDADAS -->
-                        <div class="col-12">
+    <!--                    <div class="col-12">
                             <label class="form-label text-primary">Dias da Aula *</label>
                             <div class="d-flex flex-wrap gap-1">
                                 <input type="checkbox" class="btn-check dia-aula" id="diaSEG" value="SEG">
@@ -121,7 +742,7 @@
                         </div>
 
                         <!-- 🌟 HORÁRIO RESTAURADO PARA TEXTO LIVRE ("14H00 ÀS 15H00") -->
-                        <div class="col-12">
+<!--                        <div class="col-12">
                             <label class="form-label">Horário das Aulas *</label>
                             <input type="text" class="form-control uppercase-field" id="t_horario" required placeholder="Ex: 14H00 ÀS 15H00">
                         </div>

@@ -237,20 +237,23 @@ function desenharTurmasPaginadas() {
 
             let html = turmasPagina.map(t => {
                 
-                // 🌟 A MÁGICA VISUAL DA ETIQUETA ESTÁ AQUI!
                 let statusBd = t.status_fila ? String(t.status_fila).trim().toUpperCase() : 'FECHADA';
-                let corStatus = "";
-                let textoStatus = "";
-                let iconeStatus = "";
+                let corStatus = ""; let textoStatus = ""; let iconeStatus = "";
 
                 if (statusBd === 'ABERTA') {
-                    corStatus = "bg-success text-white"; // Retângulo Verde!
-                    textoStatus = "FILA DE ESPERA ABERTA";
+                    corStatus = "bg-success text-white"; 
+                    textoStatus = "FILA ABERTA";
                     iconeStatus = "check_circle";
                 } else {
-                    corStatus = "bg-secondary text-white"; // Retângulo Cinza
+                    corStatus = "bg-secondary text-white";
                     textoStatus = "FILA FECHADA";
                     iconeStatus = "lock";
+                }
+
+                // 🌟 O NOVO CONTADOR VISUAL DA FILA DE ESPERA!
+                let contadorHtml = "";
+                if (t.qtd_fila > 0) {
+                    contadorHtml = `<span class="badge bg-warning text-dark mt-2 w-100 py-1" style="font-size: 11px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"><i class="fas fa-users-clock"></i> ${t.qtd_fila} PESSOA(S) NA FILA</span>`;
                 }
 
                 return `
@@ -272,16 +275,19 @@ function desenharTurmasPaginadas() {
                     
                     <div class="text-end ms-3" style="min-width: 140px;">
                         
-                        <!-- 🏷️ A NOVA ETIQUETA BONITONA! -->
-                        <span class="turma-tag ${corStatus} mb-2 d-inline-block px-2 py-1 shadow-sm" style="font-size: 9.5px; width: 100%; text-align: center;">
+                        <!-- 🏷️ Etiqueta de Aberta/Fechada -->
+                        <span class="turma-tag ${corStatus} mb-1 d-inline-block px-2 py-1 shadow-sm" style="font-size: 9.5px; width: 100%; text-align: center;">
                             <i class="material-icons align-middle" style="font-size:12px;">${iconeStatus}</i> ${textoStatus}
                         </span><br>
                         
-                        <button class="acoes-btn" title="Editar" onclick="prepararEdicao('${t.id}')"><i class="material-icons">edit</i></button>
+                        <!-- 🌟 Etiqueta do Contador de Pessoas (Só aparece se tiver gente) -->
+                        ${contadorHtml}
                         
-                        <button class="acoes-btn btn-print" title="Imprimir Fila de Espera" onclick="imprimirListaEspera('${t.id}', '${t.modalidade}')"><i class="material-icons text-info">print</i></button>
-                        
-                        <button class="acoes-btn btn-del" title="Excluir" onclick="confirmarExclusao('${t.id}')"><i class="material-icons">delete</i></button>
+                        <div class="mt-2">
+                            <button class="acoes-btn" title="Editar" onclick="prepararEdicao('${t.id}')"><i class="material-icons">edit</i></button>
+                            <button class="acoes-btn btn-print" title="Imprimir Fila de Espera" onclick="imprimirListaEspera('${t.id}', '${t.modalidade}')"><i class="material-icons text-info">print</i></button>
+                            <button class="acoes-btn btn-del" title="Excluir" onclick="confirmarExclusao('${t.id}')"><i class="material-icons">delete</i></button>
+                        </div>
                     </div>
                 </div>
             `}).join('');
@@ -289,13 +295,9 @@ function desenharTurmasPaginadas() {
             if (totalPaginas > 1) {
                 html += `
                 <div class="paginacao-container">
-                    <button class="btn-paginacao" onclick="mudarPagina(-1)" ${paginaAtual === 1 ? 'disabled' : ''}>
-                        Anterior
-                    </button>
+                    <button class="btn-paginacao" onclick="mudarPagina(-1)" ${paginaAtual === 1 ? 'disabled' : ''}>Anterior</button>
                     <span style="font-size: 13px; font-weight: bold; color: #64748b;">Página ${paginaAtual} de ${totalPaginas}</span>
-                    <button class="btn-paginacao" onclick="mudarPagina(1)" ${paginaAtual === totalPaginas ? 'disabled' : ''}>
-                        Próxima
-                    </button>
+                    <button class="btn-paginacao" onclick="mudarPagina(1)" ${paginaAtual === totalPaginas ? 'disabled' : ''}>Próxima</button>
                 </div>`;
             }
             div.innerHTML = html;

@@ -221,87 +221,7 @@
             desenharTurmasPaginadas();
         }
 
-function desenharTurmasPaginadas() {
-            const div = document.getElementById('lista-turmas');
-            document.getElementById('contador-turmas').innerText = turmasFiltradas.length;
 
-            if(turmasFiltradas.length === 0) {
-                div.innerHTML = `<div class="alert alert-light text-center border">Nenhuma turma encontrada.</div>`;
-                return;
-            }
-
-            const totalPaginas = Math.ceil(turmasFiltradas.length / ITENS_POR_PAGINA);
-            const inicio = (paginaAtual - 1) * ITENS_POR_PAGINA;
-            const fim = inicio + ITENS_POR_PAGINA;
-            const turmasPagina = turmasFiltradas.slice(inicio, fim);
-
-            let html = turmasPagina.map(t => {
-                
-                let statusBd = t.status_fila ? String(t.status_fila).trim().toUpperCase() : 'FECHADA';
-                let corStatus = ""; let textoStatus = ""; let iconeStatus = "";
-
-                if (statusBd === 'ABERTA') {
-                    corStatus = "bg-success text-white"; 
-                    textoStatus = "FILA ABERTA";
-                    iconeStatus = "check_circle";
-                } else {
-                    corStatus = "bg-secondary text-white";
-                    textoStatus = "FILA FECHADA";
-                    iconeStatus = "lock";
-                }
-
-                // 🌟 O NOVO CONTADOR VISUAL DA FILA DE ESPERA!
-                let contadorHtml = "";
-                if (t.qtd_fila > 0) {
-                    contadorHtml = `<span class="badge bg-warning text-dark mt-2 w-100 py-1" style="font-size: 11px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"><i class="fas fa-users-clock"></i> ${t.qtd_fila} PESSOA(S) NA FILA</span>`;
-                }
-
-                return `
-                <div class="turma-item">
-                    <div style="flex-grow: 1;">
-                        <strong class="text-primary">${t.modalidade}</strong> <span class="turma-tag">${t.id}</span><br>
-                        
-                        <div style="font-size:12.5px; color:#475569; margin-top: 5px;">
-                            <i class="material-icons align-middle text-primary" style="font-size:15px;">person</i> <b>${t.professor || 'Sem Prof.'}</b> <i class="text-muted" style="font-size: 11px;">(${t.tipo_resp || 'Sem cargo'})</i> &nbsp;|&nbsp; 
-                            <i class="material-icons align-middle text-secondary" style="font-size:15px;">domain</i> ${t.nucleo || 'Sem Núcleo'}
-                        </div>
-                        
-                        <div style="font-size:12px; color:#64748b; margin-top: 3px;">
-                            <i class="material-icons align-middle text-success" style="font-size:15px;">place</i> ${t.espaco || 'Sem Espaço'} &nbsp;|&nbsp;
-                            <i class="material-icons align-middle text-warning" style="font-size:15px;">event</i> ${t.xsemana || 'Sem Dia'} &nbsp;|&nbsp;
-                            <i class="material-icons align-middle text-danger" style="font-size:15px;">schedule</i> ${t.horario || 'Sem Horário'}
-                        </div>
-                    </div>
-                    
-                    <div class="text-end ms-3" style="min-width: 140px;">
-                        
-                        <!-- 🏷️ Etiqueta de Aberta/Fechada -->
-                        <span class="turma-tag ${corStatus} mb-1 d-inline-block px-2 py-1 shadow-sm" style="font-size: 9.5px; width: 100%; text-align: center;">
-                            <i class="material-icons align-middle" style="font-size:12px;">${iconeStatus}</i> ${textoStatus}
-                        </span><br>
-                        
-                        <!-- 🌟 Etiqueta do Contador de Pessoas (Só aparece se tiver gente) -->
-                        ${contadorHtml}
-                        
-                        <div class="mt-2">
-                            <button class="acoes-btn" title="Editar" onclick="prepararEdicao('${t.id}')"><i class="material-icons">edit</i></button>
-                            <button class="acoes-btn btn-print" title="Imprimir Fila de Espera" onclick="imprimirListaEspera('${t.id}', '${t.modalidade}')"><i class="material-icons text-info">print</i></button>
-                            <button class="acoes-btn btn-del" title="Excluir" onclick="confirmarExclusao('${t.id}')"><i class="material-icons">delete</i></button>
-                        </div>
-                    </div>
-                </div>
-            `}).join('');
-
-            if (totalPaginas > 1) {
-                html += `
-                <div class="paginacao-container">
-                    <button class="btn-paginacao" onclick="mudarPagina(-1)" ${paginaAtual === 1 ? 'disabled' : ''}>Anterior</button>
-                    <span style="font-size: 13px; font-weight: bold; color: #64748b;">Página ${paginaAtual} de ${totalPaginas}</span>
-                    <button class="btn-paginacao" onclick="mudarPagina(1)" ${paginaAtual === totalPaginas ? 'disabled' : ''}>Próxima</button>
-                </div>`;
-            }
-            div.innerHTML = html;
-        }
 
         function mudarPagina(direcao) {
             paginaAtual += direcao;
@@ -468,10 +388,94 @@ function desenharTurmasPaginadas() {
             });
         }
 
+// ========================================================
+        // 1. ATUALIZAÇÃO DO BOTÃO IMPRIMIR (Enviando todos os dados)
         // ========================================================
-        // 🖨️ A MÁGICA: GERADOR DE RELATÓRIO HTML PURO
+        function desenharTurmasPaginadas() {
+            const div = document.getElementById('lista-turmas');
+            document.getElementById('contador-turmas').innerText = turmasFiltradas.length;
+
+            if(turmasFiltradas.length === 0) {
+                div.innerHTML = `<div class="alert alert-light text-center border">Nenhuma turma encontrada.</div>`;
+                return;
+            }
+
+            const totalPaginas = Math.ceil(turmasFiltradas.length / ITENS_POR_PAGINA);
+            const inicio = (paginaAtual - 1) * ITENS_POR_PAGINA;
+            const fim = inicio + ITENS_POR_PAGINA;
+            const turmasPagina = turmasFiltradas.slice(inicio, fim);
+
+            let html = turmasPagina.map(t => {
+                
+                let statusBd = t.status_fila ? String(t.status_fila).trim().toUpperCase() : 'FECHADA';
+                let corStatus = ""; let textoStatus = ""; let iconeStatus = "";
+
+                if (statusBd === 'ABERTA') {
+                    corStatus = "bg-success text-white"; 
+                    textoStatus = "FILA ABERTA";
+                    iconeStatus = "check_circle";
+                } else {
+                    corStatus = "bg-secondary text-white";
+                    textoStatus = "FILA FECHADA";
+                    iconeStatus = "lock";
+                }
+
+                let contadorHtml = "";
+                if (t.qtd_fila > 0) {
+                    contadorHtml = `<span class="badge bg-warning text-dark mt-2 w-100 py-1" style="font-size: 11px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"><i class="fas fa-users-clock"></i> ${t.qtd_fila} PESSOA(S) NA FILA</span>`;
+                }
+
+                return `
+                <div class="turma-item">
+                    <div style="flex-grow: 1;">
+                        <strong class="text-primary">${t.modalidade}</strong> <span class="turma-tag">${t.id}</span><br>
+                        
+                        <div style="font-size:12.5px; color:#475569; margin-top: 5px;">
+                            <i class="material-icons align-middle text-primary" style="font-size:15px;">person</i> <b>${t.professor || 'Sem Prof.'}</b> <i class="text-muted" style="font-size: 11px;">(${t.tipo_resp || 'Sem cargo'})</i> &nbsp;|&nbsp; 
+                            <i class="material-icons align-middle text-secondary" style="font-size:15px;">domain</i> ${t.nucleo || 'Sem Núcleo'}
+                        </div>
+                        
+                        <div style="font-size:12px; color:#64748b; margin-top: 3px;">
+                            <i class="material-icons align-middle text-success" style="font-size:15px;">place</i> ${t.espaco || 'Sem Espaço'} &nbsp;|&nbsp;
+                            <i class="material-icons align-middle text-warning" style="font-size:15px;">event</i> ${t.xsemana || 'Sem Dia'} &nbsp;|&nbsp;
+                            <i class="material-icons align-middle text-danger" style="font-size:15px;">schedule</i> ${t.horario || 'Sem Horário'}
+                        </div>
+                    </div>
+                    
+                    <div class="text-end ms-3" style="min-width: 140px;">
+                        <span class="turma-tag ${corStatus} mb-1 d-inline-block px-2 py-1 shadow-sm" style="font-size: 9.5px; width: 100%; text-align: center;">
+                            <i class="material-icons align-middle" style="font-size:12px;">${iconeStatus}</i> ${textoStatus}
+                        </span><br>
+                        
+                        ${contadorHtml}
+                        
+                        <div class="mt-2">
+                            <button class="acoes-btn" title="Editar" onclick="prepararEdicao('${t.id}')"><i class="material-icons">edit</i></button>
+                            
+                            <!-- 🌟 O BOTÃO AGORA MANDA TODOS OS DADOS DA TURMA PARA A IMPRESSORA! -->
+                            <button class="acoes-btn btn-print" title="Imprimir Fila de Espera" onclick="imprimirListaEspera('${t.id}', '${t.modalidade}', '${t.xsemana}', '${t.horario}', '${t.professor}', '${t.espaco}')"><i class="material-icons text-info">print</i></button>
+                            
+                            <button class="acoes-btn btn-del" title="Excluir" onclick="confirmarExclusao('${t.id}')"><i class="material-icons">delete</i></button>
+                        </div>
+                    </div>
+                </div>
+            `}).join('');
+
+            if (totalPaginas > 1) {
+                html += `
+                <div class="paginacao-container">
+                    <button class="btn-paginacao" onclick="mudarPagina(-1)" ${paginaAtual === 1 ? 'disabled' : ''}>Anterior</button>
+                    <span style="font-size: 13px; font-weight: bold; color: #64748b;">Página ${paginaAtual} de ${totalPaginas}</span>
+                    <button class="btn-paginacao" onclick="mudarPagina(1)" ${paginaAtual === totalPaginas ? 'disabled' : ''}>Próxima</button>
+                </div>`;
+            }
+            div.innerHTML = html;
+        }
+
         // ========================================================
-        function imprimirListaEspera(idTurma, modalidade) {
+        // 2. RECEBER OS NOVOS DADOS PARA IMPRIMIR
+        // ========================================================
+        function imprimirListaEspera(idTurma, modalidade, dias, horario, professor, espaco) {
             const idPlanilha = localStorage.getItem('ceu_planilha_id');
             Swal.fire({ title: 'Buscando lista de interessados...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
 
@@ -483,15 +487,20 @@ function desenharTurmasPaginadas() {
             .then(data => {
                 Swal.close();
                 if(data.sucesso && data.lista && data.lista.length > 0) {
-                    gerarRelatorioHTML(idTurma, modalidade, data.lista);
+                    // 🌟 Repassando todos os dados para o desenhista do HTML
+                    gerarRelatorioHTML(idTurma, modalidade, dias, horario, professor, espaco, data.lista);
                 } else {
                     Swal.fire('Fila Vazia', 'Ainda não há nenhum munícipe na fila de espera para esta turma.', 'info');
                 }
             }).catch(e => Swal.fire('Erro', 'Não foi possível buscar a lista.', 'error'));
         }
 
-        function gerarRelatorioHTML(idTurma, modalidade, lista) {
-            // Cria a tabela
+        // ========================================================
+        // 3. A MÁGICA: O NOVO CABEÇALHO E A COLUNA DE E-MAIL
+        // ========================================================
+        function gerarRelatorioHTML(idTurma, modalidade, dias, horario, professor, espaco, lista) {
+            
+            // 🌟 AGORA A TABELA TEM A COLUNA "EMAIL" DESENHADA!
             let linhas = '';
             lista.forEach((item, index) => {
                 linhas += `
@@ -500,11 +509,11 @@ function desenharTurmasPaginadas() {
                         <td>${item.data}</td>
                         <td><strong>${item.nome}</strong></td>
                         <td>${item.telefone}</td>
-                        <td>${item.documento}</td>
+                        <td>${item.email || '-'}</td> 
                     </tr>`;
             });
 
-            // Constrói a página de impressão
+            // Constrói a página de impressão com o Novo Cabeçalho Grid
             let janela = window.open('', '_blank', 'width=900,height=600');
             let html = `
                 <!DOCTYPE html>
@@ -513,34 +522,47 @@ function desenharTurmasPaginadas() {
                     <title>Lista de Espera - ${idTurma}</title>
                     <style>
                         body { font-family: 'Segoe UI', Arial, sans-serif; padding: 30px; color: #333; }
-                        .cabecalho { border-bottom: 3px solid #0d6efd; padding-bottom: 15px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: flex-end;}
-                        .titulo { margin: 0; font-size: 24px; color: #0d6efd; text-transform: uppercase; }
-                        .subtitulo { margin: 5px 0 0 0; font-size: 16px; color: #555; }
-                        .info-data { font-size: 12px; color: #777; }
-                        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px;}
-                        th, td { border: 1px solid #ddd; padding: 10px 12px; text-align: left; }
-                        th { background-color: #f8f9fa; color: #333; font-weight: bold; text-transform: uppercase; font-size: 12px;}
+                        .cabecalho { border-bottom: 3px solid #0d6efd; padding-bottom: 15px; margin-bottom: 25px; }
+                        .titulo { margin: 0 0 15px 0; font-size: 24px; color: #0d6efd; text-transform: uppercase; text-align: center;}
+                        
+                        /* 🌟 NOVO GRID DE INFORMAÇÕES DA TURMA */
+                        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 13px; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #e9ecef;}
+                        .info-item { margin: 0; }
+                        .info-item strong { color: #495057; display: inline-block; width: 140px;}
+                        
+                        .info-data { font-size: 11px; color: #777; text-align: right; margin-top: 10px;}
+                        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13px;}
+                        th, td { border: 1px solid #ddd; padding: 8px 10px; text-align: left; }
+                        th { background-color: #f8f9fa; color: #333; font-weight: bold; text-transform: uppercase; font-size: 11px;}
                         tr:nth-child(even) { background-color: #fcfcfc; }
                         .rodape { margin-top: 40px; font-size: 11px; text-align: center; color: #888; border-top: 1px solid #ddd; padding-top: 10px;}
                     </style>
                 </head>
                 <body>
                     <div class="cabecalho">
-                        <div>
-                            <h1 class="titulo">Relatório de Lista de Espera</h1>
-                            <p class="subtitulo">Atividade: <strong>${modalidade}</strong> | Turma: <strong>${idTurma}</strong></p>
+                        <h1 class="titulo">Relatório da Lista de Espera</h1>
+                        
+                        <!-- 🌟 CAIXA COM TODOS OS DADOS DA TURMA -->
+                        <div class="info-grid">
+                            <div class="info-item"><strong>Modalidade:</strong> <span style="color:#0d6efd; font-weight:bold;">${modalidade}</span></div>
+                            <div class="info-item"><strong>Cód. Turma (EOL):</strong> <span>${idTurma}</span></div>
+                            <div class="info-item"><strong>Professor(a):</strong> <span>${professor}</span></div>
+                            <div class="info-item"><strong>Espaço/Sala:</strong> <span>${espaco}</span></div>
+                            <div class="info-item"><strong>Dias da Semana:</strong> <span>${dias}</span></div>
+                            <div class="info-item"><strong>Horário:</strong> <span>${horario}</span></div>
                         </div>
+                        
                         <div class="info-data">Impresso em: ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}</div>
                     </div>
                     
                     <table>
                         <thead>
                             <tr>
-                                <th style="width: 50px; text-align: center;">Nº</th>
+                                <th style="width: 40px; text-align: center;">Nº</th>
                                 <th style="width: 120px;">Data/Hora</th>
                                 <th>Nome do Munícipe</th>
-                                <th>Telefone</th>
-                                <th>E-MAIL</th>
+                                <th style="width: 120px;">Telefone</th>
+                                <th>E-mail</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -551,7 +573,6 @@ function desenharTurmasPaginadas() {
                     <div class="rodape">Documento gerado automaticamente pelo Sistema Integrado de Gestão Educacional (SIG-EDU)</div>
                     
                     <script>
-                        // Aciona a impressão automática após a página carregar
                         setTimeout(function() { window.print(); }, 800);
                     <\/script>
                 </body>

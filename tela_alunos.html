@@ -277,9 +277,10 @@
                     <div class="row align-items-center">
                         <div class="col-md-6">
                             <label class="form-label text-muted">Imprimir Carteirinha? (Coluna O)</label>
+                            <!-- 🌟 AQUI ESTÁ O SEGREDO CORRIGIDO: value="NÃO" e selected no SIM -->
                             <select id="aluno-print-geral" class="form-select border-primary fw-bold">
-                                <option value="">NÃO</option>
-                                <option value="SIM">SIM</option>
+                                <option value="NÃO">NÃO</option>
+                                <option value="SIM" selected>SIM</option>
                             </select>
                         </div>
                         <div class="col-md-6">
@@ -294,15 +295,16 @@
                     <div class="row align-items-center">
                         <div class="col-md-4">
                             <label class="form-label text-muted">Tem Permissão? (Coluna R)</label>
+                            <!-- 🌟 value corrigido para "NÃO" -->
                             <select id="aluno-perm-academia" class="form-select border-danger fw-bold">
-                                <option value="">NÃO</option>
+                                <option value="NÃO">NÃO</option>
                                 <option value="SIM">SIM</option>
                             </select>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label text-muted">Imprimir Carteirinha? (Coluna N)</label>
                             <select id="aluno-print-academia" class="form-select border-danger fw-bold">
-                                <option value="">NÃO</option>
+                                <option value="NÃO">NÃO</option>
                                 <option value="SIM">SIM</option>
                             </select>
                         </div>
@@ -318,15 +320,16 @@
                     <div class="row align-items-center">
                         <div class="col-md-4">
                             <label class="form-label text-muted">Tem Permissão? (Coluna Q)</label>
+                            <!-- 🌟 value corrigido para "NÃO" -->
                             <select id="aluno-perm-raia" class="form-select border-info fw-bold">
-                                <option value="">NÃO</option>
+                                <option value="NÃO">NÃO</option>
                                 <option value="SIM">SIM</option>
                             </select>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label text-muted">Imprimir Carteirinha? (Coluna M)</label>
                             <select id="aluno-print-raia" class="form-select border-info fw-bold">
-                                <option value="">NÃO</option>
+                                <option value="NÃO">NÃO</option>
                                 <option value="SIM">SIM</option>
                             </select>
                         </div>
@@ -494,12 +497,10 @@
                 method: 'POST',
                 body: JSON.stringify({ acao: acaoParaServidor, dados: pacoteAluno })
             })
-.then(res => res.json())
+            .then(res => res.json())
             .then(retorno => {
                 if (retorno.status === "sucesso") {
                     
-                    // 🌟 O NOVO MODAL COM O NÚMERO GIGANTE!
- // 🌟 O NOVO MODAL COM REDIRECIONAMENTO!
                     Swal.fire({
                         title: 'Cadastro Realizado!',
                         html: `
@@ -512,26 +513,16 @@
                         icon: 'success',
                         confirmButtonText: 'OK, VOLTAR PARA LISTA',
                         confirmButtonColor: '#0d6efd',
-                        allowOutsideClick: false // 🛡️ Impede que a pessoa feche clicando fora da caixa
+                        allowOutsideClick: false 
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            
-                            // 🚀 REDIRECIONA PARA A TELA DE LISTA DE ALUNOS
-                            // ATENÇÃO: Troque "Alunos.html" pelo nome exato do seu arquivo da lista!
-                            
                             if(window.parent && typeof window.parent.abrirFormFilho === 'function') {
-                                // Se o seu sistema usa aquele esquema de Menu Lateral que abre as telas dentro (iframe)
                                 window.parent.abrirFormFilho('Alunos.html'); 
                             } else {
-                                // Se for uma navegação de página comum
                                 window.location.href = "Alunos.html"; 
                             }
-                            
                         }
                     });
-
-                    // Aqui você mantém o código que já existe para limpar o formulário
-                    // Exemplo: document.getElementById('formCadastro').reset();
                     
                 } else {
                     Swal.fire('Atenção', retorno.mensagem, 'warning');
@@ -548,7 +539,6 @@
             const idEdicao = urlParams.get('id');
 
             if (idEdicao) {
-                // 🌟 MÁGICA 1: Título informando que está buscando o nome
                 document.querySelector('.titulo-tela').innerHTML = `<span class="material-icons" style="font-size: 32px; color: #ff9800;">edit_document</span> Editando: ${idEdicao} - <small style="color: #858585; font-size: 18px;"><i>(Buscando nome...)</i></small>`;
                 
                 document.getElementById('btn-salvar-aluno').innerHTML = `<span class="material-icons">update</span> Atualizar Ficha`;
@@ -558,7 +548,7 @@
             }
         };
 
-function carregarDadosDoAluno(idAluno) {
+        function carregarDadosDoAluno(idAluno) {
             const codigoCeu = localStorage.getItem('ceu_codigo_eol'); 
 
             Swal.fire({ title: 'Buscando Prontuário...', text: 'Resgatando os dados...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
@@ -578,8 +568,6 @@ function carregarDadosDoAluno(idAluno) {
                     document.querySelector('.titulo-tela').innerHTML = `<span class="material-icons align-middle" style="font-size: 32px; color: #ff9800;">edit_document</span> Editando: ${idAluno} - <span class="text-primary">${retorno.aluno.nomeCompleto}</span>`;
 
                     preencherFormulario(retorno.aluno);
-                    
-                    // 🌟 MÁGICA: Assim que ele preenche a ficha, manda o Radar buscar as modalidades!
                     carregarModalidades(idAluno);
 
                 } else {
@@ -596,7 +584,6 @@ function carregarDadosDoAluno(idAluno) {
             const idPlanilhaCeu = localStorage.getItem('ceu_planilha_id');
             const codigoCeu = localStorage.getItem('ceu_codigo_eol');
 
-            // Coloca um aviso de "Buscando" na caixinha
             document.getElementById('lista-modalidades-ativas').innerHTML = '<div class="p-3 bg-white rounded border text-center text-muted"><div class="spinner-border spinner-border-sm text-success me-2"></div> Buscando matrículas...</div>';
 
             fetch(API_URL, {
@@ -610,7 +597,6 @@ function carregarDadosDoAluno(idAluno) {
             .then(res => res.json())
             .then(retorno => {
                 if(retorno.sucesso || retorno.status === "sucesso") {
-                    // Joga o visual bonitão na tela!
                     document.getElementById('lista-modalidades-ativas').innerHTML = retorno.htmlAtivas;
                     document.getElementById('lista-modalidades-historico').innerHTML = retorno.htmlHistorico;
                 } else {
@@ -620,10 +606,8 @@ function carregarDadosDoAluno(idAluno) {
         }
 
         function preencherFormulario(aluno) {
-            // Guarda para a Ficha de Impressão
             sessionStorage.setItem('alunoAtualCompleto', JSON.stringify(aluno));
             
-            // Exibe o botão de imprimir com segurança
             const btnImprimir = document.getElementById('btn-imprimir-ficha');
             if (btnImprimir) btnImprimir.style.display = 'flex';
 
@@ -691,23 +675,21 @@ function carregarDadosDoAluno(idAluno) {
             if(dadosAlvo) {
                 let alunoObj = JSON.parse(dadosAlvo);
                 
-                // 🌟 MÁGICA: Puxa o visual das modalidades direto da tela!
                 const divMod = document.getElementById('lista-modalidades-ativas');
                 const divHist = document.getElementById('lista-modalidades-historico');
                 
                 alunoObj.htmlModalidades = divMod ? divMod.innerHTML : "Nenhuma modalidade.";
                 alunoObj.htmlHistorico = divHist ? divHist.innerHTML : "Nenhum histórico.";
 
-                // Salva na memória do GitHub com as modalidades embutidas
                 localStorage.setItem('alunoParaImpressao', JSON.stringify(alunoObj));
                 
-                // Abre o arquivo ficha_impressao.html
                 window.open('ficha_impressao.html', '_blank');
             } else {
                 Swal.fire('Atenção', 'Os dados não foram carregados completamente para impressão.', 'warning');
             }
         }
-    // ==========================================
+
+        // ==========================================
         // 🗑️ EXCLUSÃO DE ALUNO
         // ==========================================
         function confirmarExclusao() {
@@ -745,7 +727,6 @@ function carregarDadosDoAluno(idAluno) {
             .then(retorno => {
                 if (retorno.status === "sucesso") {
                     Swal.fire('Excluído!', retorno.mensagem, 'success').then(() => {
-                        // Fecha a ficha e volta para a lista de alunos
                         window.parent.abrirFormFilho('alunos.html', document.querySelector('.sidebar a.ativo'));
                     });
                 } else {
@@ -754,11 +735,6 @@ function carregarDadosDoAluno(idAluno) {
             })
             .catch(err => Swal.fire('Erro', 'Falha na conexão com o servidor.', 'error'));
         }
-    
-    
-    
-    
-    
     </script>
 </body>
 </html>

@@ -652,7 +652,7 @@ function carregarDadosDoAluno(idAluno) {
             
             if (aluno.parq === "SIM") { document.getElementById('aluno-parq').checked = true; }
 
-            document.getElementById('aluno-print-geral').value = aluno.imprimirCG || "NÃO";
+            document.getElementById('aluno-print-geral').value = aluno.imprimirCG || "SIM";
             document.getElementById('aluno-via-geral').value = aluno.viaGeral || 0;
             
             document.getElementById('aluno-perm-academia').value = aluno.permissaoAcademia || "NÃO";

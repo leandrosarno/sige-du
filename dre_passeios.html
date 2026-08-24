@@ -28,13 +28,14 @@
         .form-control { font-size: 13px; border-radius: 6px; padding: 8px 10px; border: 1px solid #cbd5e1; background: #f8fafc; }
         .form-control:focus { border-color: #0d6efd; box-shadow: none; background: white; }
         
-        /* BOTÕES DO RODAPÉ */
-        .card-footer-botoes { display: flex; gap: 8px; padding: 15px; background: #f8fafc; border-top: 1px solid #e2e8f0; }
-        .btn-card { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px 0; border: none; border-radius: 8px; font-size: 11px; font-weight: bold; transition: 0.2s; color: white; text-transform: uppercase; letter-spacing: 0.5px;}
+        /* BOTÕES DO RODAPÉ DIVIDIDOS EM 4 */
+        .card-footer-botoes { display: flex; gap: 5px; padding: 12px; background: #f8fafc; border-top: 1px solid #e2e8f0; }
+        .btn-card { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 6px 0; border: none; border-radius: 8px; font-size: 10px; font-weight: bold; transition: 0.2s; color: white; text-transform: uppercase; letter-spacing: 0.5px;}
         .btn-card-del { background: #ef4444; } .btn-card-del:hover { background: #dc2626; }
         .btn-card-save { background: #0ea5e9; } .btn-card-save:hover { background: #0284c7; }
         .btn-card-print { background: #10b981; } .btn-card-print:hover { background: #059669; }
-        .btn-card i { font-size: 20px; margin-bottom: 2px; }
+        .btn-card-add { background: #8b5cf6; } .btn-card-add:hover { background: #7c3aed; }
+        .btn-card i { font-size: 18px; margin-bottom: 2px; }
         
         .acesso-negado { text-align: center; margin-top: 100px; color: #dc3545; }
     </style>
@@ -74,7 +75,6 @@
             iniciarSistema();
         };
 
-        // Função protetora para padronizar as datas independente de como venham do Google
         function normalizarData(str) {
             if (!str) return null;
             if (str.indexOf('-') > 0) return new Date(str + "T00:00:00");
@@ -87,38 +87,22 @@
 
         async function iniciarSistema() {
             try {
-                // 1. Busca as regras e nomes de CEUs da Master
                 let resRegras = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "buscarDadosPasseiosDRE" }) });
-                
-                // 🛡️ TRUQUE NINJA: Lê como texto primeiro para pegar o erro se faltar a Nova Implantação
                 let textRegras = await resRegras.text();
                 let dadosRegras;
-                try { 
-                    dadosRegras = JSON.parse(textRegras); 
-                } catch(e) { 
-                    document.getElementById('container-dias').innerHTML = `<h5 class='text-danger mx-auto mt-5 text-center'>ERRO FATAL DE SERVIDOR: Você esqueceu de fazer a Nova Implantação no Apps Script!</h5>`;
-                    return Swal.fire('Erro Crítico', 'O servidor não reconheceu os comandos novos. Por favor, faça a Nova Implantação.', 'error');
-                }
-
-                if(!dadosRegras.sucesso) {
-                    document.getElementById('container-dias').innerHTML = `<h5 class='text-danger mx-auto mt-5'>Falha: ${dadosRegras.erro}</h5>`;
-                    return Swal.fire('Erro na Planilha', dadosRegras.erro, 'error');
-                }
+                try { dadosRegras = JSON.parse(textRegras); } catch(e) { return; }
+                if(!dadosRegras.sucesso) return;
 
                 dadosGlobais = dadosRegras;
                 document.getElementById('subtitulo-programa').innerText = `Programa Recreio nas Férias - ${dadosRegras.programa.mes}/${dadosRegras.programa.ano}`;
 
-                // 2. Busca os passeios que já estão salvos no Banco de Dados
                 let resSalvos = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "buscarPasseiosSalvosDRE" }) });
                 let dadosSalvos = await resSalvos.json();
                 let listaSalvos = dadosSalvos.sucesso ? dadosSalvos.passeiosSalvos : [];
 
-                // 3. Constrói a tela
                 construirLinhaDoTempo(dadosRegras.programa.inicio, dadosRegras.programa.fim, listaSalvos);
                 
-            } catch(e) {
-                Swal.fire('Erro de Conexão', 'Falha na comunicação com o servidor. Verifique sua internet.', 'error');
-            }
+            } catch(e) { console.error(e); }
         }
 
         function construirLinhaDoTempo(dataInicioStr, dataFimStr, listaSalvos) {
@@ -127,117 +111,137 @@
 
             let dataAtual = normalizarData(String(dataInicioStr));
             let dataFim = normalizarData(String(dataFimStr));
-            
-            // 🛡️ TRAVA CONTRA DATAS VAZIAS OU INVÁLIDAS
-            if (!dataAtual || !dataFim || isNaN(dataAtual.getTime()) || isNaN(dataFim.getTime())) {
-                container.innerHTML = `<h5 class='text-danger mx-auto mt-5 text-center'><i class="material-icons" style="font-size:40px;">event_busy</i><br>Erro Crítico:<br>As células B13 e B14 da aba 'RF - REGRAS' estão vazias ou não contêm datas válidas.</h5>`;
-                return Swal.fire('Atenção', 'Datas inválidas na planilha Master!', 'warning');
-            }
+            if (!dataAtual || !dataFim || isNaN(dataAtual.getTime()) || isNaN(dataFim.getTime())) return;
 
             const diasSemana = ["DOMINGO", "SEGUNDA", "TERÇA", "QUARTA", "QUINTA", "SEXTA", "SÁBADO"];
-            let idCard = 0;
-            let travaAntiLoop = 0; // Impede que o sistema quebre se a DRE colocar data errada de muitos anos
+            let travaAntiLoop = 0; 
 
             while (dataAtual <= dataFim && travaAntiLoop < 40) {
                 let diaFormatado = ("0" + dataAtual.getDate()).slice(-2) + "/" + ("0" + (dataAtual.getMonth() + 1)).slice(-2) + "/" + String(dataAtual.getFullYear()).slice(-2);
                 let nomeSemana = diasSemana[dataAtual.getDay()];
                 let cabecalhoDia = `${diaFormatado} (${nomeSemana})`;
 
-                let diaSalvo = listaSalvos.find(p => String(p.dataPasseio).trim() === String(cabecalhoDia).trim()) || {};
+                // 🧠 PEGA TODOS OS PASSEIOS CADASTRADOS NESTE DIA ESPECÍFICO
+                let passeiosDoDia = listaSalvos.filter(p => String(p.dataPasseio).trim() === String(cabecalhoDia).trim());
 
-                container.innerHTML += gerarCardHTML(idCard, cabecalhoDia, diaSalvo);
-                idCard++;
-                travaAntiLoop++;
+                if (passeiosDoDia.length === 0) {
+                    // Se não tem nada, gera 1 card em branco
+                    container.innerHTML += gerarCardHTML(gerarIdAleatorio(), cabecalhoDia, {});
+                } else {
+                    // Se tem passeios gravados, gera 1 card para cada passeio achado!
+                    passeiosDoDia.forEach(salvo => {
+                        container.innerHTML += gerarCardHTML(gerarIdAleatorio(), cabecalhoDia, salvo);
+                    });
+                }
                 
+                travaAntiLoop++;
                 dataAtual.setDate(dataAtual.getDate() + 1);
             }
         }
 
+        function gerarIdAleatorio() {
+            return Math.random().toString(36).substr(2, 9);
+        }
+
         // ==========================================
-        // 🧩 HTML DOS CARTÕES COM AUTO-PREENCHIMENTO
+        // 🧩 HTML DOS CARTÕES (AGORA COM ID ESCONDIDO E BOTÃO NOVO)
         // ==========================================
-        function gerarCardHTML(id, dataTexto, salvo) {
+        function gerarCardHTML(uid, dataTexto, salvo) {
             return `
             <div class="dia-card">
                 <div class="dia-header">${dataTexto}</div>
                 <div class="dia-body">
                     
+                    <!-- 🛡️ O ID SECRETO FICA AQUI -->
+                    <input type="hidden" id="id_passeio_${uid}" value="${salvo.idPasseio || ''}">
+
                     <div>
                         <label class="form-label">EOLs (Separe por ponto e vírgula ';')</label>
-                        <input type="text" class="form-control fw-bold text-primary" id="eol_${id}" placeholder="Ex: 700039; 700041" value="${salvo.eols || ''}" onblur="preencherNomesCEU(${id})">
+                        <input type="text" class="form-control fw-bold text-primary" id="eol_${uid}" placeholder="Ex: 700039; 700041" value="${salvo.eols || ''}" onblur="preencherNomesCEU('${uid}')">
                     </div>
                     <div>
                         <label class="form-label">Nome(s) do(s) CEU(s)</label>
-                        <textarea class="form-control text-primary fw-bold" id="nomes_${id}" rows="2" readonly style="background:#e2e8f0; font-size: 11px;">${salvo.ceus || ''}</textarea>
+                        <textarea class="form-control text-primary fw-bold" id="nomes_${uid}" rows="2" readonly style="background:#e2e8f0; font-size: 11px;">${salvo.ceus || ''}</textarea>
                     </div>
 
                     <div class="row g-2">
                         <div class="col-6">
                             <label class="form-label">Passeio</label>
-                            <input type="text" class="form-control" id="passeio_${id}" value="${salvo.passeio || ''}">
+                            <input type="text" class="form-control" id="passeio_${uid}" value="${salvo.passeio || ''}">
                         </div>
                         <div class="col-6">
                             <label class="form-label">Destino</label>
-                            <input type="text" class="form-control" id="destino_${id}" value="${salvo.destino || ''}">
+                            <input type="text" class="form-control" id="destino_${uid}" value="${salvo.destino || ''}">
                         </div>
                     </div>
 
                     <div class="row g-2">
                         <div class="col-4">
-                            <label class="form-label">Evento (De/Até)</label>
-                            <input type="text" class="form-control text-center" id="horario_evento_${id}" placeholder="09h às 15h" value="${salvo.horarioEvento || ''}">
+                            <label class="form-label">Evento</label>
+                            <input type="text" class="form-control text-center" id="horario_evento_${uid}" placeholder="09h às 15h" value="${salvo.horarioEvento || ''}">
                         </div>
                         <div class="col-4">
                             <label class="form-label">Saída CEU</label>
-                            <input type="time" class="form-control" id="saida_ceu_${id}" value="${salvo.saidaCeu || ''}">
+                            <input type="time" class="form-control" id="saida_ceu_${uid}" value="${salvo.saidaCeu || ''}">
                         </div>
                         <div class="col-4">
-                            <label class="form-label">Chegada CEU</label>
-                            <input type="time" class="form-control" id="chegada_ceu_${id}" value="${salvo.chegadaCeu || ''}">
+                            <label class="form-label">Retorno</label>
+                            <input type="time" class="form-control" id="chegada_ceu_${uid}" value="${salvo.chegadaCeu || ''}">
                         </div>
                     </div>
 
                     <div class="row g-2">
                         <div class="col-6">
                             <label class="form-label">Faixa Etária</label>
-                            <input type="text" class="form-control" id="faixa_${id}" placeholder="Ex: Infantil" value="${salvo.faixa || ''}">
+                            <input type="text" class="form-control" id="faixa_${uid}" placeholder="Ex: Infantil" value="${salvo.faixa || ''}">
                         </div>
                         <div class="col-6">
-                            <label class="form-label">Idade (De/Até)</label>
-                            <input type="text" class="form-control text-center" id="idade_${id}" placeholder="06 a 14 anos" value="${salvo.idade || ''}">
+                            <label class="form-label">Idades</label>
+                            <input type="text" class="form-control text-center" id="idade_${uid}" placeholder="06 a 14" value="${salvo.idade || ''}">
                         </div>
                     </div>
 
                     <div class="row g-2">
                         <div class="col-6">
-                            <label class="form-label">Chegada Van (Polo)</label>
-                            <input type="time" class="form-control" id="chegada_van_${id}" value="${salvo.chegadaVan || ''}">
+                            <label class="form-label">Chegada (Polo)</label>
+                            <input type="time" class="form-control" id="chegada_van_${uid}" value="${salvo.chegadaVan || ''}">
                         </div>
                         <div class="col-6">
-                            <label class="form-label">Qtd Alunos (Van)</label>
-                            <input type="number" class="form-control" id="qtd_${id}" placeholder="Ex: 40" value="${salvo.qtd || ''}">
+                            <label class="form-label">Qtd (Van)</label>
+                            <input type="number" class="form-control" id="qtd_${uid}" placeholder="Ex: 40" value="${salvo.qtd || ''}">
                         </div>
                     </div>
 
                 </div>
                 
-                <!-- 🎛️ PAINEL DE CONTROLE CRUD -->
                 <div class="card-footer-botoes">
-                    <button class="btn-card btn-card-del" onclick="excluirPasseio('${dataTexto}', ${id})" title="Apagar do Banco"><i class="material-icons">delete_sweep</i> Limpar</button>
-                    <button class="btn-card btn-card-save" onclick="salvarPasseio('${dataTexto}', ${id})" title="Gravar no Banco"><i class="material-icons">save</i> Salvar</button>
-                    <button class="btn-card btn-card-print" onclick="gerarRelatorioEAutorizacoes(${id}, '${dataTexto}')" title="Gerar Relatório e Autorizações"><i class="material-icons">print</i> Imprimir</button>
+                    <button class="btn-card btn-card-del" onclick="excluirPasseio('${dataTexto}', '${uid}', this)" title="Apagar"><i class="material-icons">delete_sweep</i>Limpar</button>
+                    <button class="btn-card btn-card-save" onclick="salvarPasseio('${dataTexto}', '${uid}')" title="Gravar"><i class="material-icons">save</i>Salvar</button>
+                    <button class="btn-card btn-card-print" onclick="gerarRelatorioEAutorizacoes('${uid}', '${dataTexto}')" title="Imprimir"><i class="material-icons">print</i>Imp.</button>
+                    <button class="btn-card btn-card-add" onclick="adicionarPasseioExtra(this, '${dataTexto}')" title="Adicionar Passeio"><i class="material-icons">add_box</i>Novo</button>
                 </div>
             </div>
             `;
         }
 
         // ==========================================
-        // 🔄 TRADUTOR DE EOL PARA NOME DO CEU
+        // 🚀 A MÁGICA: CRIAR NOVO CARD AO LADO!
         // ==========================================
-        function preencherNomesCEU(id) {
-            let campoEol = document.getElementById(`eol_${id}`).value;
-            let campoNomes = document.getElementById(`nomes_${id}`);
+        function adicionarPasseioExtra(botaoElement, dataTexto) {
+            let uidNovo = gerarIdAleatorio();
+            let htmlNovoCard = gerarCardHTML(uidNovo, dataTexto, {});
             
+            // Injeta o card clonado logo depois do atual
+            let cardAtual = botaoElement.closest('.dia-card');
+            cardAtual.insertAdjacentHTML('afterend', htmlNovoCard);
+            
+            // Rola a tela suavemente para mostrar o novo card
+            cardAtual.nextElementSibling.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }
+
+        function preencherNomesCEU(uid) {
+            let campoEol = document.getElementById(`eol_${uid}`).value;
+            let campoNomes = document.getElementById(`nomes_${uid}`);
             if(!campoEol.trim()) { campoNomes.value = ""; return; }
 
             let eols = campoEol.split(';');
@@ -248,51 +252,66 @@
                 if(eolLimpo) {
                     let ceuAchado = dadosGlobais.ceus.find(c => c.eol === eolLimpo);
                     if(ceuAchado) nomesEncontrados.push(ceuAchado.nome);
-                    else nomesEncontrados.push(`CEU NÃO ENCONTRADO (${eolLimpo})`);
+                    else nomesEncontrados.push(`NÃO ENCONTRADO (${eolLimpo})`);
                 }
             });
-
             campoNomes.value = nomesEncontrados.join(' | ');
         }
 
-        // ==========================================
-        // 💾 SALVAR NO BANCO DE DADOS
-        // ==========================================
-        async function salvarPasseio(dataTexto, id) {
+        async function salvarPasseio(dataTexto, uid) {
             let form = {
+                idPasseio: document.getElementById(`id_passeio_${uid}`).value,
                 dataPasseio: dataTexto,
-                eols: document.getElementById(`eol_${id}`).value,
-                ceus: document.getElementById(`nomes_${id}`).value,
-                passeio: document.getElementById(`passeio_${id}`).value.toUpperCase(),
-                destino: document.getElementById(`destino_${id}`).value.toUpperCase(),
-                horarioEvento: document.getElementById(`horario_evento_${id}`).value,
-                saidaCeu: document.getElementById(`saida_ceu_${id}`).value,
-                chegadaCeu: document.getElementById(`chegada_ceu_${id}`).value,
-                faixa: document.getElementById(`faixa_${id}`).value.toUpperCase(),
-                idade: document.getElementById(`idade_${id}`).value,
-                chegadaVan: document.getElementById(`chegada_van_${id}`).value,
-                qtd: document.getElementById(`qtd_${id}`).value
+                eols: document.getElementById(`eol_${uid}`).value,
+                ceus: document.getElementById(`nomes_${uid}`).value,
+                passeio: document.getElementById(`passeio_${uid}`).value.toUpperCase(),
+                destino: document.getElementById(`destino_${uid}`).value.toUpperCase(),
+                horarioEvento: document.getElementById(`horario_evento_${uid}`).value,
+                saidaCeu: document.getElementById(`saida_ceu_${uid}`).value,
+                chegadaCeu: document.getElementById(`chegada_ceu_${uid}`).value,
+                faixa: document.getElementById(`faixa_${uid}`).value.toUpperCase(),
+                idade: document.getElementById(`idade_${uid}`).value,
+                chegadaVan: document.getElementById(`chegada_van_${uid}`).value,
+                qtd: document.getElementById(`qtd_${uid}`).value
             };
 
             if(!form.eols || !form.ceus) return Swal.fire('Atenção', 'Preencha o(s) EOL(s) do CEU antes de salvar!', 'warning');
-
-            Swal.fire({ title: 'Salvando...', text: 'Gravando dados na nuvem...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+            Swal.fire({ title: 'Salvando...', text: 'Gravando dados...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
 
             try {
                 let res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "gerenciarPasseioDRE", dados: { subAcao: "salvar", ...form } }) });
                 let retorno = await res.json();
-                if(retorno.sucesso) Swal.fire('Salvo!', retorno.mensagem, 'success');
-                else Swal.fire('Erro', retorno.erro, 'error');
+                
+                if(retorno.sucesso) {
+                    // Atualiza o ID invisível na tela para ele não criar cópias se você salvar de novo!
+                    document.getElementById(`id_passeio_${uid}`).value = retorno.idPasseio;
+                    Swal.fire('Salvo!', retorno.mensagem, 'success');
+                } else Swal.fire('Erro', retorno.erro, 'error');
             } catch(e) { Swal.fire('Erro', 'Falha na conexão.', 'error'); }
         }
 
-        // ==========================================
-        // 🗑️ EXCLUIR DO BANCO E LIMPAR TELA
-        // ==========================================
-        function excluirPasseio(dataTexto, id) {
+        function excluirPasseio(dataTexto, uid, btnElement) {
+            let idPasseio = document.getElementById(`id_passeio_${uid}`).value;
+
+            // Se não tem ID, significa que nunca foi salvo no banco. Apenas limpa a tela.
+            if (!idPasseio) {
+                document.getElementById(`eol_${uid}`).value = "";
+                document.getElementById(`nomes_${uid}`).value = "";
+                document.getElementById(`passeio_${uid}`).value = "";
+                document.getElementById(`destino_${uid}`).value = "";
+                document.getElementById(`horario_evento_${uid}`).value = "";
+                document.getElementById(`saida_ceu_${uid}`).value = "";
+                document.getElementById(`chegada_ceu_${uid}`).value = "";
+                document.getElementById(`faixa_${uid}`).value = "";
+                document.getElementById(`idade_${uid}`).value = "";
+                document.getElementById(`chegada_van_${uid}`).value = "";
+                document.getElementById(`qtd_${uid}`).value = "";
+                return;
+            }
+
             Swal.fire({
-                title: 'Deseja Limpar o Dia?',
-                text: "Isso vai apagar os dados da tela e excluir permanentemente este passeio do banco de dados.",
+                title: 'Deseja Apagar o Passeio?',
+                text: "Isso vai excluir permanentemente este passeio do banco de dados.",
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#ef4444',
@@ -303,22 +322,13 @@
                 if (result.isConfirmed) {
                     Swal.fire({ title: 'Excluindo...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
                     try {
-                        let res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "gerenciarPasseioDRE", dados: { subAcao: "excluir", dataPasseio: dataTexto } }) });
+                        let res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "gerenciarPasseioDRE", dados: { subAcao: "excluir", idPasseio: idPasseio } }) });
                         let retorno = await res.json();
                         
                         if(retorno.sucesso) {
-                            document.getElementById(`eol_${id}`).value = "";
-                            document.getElementById(`nomes_${id}`).value = "";
-                            document.getElementById(`passeio_${id}`).value = "";
-                            document.getElementById(`destino_${id}`).value = "";
-                            document.getElementById(`horario_evento_${id}`).value = "";
-                            document.getElementById(`saida_ceu_${id}`).value = "";
-                            document.getElementById(`chegada_ceu_${id}`).value = "";
-                            document.getElementById(`faixa_${id}`).value = "";
-                            document.getElementById(`idade_${id}`).value = "";
-                            document.getElementById(`chegada_van_${id}`).value = "";
-                            document.getElementById(`qtd_${id}`).value = "";
-                            Swal.fire('Limpou!', 'Registro apagado com sucesso.', 'success');
+                            Swal.fire('Apagado!', 'Registro removido.', 'success').then(() => {
+                                iniciarSistema(); // Recarrega a tela toda para limpar perfeitamente
+                            });
                         } else {
                             Swal.fire('Aviso', retorno.erro, 'info');
                         }
@@ -327,23 +337,20 @@
             });
         }
 
-        // ==========================================
-        // 🖨️ MÁGICA DA IMPRESSÃO (RELATÓRIO + AUTORIZAÇÕES)
-        // ==========================================
-        function gerarRelatorioEAutorizacoes(id, dataTexto) {
+        function gerarRelatorioEAutorizacoes(uid, dataTexto) {
             let form = {
                 data: dataTexto,
-                eols: document.getElementById(`eol_${id}`).value,
-                ceus: document.getElementById(`nomes_${id}`).value,
-                passeio: document.getElementById(`passeio_${id}`).value.toUpperCase(),
-                destino: document.getElementById(`destino_${id}`).value.toUpperCase(),
-                horarioEvento: document.getElementById(`horario_evento_${id}`).value,
-                saidaCeu: document.getElementById(`saida_ceu_${id}`).value,
-                chegadaCeu: document.getElementById(`chegada_ceu_${id}`).value,
-                faixa: document.getElementById(`faixa_${id}`).value.toUpperCase(),
-                idade: document.getElementById(`idade_${id}`).value,
-                chegadaVan: document.getElementById(`chegada_van_${id}`).value,
-                qtd: document.getElementById(`qtd_${id}`).value,
+                eols: document.getElementById(`eol_${uid}`).value,
+                ceus: document.getElementById(`nomes_${uid}`).value,
+                passeio: document.getElementById(`passeio_${uid}`).value.toUpperCase(),
+                destino: document.getElementById(`destino_${uid}`).value.toUpperCase(),
+                horarioEvento: document.getElementById(`horario_evento_${uid}`).value,
+                saidaCeu: document.getElementById(`saida_ceu_${uid}`).value,
+                chegadaCeu: document.getElementById(`chegada_ceu_${uid}`).value,
+                faixa: document.getElementById(`faixa_${uid}`).value.toUpperCase(),
+                idade: document.getElementById(`idade_${uid}`).value,
+                chegadaVan: document.getElementById(`chegada_van_${uid}`).value,
+                qtd: document.getElementById(`qtd_${uid}`).value,
                 mesAno: `${dadosGlobais.programa.mes} / ${dadosGlobais.programa.ano}`
             };
 

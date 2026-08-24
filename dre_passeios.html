@@ -14,6 +14,9 @@
         
         .header-dre { background: linear-gradient(135deg, #2c3e50, #34495e); color: white; padding: 20px 30px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
         
+        .btn-header { background: rgba(255, 255, 255, 0.2); color: white; border: 1px solid rgba(255, 255, 255, 0.4); padding: 8px 16px; border-radius: 8px; font-weight: bold; transition: 0.3s; display: flex; align-items: center; gap: 8px; }
+        .btn-header:hover { background: white; color: #2c3e50; }
+
         /* LINHA DO TEMPO HORIZONTAL */
         .timeline-container { display: flex; overflow-x: auto; gap: 20px; padding-bottom: 20px; scroll-behavior: smooth; }
         .timeline-container::-webkit-scrollbar { height: 10px; }
@@ -47,6 +50,12 @@
             <div>
                 <h3 style="margin: 0; font-weight: 800;"><i class="material-icons align-middle">directions_bus</i> Gestão de Passeios</h3>
                 <p style="margin: 0; font-size: 14px; opacity: 0.9;" id="subtitulo-programa">Conectando ao Banco de Dados...</p>
+            </div>
+            <!-- 🌟 NOVO BOTÃO DE RELATÓRIO DO MURAL -->
+            <div>
+                <button class="btn-header" onclick="abrirModalRelatorioCEU()">
+                    <i class="material-icons">summarize</i> Cronograma por CEU
+                </button>
             </div>
         </div>
 
@@ -98,9 +107,11 @@
 
                 let resSalvos = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "buscarPasseiosSalvosDRE" }) });
                 let dadosSalvos = await resSalvos.json();
-                let listaSalvos = dadosSalvos.sucesso ? dadosSalvos.passeiosSalvos : [];
+                
+                // 🌟 Salvamos a lista no Global para gerar os relatórios depois sem chamar o servidor!
+                dadosGlobais.passeiosSalvos = dadosSalvos.sucesso ? dadosSalvos.passeiosSalvos : []; 
 
-                construirLinhaDoTempo(dadosRegras.programa.inicio, dadosRegras.programa.fim, listaSalvos);
+                construirLinhaDoTempo(dadosRegras.programa.inicio, dadosRegras.programa.fim, dadosGlobais.passeiosSalvos);
                 
             } catch(e) { console.error(e); }
         }
@@ -121,14 +132,11 @@
                 let nomeSemana = diasSemana[dataAtual.getDay()];
                 let cabecalhoDia = `${diaFormatado} (${nomeSemana})`;
 
-                // 🧠 PEGA TODOS OS PASSEIOS CADASTRADOS NESTE DIA ESPECÍFICO
                 let passeiosDoDia = listaSalvos.filter(p => String(p.dataPasseio).trim() === String(cabecalhoDia).trim());
 
                 if (passeiosDoDia.length === 0) {
-                    // Se não tem nada, gera 1 card em branco
                     container.innerHTML += gerarCardHTML(gerarIdAleatorio(), cabecalhoDia, {});
                 } else {
-                    // Se tem passeios gravados, gera 1 card para cada passeio achado!
                     passeiosDoDia.forEach(salvo => {
                         container.innerHTML += gerarCardHTML(gerarIdAleatorio(), cabecalhoDia, salvo);
                     });
@@ -139,22 +147,14 @@
             }
         }
 
-        function gerarIdAleatorio() {
-            return Math.random().toString(36).substr(2, 9);
-        }
+        function gerarIdAleatorio() { return Math.random().toString(36).substr(2, 9); }
 
-        // ==========================================
-        // 🧩 HTML DOS CARTÕES (AGORA COM ID ESCONDIDO E BOTÃO NOVO)
-        // ==========================================
         function gerarCardHTML(uid, dataTexto, salvo) {
             return `
             <div class="dia-card">
                 <div class="dia-header">${dataTexto}</div>
                 <div class="dia-body">
-                    
-                    <!-- 🛡️ O ID SECRETO FICA AQUI -->
                     <input type="hidden" id="id_passeio_${uid}" value="${salvo.idPasseio || ''}">
-
                     <div>
                         <label class="form-label">EOLs (Separe por ponto e vírgula ';')</label>
                         <input type="text" class="form-control fw-bold text-primary" id="eol_${uid}" placeholder="Ex: 700039; 700041" value="${salvo.eols || ''}" onblur="preencherNomesCEU('${uid}')">
@@ -163,79 +163,40 @@
                         <label class="form-label">Nome(s) do(s) CEU(s)</label>
                         <textarea class="form-control text-primary fw-bold" id="nomes_${uid}" rows="2" readonly style="background:#e2e8f0; font-size: 11px;">${salvo.ceus || ''}</textarea>
                     </div>
-
                     <div class="row g-2">
-                        <div class="col-6">
-                            <label class="form-label">Passeio</label>
-                            <input type="text" class="form-control" id="passeio_${uid}" value="${salvo.passeio || ''}">
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label">Destino</label>
-                            <input type="text" class="form-control" id="destino_${uid}" value="${salvo.destino || ''}">
-                        </div>
+                        <div class="col-6"><label class="form-label">Passeio</label><input type="text" class="form-control" id="passeio_${uid}" value="${salvo.passeio || ''}"></div>
+                        <div class="col-6"><label class="form-label">Destino</label><input type="text" class="form-control" id="destino_${uid}" value="${salvo.destino || ''}"></div>
                     </div>
-
                     <div class="row g-2">
-                        <div class="col-4">
-                            <label class="form-label">Evento</label>
-                            <input type="text" class="form-control text-center" id="horario_evento_${uid}" placeholder="09h às 15h" value="${salvo.horarioEvento || ''}">
-                        </div>
-                        <div class="col-4">
-                            <label class="form-label">Saída CEU</label>
-                            <input type="time" class="form-control" id="saida_ceu_${uid}" value="${salvo.saidaCeu || ''}">
-                        </div>
-                        <div class="col-4">
-                            <label class="form-label">Retorno</label>
-                            <input type="time" class="form-control" id="chegada_ceu_${uid}" value="${salvo.chegadaCeu || ''}">
-                        </div>
+                        <div class="col-4"><label class="form-label">Evento</label><input type="text" class="form-control text-center" id="horario_evento_${uid}" placeholder="09h às 15h" value="${salvo.horarioEvento || ''}"></div>
+                        <div class="col-4"><label class="form-label">Saída CEU</label><input type="time" class="form-control" id="saida_ceu_${uid}" value="${salvo.saidaCeu || ''}"></div>
+                        <div class="col-4"><label class="form-label">Retorno</label><input type="time" class="form-control" id="chegada_ceu_${uid}" value="${salvo.chegadaCeu || ''}"></div>
                     </div>
-
                     <div class="row g-2">
-                        <div class="col-6">
-                            <label class="form-label">Faixa Etária</label>
-                            <input type="text" class="form-control" id="faixa_${uid}" placeholder="Ex: Infantil" value="${salvo.faixa || ''}">
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label">Idades</label>
-                            <input type="text" class="form-control text-center" id="idade_${uid}" placeholder="06 a 14" value="${salvo.idade || ''}">
-                        </div>
+                        <div class="col-6"><label class="form-label">Faixa Etária</label><input type="text" class="form-control" id="faixa_${uid}" placeholder="Ex: Infantil" value="${salvo.faixa || ''}"></div>
+                        <div class="col-6"><label class="form-label">Idades</label><input type="text" class="form-control text-center" id="idade_${uid}" placeholder="06 a 14" value="${salvo.idade || ''}"></div>
                     </div>
-
                     <div class="row g-2">
-                        <div class="col-6">
-                            <label class="form-label">Chegada (Polo)</label>
-                            <input type="time" class="form-control" id="chegada_van_${uid}" value="${salvo.chegadaVan || ''}">
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label">Qtd (Van)</label>
-                            <input type="number" class="form-control" id="qtd_${uid}" placeholder="Ex: 40" value="${salvo.qtd || ''}">
-                        </div>
+                        <div class="col-6"><label class="form-label">Chegada (Polo)</label><input type="time" class="form-control" id="chegada_van_${uid}" value="${salvo.chegadaVan || ''}"></div>
+                        <div class="col-6"><label class="form-label">Qtd (Van)</label><input type="number" class="form-control" id="qtd_${uid}" placeholder="Ex: 40" value="${salvo.qtd || ''}"></div>
                     </div>
-
                 </div>
                 
                 <div class="card-footer-botoes">
                     <button class="btn-card btn-card-del" onclick="excluirPasseio('${dataTexto}', '${uid}', this)" title="Apagar"><i class="material-icons">delete_sweep</i>Limpar</button>
                     <button class="btn-card btn-card-save" onclick="salvarPasseio('${dataTexto}', '${uid}')" title="Gravar"><i class="material-icons">save</i>Salvar</button>
-                    <button class="btn-card btn-card-print" onclick="gerarRelatorioEAutorizacoes('${uid}', '${dataTexto}')" title="Imprimir"><i class="material-icons">print</i>Imp.</button>
-                    <button class="btn-card btn-card-add" onclick="adicionarPasseioExtra(this, '${dataTexto}')" title="Adicionar Passeio"><i class="material-icons">add_box</i>Novo</button>
+                    <button class="btn-card btn-card-print" onclick="gerarRelatorioEAutorizacoes('${uid}', '${dataTexto}')" title="Imprimir Autorizações"><i class="material-icons">print</i>Imp.</button>
+                    <button class="btn-card btn-card-add" onclick="adicionarPasseioExtra(this, '${dataTexto}')" title="Adicionar Passeio neste Dia"><i class="material-icons">add_box</i>Novo</button>
                 </div>
             </div>
             `;
         }
 
-        // ==========================================
-        // 🚀 A MÁGICA: CRIAR NOVO CARD AO LADO!
-        // ==========================================
         function adicionarPasseioExtra(botaoElement, dataTexto) {
             let uidNovo = gerarIdAleatorio();
             let htmlNovoCard = gerarCardHTML(uidNovo, dataTexto, {});
-            
-            // Injeta o card clonado logo depois do atual
             let cardAtual = botaoElement.closest('.dia-card');
             cardAtual.insertAdjacentHTML('afterend', htmlNovoCard);
-            
-            // Rola a tela suavemente para mostrar o novo card
             cardAtual.nextElementSibling.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
         }
 
@@ -283,9 +244,8 @@
                 let retorno = await res.json();
                 
                 if(retorno.sucesso) {
-                    // Atualiza o ID invisível na tela para ele não criar cópias se você salvar de novo!
                     document.getElementById(`id_passeio_${uid}`).value = retorno.idPasseio;
-                    Swal.fire('Salvo!', retorno.mensagem, 'success');
+                    Swal.fire('Salvo!', retorno.mensagem, 'success').then(() => iniciarSistema()); // Atualiza para puxar pro Global
                 } else Swal.fire('Erro', retorno.erro, 'error');
             } catch(e) { Swal.fire('Erro', 'Falha na conexão.', 'error'); }
         }
@@ -293,7 +253,6 @@
         function excluirPasseio(dataTexto, uid, btnElement) {
             let idPasseio = document.getElementById(`id_passeio_${uid}`).value;
 
-            // Se não tem ID, significa que nunca foi salvo no banco. Apenas limpa a tela.
             if (!idPasseio) {
                 document.getElementById(`eol_${uid}`).value = "";
                 document.getElementById(`nomes_${uid}`).value = "";
@@ -326,9 +285,7 @@
                         let retorno = await res.json();
                         
                         if(retorno.sucesso) {
-                            Swal.fire('Apagado!', 'Registro removido.', 'success').then(() => {
-                                iniciarSistema(); // Recarrega a tela toda para limpar perfeitamente
-                            });
+                            Swal.fire('Apagado!', 'Registro removido.', 'success').then(() => iniciarSistema());
                         } else {
                             Swal.fire('Aviso', retorno.erro, 'info');
                         }
@@ -337,6 +294,176 @@
             });
         }
 
+        // =========================================================================
+        // 📊 NOVO MÓDULO: CRONOGRAMA DE MURAL (UMA PÁGINA POR SEMANA / SPREADSHEET)
+        // =========================================================================
+        function abrirModalRelatorioCEU() {
+            if(!dadosGlobais.ceus) return Swal.fire('Aguarde', 'Os dados ainda estão carregando...', 'warning');
+
+            // Ordena os CEUs em ordem alfabética para facilitar
+            let ceusOrdenados = [...dadosGlobais.ceus].sort((a,b) => a.nome.localeCompare(b.nome));
+
+            let options = '<option value="">Selecione o CEU...</option>';
+            ceusOrdenados.forEach(c => {
+                options += `<option value="${c.eol}">${c.nome}</option>`;
+            });
+
+            Swal.fire({
+                title: '<i class="material-icons text-primary fs-1">view_week</i><br>Gerar Cronograma de Mural',
+                text: 'Selecione o CEU para gerar a planilha semanal de passeios.',
+                html: `<select id="swal-ceu-relatorio" class="form-select text-center fw-bold" style="font-size:16px;">${options}</select>`,
+                showCancelButton: true,
+                confirmButtonText: 'Gerar Planilha',
+                confirmButtonColor: '#0d6efd',
+                cancelButtonText: 'Cancelar',
+                preConfirm: () => {
+                    const select = document.getElementById('swal-ceu-relatorio');
+                    if (!select.value) Swal.showValidationMessage('Você precisa selecionar um CEU na lista!');
+                    return { eol: select.value, nome: select.options[select.selectedIndex].text };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) gerarPlanilhaCronograma(result.value.eol, result.value.nome);
+            });
+        }
+
+        function gerarPlanilhaCronograma(eolCeu, nomeCeu) {
+            // 1. Filtra do Banco de Dados APENAS os passeios que tenham o EOL deste CEU
+            let passeiosDesteCeu = dadosGlobais.passeiosSalvos.filter(p => {
+                let lista = String(p.eols).split(';').map(x => x.trim());
+                return lista.includes(String(eolCeu));
+            });
+
+            // 2. Monta o calendário do Recreio nas Férias
+            let dataAtual = normalizarData(String(dadosGlobais.programa.inicio));
+            let dataFim = normalizarData(String(dadosGlobais.programa.fim));
+            let diasDoPrograma = [];
+            
+            while(dataAtual <= dataFim) {
+                let diaF = ("0" + dataAtual.getDate()).slice(-2) + "/" + ("0" + (dataAtual.getMonth() + 1)).slice(-2);
+                let semanaCurta = ["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SÁB"][dataAtual.getDay()];
+                let formatoBanco = `${diaF}/${String(dataAtual.getFullYear()).slice(-2)} (${["DOMINGO","SEGUNDA","TERÇA","QUARTA","QUINTA","SEXTA","SÁBADO"][dataAtual.getDay()]})`;
+                
+                diasDoPrograma.push({ 
+                    dataObj: new Date(dataAtual), 
+                    cabecalhoHtml: `${semanaCurta}<br><span style="font-size:18px;">${diaF}</span>`, 
+                    formatoBanco: formatoBanco 
+                });
+                
+                dataAtual.setDate(dataAtual.getDate() + 1);
+            }
+
+            // 3. Constrói o HTML agrupando por Semana (1 Tabela por página)
+            let htmlTabelas = '';
+            let semanaAtualArray = [];
+
+            diasDoPrograma.forEach((dia, index) => {
+                semanaAtualArray.push(dia);
+                
+                // Quebra a tabela se chegou no Sábado (fim da semana) OU se for o último dia do programa
+                if (dia.dataObj.getDay() === 6 || index === diasDoPrograma.length - 1) {
+                    
+                    htmlTabelas += `
+                        <div class="cabecalho-pagina">
+                            <h1>CRONOGRAMA DE PASSEIOS - RECREIO NAS FÉRIAS</h1>
+                            <h2>${nomeCeu} | ${dadosGlobais.programa.mes}/${dadosGlobais.programa.ano}</h2>
+                        </div>
+                        <table class="tabela-cronograma">
+                            <thead>
+                                <tr>
+                    `;
+
+                    // Títulos das Colunas (Os Dias)
+                    semanaAtualArray.forEach(d => { htmlTabelas += `<th>${d.cabecalhoHtml}</th>`; });
+                    htmlTabelas += `</tr></thead><tbody><tr>`;
+
+                    // As Linhas de Passeios de cada dia
+                    semanaAtualArray.forEach(d => {
+                        htmlTabelas += `<td valign="top">`;
+                        
+                        let passeiosDoDia = passeiosDesteCeu.filter(p => String(p.dataPasseio).trim() === d.formatoBanco);
+                        
+                        if(passeiosDoDia.length === 0) {
+                            htmlTabelas += `<div class="card-vazio">Sem passeios agendados</div>`;
+                        } else {
+                            passeiosDoDia.forEach(p => {
+                                htmlTabelas += `
+                                    <div class="card-passeio">
+                                        <div class="card-titulo">${p.passeio}</div>
+                                        <div class="card-linha"><b>📍 Destino:</b> ${p.destino}</div>
+                                        <div class="card-linha"><b>⌚ Evento:</b> ${p.horarioEvento}</div>
+                                        <div class="card-linha"><b>🚌 Saída:</b> ${p.saidaCeu}</div>
+                                        <div class="card-linha"><b>🏠 Retorno:</b> ${p.chegadaCeu}</div>
+                                        <div class="card-linha"><b>👶 Perfil:</b> ${p.faixa} (${p.idade})</div>
+                                        <div class="card-linha"><b>👥 Vagas/Van:</b> ${p.qtd} alunos</div>
+                                    </div>
+                                `;
+                            });
+                        }
+                        
+                        htmlTabelas += `</td>`;
+                    });
+
+                    htmlTabelas += `</tr></tbody></table>`;
+
+                    // Pula para a próxima página se não for a última tabela
+                    if (index !== diasDoPrograma.length - 1) {
+                        htmlTabelas += `<div class="page-break"></div>`;
+                    }
+
+                    semanaAtualArray = []; // Zera a semana para montar a próxima página
+                }
+            });
+
+            // 4. Joga tudo na tela de Impressão
+            let janela = window.open('', '_blank', 'width=1100,height=800');
+            
+            let layoutHTML = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Cronograma ${nomeCeu}</title>
+                    <style>
+                        @page { size: A4 landscape; margin: 15mm; }
+                        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 20px; color: #1e293b; background: #fff; }
+                        
+                        .cabecalho-pagina { text-align: center; margin-bottom: 20px; }
+                        .cabecalho-pagina h1 { margin: 0; font-size: 22px; color: #0f172a; font-weight: 900;}
+                        .cabecalho-pagina h2 { margin: 5px 0 0 0; font-size: 16px; color: #3b82f6; text-transform: uppercase; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; display: inline-block;}
+                        
+                        /* A TABELA ESTILO PLANILHA */
+                        .tabela-cronograma { width: 100%; border-collapse: collapse; table-layout: fixed; }
+                        .tabela-cronograma th { background: #f8fafc; color: #334155; padding: 12px; border: 2px solid #cbd5e1; text-align: center; text-transform: uppercase; line-height: 1.2; }
+                        .tabela-cronograma td { border: 2px solid #cbd5e1; padding: 10px; background: #ffffff; }
+                        
+                        /* OS BLOCOS DE PASSEIO DENTRO DA CÉLULA */
+                        .card-passeio { background: #f0fdf4; border-left: 5px solid #22c55e; padding: 10px; border-radius: 4px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); font-size: 11px;}
+                        .card-passeio:last-child { margin-bottom: 0; }
+                        .card-titulo { font-weight: bold; font-size: 13px; color: #166534; margin-bottom: 5px; border-bottom: 1px dashed #bbf7d0; padding-bottom: 3px; text-transform: uppercase;}
+                        .card-linha { margin-bottom: 3px; color: #374151; }
+                        
+                        .card-vazio { text-align: center; font-style: italic; color: #94a3b8; font-size: 12px; margin-top: 20px; }
+
+                        .page-break { page-break-before: always; }
+                        
+                        @media print { body { padding: 0; } }
+                    </style>
+                </head>
+                <body>
+                    ${htmlTabelas}
+                    <script>
+                        setTimeout(function() { window.print(); }, 1000);
+                    <\/script>
+                </body>
+                </html>
+            `;
+
+            janela.document.write(layoutHTML);
+            janela.document.close();
+        }
+
+        // ==========================================
+        // 🖨️ MÁGICA DAS AUTORIZAÇÕES DO CEU (ANTIGA)
+        // ==========================================
         function gerarRelatorioEAutorizacoes(uid, dataTexto) {
             let form = {
                 data: dataTexto,
@@ -362,7 +489,7 @@
                 <!DOCTYPE html>
                 <html>
                 <head>
-                    <title>Relatório e Autorizações - ${dataTexto}</title>
+                    <title>Autorizações - ${dataTexto}</title>
                     <style>
                         body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 20px; color: #333; }
                         h2 { text-align: center; color: #2c3e50; font-size: 20px; margin-bottom: 20px; text-transform: uppercase;}
@@ -428,13 +555,7 @@
                 if ((i + 1) % 2 === 0 && i < 3) html += `<div class="page-break"></div>`;
             }
 
-            html += `
-                    <script>
-                        setTimeout(function() { window.print(); }, 800);
-                    <\/script>
-                </body>
-                </html>
-            `;
+            html += `<script>setTimeout(function() { window.print(); }, 800);<\/script></body></html>`;
 
             janela.document.write(html);
             janela.document.close();

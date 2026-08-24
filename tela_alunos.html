@@ -499,6 +499,7 @@
                 if (retorno.status === "sucesso") {
                     
                     // 🌟 O NOVO MODAL COM O NÚMERO GIGANTE!
+ // 🌟 O NOVO MODAL COM REDIRECIONAMENTO!
                     Swal.fire({
                         title: 'Cadastro Realizado!',
                         html: `
@@ -509,8 +510,24 @@
                             </div>
                         `,
                         icon: 'success',
-                        confirmButtonText: 'OK, FECHAR',
-                        confirmButtonColor: '#0d6efd'
+                        confirmButtonText: 'OK, VOLTAR PARA LISTA',
+                        confirmButtonColor: '#0d6efd',
+                        allowOutsideClick: false // 🛡️ Impede que a pessoa feche clicando fora da caixa
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            
+                            // 🚀 REDIRECIONA PARA A TELA DE LISTA DE ALUNOS
+                            // ATENÇÃO: Troque "Alunos.html" pelo nome exato do seu arquivo da lista!
+                            
+                            if(window.parent && typeof window.parent.abrirFormFilho === 'function') {
+                                // Se o seu sistema usa aquele esquema de Menu Lateral que abre as telas dentro (iframe)
+                                window.parent.abrirFormFilho('Alunos.html'); 
+                            } else {
+                                // Se for uma navegação de página comum
+                                window.location.href = "Alunos.html"; 
+                            }
+                            
+                        }
                     });
 
                     // Aqui você mantém o código que já existe para limpar o formulário

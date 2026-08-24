@@ -52,7 +52,6 @@
             </h3>
             
             <div style="display: flex; gap: 10px;">
-                <!-- 🗑️ NOVO BOTÃO DE EXCLUIR (Invisível por padrão) -->
                 <button class="btn btn-danger" onclick="confirmarExclusao()" id="btn-excluir-aluno" style="display: none; align-items: center; gap: 8px; font-weight: bold; border-radius: 8px;">
                     <span class="material-icons">delete_forever</span> Excluir
                 </button>
@@ -277,7 +276,6 @@
                     <div class="row align-items-center">
                         <div class="col-md-6">
                             <label class="form-label text-muted">Imprimir Carteirinha? (Coluna O)</label>
-                            <!-- 🌟 AQUI ESTÁ O SEGREDO CORRIGIDO: value="NÃO" e selected no SIM -->
                             <select id="aluno-print-geral" class="form-select border-primary fw-bold">
                                 <option value="NÃO">NÃO</option>
                                 <option value="SIM" selected>SIM</option>
@@ -295,7 +293,6 @@
                     <div class="row align-items-center">
                         <div class="col-md-4">
                             <label class="form-label text-muted">Tem Permissão? (Coluna R)</label>
-                            <!-- 🌟 value corrigido para "NÃO" -->
                             <select id="aluno-perm-academia" class="form-select border-danger fw-bold">
                                 <option value="NÃO">NÃO</option>
                                 <option value="SIM">SIM</option>
@@ -320,7 +317,6 @@
                     <div class="row align-items-center">
                         <div class="col-md-4">
                             <label class="form-label text-muted">Tem Permissão? (Coluna Q)</label>
-                            <!-- 🌟 value corrigido para "NÃO" -->
                             <select id="aluno-perm-raia" class="form-select border-info fw-bold">
                                 <option value="NÃO">NÃO</option>
                                 <option value="SIM">SIM</option>
@@ -386,6 +382,16 @@
     <script>
         // AQUI FICA O LINK OFICIAL DO SEU SERVIDOR
         const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec"; 
+
+        // 🌟 A FUNÇÃO DE OURO: O ESCUDO PROTETOR CONTRA ERROS DE ACENTUAÇÃO E ESPAÇOS!
+        function safeSimNao(valor) {
+            let v = String(valor || "").trim().toUpperCase();
+            // Tira qualquer acento do banco de dados (ex: NÃO vira NAO)
+            v = v.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            
+            if (v === "SIM" || v === "S") return "SIM";
+            return "NÃO"; // Qualquer outra coisa ("NAO", "", "NO") vira "NÃO" oficial
+        }
 
         function previewFotoAluno(event) {
             const file = event.target.files[0];
@@ -517,7 +523,7 @@
                     }).then((result) => {
                         if (result.isConfirmed) {
                             if(window.parent && typeof window.parent.abrirFormFilho === 'function') {
-                                window.parent.abrirFormFilho('alunos.html'); 
+                                window.parent.abrirFormFilho('Alunos.html'); 
                             } else {
                                 window.location.href = "Alunos.html"; 
                             }
@@ -545,6 +551,9 @@
                 document.body.setAttribute('data-id-edicao', idEdicao);
 
                 carregarDadosDoAluno(idEdicao);
+            } else {
+                // 🌟 PROTEÇÃO CONTRA CACHE DE NAVEGADOR EM NOVO ALUNO:
+                document.getElementById('aluno-print-geral').value = "SIM";
             }
         };
 
@@ -577,9 +586,6 @@
             .catch(err => Swal.fire('Erro', 'Falha na conexão.', 'error'));
         }
 
-        // ==========================================
-        // 🏆 RADAR DE MATRÍCULAS (NOVO)
-        // ==========================================
         function carregarModalidades(idAluno) {
             const idPlanilhaCeu = localStorage.getItem('ceu_planilha_id');
             const codigoCeu = localStorage.getItem('ceu_codigo_eol');
@@ -642,26 +648,28 @@
             document.getElementById('aluno-recado-com').value = aluno.recadosCom || "";
 
             document.getElementById('aluno-resp').value = aluno.respLegal || "";
-            document.getElementById('aluno-saida').value = aluno.autorizacaoSaida || "NÃO";
-            document.getElementById('aluno-quem-autorizou').value = aluno.quemAutorizou || "";
-            document.getElementById('aluno-pcd').value = aluno.pcd || "NÃO";
-            document.getElementById('aluno-def-qual').value = aluno.especificarDeficiencia || "";
-            document.getElementById('aluno-laudo-pcd').value = aluno.laudoPcd || "NÃO";
-            document.getElementById('aluno-restr').value = aluno.restricaoAlimentar || "NÃO";
-            document.getElementById('aluno-restr-qual').value = aluno.especificarRestricao || "";
-            document.getElementById('aluno-laudo-restr').value = aluno.laudoRestricao || "NÃO";
             
-            if (aluno.parq === "SIM") { document.getElementById('aluno-parq').checked = true; }
+            // 🌟 AQUI O FILTRO BLINDADO ENTRA EM AÇÃO PARA AS COMBOS!
+            document.getElementById('aluno-saida').value = safeSimNao(aluno.autorizacaoSaida);
+            document.getElementById('aluno-quem-autorizou').value = aluno.quemAutorizou || "";
+            document.getElementById('aluno-pcd').value = safeSimNao(aluno.pcd);
+            document.getElementById('aluno-def-qual').value = aluno.especificarDeficiencia || "";
+            document.getElementById('aluno-laudo-pcd').value = safeSimNao(aluno.laudoPcd);
+            document.getElementById('aluno-restr').value = safeSimNao(aluno.restricaoAlimentar);
+            document.getElementById('aluno-restr-qual').value = aluno.especificarRestricao || "";
+            document.getElementById('aluno-laudo-restr').value = safeSimNao(aluno.laudoRestricao);
+            
+            if (safeSimNao(aluno.parq) === "SIM") { document.getElementById('aluno-parq').checked = true; }
 
-            document.getElementById('aluno-print-geral').value = aluno.imprimirCG || "NÃO";
+            document.getElementById('aluno-print-geral').value = safeSimNao(aluno.imprimirCG);
             document.getElementById('aluno-via-geral').value = aluno.viaGeral || 0;
             
-            document.getElementById('aluno-perm-academia').value = aluno.permissaoAcademia || "NÃO";
-            document.getElementById('aluno-print-academia').value = aluno.imprimirCAL || "NÃO";
+            document.getElementById('aluno-perm-academia').value = safeSimNao(aluno.permissaoAcademia);
+            document.getElementById('aluno-print-academia').value = safeSimNao(aluno.imprimirCAL);
             document.getElementById('aluno-via-academia').value = aluno.viaAcademia || 0;
 
-            document.getElementById('aluno-perm-raia').value = aluno.permissaoRaia || "NÃO";
-            document.getElementById('aluno-print-raia').value = aluno.imprimirCRL || "NÃO";
+            document.getElementById('aluno-perm-raia').value = safeSimNao(aluno.permissaoRaia);
+            document.getElementById('aluno-print-raia').value = safeSimNao(aluno.imprimirCRL);
             document.getElementById('aluno-via-piscina').value = aluno.viaPiscina || 0;
 
             document.getElementById('aluno-obs').value = aluno.obs || "";

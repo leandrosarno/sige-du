@@ -198,8 +198,9 @@
             <span class="material-icons">wb_sunny</span> Regras Recreio (DRE)
         </a>
 
-        <a href="javascript:void(0)" id="btnRegrasRF" style="display: none;" onclick="abrirFormFilho('CadastroRegrasRF.html', this)">
-            <span class="material-icons">wb_sunny</span> Passeios Recreio (DRE)
+        <!-- BOTÃO EXCLUSIVO DRE -->
+        <a href="javascript:void(0)" id="btnPasseiosDRE" style="display: none;" onclick="abrirFormFilho('dre_passeios.html', this)">
+            <span class="material-icons">directions_bus</span> Passeios Recreio (DRE)
         </a>
 
 
@@ -280,10 +281,14 @@ window.onload = function() {
                 }
 
                 // 🚦 CONTROLE DE VISIBILIDADE POR PERFIL
-// 🚦 CONTROLE DE VISIBILIDADE POR PERFIL
                 if (perfilUsuario === "DRE" || perfilUsuario === "SME") {
+                    // Libera o botão antigo de Regras
                     const btnRF = document.getElementById('btnRegrasRF');
                     if (btnRF) btnRF.style.display = 'flex';
+                    
+                    // Libera o NOVO botão de Passeios
+                    const btnPasseios = document.getElementById('btnPasseiosDRE');
+                    if (btnPasseios) btnPasseios.style.display = 'flex';
 
                     const itensParaOcultar = [
                         'link-inicio', 'link-alunos', 'link-turmas', 'submenuTurmas',

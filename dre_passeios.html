@@ -491,6 +491,7 @@
             janela.document.close();
         }
 
+
 function gerarAutorizacoesEspecificas(id) {
             let form = dadosGlobais.passeiosSalvos.find(x => x.idPasseio === id);
             if(!form) return;
@@ -499,9 +500,9 @@ function gerarAutorizacoesEspecificas(id) {
 
             let janela = window.open('', '_blank', 'width=1000,height=800');
             
-            // 🌟 CSS OTIMIZADO PARA 8 CÓPIAS EXATAS NO SULFITE A4
+            // 🌟 CSS AJUSTADO PARA DISTRIBUIR O ESPAÇO HOMOGENEAMENTE (8 CÓPIAS)
             let html = `<html><head><style>
-                @page { size: A4 portrait; margin: 5mm; }
+                @page { size: A4 portrait; margin: 15mm 10mm; } /* Margens maiores no topo/base e laterais ajustadas */
                 body { font-family: Arial, sans-serif; margin: 0; padding: 0; color: #333; }
                 h2 { text-align: center; color: #2c3e50; font-size: 16px; text-transform: uppercase; margin-bottom: 10px; margin-top: 5px;}
                 
@@ -511,25 +512,25 @@ function gerarAutorizacoesEspecificas(id) {
                 th { background: #f1f5f9; width: 30%; } 
                 .page-break { page-break-before: always; }
                 
-                /* AUTORIZAÇÕES (PÁGINA 2) - 8 POR PÁGINA */
+                /* AUTORIZAÇÕES (PÁGINA 2) - 8 POR PÁGINA COM MAIS RESPIRO */
                 .auth-container { 
                     border: 1px dashed #94a3b8; 
                     border-radius: 4px; 
-                    padding: 5px 8px; 
-                    margin-bottom: 5px; 
+                    padding: 8px 10px; /* Um pouquinho mais de respiro interno */
+                    margin-bottom: 14px; /* Mais espaço entre as autorizações */
                     font-size: 11px; 
                     line-height: 1.15; 
                 }
-                .auth-header { text-align: center; font-weight: bold; font-size: 10px; text-transform: uppercase; margin-bottom: 2px;}
-                .auth-title { text-align: center; font-weight: bold; font-size: 11px; margin-bottom: 3px; text-decoration: underline; }
+                .auth-header { text-align: center; font-weight: bold; font-size: 10px; text-transform: uppercase; margin-bottom: 3px;}
+                .auth-title { text-align: center; font-weight: bold; font-size: 11px; margin-bottom: 4px; text-decoration: underline; }
                 
                 .auth-linha { border-bottom: 1px solid #000; display: inline-block; }
                 
                 /* ALINHAMENTO EM COLUNAS LADO A LADO */
-                .linha-flex { display: flex; justify-content: space-between; margin-bottom: 3px; gap: 8px;}
+                .linha-flex { display: flex; justify-content: space-between; margin-bottom: 4px; gap: 8px;}
                 .campo-flex { flex-grow: 1; white-space: nowrap; }
                 
-                .auth-assinatura { text-align: center; margin-top: 8px; }
+                .auth-assinatura { text-align: center; margin-top: 10px; }
                 .auth-assinatura-linha { border-top: 1px solid #000; width: 50%; margin: 0 auto; padding-top: 2px; font-size: 9px;}
                 
                 @media print { body { padding: 0; } }
@@ -550,7 +551,7 @@ function gerarAutorizacoesEspecificas(id) {
             
             <div class="page-break"></div>`;
 
-            // 🚀 LAÇO REPROGRAMADO PARA GERAR 8 CÓPIAS
+            // 🚀 LAÇO MANTIDO PARA GERAR AS 8 CÓPIAS
             for(let i=0; i<8; i++) {
                 let nomesCEUAuth = form.ceus.split('|').map(c => c.trim()).join(' / ');
                 
@@ -588,6 +589,9 @@ function gerarAutorizacoesEspecificas(id) {
             janela.document.write(html + `<script>setTimeout(function(){window.print();},800);<\/script></body></html>`);
             janela.document.close();
         }
+
+
+        
     </script>
 </body>
 </html>

@@ -416,8 +416,16 @@
         // 🖨️ MÓDULOS DE IMPRESSÃO (COPIADOS E AJUSTADOS)
         // ==========================================
         function abrirModalRelatorioCEU() {
-            if(!dadosGlobais.ceus) return;
-            let ceusOrdenados = [...dadosGlobais.ceus].sort((a,b) => a.nome.localeCompare(b.nome));
+            if(!dadosGlobais.ceus) return Swal.fire('Aguarde', 'Os dados ainda estão carregando...', 'warning');
+
+            // 🛡️ O FILTRO MÁGICO AQUI: Separa apenas os CEUs da DRE logada (SME vê tudo)
+            let ceusDestaDre = dadosGlobais.ceus.filter(c => localStorage.getItem('ceu_perfil') === 'SME' || c.dreEol === eolDreLogada);
+
+            if (ceusDestaDre.length === 0) {
+                return Swal.fire('Atenção', 'Nenhum CEU vinculado à sua DRE foi encontrado.', 'warning');
+            }
+
+            let ceusOrdenados = [...ceusDestaDre].sort((a,b) => a.nome.localeCompare(b.nome));
             let options = '<option value="">Selecione o CEU...</option>';
             ceusOrdenados.forEach(c => { options += `<option value="${c.eol}">${c.nome}</option>`; });
 
@@ -483,20 +491,100 @@
             janela.document.close();
         }
 
-        function gerarAutorizacoesEspecificas(id) {
+function gerarAutorizacoesEspecificas(id) {
             let form = dadosGlobais.passeiosSalvos.find(x => x.idPasseio === id);
             if(!form) return;
             form.data = form.dataPasseio;
             form.mesAno = `${dadosGlobais.programa.mes} / ${dadosGlobais.programa.ano}`;
 
             let janela = window.open('', '_blank', 'width=1000,height=800');
-            let html = `<html><head><style>body{font-family:sans-serif;padding:20px;}h2{text-align:center;color:#2c3e50;font-size:20px;text-transform:uppercase;}table{width:100%;border-collapse:collapse;margin-bottom:40px;font-size:13px;}th,td{border:1px solid #cbd5e1;padding:10px;text-align:left;}th{background:#f1f5f9;width:30%;} .page-break{page-break-before:always;}.auth-container{border:1px dashed #94a3b8;border-radius:8px;padding:30px;margin-bottom:30px;font-family:serif;font-size:15px;line-height:1.6;}.auth-title{text-align:center;font-weight:bold;font-size:18px;margin-bottom:20px;text-decoration:underline;}.auth-linha{border-bottom:1px solid #000;display:inline-block;}.auth-assinatura{text-align:center;margin-top:50px;}.auth-assinatura-linha{border-top:1px solid #000;width:60%;margin:0 auto;padding-top:5px;font-size:13px;}</style></head><body><h2>Cronograma de Passeio - ${form.data}</h2><table><tr><th>Unidades Contempladas</th><td>${form.ceus}</td></tr><tr><th>Passeio</th><td>${form.passeio}</td></tr><tr><th>Destino</th><td>${form.destino}</td></tr><tr><th>Evento</th><td>${form.horarioEvento}</td></tr><tr><th>Chegada Polo</th><td>${form.chegadaVan}</td></tr><tr><th>Saída CEU</th><td>${form.saidaCeu}</td></tr><tr><th>Retorno CEU</th><td>${form.chegadaCeu}</td></tr><tr><th>Qtd. Alunos</th><td>${form.qtd}</td></tr><tr><th>Faixa Etária</th><td>${form.faixa} (${form.idade})</td></tr></table><div class="page-break"></div>`;
+            
+            // 🌟 CSS TOTALMENTE REDESENHADO PARA CABER 5 POR PÁGINA
+            let html = `<html><head><style>
+                @page { size: A4 portrait; margin: 10mm; }
+                body { font-family: Arial, sans-serif; margin: 0; padding: 0; color: #333; }
+                h2 { text-align: center; color: #2c3e50; font-size: 18px; text-transform: uppercase; margin-bottom: 15px; margin-top: 10px;}
+                
+                /* TABELA DO RELATÓRIO (PÁGINA 1) */
+                table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 12px; }
+                th, td { border: 1px solid #cbd5e1; padding: 8px; text-align: left; }
+                th { background: #f1f5f9; width: 30%; } 
+                .page-break { page-break-before: always; }
+                
+                /* AUTORIZAÇÕES COMPACTAS (PÁGINA 2) */
+                .auth-container { 
+                    border: 1px dashed #94a3b8; 
+                    border-radius: 6px; 
+                    padding: 8px 12px; 
+                    margin-bottom: 10px; 
+                    font-size: 11px; 
+                    line-height: 1.3; 
+                }
+                .auth-header { text-align: center; font-weight: bold; font-size: 11px; text-transform: uppercase; margin-bottom: 5px;}
+                .auth-title { text-align: center; font-weight: bold; font-size: 12px; margin-bottom: 6px; text-decoration: underline; }
+                
+                .auth-linha { border-bottom: 1px solid #000; display: inline-block; }
+                
+                /* ALINHAMENTO EM COLUNAS LADO A LADO */
+                .linha-flex { display: flex; justify-content: space-between; margin-bottom: 5px; gap: 10px;}
+                .campo-flex { flex-grow: 1; white-space: nowrap; }
+                
+                .auth-assinatura { text-align: center; margin-top: 15px; }
+                .auth-assinatura-linha { border-top: 1px solid #000; width: 50%; margin: 0 auto; padding-top: 2px; font-size: 10px;}
+                
+                @media print { body { padding: 0; } }
+            </style></head><body>
+            
+            <h2>Cronograma de Passeio - ${form.data}</h2>
+            <table>
+                <tr><th>Unidades Contempladas</th><td>${form.ceus}</td></tr>
+                <tr><th>Passeio</th><td>${form.passeio}</td></tr>
+                <tr><th>Destino</th><td>${form.destino}</td></tr>
+                <tr><th>Evento</th><td>${form.horarioEvento}</td></tr>
+                <tr><th>Chegada Polo</th><td>${form.chegadaVan}</td></tr>
+                <tr><th>Saída CEU</th><td>${form.saidaCeu}</td></tr>
+                <tr><th>Retorno CEU</th><td>${form.chegadaCeu}</td></tr>
+                <tr><th>Qtd. Alunos</th><td>${form.qtd}</td></tr>
+                <tr><th>Faixa Etária</th><td>${form.faixa} (${form.idade})</td></tr>
+            </table>
+            
+            <div class="page-break"></div>`;
 
-            for(let i=0; i<4; i++) {
+            // 🚀 LAÇO REPROGRAMADO PARA GERAR 5 CÓPIAS
+            for(let i=0; i<5; i++) {
                 let nomesCEUAuth = form.ceus.split('|').map(c => c.trim()).join(' / ');
-                html += `<div class="auth-container"><div style="text-align:center;font-weight:bold;text-transform:uppercase;">${nomesCEUAuth}</div><div style="text-align:center;font-weight:bold;margin-bottom:20px;">Recreio nas Férias – ${form.mesAno}</div><div class="auth-title">AUTORIZAÇÃO</div><div>Nome da criança: <span class="auth-linha" style="width:75%;"></span><br><br>Nome da(o) responsável: <span class="auth-linha" style="width:70%;"></span><br><br><strong>Local:</strong> ${form.destino}<br><strong>Data:</strong> ${form.data}<br><strong>Saída / Retorno:</strong> ${form.saidaCeu} | ${form.chegadaCeu}<br><br><p style="text-indent:40px;text-align:justify;">Autorizo meu(inha) filho(a) a participar do passeio do <strong>Recreio nas Férias – ${form.mesAno}</strong>, no dia e horário informados acima.</p></div><div class="auth-assinatura"><div class="auth-assinatura-linha">Assinatura do pai / mãe / responsável</div></div></div>`;
-                if ((i + 1) % 2 === 0 && i < 3) html += `<div class="page-break"></div>`;
+                
+                html += `
+                <div class="auth-container">
+                    <div class="auth-header">
+                        ${nomesCEUAuth} <span style="margin:0 10px;">|</span> Recreio nas Férias – ${form.mesAno}
+                    </div>
+                    
+                    <div class="auth-title">AUTORIZAÇÃO DE PASSEIO</div>
+                    
+                    <!-- PRIMEIRA LINHA: NOME E RESPONSÁVEL -->
+                    <div class="linha-flex">
+                        <div class="campo-flex" style="width: 55%;">Nome da criança: <span class="auth-linha" style="width: 70%;"></span></div>
+                        <div class="campo-flex" style="width: 45%;">Resp.: <span class="auth-linha" style="width: 80%;"></span></div>
+                    </div>
+                    
+                    <!-- SEGUNDA LINHA: LOCAL, DATA E HORÁRIO -->
+                    <div class="linha-flex">
+                        <div class="campo-flex" style="width: 50%;"><strong>Local:</strong> ${form.destino}</div>
+                        <div class="campo-flex" style="width: 25%;"><strong>Data:</strong> ${form.data.substring(0,5)}</div>
+                        <div class="campo-flex" style="width: 25%;"><strong>Horário:</strong> ${form.saidaCeu} às ${form.chegadaCeu}</div>
+                    </div>
+                    
+                    <p style="margin: 4px 0; text-align: justify;">
+                        Autorizo meu(inha) filho(a) a participar do passeio do <strong>Recreio nas Férias – ${form.mesAno}</strong>, no local, dia e horário informados acima.
+                    </p>
+                    
+                    <div class="auth-assinatura">
+                        <div class="auth-assinatura-linha">Assinatura do pai / mãe / responsável</div>
+                    </div>
+                </div>`;
             }
+            
             janela.document.write(html + `<script>setTimeout(function(){window.print();},800);<\/script></body></html>`);
             janela.document.close();
         }

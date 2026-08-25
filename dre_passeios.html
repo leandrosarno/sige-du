@@ -17,28 +17,27 @@
         .btn-header { background: rgba(255, 255, 255, 0.2); color: white; border: 1px solid rgba(255, 255, 255, 0.4); padding: 8px 16px; border-radius: 8px; font-weight: bold; transition: 0.3s; display: flex; align-items: center; gap: 8px; }
         .btn-header:hover { background: white; color: #2c3e50; }
 
-        /* LINHA DO TEMPO HORIZONTAL */
-        .timeline-container { display: flex; overflow-x: auto; gap: 20px; padding-bottom: 20px; scroll-behavior: smooth; }
-        .timeline-container::-webkit-scrollbar { height: 10px; }
-        .timeline-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        .timeline-container::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-
-        .dia-card { min-width: 380px; max-width: 380px; background: white; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; overflow: hidden; display: flex; flex-direction: column; }
-        .dia-header { background: #0d6efd; color: white; text-align: center; padding: 15px; font-weight: 800; font-size: 18px; letter-spacing: 1px; }
-        .dia-body { padding: 20px; flex-grow: 1; display: flex; flex-direction: column; gap: 12px; }
+        .card-custom { background: white; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; padding: 20px; margin-bottom: 20px;}
+        .card-title { color: #0d6efd; font-weight: 800; font-size: 16px; border-bottom: 2px solid #edf2f7; padding-bottom: 10px; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;}
         
         .form-label { font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 2px; text-transform: uppercase; }
-        .form-control { font-size: 13px; border-radius: 6px; padding: 8px 10px; border: 1px solid #cbd5e1; background: #f8fafc; }
-        .form-control:focus { border-color: #0d6efd; box-shadow: none; background: white; }
+        .form-control, .form-select { font-size: 13px; border-radius: 6px; padding: 8px 10px; border: 1px solid #cbd5e1; background: #f8fafc; }
+        .form-control:focus, .form-select:focus { border-color: #0d6efd; box-shadow: none; background: white; }
         
-        /* BOTÕES DO RODAPÉ DIVIDIDOS EM 4 */
-        .card-footer-botoes { display: flex; gap: 5px; padding: 12px; background: #f8fafc; border-top: 1px solid #e2e8f0; }
-        .btn-card { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 6px 0; border: none; border-radius: 8px; font-size: 10px; font-weight: bold; transition: 0.2s; color: white; text-transform: uppercase; letter-spacing: 0.5px;}
-        .btn-card-del { background: #ef4444; } .btn-card-del:hover { background: #dc2626; }
-        .btn-card-save { background: #0ea5e9; } .btn-card-save:hover { background: #0284c7; }
-        .btn-card-print { background: #10b981; } .btn-card-print:hover { background: #059669; }
-        .btn-card-add { background: #8b5cf6; } .btn-card-add:hover { background: #7c3aed; }
-        .btn-card i { font-size: 18px; margin-bottom: 2px; }
+        .btn-ceu { background: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd; border-radius: 20px; padding: 4px 12px; font-size: 11px; font-weight: bold; cursor: pointer; transition: 0.2s;}
+        .btn-ceu:hover { background: #0ea5e9; color: white; }
+
+        /* TABELA DE PASSEIOS COM SCROLL */
+        .table-container { max-height: 600px; overflow-y: auto; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .table-container::-webkit-scrollbar { width: 8px; }
+        .table-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px;}
+        thead { background: #f1f5f9; position: sticky; top: 0; z-index: 1;}
+        th { padding: 12px; text-transform: uppercase; font-size: 11px; color: #475569; font-weight: 800;}
+        td { padding: 12px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
+        
+        .btn-acao { background: none; border: none; cursor: pointer; padding: 5px; border-radius: 4px; transition: 0.2s;}
+        .btn-acao:hover { background: #f1f5f9; }
         
         .acesso-negado { text-align: center; margin-top: 100px; color: #dc3545; }
     </style>
@@ -49,9 +48,8 @@
         <div class="header-dre">
             <div>
                 <h3 style="margin: 0; font-weight: 800;"><i class="material-icons align-middle">directions_bus</i> Gestão de Passeios</h3>
-                <p style="margin: 0; font-size: 14px; opacity: 0.9;" id="subtitulo-programa">Conectando ao Banco de Dados...</p>
+                <p style="margin: 0; font-size: 14px; opacity: 0.9;" id="subtitulo-programa">Carregando Sistema...</p>
             </div>
-            <!-- 🌟 NOVO BOTÃO DE RELATÓRIO DO MURAL -->
             <div>
                 <button class="btn-header" onclick="abrirModalRelatorioCEU()">
                     <i class="material-icons">summarize</i> Cronograma por CEU
@@ -59,9 +57,92 @@
             </div>
         </div>
 
-        <div class="timeline-container" id="container-dias">
-            <h5 class="text-muted mt-5 mx-auto"><div class="spinner-border text-primary me-2" role="status"></div> Construindo linha do tempo e buscando registros...</h5>
+        <div class="row" id="area-sistema" style="display: none;">
+            <!-- FORMULÁRIO (ESQUERDA) -->
+            <div class="col-md-4">
+                <div class="card-custom">
+                    <div class="card-title">
+                        <i class="material-icons">add_location_alt</i> Dados do Passeio
+                    </div>
+                    
+                    <input type="hidden" id="form_id_passeio">
+
+                    <div class="mb-3">
+                        <label class="form-label">Data do Passeio</label>
+                        <select class="form-select fw-bold text-primary" id="form_data"></select>
+                    </div>
+
+                    <!-- BOTÕES MÁGICOS DA DRE -->
+                    <div class="mb-3">
+                        <label class="form-label">CEUs da DRE (Clique para adicionar)</label>
+                        <div id="container-botoes-ceus" class="d-flex flex-wrap gap-2"></div>
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label">EOLs (Separados por ';')</label>
+                        <input type="text" class="form-control fw-bold" id="form_eols" placeholder="Ex: 700039; 700041" onblur="preencherNomesCEU()">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Nome(s) do(s) CEU(s)</label>
+                        <textarea class="form-control text-primary fw-bold" id="form_nomes" rows="2" readonly style="background:#e2e8f0; font-size: 11px;"></textarea>
+                    </div>
+
+                    <div class="row g-2 mb-2">
+                        <div class="col-6"><label class="form-label">Passeio</label><input type="text" class="form-control text-uppercase" id="form_passeio"></div>
+                        <div class="col-6"><label class="form-label">Destino</label><input type="text" class="form-control text-uppercase" id="form_destino"></div>
+                    </div>
+                    
+                    <div class="row g-2 mb-2">
+                        <div class="col-4"><label class="form-label">Evento</label><input type="text" class="form-control text-center text-uppercase" id="form_evento" placeholder="09h às 15h"></div>
+                        <div class="col-4"><label class="form-label">Saída CEU</label><input type="time" class="form-control" id="form_saida"></div>
+                        <div class="col-4"><label class="form-label">Retorno</label><input type="time" class="form-control" id="form_retorno"></div>
+                    </div>
+
+                    <div class="row g-2 mb-2">
+                        <div class="col-6"><label class="form-label">Faixa Etária</label><input type="text" class="form-control text-uppercase" id="form_faixa" placeholder="Ex: Infantil"></div>
+                        <div class="col-6"><label class="form-label">Idades</label><input type="text" class="form-control text-center text-uppercase" id="form_idade" placeholder="06 a 14"></div>
+                    </div>
+
+                    <div class="row g-2 mb-4">
+                        <div class="col-6"><label class="form-label">Chegada (Polo)</label><input type="time" class="form-control" id="form_chegada_van"></div>
+                        <div class="col-6"><label class="form-label">Qtd (Van)</label><input type="number" class="form-control" id="form_qtd" placeholder="Ex: 40"></div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-secondary flex-grow-1 fw-bold" onclick="limparFormulario()"><i class="material-icons align-middle fs-5">clear_all</i> Limpar</button>
+                        <button class="btn btn-primary flex-grow-1 fw-bold" onclick="salvarPasseio()"><i class="material-icons align-middle fs-5">save</i> Salvar</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LISTAGEM (DIREITA) -->
+            <div class="col-md-8">
+                <div class="card-custom h-100">
+                    <div class="card-title d-flex justify-content-between">
+                        <span><i class="material-icons">list_alt</i> Passeios Registrados</span>
+                        <span class="badge bg-secondary" id="contador-passeios">0 passeios</span>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Passeio / Destino</th>
+                                    <th>CEU(s)</th>
+                                    <th>Horários</th>
+                                    <th class="text-center">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="corpo-tabela-passeios">
+                                <!-- Preenchido via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
+
     </div>
 
     <div id="area-bloqueada" class="acesso-negado" style="display: none;">
@@ -73,9 +154,12 @@
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec"; 
         let dadosGlobais = {}; 
+        let eolDreLogada = ""; 
 
         window.onload = function() {
             const perfil = localStorage.getItem('ceu_perfil') || "CEU";
+            eolDreLogada = localStorage.getItem('ceu_codigo_eol'); // Pega o EOL da DRE logada
+
             if (perfil !== "DRE" && perfil !== "SME") {
                 document.getElementById('area-bloqueada').style.display = 'block';
                 return;
@@ -95,12 +179,12 @@
         }
 
         async function iniciarSistema() {
+            Swal.fire({ title: 'Carregando Sistema...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
             try {
                 let resRegras = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "buscarDadosPasseiosDRE" }) });
-                let textRegras = await resRegras.text();
-                let dadosRegras;
-                try { dadosRegras = JSON.parse(textRegras); } catch(e) { return; }
-                if(!dadosRegras.sucesso) return;
+                let dadosRegras = await resRegras.json();
+                
+                if(!dadosRegras.sucesso) return Swal.fire('Erro', dadosRegras.erro, 'error');
 
                 dadosGlobais = dadosRegras;
                 document.getElementById('subtitulo-programa').innerText = `Programa Recreio nas Férias - ${dadosRegras.programa.mes}/${dadosRegras.programa.ano}`;
@@ -108,101 +192,76 @@
                 let resSalvos = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "buscarPasseiosSalvosDRE" }) });
                 let dadosSalvos = await resSalvos.json();
                 
-                // 🌟 Salvamos a lista no Global para gerar os relatórios depois sem chamar o servidor!
                 dadosGlobais.passeiosSalvos = dadosSalvos.sucesso ? dadosSalvos.passeiosSalvos : []; 
 
-                construirLinhaDoTempo(dadosRegras.programa.inicio, dadosRegras.programa.fim, dadosGlobais.passeiosSalvos);
+                // Montar Interface
+                montarComboDatas(dadosRegras.programa.inicio, dadosRegras.programa.fim);
+                montarBotoesCEU();
+                renderizarTabela();
                 
-            } catch(e) { console.error(e); }
+                document.getElementById('area-sistema').style.display = 'flex';
+                Swal.close();
+            } catch(e) { 
+                Swal.fire('Erro', 'Falha de comunicação com o servidor.', 'error');
+            }
         }
 
-        function construirLinhaDoTempo(dataInicioStr, dataFimStr, listaSalvos) {
-            const container = document.getElementById('container-dias');
-            container.innerHTML = "";
-
+        // ==========================================
+        // 🗓️ COMBO DE DATAS E BOTÕES DOS CEUs
+        // ==========================================
+        function montarComboDatas(dataInicioStr, dataFimStr) {
+            let combo = document.getElementById('form_data');
+            combo.innerHTML = '<option value="">Selecione a data...</option>';
+            
             let dataAtual = normalizarData(String(dataInicioStr));
             let dataFim = normalizarData(String(dataFimStr));
-            if (!dataAtual || !dataFim || isNaN(dataAtual.getTime()) || isNaN(dataFim.getTime())) return;
-
             const diasSemana = ["DOMINGO", "SEGUNDA", "TERÇA", "QUARTA", "QUINTA", "SEXTA", "SÁBADO"];
-            let travaAntiLoop = 0; 
-
-            while (dataAtual <= dataFim && travaAntiLoop < 40) {
+            
+            while (dataAtual <= dataFim) {
                 let diaFormatado = ("0" + dataAtual.getDate()).slice(-2) + "/" + ("0" + (dataAtual.getMonth() + 1)).slice(-2) + "/" + String(dataAtual.getFullYear()).slice(-2);
                 let nomeSemana = diasSemana[dataAtual.getDay()];
                 let cabecalhoDia = `${diaFormatado} (${nomeSemana})`;
-
-                let passeiosDoDia = listaSalvos.filter(p => String(p.dataPasseio).trim() === String(cabecalhoDia).trim());
-
-                if (passeiosDoDia.length === 0) {
-                    container.innerHTML += gerarCardHTML(gerarIdAleatorio(), cabecalhoDia, {});
-                } else {
-                    passeiosDoDia.forEach(salvo => {
-                        container.innerHTML += gerarCardHTML(gerarIdAleatorio(), cabecalhoDia, salvo);
-                    });
-                }
                 
-                travaAntiLoop++;
+                combo.innerHTML += `<option value="${cabecalhoDia}">${cabecalhoDia}</option>`;
                 dataAtual.setDate(dataAtual.getDate() + 1);
             }
         }
 
-        function gerarIdAleatorio() { return Math.random().toString(36).substr(2, 9); }
+        function montarBotoesCEU() {
+            let container = document.getElementById('container-botoes-ceus');
+            container.innerHTML = "";
+            
+            // Filtra os CEUs onde a DRE seja igual à DRE logada (ou mostra todos se for SME)
+            let ceusDestaDre = dadosGlobais.ceus.filter(c => localStorage.getItem('ceu_perfil') === 'SME' || c.dreEol === eolDreLogada);
+            
+            if (ceusDestaDre.length === 0) {
+                container.innerHTML = "<span class='text-muted small'>Nenhum CEU vinculado encontrado.</span>";
+                return;
+            }
 
-        function gerarCardHTML(uid, dataTexto, salvo) {
-            return `
-            <div class="dia-card">
-                <div class="dia-header">${dataTexto}</div>
-                <div class="dia-body">
-                    <input type="hidden" id="id_passeio_${uid}" value="${salvo.idPasseio || ''}">
-                    <div>
-                        <label class="form-label">EOLs (Separe por ponto e vírgula ';')</label>
-                        <input type="text" class="form-control fw-bold text-primary" id="eol_${uid}" placeholder="Ex: 700039; 700041" value="${salvo.eols || ''}" onblur="preencherNomesCEU('${uid}')">
-                    </div>
-                    <div>
-                        <label class="form-label">Nome(s) do(s) CEU(s)</label>
-                        <textarea class="form-control text-primary fw-bold" id="nomes_${uid}" rows="2" readonly style="background:#e2e8f0; font-size: 11px;">${salvo.ceus || ''}</textarea>
-                    </div>
-                    <div class="row g-2">
-                        <div class="col-6"><label class="form-label">Passeio</label><input type="text" class="form-control" id="passeio_${uid}" value="${salvo.passeio || ''}"></div>
-                        <div class="col-6"><label class="form-label">Destino</label><input type="text" class="form-control" id="destino_${uid}" value="${salvo.destino || ''}"></div>
-                    </div>
-                    <div class="row g-2">
-                        <div class="col-4"><label class="form-label">Evento</label><input type="text" class="form-control text-center" id="horario_evento_${uid}" placeholder="09h às 15h" value="${salvo.horarioEvento || ''}"></div>
-                        <div class="col-4"><label class="form-label">Saída CEU</label><input type="time" class="form-control" id="saida_ceu_${uid}" value="${salvo.saidaCeu || ''}"></div>
-                        <div class="col-4"><label class="form-label">Retorno</label><input type="time" class="form-control" id="chegada_ceu_${uid}" value="${salvo.chegadaCeu || ''}"></div>
-                    </div>
-                    <div class="row g-2">
-                        <div class="col-6"><label class="form-label">Faixa Etária</label><input type="text" class="form-control" id="faixa_${uid}" placeholder="Ex: Infantil" value="${salvo.faixa || ''}"></div>
-                        <div class="col-6"><label class="form-label">Idades</label><input type="text" class="form-control text-center" id="idade_${uid}" placeholder="06 a 14" value="${salvo.idade || ''}"></div>
-                    </div>
-                    <div class="row g-2">
-                        <div class="col-6"><label class="form-label">Chegada (Polo)</label><input type="time" class="form-control" id="chegada_van_${uid}" value="${salvo.chegadaVan || ''}"></div>
-                        <div class="col-6"><label class="form-label">Qtd (Van)</label><input type="number" class="form-control" id="qtd_${uid}" placeholder="Ex: 40" value="${salvo.qtd || ''}"></div>
-                    </div>
-                </div>
-                
-                <div class="card-footer-botoes">
-                    <button class="btn-card btn-card-del" onclick="excluirPasseio('${dataTexto}', '${uid}', this)" title="Apagar"><i class="material-icons">delete_sweep</i>Limpar</button>
-                    <button class="btn-card btn-card-save" onclick="salvarPasseio('${dataTexto}', '${uid}')" title="Gravar"><i class="material-icons">save</i>Salvar</button>
-                    <button class="btn-card btn-card-print" onclick="gerarRelatorioEAutorizacoes('${uid}', '${dataTexto}')" title="Imprimir Autorizações"><i class="material-icons">print</i>Imp.</button>
-                    <button class="btn-card btn-card-add" onclick="adicionarPasseioExtra(this, '${dataTexto}')" title="Adicionar Passeio neste Dia"><i class="material-icons">add_box</i>Novo</button>
-                </div>
-            </div>
-            `;
+            ceusDestaDre.forEach(ceu => {
+                let btn = document.createElement('button');
+                btn.className = "btn-ceu";
+                btn.innerText = ceu.nome.replace("CEU ", ""); // Tira a palavra CEU para ficar menorzinho
+                btn.onclick = () => adicionarEol(ceu.eol);
+                container.appendChild(btn);
+            });
         }
 
-        function adicionarPasseioExtra(botaoElement, dataTexto) {
-            let uidNovo = gerarIdAleatorio();
-            let htmlNovoCard = gerarCardHTML(uidNovo, dataTexto, {});
-            let cardAtual = botaoElement.closest('.dia-card');
-            cardAtual.insertAdjacentHTML('afterend', htmlNovoCard);
-            cardAtual.nextElementSibling.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        function adicionarEol(eol) {
+            let campo = document.getElementById('form_eols');
+            let valoresAtuais = campo.value.split(';').map(v => v.trim()).filter(v => v !== "");
+            
+            if (!valoresAtuais.includes(String(eol))) {
+                valoresAtuais.push(eol);
+                campo.value = valoresAtuais.join('; ');
+                preencherNomesCEU();
+            }
         }
 
-        function preencherNomesCEU(uid) {
-            let campoEol = document.getElementById(`eol_${uid}`).value;
-            let campoNomes = document.getElementById(`nomes_${uid}`);
+        function preencherNomesCEU() {
+            let campoEol = document.getElementById('form_eols').value;
+            let campoNomes = document.getElementById('form_nomes');
             if(!campoEol.trim()) { campoNomes.value = ""; return; }
 
             let eols = campoEol.split(';');
@@ -219,107 +278,157 @@
             campoNomes.value = nomesEncontrados.join(' | ');
         }
 
-        async function salvarPasseio(dataTexto, uid) {
+        function limparFormulario() {
+            document.getElementById('form_id_passeio').value = "";
+            document.getElementById('form_data').value = "";
+            document.getElementById('form_eols').value = "";
+            document.getElementById('form_nomes').value = "";
+            document.getElementById('form_passeio').value = "";
+            document.getElementById('form_destino').value = "";
+            document.getElementById('form_evento').value = "";
+            document.getElementById('form_saida').value = "";
+            document.getElementById('form_retorno').value = "";
+            document.getElementById('form_faixa').value = "";
+            document.getElementById('form_idade').value = "";
+            document.getElementById('form_chegada_van').value = "";
+            document.getElementById('form_qtd').value = "";
+        }
+
+        // ==========================================
+        // 💾 SALVAR E RENDERIZAR TABELA
+        // ==========================================
+        async function salvarPasseio() {
             let form = {
-                idPasseio: document.getElementById(`id_passeio_${uid}`).value,
-                dataPasseio: dataTexto,
-                eols: document.getElementById(`eol_${uid}`).value,
-                ceus: document.getElementById(`nomes_${uid}`).value,
-                passeio: document.getElementById(`passeio_${uid}`).value.toUpperCase(),
-                destino: document.getElementById(`destino_${uid}`).value.toUpperCase(),
-                horarioEvento: document.getElementById(`horario_evento_${uid}`).value,
-                saidaCeu: document.getElementById(`saida_ceu_${uid}`).value,
-                chegadaCeu: document.getElementById(`chegada_ceu_${uid}`).value,
-                faixa: document.getElementById(`faixa_${uid}`).value.toUpperCase(),
-                idade: document.getElementById(`idade_${uid}`).value,
-                chegadaVan: document.getElementById(`chegada_van_${uid}`).value,
-                qtd: document.getElementById(`qtd_${uid}`).value
+                idPasseio: document.getElementById('form_id_passeio').value,
+                dataPasseio: document.getElementById('form_data').value,
+                eols: document.getElementById('form_eols').value,
+                ceus: document.getElementById('form_nomes').value,
+                passeio: document.getElementById('form_passeio').value.toUpperCase(),
+                destino: document.getElementById('form_destino').value.toUpperCase(),
+                horarioEvento: document.getElementById('form_evento').value.toUpperCase(),
+                saidaCeu: document.getElementById('form_saida').value,
+                chegadaCeu: document.getElementById('form_retorno').value,
+                faixa: document.getElementById('form_faixa').value.toUpperCase(),
+                idade: document.getElementById('form_idade').value.toUpperCase(),
+                chegadaVan: document.getElementById('form_chegada_van').value,
+                qtd: document.getElementById('form_qtd').value
             };
 
-            if(!form.eols || !form.ceus) return Swal.fire('Atenção', 'Preencha o(s) EOL(s) do CEU antes de salvar!', 'warning');
-            Swal.fire({ title: 'Salvando...', text: 'Gravando dados...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+            if(!form.dataPasseio) return Swal.fire('Atenção', 'Selecione a data do passeio.', 'warning');
+            if(!form.eols || !form.ceus) return Swal.fire('Atenção', 'Preencha o(s) EOL(s) do CEU.', 'warning');
+
+            Swal.fire({ title: 'Salvando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
 
             try {
                 let res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "gerenciarPasseioDRE", dados: { subAcao: "salvar", ...form } }) });
                 let retorno = await res.json();
                 
                 if(retorno.sucesso) {
-                    document.getElementById(`id_passeio_${uid}`).value = retorno.idPasseio;
-                    Swal.fire('Salvo!', retorno.mensagem, 'success').then(() => iniciarSistema()); // Atualiza para puxar pro Global
+                    Swal.fire('Salvo!', 'Passeio registrado com sucesso.', 'success');
+                    limparFormulario();
+                    // Atualiza a lista por trás dos panos
+                    let resSalvos = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "buscarPasseiosSalvosDRE" }) });
+                    let dadosSalvos = await resSalvos.json();
+                    dadosGlobais.passeiosSalvos = dadosSalvos.sucesso ? dadosSalvos.passeiosSalvos : []; 
+                    renderizarTabela();
                 } else Swal.fire('Erro', retorno.erro, 'error');
             } catch(e) { Swal.fire('Erro', 'Falha na conexão.', 'error'); }
         }
 
-        function excluirPasseio(dataTexto, uid, btnElement) {
-            let idPasseio = document.getElementById(`id_passeio_${uid}`).value;
+        function renderizarTabela() {
+            let tbody = document.getElementById('corpo-tabela-passeios');
+            tbody.innerHTML = "";
+            document.getElementById('contador-passeios').innerText = `${dadosGlobais.passeiosSalvos.length} passeios`;
 
-            if (!idPasseio) {
-                document.getElementById(`eol_${uid}`).value = "";
-                document.getElementById(`nomes_${uid}`).value = "";
-                document.getElementById(`passeio_${uid}`).value = "";
-                document.getElementById(`destino_${uid}`).value = "";
-                document.getElementById(`horario_evento_${uid}`).value = "";
-                document.getElementById(`saida_ceu_${uid}`).value = "";
-                document.getElementById(`chegada_ceu_${uid}`).value = "";
-                document.getElementById(`faixa_${uid}`).value = "";
-                document.getElementById(`idade_${uid}`).value = "";
-                document.getElementById(`chegada_van_${uid}`).value = "";
-                document.getElementById(`qtd_${uid}`).value = "";
-                return;
+            // Ordenar por data (opcional, aqui vamos mostrar como vem do banco)
+            dadosGlobais.passeiosSalvos.forEach(p => {
+                let ceusFormatados = p.ceus.replace(/\|/g, '<br><small class="text-muted">'); // Quebra linha se tiver vários
+                
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="fw-bold text-primary">${p.dataPasseio.substring(0,8)}</td>
+                        <td>
+                            <b>${p.passeio}</b><br>
+                            <small class="text-muted"><i class="material-icons" style="font-size:10px;">place</i> ${p.destino}</small>
+                        </td>
+                        <td>${ceusFormatados}</td>
+                        <td style="font-size:11px;">
+                            S: <b>${p.saidaCeu}</b> | R: <b>${p.chegadaCeu}</b>
+                        </td>
+                        <td class="text-center" style="white-space: nowrap;">
+                            <button class="btn-acao text-primary" onclick="editarPasseio('${p.idPasseio}')" title="Editar"><i class="material-icons">edit</i></button>
+                            <button class="btn-acao text-success" onclick="gerarAutorizacoesEspecificas('${p.idPasseio}')" title="Imprimir Autorizações"><i class="material-icons">print</i></button>
+                            <button class="btn-acao text-danger" onclick="excluirPasseio('${p.idPasseio}')" title="Apagar"><i class="material-icons">delete</i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function editarPasseio(id) {
+            let p = dadosGlobais.passeiosSalvos.find(x => x.idPasseio === id);
+            if(p) {
+                document.getElementById('form_id_passeio').value = p.idPasseio;
+                document.getElementById('form_data').value = p.dataPasseio;
+                document.getElementById('form_eols').value = p.eols;
+                document.getElementById('form_nomes').value = p.ceus;
+                document.getElementById('form_passeio').value = p.passeio;
+                document.getElementById('form_destino').value = p.destino;
+                document.getElementById('form_evento').value = p.horarioEvento;
+                document.getElementById('form_saida').value = p.saidaCeu;
+                document.getElementById('form_retorno').value = p.chegadaCeu;
+                document.getElementById('form_faixa').value = p.faixa;
+                document.getElementById('form_idade').value = p.idade;
+                document.getElementById('form_chegada_van').value = p.chegadaVan;
+                document.getElementById('form_qtd').value = p.qtd;
             }
+        }
 
+        function excluirPasseio(id) {
             Swal.fire({
-                title: 'Deseja Apagar o Passeio?',
-                text: "Isso vai excluir permanentemente este passeio do banco de dados.",
+                title: 'Apagar Passeio?',
+                text: "Isso não pode ser desfeito.",
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#ef4444',
-                cancelButtonColor: '#94a3b8',
-                confirmButtonText: 'Sim, Excluir!',
-                cancelButtonText: 'Cancelar'
+                confirmButtonText: 'Excluir'
             }).then(async (result) => {
                 if (result.isConfirmed) {
                     Swal.fire({ title: 'Excluindo...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
                     try {
-                        let res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "gerenciarPasseioDRE", dados: { subAcao: "excluir", idPasseio: idPasseio } }) });
+                        let res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "gerenciarPasseioDRE", dados: { subAcao: "excluir", idPasseio: id } }) });
                         let retorno = await res.json();
                         
                         if(retorno.sucesso) {
-                            Swal.fire('Apagado!', 'Registro removido.', 'success').then(() => iniciarSistema());
-                        } else {
-                            Swal.fire('Aviso', retorno.erro, 'info');
-                        }
+                            Swal.fire('Apagado!', '', 'success');
+                            limparFormulario();
+                            let resSalvos = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "buscarPasseiosSalvosDRE" }) });
+                            let dadosSalvos = await resSalvos.json();
+                            dadosGlobais.passeiosSalvos = dadosSalvos.sucesso ? dadosSalvos.passeiosSalvos : []; 
+                            renderizarTabela();
+                        } else Swal.fire('Erro', retorno.erro, 'error');
                     } catch(e) { Swal.fire('Erro', 'Falha na conexão.', 'error'); }
                 }
             });
         }
 
-        // =========================================================================
-        // 📊 NOVO MÓDULO: CRONOGRAMA DE MURAL (UMA PÁGINA POR SEMANA / SPREADSHEET)
-        // =========================================================================
+        // ==========================================
+        // 🖨️ MÓDULOS DE IMPRESSÃO (COPIADOS E AJUSTADOS)
+        // ==========================================
         function abrirModalRelatorioCEU() {
-            if(!dadosGlobais.ceus) return Swal.fire('Aguarde', 'Os dados ainda estão carregando...', 'warning');
-
-            // Ordena os CEUs em ordem alfabética para facilitar
+            if(!dadosGlobais.ceus) return;
             let ceusOrdenados = [...dadosGlobais.ceus].sort((a,b) => a.nome.localeCompare(b.nome));
-
             let options = '<option value="">Selecione o CEU...</option>';
-            ceusOrdenados.forEach(c => {
-                options += `<option value="${c.eol}">${c.nome}</option>`;
-            });
+            ceusOrdenados.forEach(c => { options += `<option value="${c.eol}">${c.nome}</option>`; });
 
             Swal.fire({
                 title: '<i class="material-icons text-primary fs-1">view_week</i><br>Gerar Cronograma de Mural',
-                text: 'Selecione o CEU para gerar a planilha semanal de passeios.',
-                html: `<select id="swal-ceu-relatorio" class="form-select text-center fw-bold" style="font-size:16px;">${options}</select>`,
-                showCancelButton: true,
-                confirmButtonText: 'Gerar Planilha',
-                confirmButtonColor: '#0d6efd',
-                cancelButtonText: 'Cancelar',
+                html: `<select id="swal-ceu-relatorio" class="form-select text-center fw-bold">${options}</select>`,
+                showCancelButton: true, confirmButtonText: 'Gerar Planilha', confirmButtonColor: '#0d6efd',
                 preConfirm: () => {
-                    const select = document.getElementById('swal-ceu-relatorio');
-                    if (!select.value) Swal.showValidationMessage('Você precisa selecionar um CEU na lista!');
-                    return { eol: select.value, nome: select.options[select.selectedIndex].text };
+                    const sel = document.getElementById('swal-ceu-relatorio');
+                    if (!sel.value) Swal.showValidationMessage('Selecione um CEU!');
+                    return { eol: sel.value, nome: sel.options[sel.selectedIndex].text };
                 }
             }).then((result) => {
                 if (result.isConfirmed) gerarPlanilhaCronograma(result.value.eol, result.value.nome);
@@ -327,13 +436,11 @@
         }
 
         function gerarPlanilhaCronograma(eolCeu, nomeCeu) {
-            // 1. Filtra do Banco de Dados APENAS os passeios que tenham o EOL deste CEU
             let passeiosDesteCeu = dadosGlobais.passeiosSalvos.filter(p => {
                 let lista = String(p.eols).split(';').map(x => x.trim());
                 return lista.includes(String(eolCeu));
             });
 
-            // 2. Monta o calendário do Recreio nas Férias
             let dataAtual = normalizarData(String(dadosGlobais.programa.inicio));
             let dataFim = normalizarData(String(dadosGlobais.programa.fim));
             let diasDoPrograma = [];
@@ -343,221 +450,54 @@
                 let semanaCurta = ["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SÁB"][dataAtual.getDay()];
                 let formatoBanco = `${diaF}/${String(dataAtual.getFullYear()).slice(-2)} (${["DOMINGO","SEGUNDA","TERÇA","QUARTA","QUINTA","SEXTA","SÁBADO"][dataAtual.getDay()]})`;
                 
-                diasDoPrograma.push({ 
-                    dataObj: new Date(dataAtual), 
-                    cabecalhoHtml: `${semanaCurta}<br><span style="font-size:18px;">${diaF}</span>`, 
-                    formatoBanco: formatoBanco 
-                });
-                
+                diasDoPrograma.push({ dataObj: new Date(dataAtual), cabecalhoHtml: `${semanaCurta}<br><span style="font-size:18px;">${diaF}</span>`, formatoBanco: formatoBanco });
                 dataAtual.setDate(dataAtual.getDate() + 1);
             }
 
-            // 3. Constrói o HTML agrupando por Semana (1 Tabela por página)
-            let htmlTabelas = '';
-            let semanaAtualArray = [];
-
+            let htmlTabelas = ''; let semanaAtualArray = [];
             diasDoPrograma.forEach((dia, index) => {
                 semanaAtualArray.push(dia);
-                
-                // Quebra a tabela se chegou no Sábado (fim da semana) OU se for o último dia do programa
                 if (dia.dataObj.getDay() === 6 || index === diasDoPrograma.length - 1) {
-                    
-                    htmlTabelas += `
-                        <div class="cabecalho-pagina">
-                            <h1>CRONOGRAMA DE PASSEIOS - RECREIO NAS FÉRIAS</h1>
-                            <h2>${nomeCeu} | ${dadosGlobais.programa.mes}/${dadosGlobais.programa.ano}</h2>
-                        </div>
-                        <table class="tabela-cronograma">
-                            <thead>
-                                <tr>
-                    `;
-
-                    // Títulos das Colunas (Os Dias)
+                    htmlTabelas += `<div class="cabecalho-pagina"><h1>CRONOGRAMA DE PASSEIOS</h1><h2>${nomeCeu} | ${dadosGlobais.programa.mes}/${dadosGlobais.programa.ano}</h2></div><table class="tabela-cronograma"><thead><tr>`;
                     semanaAtualArray.forEach(d => { htmlTabelas += `<th>${d.cabecalhoHtml}</th>`; });
                     htmlTabelas += `</tr></thead><tbody><tr>`;
-
-                    // As Linhas de Passeios de cada dia
                     semanaAtualArray.forEach(d => {
                         htmlTabelas += `<td valign="top">`;
-                        
-                        let passeiosDoDia = passeiosDesteCeu.filter(p => String(p.dataPasseio).trim() === d.formatoBanco);
-                        
-                        if(passeiosDoDia.length === 0) {
-                            htmlTabelas += `<div class="card-vazio">Sem passeios agendados</div>`;
-                        } else {
-                            passeiosDoDia.forEach(p => {
-                                htmlTabelas += `
-                                    <div class="card-passeio">
-                                        <div class="card-titulo">${p.passeio}</div>
-                                        <div class="card-linha"><b>📍 Destino:</b> ${p.destino}</div>
-                                        <div class="card-linha"><b>⌚ Evento:</b> ${p.horarioEvento}</div>
-                                        <div class="card-linha"><b>🚌 Saída:</b> ${p.saidaCeu}</div>
-                                        <div class="card-linha"><b>🏠 Retorno:</b> ${p.chegadaCeu}</div>
-                                        <div class="card-linha"><b>👶 Perfil:</b> ${p.faixa} (${p.idade})</div>
-                                        <div class="card-linha"><b>👥 Vagas/Van:</b> ${p.qtd} alunos</div>
-                                    </div>
-                                `;
+                        let pt = passeiosDesteCeu.filter(p => String(p.dataPasseio).trim() === d.formatoBanco);
+                        if(pt.length === 0) htmlTabelas += `<div class="card-vazio">Sem passeios</div>`;
+                        else {
+                            pt.forEach(p => {
+                                htmlTabelas += `<div class="card-passeio"><div class="card-titulo">${p.passeio}</div><div class="card-linha"><b>📍</b> ${p.destino}</div><div class="card-linha"><b>⌚</b> ${p.horarioEvento}</div><div class="card-linha"><b>🚌</b> ${p.saidaCeu}</div><div class="card-linha"><b>🏠</b> ${p.chegadaCeu}</div><div class="card-linha"><b>👶</b> ${p.faixa} (${p.idade})</div><div class="card-linha"><b>👥</b> ${p.qtd} vagas</div></div>`;
                             });
                         }
-                        
                         htmlTabelas += `</td>`;
                     });
-
                     htmlTabelas += `</tr></tbody></table>`;
-
-                    // Pula para a próxima página se não for a última tabela
-                    if (index !== diasDoPrograma.length - 1) {
-                        htmlTabelas += `<div class="page-break"></div>`;
-                    }
-
-                    semanaAtualArray = []; // Zera a semana para montar a próxima página
+                    if (index !== diasDoPrograma.length - 1) htmlTabelas += `<div class="page-break"></div>`;
+                    semanaAtualArray = []; 
                 }
             });
 
-            // 4. Joga tudo na tela de Impressão
             let janela = window.open('', '_blank', 'width=1100,height=800');
-            
-            let layoutHTML = `
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <title>Cronograma ${nomeCeu}</title>
-                    <style>
-                        @page { size: A4 landscape; margin: 15mm; }
-                        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 20px; color: #1e293b; background: #fff; }
-                        
-                        .cabecalho-pagina { text-align: center; margin-bottom: 20px; }
-                        .cabecalho-pagina h1 { margin: 0; font-size: 22px; color: #0f172a; font-weight: 900;}
-                        .cabecalho-pagina h2 { margin: 5px 0 0 0; font-size: 16px; color: #3b82f6; text-transform: uppercase; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; display: inline-block;}
-                        
-                        /* A TABELA ESTILO PLANILHA */
-                        .tabela-cronograma { width: 100%; border-collapse: collapse; table-layout: fixed; }
-                        .tabela-cronograma th { background: #f8fafc; color: #334155; padding: 12px; border: 2px solid #cbd5e1; text-align: center; text-transform: uppercase; line-height: 1.2; }
-                        .tabela-cronograma td { border: 2px solid #cbd5e1; padding: 10px; background: #ffffff; }
-                        
-                        /* OS BLOCOS DE PASSEIO DENTRO DA CÉLULA */
-                        .card-passeio { background: #f0fdf4; border-left: 5px solid #22c55e; padding: 10px; border-radius: 4px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); font-size: 11px;}
-                        .card-passeio:last-child { margin-bottom: 0; }
-                        .card-titulo { font-weight: bold; font-size: 13px; color: #166534; margin-bottom: 5px; border-bottom: 1px dashed #bbf7d0; padding-bottom: 3px; text-transform: uppercase;}
-                        .card-linha { margin-bottom: 3px; color: #374151; }
-                        
-                        .card-vazio { text-align: center; font-style: italic; color: #94a3b8; font-size: 12px; margin-top: 20px; }
-
-                        .page-break { page-break-before: always; }
-                        
-                        @media print { body { padding: 0; } }
-                    </style>
-                </head>
-                <body>
-                    ${htmlTabelas}
-                    <script>
-                        setTimeout(function() { window.print(); }, 1000);
-                    <\/script>
-                </body>
-                </html>
-            `;
-
-            janela.document.write(layoutHTML);
+            janela.document.write(`<html><head><title>Cronograma</title><style>@page{size:A4 landscape;margin:15mm;}body{font-family:sans-serif;padding:20px;}.cabecalho-pagina{text-align:center;margin-bottom:20px;}h1{margin:0;font-size:22px;}h2{margin:5px 0 0 0;font-size:16px;color:#3b82f6;border-bottom:2px solid #e2e8f0;display:inline-block;padding-bottom:10px;}.tabela-cronograma{width:100%;border-collapse:collapse;table-layout:fixed;}th{background:#f8fafc;border:2px solid #cbd5e1;padding:12px;text-align:center;}td{border:2px solid #cbd5e1;padding:10px;}.card-passeio{background:#f0fdf4;border-left:5px solid #22c55e;padding:10px;margin-bottom:10px;font-size:11px;}.card-titulo{font-weight:bold;color:#166534;margin-bottom:5px;text-transform:uppercase;border-bottom:1px dashed #bbf7d0;}.card-vazio{text-align:center;font-style:italic;color:#94a3b8;font-size:12px;margin-top:20px;}.page-break{page-break-before:always;}</style></head><body>${htmlTabelas}<script>setTimeout(function(){window.print();},1000);<\/script></body></html>`);
             janela.document.close();
         }
 
-        // ==========================================
-        // 🖨️ MÁGICA DAS AUTORIZAÇÕES DO CEU (ANTIGA)
-        // ==========================================
-        function gerarRelatorioEAutorizacoes(uid, dataTexto) {
-            let form = {
-                data: dataTexto,
-                eols: document.getElementById(`eol_${uid}`).value,
-                ceus: document.getElementById(`nomes_${uid}`).value,
-                passeio: document.getElementById(`passeio_${uid}`).value.toUpperCase(),
-                destino: document.getElementById(`destino_${uid}`).value.toUpperCase(),
-                horarioEvento: document.getElementById(`horario_evento_${uid}`).value,
-                saidaCeu: document.getElementById(`saida_ceu_${uid}`).value,
-                chegadaCeu: document.getElementById(`chegada_ceu_${uid}`).value,
-                faixa: document.getElementById(`faixa_${uid}`).value.toUpperCase(),
-                idade: document.getElementById(`idade_${uid}`).value,
-                chegadaVan: document.getElementById(`chegada_van_${uid}`).value,
-                qtd: document.getElementById(`qtd_${uid}`).value,
-                mesAno: `${dadosGlobais.programa.mes} / ${dadosGlobais.programa.ano}`
-            };
-
-            if(!form.ceus) return Swal.fire('Atenção', 'Preencha ao menos um EOL válido antes de gerar.', 'warning');
+        function gerarAutorizacoesEspecificas(id) {
+            let form = dadosGlobais.passeiosSalvos.find(x => x.idPasseio === id);
+            if(!form) return;
+            form.data = form.dataPasseio;
+            form.mesAno = `${dadosGlobais.programa.mes} / ${dadosGlobais.programa.ano}`;
 
             let janela = window.open('', '_blank', 'width=1000,height=800');
-            
-            let html = `
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <title>Autorizações - ${dataTexto}</title>
-                    <style>
-                        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 20px; color: #333; }
-                        h2 { text-align: center; color: #2c3e50; font-size: 20px; margin-bottom: 20px; text-transform: uppercase;}
-                        table { width: 100%; border-collapse: collapse; margin-bottom: 40px; font-size: 13px; }
-                        th, td { border: 1px solid #cbd5e1; padding: 10px; text-align: left; }
-                        th { background-color: #f1f5f9; color: #334155; width: 30%; font-weight: bold; text-transform: uppercase; font-size: 11px;}
-                        td { font-weight: bold; color: #0f172a; }
-                        .page-break { page-break-before: always; }
-                        .auth-container { border: 1px dashed #94a3b8; border-radius: 8px; padding: 30px; margin-bottom: 30px; font-family: 'Times New Roman', serif; font-size: 15px; line-height: 1.6;}
-                        .auth-title { text-align: center; font-weight: bold; font-size: 18px; margin-bottom: 20px; text-decoration: underline; }
-                        .auth-linha { border-bottom: 1px solid #000; display: inline-block; }
-                        .auth-assinatura { text-align: center; margin-top: 50px; }
-                        .auth-assinatura-linha { border-top: 1px solid #000; width: 60%; margin: 0 auto; padding-top: 5px; font-size: 13px;}
-                        @media print { body { padding: 0; } }
-                    </style>
-                </head>
-                <body>
-
-                    <h2>Cronograma de Passeio - ${form.data}</h2>
-                    <table>
-                        <tr><th>Unidades (CEUs) Contempladas</th><td>${form.ceus}</td></tr>
-                        <tr><th>Nome do Passeio</th><td>${form.passeio}</td></tr>
-                        <tr><th>Local / Destino</th><td>${form.destino}</td></tr>
-                        <tr><th>Horário do Evento</th><td>${form.horarioEvento}</td></tr>
-                        <tr><th>Horário Chegada Van/Ônibus no Polo</th><td>${form.chegadaVan}</td></tr>
-                        <tr><th>Horário de Saída do CEU</th><td>${form.saidaCeu}</td></tr>
-                        <tr><th>Horário Previsão Retorno CEU</th><td>${form.chegadaCeu}</td></tr>
-                        <tr><th>Quantidade de Alunos por Veículo</th><td>${form.qtd} alunos</td></tr>
-                        <tr><th>Faixa Etária / Idades</th><td>${form.faixa} - ${form.idade}</td></tr>
-                    </table>
-
-                    <div class="page-break"></div>
-            `;
+            let html = `<html><head><style>body{font-family:sans-serif;padding:20px;}h2{text-align:center;color:#2c3e50;font-size:20px;text-transform:uppercase;}table{width:100%;border-collapse:collapse;margin-bottom:40px;font-size:13px;}th,td{border:1px solid #cbd5e1;padding:10px;text-align:left;}th{background:#f1f5f9;width:30%;} .page-break{page-break-before:always;}.auth-container{border:1px dashed #94a3b8;border-radius:8px;padding:30px;margin-bottom:30px;font-family:serif;font-size:15px;line-height:1.6;}.auth-title{text-align:center;font-weight:bold;font-size:18px;margin-bottom:20px;text-decoration:underline;}.auth-linha{border-bottom:1px solid #000;display:inline-block;}.auth-assinatura{text-align:center;margin-top:50px;}.auth-assinatura-linha{border-top:1px solid #000;width:60%;margin:0 auto;padding-top:5px;font-size:13px;}</style></head><body><h2>Cronograma de Passeio - ${form.data}</h2><table><tr><th>Unidades Contempladas</th><td>${form.ceus}</td></tr><tr><th>Passeio</th><td>${form.passeio}</td></tr><tr><th>Destino</th><td>${form.destino}</td></tr><tr><th>Evento</th><td>${form.horarioEvento}</td></tr><tr><th>Chegada Polo</th><td>${form.chegadaVan}</td></tr><tr><th>Saída CEU</th><td>${form.saidaCeu}</td></tr><tr><th>Retorno CEU</th><td>${form.chegadaCeu}</td></tr><tr><th>Qtd. Alunos</th><td>${form.qtd}</td></tr><tr><th>Faixa Etária</th><td>${form.faixa} (${form.idade})</td></tr></table><div class="page-break"></div>`;
 
             for(let i=0; i<4; i++) {
                 let nomesCEUAuth = form.ceus.split('|').map(c => c.trim()).join(' / ');
-                html += `
-                    <div class="auth-container">
-                        <div style="text-align: center; font-weight: bold; text-transform: uppercase;">${nomesCEUAuth}</div>
-                        <div style="text-align: center; font-weight: bold; margin-bottom: 20px;">Recreio nas Férias – ${form.mesAno}</div>
-                        
-                        <div class="auth-title">AUTORIZAÇÃO</div>
-
-                        <div>
-                            Nome da criança: <span class="auth-linha" style="width: 75%;"></span><br><br>
-                            Nome da(o) responsável: <span class="auth-linha" style="width: 70%;"></span><br><br>
-                            
-                            <strong>Local do passeio:</strong> ${form.destino}<br>
-                            <strong>Data:</strong> ${form.data}<br>
-                            <strong>Horário previsto de saída e retorno:</strong> Saída às ${form.saidaCeu} | Retorno às ${form.chegadaCeu}<br><br>
-                            
-                            <p style="text-indent: 40px; text-align: justify;">
-                                Autorizo meu(inha) filho(a) a participar do passeio do <strong>Recreio nas Férias – ${form.mesAno}</strong>, no dia e horário informados acima.
-                            </p>
-                        </div>
-
-                        <div class="auth-assinatura">
-                            <div class="auth-assinatura-linha">Assinatura do pai / mãe / responsável</div>
-                        </div>
-                    </div>
-                `;
-
+                html += `<div class="auth-container"><div style="text-align:center;font-weight:bold;text-transform:uppercase;">${nomesCEUAuth}</div><div style="text-align:center;font-weight:bold;margin-bottom:20px;">Recreio nas Férias – ${form.mesAno}</div><div class="auth-title">AUTORIZAÇÃO</div><div>Nome da criança: <span class="auth-linha" style="width:75%;"></span><br><br>Nome da(o) responsável: <span class="auth-linha" style="width:70%;"></span><br><br><strong>Local:</strong> ${form.destino}<br><strong>Data:</strong> ${form.data}<br><strong>Saída / Retorno:</strong> ${form.saidaCeu} | ${form.chegadaCeu}<br><br><p style="text-indent:40px;text-align:justify;">Autorizo meu(inha) filho(a) a participar do passeio do <strong>Recreio nas Férias – ${form.mesAno}</strong>, no dia e horário informados acima.</p></div><div class="auth-assinatura"><div class="auth-assinatura-linha">Assinatura do pai / mãe / responsável</div></div></div>`;
                 if ((i + 1) % 2 === 0 && i < 3) html += `<div class="page-break"></div>`;
             }
-
-            html += `<script>setTimeout(function() { window.print(); }, 800);<\/script></body></html>`;
-
-            janela.document.write(html);
+            janela.document.write(html + `<script>setTimeout(function(){window.print();},800);<\/script></body></html>`);
             janela.document.close();
         }
     </script>

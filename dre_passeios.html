@@ -499,11 +499,11 @@ function gerarAutorizacoesEspecificas(id) {
 
             let janela = window.open('', '_blank', 'width=1000,height=800');
             
-            // 🌟 CSS TOTALMENTE REDESENHADO PARA CABER 5 POR PÁGINA
+            // 🌟 CSS TOTALMENTE REDESENHADO E "ESPREMIDO" PARA CABER 7 POR PÁGINA
             let html = `<html><head><style>
-                @page { size: A4 portrait; margin: 10mm; }
+                @page { size: A4 portrait; margin: 8mm; }
                 body { font-family: Arial, sans-serif; margin: 0; padding: 0; color: #333; }
-                h2 { text-align: center; color: #2c3e50; font-size: 18px; text-transform: uppercase; margin-bottom: 15px; margin-top: 10px;}
+                h2 { text-align: center; color: #2c3e50; font-size: 16px; text-transform: uppercase; margin-bottom: 15px; margin-top: 10px;}
                 
                 /* TABELA DO RELATÓRIO (PÁGINA 1) */
                 table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 12px; }
@@ -511,26 +511,26 @@ function gerarAutorizacoesEspecificas(id) {
                 th { background: #f1f5f9; width: 30%; } 
                 .page-break { page-break-before: always; }
                 
-                /* AUTORIZAÇÕES COMPACTAS (PÁGINA 2) */
+                /* AUTORIZAÇÕES SUPER COMPACTAS (PÁGINA 2) */
                 .auth-container { 
                     border: 1px dashed #94a3b8; 
-                    border-radius: 6px; 
-                    padding: 8px 12px; 
-                    margin-bottom: 10px; 
-                    font-size: 11px; 
-                    line-height: 1.3; 
+                    border-radius: 4px; 
+                    padding: 6px 10px; 
+                    margin-bottom: 6px; 
+                    font-size: 10px; 
+                    line-height: 1.2; 
                 }
-                .auth-header { text-align: center; font-weight: bold; font-size: 11px; text-transform: uppercase; margin-bottom: 5px;}
-                .auth-title { text-align: center; font-weight: bold; font-size: 12px; margin-bottom: 6px; text-decoration: underline; }
+                .auth-header { text-align: center; font-weight: bold; font-size: 10px; text-transform: uppercase; margin-bottom: 3px;}
+                .auth-title { text-align: center; font-weight: bold; font-size: 11px; margin-bottom: 4px; text-decoration: underline; }
                 
                 .auth-linha { border-bottom: 1px solid #000; display: inline-block; }
                 
                 /* ALINHAMENTO EM COLUNAS LADO A LADO */
-                .linha-flex { display: flex; justify-content: space-between; margin-bottom: 5px; gap: 10px;}
+                .linha-flex { display: flex; justify-content: space-between; margin-bottom: 4px; gap: 8px;}
                 .campo-flex { flex-grow: 1; white-space: nowrap; }
                 
-                .auth-assinatura { text-align: center; margin-top: 15px; }
-                .auth-assinatura-linha { border-top: 1px solid #000; width: 50%; margin: 0 auto; padding-top: 2px; font-size: 10px;}
+                .auth-assinatura { text-align: center; margin-top: 10px; }
+                .auth-assinatura-linha { border-top: 1px solid #000; width: 50%; margin: 0 auto; padding-top: 2px; font-size: 9px;}
                 
                 @media print { body { padding: 0; } }
             </style></head><body>
@@ -550,8 +550,8 @@ function gerarAutorizacoesEspecificas(id) {
             
             <div class="page-break"></div>`;
 
-            // 🚀 LAÇO REPROGRAMADO PARA GERAR 5 CÓPIAS
-            for(let i=0; i<5; i++) {
+            // 🚀 LAÇO REPROGRAMADO PARA GERAR 7 CÓPIAS
+            for(let i=0; i<7; i++) {
                 let nomesCEUAuth = form.ceus.split('|').map(c => c.trim()).join(' / ');
                 
                 html += `
@@ -575,7 +575,7 @@ function gerarAutorizacoesEspecificas(id) {
                         <div class="campo-flex" style="width: 25%;"><strong>Horário:</strong> ${form.saidaCeu} às ${form.chegadaCeu}</div>
                     </div>
                     
-                    <p style="margin: 4px 0; text-align: justify;">
+                    <p style="margin: 3px 0; text-align: justify;">
                         Autorizo meu(inha) filho(a) a participar do passeio do <strong>Recreio nas Férias – ${form.mesAno}</strong>, no local, dia e horário informados acima.
                     </p>
                     

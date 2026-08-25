@@ -35,7 +35,7 @@
       <h4 class="fw-bold text-dark m-0">Central de Impressão</h4>
       <small class="text-muted">Recreio nas Férias - Documentação Oficial</small>
       
-      <!-- 🌟 NOVO BOTÃO DE ACESSO AOS PASSEIOS DA DRE -->
+      <!-- 🌟 BOTÃO DE ACESSO AOS PASSEIOS DA DRE -->
       <div class="mt-4 pt-3 border-top">
         <button class="btn btn-outline-primary fw-bold px-4 rounded-pill shadow-sm" onclick="abrirModalPasseios()">
           <i class="fa-solid fa-bus me-2"></i> Ver Passeios e Imprimir Autorizações
@@ -126,14 +126,17 @@
         <div class="modal-body p-4" id="corpoModalPasseios">
           <!-- Passeios injetados via JS -->
         </div>
-        <div class="modal-footer bg-light">
+        <div class="modal-footer bg-light d-flex">
+          <!-- 🌟 NOVO BOTÃO DE GERAR A GRADE LINDONA -->
+          <button type="button" class="btn btn-warning fw-bold me-auto text-dark shadow-sm" onclick="imprimirCronogramaMural()">
+            <i class="fa-solid fa-calendar-week me-1"></i> Imprimir Cronograma (Mural)
+          </button>
           <button type="button" class="btn btn-secondary fw-bold" data-bs-dismiss="modal">Fechar</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- BUNDLE DO BOOTSTRAP PARA O MODAL FUNCIONAR -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
   <script>
@@ -145,6 +148,7 @@
     let modoSelecionado = 'TODAS';
     let globalPasseiosDoCeu = [];
     let globalMesAnoPrograma = "";
+    let dadosGlobais = {}; // Para guardar as regras de datas
 
     window.onload = function() {
       carregarTurmasNoDropdown();
@@ -154,25 +158,36 @@
     // ==========================================
     // 🚌 NOVO MÓDULO: PASSEIOS DO CEU
     // ==========================================
+    // Função auxiliar para datas do Mural
+    function normalizarData(str) {
+        if (!str) return null;
+        if (str.indexOf('-') > 0) return new Date(str + "T00:00:00");
+        if (str.indexOf('/') > 0) {
+            let p = str.split('/');
+            return new Date(`${p[2]}-${p[1]}-${p[0]}T00:00:00`);
+        }
+        return null;
+    }
+
     async function abrirModalPasseios() {
         if (!eolMeuCeu) return Swal.fire('Aviso', 'O sistema não conseguiu identificar o EOL da sua unidade.', 'warning');
 
         Swal.fire({ title: 'Buscando passeios na DRE...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
 
         try {
-            // 1. Busca as regras para pegar o Mês/Ano
             let resRegras = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "buscarDadosPasseiosDRE" }) });
             let dadosRegras = await resRegras.json();
             if(!dadosRegras.sucesso) throw new Error("Erro ao buscar regras da DRE.");
+            
+            dadosGlobais = dadosRegras; // Guarda para o Mural
             globalMesAnoPrograma = `${dadosRegras.programa.mes} / ${dadosRegras.programa.ano}`;
 
-            // 2. Busca os passeios
             let resSalvos = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "buscarPasseiosSalvosDRE" }) });
             let dadosSalvos = await resSalvos.json();
             
             if(!dadosSalvos.sucesso) throw new Error("Falha ao buscar agenda de passeios.");
 
-            // 3. PENEIRA MÁGICA: Pega apenas os passeios onde o EOL deste CEU esteja na lista!
+            // PENEIRA MÁGICA
             globalPasseiosDoCeu = dadosSalvos.passeiosSalvos.filter(p => {
                 let eolsLista = String(p.eols).split(';').map(e => e.trim());
                 return eolsLista.includes(String(eolMeuCeu));
@@ -233,6 +248,122 @@
     }
 
     // ==========================================
+    // 🖨️ IMPRESSÃO DO MURAL (GRADE SEMANAL)
+    // ==========================================
+    function imprimirCronogramaMural() {
+        if (globalPasseiosDoCeu.length === 0) return Swal.fire('Aviso', 'Não há passeios para gerar o cronograma.', 'info');
+
+        let dataAtual = normalizarData(String(dadosGlobais.programa.inicio));
+        let dataFim = normalizarData(String(dadosGlobais.programa.fim));
+        let diasDoPrograma = [];
+        
+        while(dataAtual <= dataFim) {
+            let diaF = ("0" + dataAtual.getDate()).slice(-2) + "/" + ("0" + (dataAtual.getMonth() + 1)).slice(-2);
+            let semanaCurta = ["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SÁB"][dataAtual.getDay()];
+            let formatoBanco = `${diaF}/${String(dataAtual.getFullYear()).slice(-2)} (${["DOMINGO","SEGUNDA","TERÇA","QUARTA","QUINTA","SEXTA","SÁBADO"][dataAtual.getDay()]})`;
+            
+            diasDoPrograma.push({ 
+                dataObj: new Date(dataAtual), 
+                cabecalhoHtml: `${semanaCurta}<br><span style="font-size:18px;">${diaF}</span>`, 
+                formatoBanco: formatoBanco 
+            });
+            dataAtual.setDate(dataAtual.getDate() + 1);
+        }
+
+        let htmlTabelas = '';
+        let semanaAtualArray = [];
+
+        diasDoPrograma.forEach((dia, index) => {
+            semanaAtualArray.push(dia);
+            
+            if (dia.dataObj.getDay() === 6 || index === diasDoPrograma.length - 1) {
+                
+                htmlTabelas += `
+                    <div class="cabecalho-pagina">
+                        <h1>CRONOGRAMA DE PASSEIOS - RECREIO NAS FÉRIAS</h1>
+                        <h2>${nomeCeuAtivo} | ${globalMesAnoPrograma}</h2>
+                    </div>
+                    <table class="tabela-cronograma">
+                        <thead>
+                            <tr>
+                `;
+
+                semanaAtualArray.forEach(d => { htmlTabelas += `<th>${d.cabecalhoHtml}</th>`; });
+                htmlTabelas += `</tr></thead><tbody><tr>`;
+
+                semanaAtualArray.forEach(d => {
+                    htmlTabelas += `<td valign="top">`;
+                    
+                    let passeiosDoDia = globalPasseiosDoCeu.filter(p => String(p.dataPasseio).trim() === d.formatoBanco);
+                    
+                    if(passeiosDoDia.length === 0) {
+                        htmlTabelas += `<div class="card-vazio">Sem passeios agendados</div>`;
+                    } else {
+                        passeiosDoDia.forEach(p => {
+                            htmlTabelas += `
+                                <div class="card-passeio">
+                                    <div class="card-titulo">${p.passeio}</div>
+                                    <div class="card-linha"><b>📍 Destino:</b> ${p.destino}</div>
+                                    <div class="card-linha"><b>⌚ Evento:</b> ${p.horarioEvento}</div>
+                                    <div class="card-linha"><b>🚌 Saída:</b> ${p.saidaCeu}</div>
+                                    <div class="card-linha"><b>🏠 Retorno:</b> ${p.chegadaCeu}</div>
+                                    <div class="card-linha"><b>👶 Perfil:</b> ${p.faixa} (${p.idade})</div>
+                                    <div class="card-linha"><b>👥 Vagas/Van:</b> ${p.qtd} alunos</div>
+                                </div>
+                            `;
+                        });
+                    }
+                    htmlTabelas += `</td>`;
+                });
+
+                htmlTabelas += `</tr></tbody></table>`;
+
+                if (index !== diasDoPrograma.length - 1) {
+                    htmlTabelas += `<div class="page-break"></div>`;
+                }
+                semanaAtualArray = []; 
+            }
+        });
+
+        let janela = window.open('', '_blank', 'width=1100,height=800');
+        
+        let layoutHTML = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Cronograma ${nomeCeuAtivo}</title>
+                <style>
+                    @page { size: A4 landscape; margin: 15mm; }
+                    body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 20px; color: #1e293b; background: #fff; }
+                    .cabecalho-pagina { text-align: center; margin-bottom: 20px; }
+                    .cabecalho-pagina h1 { margin: 0; font-size: 22px; color: #0f172a; font-weight: 900;}
+                    .cabecalho-pagina h2 { margin: 5px 0 0 0; font-size: 16px; color: #3b82f6; text-transform: uppercase; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; display: inline-block;}
+                    .tabela-cronograma { width: 100%; border-collapse: collapse; table-layout: fixed; }
+                    .tabela-cronograma th { background: #f8fafc; color: #334155; padding: 12px; border: 2px solid #cbd5e1; text-align: center; text-transform: uppercase; line-height: 1.2; }
+                    .tabela-cronograma td { border: 2px solid #cbd5e1; padding: 10px; background: #ffffff; }
+                    .card-passeio { background: #f0fdf4; border-left: 5px solid #22c55e; padding: 10px; border-radius: 4px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); font-size: 11px;}
+                    .card-passeio:last-child { margin-bottom: 0; }
+                    .card-titulo { font-weight: bold; font-size: 13px; color: #166534; margin-bottom: 5px; border-bottom: 1px dashed #bbf7d0; padding-bottom: 3px; text-transform: uppercase;}
+                    .card-linha { margin-bottom: 3px; color: #374151; }
+                    .card-vazio { text-align: center; font-style: italic; color: #94a3b8; font-size: 12px; margin-top: 20px; }
+                    .page-break { page-break-before: always; }
+                    @media print { body { padding: 0; } }
+                </style>
+            </head>
+            <body>
+                ${htmlTabelas}
+                <script>
+                    setTimeout(function() { window.print(); }, 1000);
+                <\/script>
+            </body>
+            </html>
+        `;
+
+        janela.document.write(layoutHTML);
+        janela.document.close();
+    }
+
+    // ==========================================
     // 🖨️ IMPRESSÃO DAS AUTORIZAÇÕES (8 POR PÁGINA)
     // ==========================================
     function imprimirAutorizacoes(id) {
@@ -247,24 +378,18 @@
             @page { size: A4 portrait; margin: 15mm 10mm; }
             body { font-family: Arial, sans-serif; margin: 0; padding: 0; color: #333; }
             h2 { text-align: center; color: #2c3e50; font-size: 16px; text-transform: uppercase; margin-bottom: 10px; margin-top: 5px;}
-            
-            /* TABELA DO RELATÓRIO (PÁGINA 1) */
             table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 12px; }
             th, td { border: 1px solid #cbd5e1; padding: 8px; text-align: left; }
             th { background: #f1f5f9; width: 30%; } 
             .page-break { page-break-before: always; }
-            
-            /* AUTORIZAÇÕES 8 POR PÁGINA */
             .auth-container { border: 1px dashed #94a3b8; border-radius: 4px; padding: 8px 10px; margin-bottom: 14px; font-size: 11px; line-height: 1.15; }
             .auth-header { text-align: center; font-weight: bold; font-size: 10px; text-transform: uppercase; margin-bottom: 3px;}
             .auth-title { text-align: center; font-weight: bold; font-size: 11px; margin-bottom: 4px; text-decoration: underline; }
             .auth-linha { border-bottom: 1px solid #000; display: inline-block; }
-            
             .linha-flex { display: flex; justify-content: space-between; margin-bottom: 4px; gap: 8px;}
             .campo-flex { flex-grow: 1; white-space: nowrap; }
             .auth-assinatura { text-align: center; margin-top: 10px; }
             .auth-assinatura-linha { border-top: 1px solid #000; width: 50%; margin: 0 auto; padding-top: 2px; font-size: 9px;}
-            
             @media print { body { padding: 0; } }
         </style></head><body>
         
@@ -426,373 +551,6 @@
                `;
                document.getElementById('divResultado').style.display = 'block';
            } else {
-               exibirResultadosGerais(res);
-           }
-        } else {
-          Swal.fire('Atenção', res.erro || res.mensagem || 'Falha ao gerar', 'error');
-        }
-      } catch (e) {
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-gear me-2"></i> Processar e Gerar PDF';
-        Swal.fire('Erro', 'Falha na conexão com o Google.', 'error');
-      }
-    }
-
-    function exibirResultadosGerais(res) {
-      const divRes = document.getElementById('divResultado');
-      const divZip = document.getElementById('divZip');
-      const listaLinks = document.getElementById('listaLinks');
-      divZip.innerHTML = '';
-      listaLinks.innerHTML = '';
-
-      if (res.zip) {
-        divZip.innerHTML = `
-          <a href="${res.zip}" target="_blank" class="btn btn-success btn-lg fw-bold shadow-sm">
-            <i class="fa-solid fa-file-zipper me-2"></i> Baixar Todas (ZIP)
-          </a>
-        `;
-      }
-      if (res.paginas && res.paginas.length > 0) {
-        res.paginas.forEach(p => {
-          listaLinks.innerHTML += `
-            <a href="${p.link}" target="_blank" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center fw-bold">
-              <span><i class="fa-solid fa-file-pdf text-danger me-2"></i>${p.nome}</span>
-              <span class="badge bg-primary rounded-pill">Abrir PDF</span>
-            </a>
-          `;
-        });
-      }
-      divRes.style.display = 'block';
-      divRes.scrollIntoView({ behavior: 'smooth' });
-    }
-  </script>
-</body>
-</html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<!--
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Central de Impressão - Recreio nas Férias</title>
-  
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-  <style>
-    body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    .card-box { border: none; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); background: white; }
-    .btn-opcao { border: 2px solid #e0e6ed; border-radius: 10px; padding: 15px; cursor: pointer; transition: 0.3s; }
-    .btn-opcao:hover, .btn-opcao.selecionado { border-color: #0d6efd; background-color: #e8f0fe; }
-    .select-premium { border-width: 2px; box-shadow: none !important; }
-    .select-premium:focus { border-color: #0d6efd; }
-  </style>
-</head>
-<body class="p-4">
-
-  <div class="container" style="max-width: 800px;">
-    
-    <div class="card-box p-4 mb-4 text-center">
-      <div class="bg-primary text-white rounded-circle d-inline-flex p-3 mb-2">
-        <i class="fa-solid fa-print fs-3"></i>
-      </div>
-      <h4 class="fw-bold text-dark m-0">Central de Impressão</h4>
-      <small class="text-muted">Recreio nas Férias - Documentação Oficial</small>
-    </div>
-
-    <div class="card-box p-4 mb-4">
-      <h6 class="fw-bold text-primary mb-3"><i class="fa-solid fa-file-pdf me-2"></i>1. O que deseja imprimir?</h6>
-      
-      <select id="selectTipoDoc" class="form-select form-select-lg fw-bold mb-3 select-premium text-primary" onchange="atualizarInteligenciaTela()">
-        <optgroup label="📋 Listagens por Turma (Presença e Assinaturas)">
-            <option value="CHAMADA">📋 Lista de Chamada Oficial (Dias Úteis)</option>
-            <option value="PORTA">🚪 Listagem para a Porta da Sala</option>
-            <option value="ASSINATURA">✍️ Listagem para Assinatura dos Pais</option>
-        </optgroup>
-        <optgroup label="🌟 Listagens Especiais (Todas as Turmas Juntas)">
-            <option value="INCLUSAO">🤝 Crianças de Inclusão</option>
-            <option value="DIETA ESPECIAL">🍎 Crianças com Dieta Especial</option>
-            <option value="VAI DESACOMPANHADO">🚶‍♂️ Saída Desacompanhado (Vai Sozinho)</option>
-            <option value="USO DE PISCINA">🏊‍♂️ Uso de Piscina</option>
-            <option value="RESTRICAO DE IMAGEM">📷 Restrição de Imagem</option>
-        </optgroup>
-      </select>
-    </div>
-
-    <div class="card-box p-4 mb-4" id="divOrdemEspecial" style="display: none;">
-      <h6 class="fw-bold text-primary mb-3"><i class="fa-solid fa-sort-alpha-down me-2"></i>2. Qual a ordem desejada?</h6>
-      <select id="ordemRelatorio" class="form-select select-premium fw-bold text-dark">
-        <option value="ALFABETICA">A a Z (Apenas Ordem Alfabética)</option>
-        <option value="IDADE_ALFA">Por Idade, depois Alfabética</option>
-        <option value="TURMA_IDADE_ALFA">Por Turma, depois Idade, depois Alfabética</option>
-      </select>
-    </div>
-
-    <div class="card-box p-4 mb-4" id="divEscolhaTurmas">
-      <h6 class="fw-bold text-primary mb-3"><i class="fa-solid fa-users me-2"></i>2. Escolha o Filtro de Turmas:</h6>
-      
-      <div class="row g-3 mb-3">
-        <div class="col-md-6">
-          <div class="btn-opcao selecionado" id="cardTodas" onclick="selecionarModo('TODAS')">
-            <div class="form-check">
-              <input class="form-check-input" type="radio" name="radioModo" id="radioTodas" checked>
-              <label class="form-check-label fw-bold text-dark" for="radioTodas">✨ TODAS AS TURMAS</label>
-            </div>
-            <small class="text-muted d-block mt-1">Gera todos os PDFs agrupados em ZIP.</small>
-          </div>
-        </div>
-
-        <div class="col-md-6">
-          <div class="btn-opcao" id="cardUnica" onclick="selecionarModo('UNICA')">
-            <div class="form-check">
-              <input class="form-check-input" type="radio" name="radioModo" id="radioUnica">
-              <label class="form-check-label fw-bold text-dark" for="radioUnica">🎯 APENAS UMA TURMA</label>
-            </div>
-            <small class="text-muted d-block mt-1">Gera e baixa apenas o PDF de uma turma.</small>
-          </div>
-        </div>
-      </div>
-
-      <div id="divSelectTurma" class="mb-3" style="display: none;">
-        <select id="selectTurma" class="form-select form-select-lg fw-bold select-premium">
-          <option value="">Carregando turmas...</option>
-        </select>
-      </div>
-    </div>
-
-    <button class="btn btn-primary btn-lg w-100 fw-bold shadow-sm mt-2 mb-4" id="btnGerar" onclick="processarGeracao()">
-      <i class="fa-solid fa-gear me-2"></i> Processar e Gerar PDF
-    </button>
-
-    <div class="card-box p-4 mb-4" id="divResultado" style="display: none;">
-      <h6 class="fw-bold text-success mb-3"><i class="fa-solid fa-circle-check me-2"></i>Documentos Gerados com Sucesso!</h6>
-      <div class="mb-3 text-center" id="divZip"></div>
-      <div class="list-group" id="listaLinks"></div>
-    </div>
-
-  </div>
-
-  <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec";
-    const idPlanilhaAtiva = localStorage.getItem('ceu_planilha_id');
-    const nomeCeuAtivo = localStorage.getItem('ceu_nome_especifico') || "CEU";
-
-    let modoSelecionado = 'TODAS';
-
-    window.onload = function() {
-      carregarTurmasNoDropdown();
-      atualizarInteligenciaTela();
-    };
-
-    // 🧠 A Inteligência que esconde e mostra painéis dependendo da escolha
-    function atualizarInteligenciaTela() {
-      const tipo = document.getElementById('selectTipoDoc').value;
-      const ehEspecial = ["INCLUSAO", "DIETA ESPECIAL", "VAI DESACOMPANHADO", "USO DE PISCINA", "RESTRICAO DE IMAGEM"].includes(tipo);
-
-      if (ehEspecial) {
-          document.getElementById('divEscolhaTurmas').style.display = 'none';
-          document.getElementById('divOrdemEspecial').style.display = 'block';
-      } else {
-          document.getElementById('divEscolhaTurmas').style.display = 'block';
-          document.getElementById('divOrdemEspecial').style.display = 'none';
-      }
-    }
-
-    function selecionarModo(modo) {
-      modoSelecionado = modo;
-      document.getElementById('cardTodas').classList.toggle('selecionado', modo === 'TODAS');
-      document.getElementById('cardUnica').classList.toggle('selecionado', modo === 'UNICA');
-      document.getElementById('radioTodas').checked = (modo === 'TODAS');
-      document.getElementById('radioUnica').checked = (modo === 'UNICA');
-      document.getElementById('divSelectTurma').style.display = (modo === 'UNICA') ? 'block' : 'none';
-    }
-
-    async function carregarTurmasNoDropdown() {
-      const select = document.getElementById('selectTurma');
-      if (!idPlanilhaAtiva) {
-        select.innerHTML = '<option value="">⚠️ Planilha não conectada</option>';
-        return;
-      }
-      select.innerHTML = '<option value="">Carregando turmas...</option>';
-      const pacote = { acao: "carregarCriancasRF", dados: { idPlanilha: idPlanilhaAtiva } };
-
-      try {
-        const resRaw = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(pacote) });
-        const res = await resRaw.json();
-        if (res.sucesso && res.criancas) {
-          const turmasUnicas = [...new Set(res.criancas.map(c => c.turma).filter(t => t && t !== 'SEM TURMA'))].sort();
-          if (turmasUnicas.length === 0) {
-            select.innerHTML = '<option value="">Nenhuma turma cadastrada</option>';
-          } else {
-            select.innerHTML = '<option value="">-- Escolha a Turma --</option>';
-            turmasUnicas.forEach(t => select.innerHTML += `<option value="${t}">Turma ${t}</option>`);
-          }
-        }
-      } catch (e) { select.innerHTML = '<option value="">Erro de Conexão</option>'; }
-    }
-
-    async function processarGeracao() {
-      const tipoDoc = document.getElementById('selectTipoDoc').value;
-      const ehEspecial = ["INCLUSAO", "DIETA ESPECIAL", "VAI DESACOMPANHADO", "USO DE PISCINA", "RESTRICAO DE IMAGEM"].includes(tipoDoc);
-      
-      let pacote = {};
-
-      if (ehEspecial) {
-          // Motor 1: Listagens Especiais
-          pacote = {
-              acao: "gerarListagemEspecial",
-              dados: {
-                  idPlanilha: idPlanilhaAtiva,
-                  nomeCeu: nomeCeuAtivo,
-                  tipo: tipoDoc,
-                  ordem: document.getElementById('ordemRelatorio').value
-              }
-          };
-      } else {
-          // Motor 2: Turmas (Chamada, Porta, Assinatura)
-          let turmaAlvo = "TODAS";
-          if (modoSelecionado === 'UNICA') {
-            turmaAlvo = document.getElementById('selectTurma').value;
-            if (!turmaAlvo) return Swal.fire('Aviso', 'Selecione uma turma!', 'warning');
-          }
-          
-          let qualRobo = tipoDoc === 'CHAMADA' ? "gerarListaChamadaRF" : "gerarListasExtrasRF";
-
-          pacote = {
-              acao: qualRobo,
-              dados: {
-                  idPlanilha: idPlanilhaAtiva,
-                  nomeCeu: nomeCeuAtivo,
-                  turmaDesejada: turmaAlvo,
-                  tipoLista: tipoDoc
-              }
-          };
-      }
-
-      const btn = document.getElementById('btnGerar');
-      btn.disabled = true;
-      btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Gerando Documentos...';
-      document.getElementById('divResultado').style.display = 'none';
-
-      try {
-        const resRaw = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(pacote) });
-        const res = await resRaw.json();
-
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-gear me-2"></i> Processar e Gerar PDF';
-
-        if (res.sucesso || res.status === "sucesso") {
-           if (ehEspecial) {
-               // Resposta do Motor de Listas Especiais
-               document.getElementById('divZip').innerHTML = '';
-               document.getElementById('listaLinks').innerHTML = `
-                 <a href="${res.urlPdf}" target="_blank" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center fw-bold bg-success text-white rounded">
-                   <span><i class="fa-solid fa-file-pdf me-2"></i>Abrir Relatório (${res.quantidade} alunos)</span>
-                   <i class="fa-solid fa-download"></i>
-                 </a>
-               `;
-               document.getElementById('divResultado').style.display = 'block';
-           } else {
-               // Resposta do Motor de Turmas
                exibirResultadosGerais(res);
            }
         } else {

@@ -110,7 +110,60 @@
         }
 
         // Agora ela recebe um "termo", se não passar nada, ela puxa os 100 últimos.
-        function carregarAlunos(termoBusca = "") {
+// 🛡️ NOVO MOTOR DE FETCH COM "AMORTECEDOR" (TENTA 3 VEZES ANTES DE FALHAR)
+        async function fetchComTeimosia(url, options, tentativas = 3) {
+            for (let i = 0; i < tentativas; i++) {
+                try {
+                    let response = await fetch(url, options);
+                    if (!response.ok) throw new Error("Erro de conexão do Google.");
+                    return await response.json();
+                } catch (erro) {
+                    console.warn(`Tentativa ${i + 1} falhou. O Google rejeitou a conexão.`);
+                    if (i === tentativas - 1) throw erro; // Se foi a última tentativa, desiste.
+                    await new Promise(r => setTimeout(r, 1500)); // Espera 1.5 segundos e bate na porta de novo
+                }
+            }
+        }
+
+        // 🚀 FUNÇÃO REFEITA USANDO A TEIMOSIA
+        async function carregarAlunos(termoBusca = "") {
+            const codigoCeu = localStorage.getItem('ceu_codigo_eol');
+            const idPlanilhaCeu = localStorage.getItem('ceu_planilha_id'); 
+            
+            if(!codigoCeu && !idPlanilhaCeu) return Swal.fire('Erro', 'CEU não identificado.', 'error');
+
+            const opcoesFetch = {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({
+                    acao: "listarAlunosNovoSistema",
+                    dados: { idCeu: codigoCeu, idPlanilha: idPlanilhaCeu, termoBusca: termoBusca }
+                })
+            };
+
+            try {
+                // Chama a nossa nova função que tenta 3 vezes!
+                let retorno = await fetchComTeimosia(API_URL, opcoesFetch);
+
+                if(retorno.status === "sucesso" || retorno.sucesso) {
+                    alunosGlobais = retorno.alunos || [];
+                    renderizarTabela(alunosGlobais, termoBusca);
+                } else {
+                    let msgErro = retorno.mensagem || retorno.erro || "Erro no banco de dados.";
+                    document.getElementById('corpo-tabela').innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4 fw-bold"><i class="fas fa-exclamation-triangle"></i> ${msgErro}</td></tr>`;
+                }
+            } catch (err) {
+                // Se falhou as 3 vezes, aí sim mostramos o erro pro usuário
+                document.getElementById('corpo-tabela').innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">O Servidor do Google está muito sobrecarregado no momento. Tente novamente em alguns minutos.</td></tr>`;
+            }
+        }
+
+
+
+
+
+    
+  /*      function carregarAlunos(termoBusca = "") {
             const codigoCeu = localStorage.getItem('ceu_codigo_eol');
             const idPlanilhaCeu = localStorage.getItem('ceu_planilha_id'); 
             
@@ -141,8 +194,15 @@
             .catch(err => {
                 document.getElementById('corpo-tabela').innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">Erro de conexão com o banco. Tente novamente.</td></tr>`;
             });
-        }
+        } */
 
+
+
+
+
+
+
+    
         function renderizarTabela(lista, termoBusca) {
             const tbody = document.getElementById('corpo-tabela');
             

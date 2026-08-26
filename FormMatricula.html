@@ -99,6 +99,360 @@
   let alunos = []; 
   let dadosBanco = []; 
 
+  // 🛡️ NOVO MOTOR DE FETCH COM "AMORTECEDOR" (TENTA 3 VEZES ANTES DE FALHAR)
+  async function fetchComTeimosia(url, options, tentativas = 3) {
+      for (let i = 0; i < tentativas; i++) {
+          try {
+              let response = await fetch(url, options);
+              if (!response.ok) throw new Error("Erro de conexão do Google.");
+              return await response.json();
+          } catch (erro) {
+              console.warn(`Tentativa ${i + 1} falhou. O Google rejeitou a conexão.`);
+              if (i === tentativas - 1) throw erro; 
+              await new Promise(r => setTimeout(r, 1500)); // Espera 1.5 segundos e bate na porta de novo
+          }
+      }
+  }
+
+  // 1. CARREGA OS NOMES ASSIM QUE ABRIR A PÁGINA USANDO O FETCH BLINDADO
+  document.addEventListener("DOMContentLoaded", async function() {
+    if (!idPlanilhaCeu || !codigoCeu) {
+      document.getElementById('statusAlert').innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> ERRO: Planilha do CEU não conectada. Faça login novamente.</div>`;
+      return;
+    }
+
+    try {
+      document.getElementById('statusAlert').innerHTML = `<div class="alert alert-info"><i class="fas fa-spinner fa-spin me-2"></i> Sincronizando base de alunos...</div>`;
+
+      const pacote = { 
+          acao: "listarAlunosNovoSistema", 
+          dados: { 
+              idPlanilha: idPlanilhaCeu,
+              idCeu: codigoCeu 
+          } 
+      };
+      
+      // Chamando com teimosia!
+      const res = await fetchComTeimosia(API_URL, { 
+          method: 'POST', 
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(pacote) 
+      });
+
+      if (res.sucesso || res.status === "sucesso") {
+        let lista = res.dados || res.alunos || [];
+        
+        dadosBanco = lista.map(a => ({
+          nome: (a.nome || a[3] || "Nome Não Encontrado").toUpperCase(), 
+          id: a.idAluno || a.prontuario || a.id || a[0] || "ID Não Encontrado"
+        }));
+
+        const datalist = document.getElementById('opcoesAlunos');
+        let opcoesHTML = "";
+        dadosBanco.forEach(aluno => {
+          opcoesHTML += `<option value="${aluno.nome}"></option>`;
+        });
+        datalist.innerHTML = opcoesHTML;
+
+        document.getElementById('statusAlert').innerHTML = ``;
+      } else {
+        document.getElementById('statusAlert').innerHTML = `<div class="alert alert-warning"><i class="fas fa-bug"></i> ${res.mensagem || res.erro}</div>`;
+      }
+    } catch (e) {
+      document.getElementById('statusAlert').innerHTML = `<div class="alert alert-danger"><i class="fas fa-wifi"></i> O servidor do Google está sobrecarregado. Tente recarregar a página.</div>`;
+    }
+  });
+
+  // 2. DETECTA SE O USUÁRIO DIGITOU/ESCOLHEU UM NOME E PREENCHE O ID
+  document.getElementById('nomeAlunoInput').addEventListener('input', function(e) {
+    const nomeDigitado = e.target.value.trim().toUpperCase();
+    const alunoEncontrado = dadosBanco.find(a => a.nome === nomeDigitado);
+    
+    if (alunoEncontrado) {
+      document.getElementById('idAlunoInput').value = alunoEncontrado.id;
+    } else {
+      document.getElementById('idAlunoInput').value = '';
+    }
+  });
+
+  // 3. SE APERTAR ENTER NO CAMPO DO NOME, ADICIONA DIRETO
+  document.getElementById('nomeAlunoInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault(); 
+      const idPreenchido = document.getElementById('idAlunoInput').value;
+      if(idPreenchido) adicionarAluno();
+    }
+  });
+
+  // 4. ADICIONA O ALUNO NA CAIXA ABAIXO
+  function adicionarAluno() {
+    const inputId = document.getElementById('idAlunoInput');
+    const inputNome = document.getElementById('nomeAlunoInput');
+    
+    const id = inputId.value.trim();
+    const nome = inputNome.value.trim().toUpperCase();
+
+    const jaExiste = alunos.some(a => a.id === id);
+
+    if (id && !jaExiste) {
+      alunos.push({ id: id, nome: nome }); 
+      renderizarLista();
+      
+      inputId.value = '';
+      inputNome.value = '';
+      inputNome.focus();
+    } else if (jaExiste) {
+      Swal.fire('Aviso', 'Este aluno já está na fila de matrícula!', 'info');
+    } else {
+      Swal.fire('Aviso', 'Selecione um aluno válido na lista.', 'warning');
+    }
+  }
+
+  function removerAluno(index) {
+    alunos.splice(index, 1);
+    renderizarLista();
+  }
+
+  function renderizarLista() {
+    const lista = document.getElementById('listaAlunos');
+    const btnEnviar = document.getElementById('btnEnviar');
+    
+    document.getElementById('contadorFila').innerText = alunos.length;
+    lista.innerHTML = '';
+    
+    if (alunos.length === 0) {
+      lista.innerHTML = `<div class="text-center text-muted mt-5" id="msgListaVazia" style="font-style: italic;">Nenhum aluno na fila. Busque e adicione acima.</div>`;
+      btnEnviar.style.display = 'none';
+      return;
+    }
+
+    btnEnviar.style.display = 'inline-block'; 
+
+    alunos.forEach((aluno, index) => {
+      lista.innerHTML += `
+        <div class="item-aluno animate__animated animate__fadeIn">
+          <div><i class="fas fa-user-check text-success me-2"></i> <strong>${aluno.nome}</strong> <span class="text-muted ms-2" style="font-size: 0.85em;">(ID: ${aluno.id})</span></div>
+          <span class="remove" onclick="removerAluno(${index})" title="Remover da fila"><i class="fas fa-times"></i></span>
+        </div>`;
+    });
+  }
+
+  // 5. ENVIA PARA A PLANILHA VIA FETCH E MOSTRA MENSAGENS (COM TEIMOSIA)
+  async function enviarMatriculas() {
+    const idTurma = document.getElementById('idTurma').value.trim().toUpperCase();
+    const btn = document.getElementById('btnEnviar');
+    const alertBox = document.getElementById('statusAlert');
+    
+    if (!idTurma || alunos.length === 0) {
+      Swal.fire('Atenção', 'Você precisa preencher o ID da Turma e adicionar alunos na fila.', 'warning');
+      return;
+    }
+
+    alertBox.innerHTML = ''; 
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Gravando...`;
+
+    const apenasIds = alunos.map(a => a.id);
+
+    const pacote = {
+        acao: "processarMatriculaNovoSistema",
+        dados: {
+            idPlanilha: idPlanilhaCeu,
+            idCeu: codigoCeu,
+            idTurma: idTurma,
+            alunosIds: apenasIds
+        }
+    };
+
+    try {
+        // Chamando com teimosia!
+        const res = await fetchComTeimosia(API_URL, { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(pacote) 
+        });
+
+        if (res.sucesso || res.status === "sucesso") {
+            Swal.fire('Sucesso!', 'Os alunos foram inseridos na turma.', 'success');
+            
+            alunos = [];
+            document.getElementById('idTurma').value = '';
+            renderizarLista();
+        } else {
+            Swal.fire('Atenção', res.erro || res.mensagem, 'warning');
+        }
+    } catch (err) {
+        Swal.fire('Erro de Conexão', 'O Servidor do Google está muito sobrecarregado no momento. Tente novamente em alguns segundos.', 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fas fa-paper-plane me-2"></i> PROCESSAR MATRÍCULAS`;
+    }
+  }
+</script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!--
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Realizar Matrículas</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  
+  <style>
+    body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; }
+    .card-premium { border: none; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); background: #fff; }
+    .card-header-custom { background: linear-gradient(135deg, #6f42c1, #8e44ad); color: white; border-radius: 15px 15px 0 0 !important; padding: 20px; }
+    
+    .btn-salvar { background: #6f42c1; color: white; border: none; padding: 12px 25px; border-radius: 8px; font-weight: 600; transition: 0.3s; width: 100%; font-size: 16px; }
+    .btn-salvar:hover { background: #5a32a3; color: white; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(111, 66, 193, 0.2); }
+    
+    .form-control:focus { border-color: #6f42c1; box-shadow: 0 0 0 0.25rem rgba(111, 66, 193, 0.25); }
+    
+    .btn-voltar { background: white; color: #444; border: 1px solid #ccc; font-weight: 600; border-radius: 20px; padding: 8px 20px; transition: 0.3s; box-shadow: 0 2px 5px rgba(0,0,0,0.05); text-decoration: none; }
+    .btn-voltar:hover { background: #e9ecef; color: #000; }
+    
+    input[readonly] { background-color: #e9ecef; cursor: not-allowed; color: #555; font-weight: bold; }
+    
+    .btn-add { background: #28a745; color: white; border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; width: 100%; margin-top: 5px; transition: 0.3s; }
+    .btn-add:hover { background: #218838; transform: translateY(-1px); }
+    
+    #listaAlunos { background: #f8f9fa; border: 1px solid #dee2e6; height: 180px; overflow-y: auto; padding: 10px; border-radius: 8px; margin-top: 10px; }
+    
+    .item-aluno { background: #ffffff; margin-bottom: 8px; padding: 10px 15px; border-radius: 6px; font-size: 14px; font-weight: 500; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #6f42c1; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    
+    .remove { color: #dc3545; cursor: pointer; font-weight: bold; font-size: 16px; padding: 0 5px; transition: 0.2s; }
+    .remove:hover { color: #c82333; transform: scale(1.2); }
+  </style>
+</head>
+<body>
+
+<div class="container" style="max-width: 700px;">
+
+  <div class="card card-premium mt-2 mb-5">
+    <div class="card-header-custom text-center">
+      <h4><i class="fas fa-user-plus me-2"></i> Realizar Matrículas</h4>
+      <p class="mb-0 text-white-50">Adicione alunos em lote rapidamente a uma turma</p>
+    </div>
+    
+    <div class="card-body p-4">
+      
+      <div id="statusAlert"></div>
+
+      <div class="mb-4 pb-3 border-bottom">
+        <label class="form-label fw-bold"><i class="fas fa-chalkboard text-purple me-1" style="color: #6f42c1;"></i> ID da Turma de Destino</label>
+        <input type="text" class="form-control form-control-lg text-center fw-bold text-uppercase" id="idTurma" placeholder="Ex: T-001" style="letter-spacing: 2px;">
+      </div>
+
+      <div class="row align-items-end mb-4">
+        <div class="col-md-7 mb-3 mb-md-0">
+          <label class="form-label fw-bold"><i class="fas fa-search text-secondary me-1"></i> Buscar Aluno</label>
+          <input type="text" class="form-control text-uppercase" id="nomeAlunoInput" list="opcoesAlunos" placeholder="Digite o nome completo...">
+          <datalist id="opcoesAlunos"></datalist>
+        </div>
+        
+        <div class="col-md-5">
+          <label class="form-label fw-bold"><i class="fas fa-id-card text-secondary me-1"></i> ID Detectado</label>
+          <input type="text" class="form-control text-center" id="idAlunoInput" placeholder="Aguardando..." readonly>
+          <button class="btn btn-add mt-2 shadow-sm" onclick="adicionarAluno()">
+            <i class="fas fa-plus-circle me-1"></i> Incluir na Lista
+          </button>
+        </div>
+      </div>
+
+      <div class="mt-4">
+        <label class="form-label fw-bold text-success"><i class="fas fa-clipboard-list me-1"></i> Fila de Matrícula (<span id="contadorFila">0</span> alunos)</label>
+        <div id="listaAlunos">
+          <div class="text-center text-muted mt-5" id="msgListaVazia" style="font-style: italic;">
+            Nenhum aluno na fila. Busque e adicione acima.
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-4 pt-3 text-center">
+        <button onclick="enviarMatriculas()" class="btn btn-salvar" id="btnEnviar" style="display: none;">
+          <i class="fas fa-paper-plane me-2"></i> PROCESSAR MATRÍCULAS
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  // 🚨 LINK DO SEU MOTOR GOOGLE APPS SCRIPT
+  const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec"; 
+  
+  // 🌟 A CHAVE MESTRA DUPLA! Pegamos os DOIS códigos!
+  const idPlanilhaCeu = localStorage.getItem('ceu_planilha_id');
+  const codigoCeu = localStorage.getItem('ceu_codigo_eol');
+
+  let alunos = []; 
+  let dadosBanco = []; 
+
   // 1. CARREGA OS NOMES ASSIM QUE ABRIR A PÁGINA USANDO O FETCH
   document.addEventListener("DOMContentLoaded", async function() {
     if (!idPlanilhaCeu || !codigoCeu) {

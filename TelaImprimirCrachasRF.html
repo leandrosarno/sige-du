@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Impressão Supersônica - Crachás RF</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="config.js"></script>
+    <style>
+        body { font-family: 'Arial', sans-serif; background-color: #f0f2f5; }
+        
+        /* 🖨️ MÁGICA DA IMPRESSÃO A4 */
+        @media print {
+            @page { size: A4 portrait; margin: 7mm; }
+            body { background: white; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .no-print { display: none !important; }
+            .page-break { page-break-before: always; }
+            .malha-impressao { gap: 2mm !important; }
+        }
+
+        .malha-impressao { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; padding: 10px; }
+
+        /* 🪪 O MOLDE DO CRACHÁ (Tamanho Padrão 9cm x 6cm) */
+        .cracha {
+            width: 9cm; height: 6cm; 
+            border: 2px solid #000; 
+            background: #fff;
+            position: relative;
+            box-sizing: border-box;
+            overflow: hidden;
+            page-break-inside: avoid;
+        }
+
+        /* 1. CABEÇALHO */
+        .cabecalho { display: flex; height: 1.2cm; border-bottom: 2px solid #000; }
+        .logo-sme { width: 1.5cm; border-right: 2px solid #000; display: flex; align-items: center; justify-content: center; padding: 2px; }
+        .logo-sme img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .textos-cabecalho { flex: 1; display: flex; flex-direction: column; justify-content: center; text-align: center; }
+        .txt-sme { font-size: 8pt; font-weight: bold; }
+        .txt-ceu { font-size: 7.5pt; font-weight: bold; }
+        .txt-periodo { font-size: 6pt; border-top: 1px solid #000; margin-top: 1px; padding-top: 1px; }
+
+        /* 2. NOME E IDADE (COR DE FUNDO DINÂMICA) */
+        .faixa-nome {
+            height: 2.2cm;
+            display: flex; align-items: center; justify-content: center;
+            border-bottom: 2px solid #000;
+            text-align: center; padding: 0 5px;
+            font-size: 16pt; font-weight: 900; line-height: 1.1;
+            text-transform: uppercase;
+        }
+
+        /* 3. RODAPÉ INFERIOR */
+        .rodape { display: flex; height: 2.6cm; position: relative; }
+        
+        .bloco-esq { flex: 1; display: flex; flex-direction: column; border-right: 2px solid #000; }
+        
+        /* Contatos */
+        .contatos { display: flex; flex-direction: column; padding: 2px 4px; height: 1cm; border-bottom: 1px solid #000; }
+        .linha-resp { display: flex; justify-content: space-between; font-size: 6pt; font-weight: bold; color: #555; }
+        .linha-dados { display: flex; justify-content: space-between; font-size: 7pt; font-weight: bold; }
+        
+        /* Ícones */
+        .area-icones { display: flex; justify-content: space-between; padding: 2px 5px; height: 1.2cm; }
+        .box-icone { display: flex; flex-direction: column; align-items: center; width: 22%; text-align: center;}
+        .titulo-icone { font-size: 4.5pt; font-weight: bold; line-height: 1; margin-bottom: 1px;}
+        .img-icone { height: 0.8cm; width: 0.8cm; border: 1px solid #000; }
+        .img-icone img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* Faixa Vai Sozinho */
+        .faixa-sozinho {
+            height: 0.4cm; 
+            display: flex; align-items: center; justify-content: center;
+            font-size: 6.5pt; font-weight: bold; text-transform: uppercase;
+            border-top: 1px solid #000;
+        }
+
+        /* Bloco Idade Gigante */
+        .bloco-dir { width: 2cm; display: flex; align-items: center; justify-content: center; background: #fff; }
+        .idade-gigante { font-size: 45pt; font-weight: 900; line-height: 1; letter-spacing: -2px; }
+
+        /* --- ESTILOS DO CRACHÁ DOS PAIS --- */
+        .faixa-pais { background: #34495e; color: white; height: 1.2cm; display: flex; align-items: center; justify-content: center; font-size: 14pt; font-weight: 900; border-bottom: 2px solid #000; }
+        .area-dados-pais { padding: 5px; flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 5px;}
+        .d-box { border: 1px solid #ccc; padding: 3px 5px; border-radius: 4px;}
+        .d-lbl { font-size: 6pt; color: #555; font-weight: bold;}
+        .d-val { font-size: 10pt; font-weight: 900; text-transform: uppercase; }
+
+        /* UI da Tela */
+        .barra-ferramentas { background: #fff; padding: 15px 25px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+    </style>
+</head>
+<body>
+
+    <div class="container-fluid no-print mt-3">
+        <div class="barra-ferramentas">
+            <div>
+                <h4 class="m-0 text-primary fw-bold"><i class="fas fa-id-badge"></i> Motor de Impressão Supersônico</h4>
+                <small class="text-muted" id="statusFila">Buscando dados no servidor...</small>
+            </div>
+            <div>
+                <button class="btn btn-success fw-bold px-4" onclick="window.print()" id="btnImprimir" disabled>
+                    <i class="fas fa-print"></i> Imprimir Crachás (A4)
+                </button>
+                <button class="btn btn-danger fw-bold ms-2" onclick="limparFila()" id="btnLimpar" disabled>
+                    <i class="fas fa-trash-alt"></i> Limpar Fila
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ONDE OS CRACHÁS VÃO SURGIR -->
+    <div id="containerCriancas" class="malha-impressao"></div>
+    <div class="page-break no-print" id="quebraPagina" style="display: none;"></div>
+    <div id="containerPais" class="malha-impressao"></div>
+
+    <script>
+        // Imagem padrão da Prefeitura se não houver outra configurada
+        const LOGO_PADRAO = "https://logodownload.org/wp-content/uploads/2014/11/prefeitura-sao-paulo-logo-1.png";
+
+        window.onload = async function() {
+            const idPlanilha = localStorage.getItem('ceu_planilha_id');
+            const nomeCeu = localStorage.getItem('ceu_nome_unidade') || "CEU NÃO IDENTIFICADO";
+            
+            if (!idPlanilha) {
+                Swal.fire('Erro', 'Banco de Dados não conectado.', 'error');
+                return;
+            }
+
+            const pacote = {
+                acao: "buscarDadosNovoCrachaHTML",
+                dados: { idPlanilha: idPlanilha, nomeCeu: nomeCeu }
+            };
+
+            try {
+                const req = await fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) });
+                const res = await req.json();
+
+                if (res.sucesso) {
+                    renderizarCrachas(res.fila, res.regras, res.nomeCeu);
+                    document.getElementById('statusFila').innerText = `${res.fila.length} crachás prontos para impressão!`;
+                    document.getElementById('btnImprimir').disabled = false;
+                    document.getElementById('btnLimpar').disabled = false;
+                } else {
+                    document.getElementById('statusFila').innerText = "Fila vazia ou erro na busca.";
+                    Swal.fire('Atenção', res.erro || res.mensagem, 'info');
+                }
+            } catch (e) {
+                document.getElementById('statusFila').innerText = "Falha na conexão com o servidor.";
+                Swal.fire('Erro', 'Falha ao conectar com a API.', 'error');
+            }
+        }
+
+        function renderizarCrachas(fila, regras, nomeCeu) {
+            const divCriancas = document.getElementById('containerCriancas');
+            const divPais = document.getElementById('containerPais');
+            let htmlCriancas = '';
+            let htmlPais = '';
+
+            fila.forEach(cri => {
+                // 🛠️ Tratamento dos Ícones
+                const imgDieta = cri.dieta ? regras.dieta.sim : regras.dieta.nao;
+                const imgRestImg = cri.restImg ? regras.img.sim : regras.img.nao;
+                const imgInclusao = cri.inclusao ? regras.inclusao.sim : regras.inclusao.nao;
+                const imgPiscina = cri.piscina ? regras.piscina.sim : regras.piscina.nao;
+                
+                // 🛠️ Tratamento da Faixa Vai Sozinho
+                const textoSozinho = cri.sozinho ? "AUTORIZADO IR SOZINHO" : "NÃO PODE IR SOZINHO";
+                const corFaixaSoz = cri.sozinho ? regras.sozinho.simCor : regras.sozinho.naoCor;
+
+                // ==========================================
+                // 🧒 CRACHÁ DA CRIANÇA
+                // ==========================================
+                htmlCriancas += `
+                <div class="cracha">
+                    <div class="cabecalho">
+                        <div class="logo-sme"><img src="${LOGO_PADRAO}"></div>
+                        <div class="textos-cabecalho">
+                            <div class="txt-sme">SECRETARIA MUNICIPAL DE EDUCAÇÃO</div>
+                            <div class="txt-ceu">${nomeCeu.toUpperCase()}</div>
+                            <div class="txt-periodo">${regras.periodo}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="faixa-nome" style="background-color: ${cri.corIdade};">
+                        ${cri.nome}
+                    </div>
+                    
+                    <div class="rodape">
+                        <div class="bloco-esq">
+                            <div class="contatos">
+                                <div class="linha-resp"><span>RESPONSÁVEL</span><span>TELEFONE</span></div>
+                                <div class="linha-dados">
+                                    <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 65%;">${cri.resp}</span>
+                                    <span>${cri.tel}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="area-icones">
+                                <div class="box-icone">
+                                    <div class="titulo-icone">DIETA<br>ESPECIAL</div>
+                                    <div class="img-icone"><img src="${imgDieta}"></div>
+                                </div>
+                                <div class="box-icone">
+                                    <div class="titulo-icone">RESTR.<br>IMAGEM</div>
+                                    <div class="img-icone"><img src="${imgRestImg}"></div>
+                                </div>
+                                <div class="box-icone">
+                                    <div class="titulo-icone"><br>INCLUSÃO</div>
+                                    <div class="img-icone"><img src="${imgInclusao}"></div>
+                                </div>
+                                <div class="box-icone">
+                                    <div class="titulo-icone"><br>PISCINA</div>
+                                    <div class="img-icone"><img src="${imgPiscina}"></div>
+                                </div>
+                            </div>
+
+                            <div class="faixa-sozinho" style="background-color: ${corFaixaSoz};">
+                                ${textoSozinho}
+                            </div>
+                        </div>
+                        <div class="bloco-dir">
+                            <div class="idade-gigante">${cri.idade}</div>
+                        </div>
+                    </div>
+                </div>`;
+
+                // ==========================================
+                // 👨‍👩‍👧 CRACHÁ DOS PAIS
+                // ==========================================
+                htmlPais += `
+                <div class="cracha">
+                    <div class="cabecalho">
+                        <div class="logo-sme"><img src="${LOGO_PADRAO}"></div>
+                        <div class="textos-cabecalho">
+                            <div class="txt-sme">SECRETARIA MUNICIPAL DE EDUCAÇÃO</div>
+                            <div class="txt-ceu">${nomeCeu.toUpperCase()}</div>
+                            <div class="txt-periodo">${regras.periodo}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="faixa-pais">CRACHÁ DO RESPONSÁVEL</div>
+                    
+                    <div class="area-dados-pais">
+                        <div class="d-box">
+                            <div class="d-lbl">NOME DA CRIANÇA</div>
+                            <div class="d-val">${cri.nome}</div>
+                        </div>
+                        <div style="display: flex; gap: 5px;">
+                            <div class="d-box" style="flex: 1;">
+                                <div class="d-lbl">NOME DO RESPONSÁVEL</div>
+                                <div class="d-val" style="font-size: 9pt;">${cri.resp}</div>
+                            </div>
+                            <div class="d-box" style="width: 2.2cm; text-align: center;">
+                                <div class="d-lbl">IDADE</div>
+                                <div class="d-val" style="font-size: 11pt;">${cri.idade} ANOS</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            });
+
+            divCriancas.innerHTML = htmlCriancas;
+            divPais.innerHTML = htmlPais;
+            
+            if (fila.length > 0) {
+                document.getElementById('quebraPagina').style.display = 'block';
+            }
+        }
+
+        async function limparFila() {
+            const confirmacao = await Swal.fire({
+                title: 'Tem certeza?',
+                text: "Isso removerá a marcação 'SIM' de todas as crianças na planilha.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#e74c3c',
+                cancelButtonColor: '#95a5a6',
+                confirmButtonText: 'Sim, limpar fila!'
+            });
+
+            if (confirmacao.isConfirmed) {
+                const btn = document.getElementById('btnLimpar');
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Limpando...';
+                btn.disabled = true;
+
+                const pacote = {
+                    acao: "limparFilaCrachasRecreio",
+                    dados: { idPlanilha: localStorage.getItem('ceu_planilha_id') }
+                };
+
+                try {
+                    const req = await fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) });
+                    const res = await req.json();
+
+                    if (res.sucesso) {
+                        Swal.fire('Fila Limpa!', 'Todos os status de impressão foram zerados.', 'success')
+                        .then(() => { location.reload(); });
+                    } else {
+                        Swal.fire('Erro', res.erro, 'error');
+                        btn.innerHTML = '<i class="fas fa-trash-alt"></i> Limpar Fila';
+                        btn.disabled = false;
+                    }
+                } catch(e) {
+                    Swal.fire('Erro', 'Falha na comunicação.', 'error');
+                }
+            }
+        }
+    </script>
+</body>
+</html>

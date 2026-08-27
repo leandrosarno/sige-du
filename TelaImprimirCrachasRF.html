@@ -153,11 +153,14 @@
             }
         }
 
-        function renderizarCrachas(fila, regras, nomeCeu) {
+function renderizarCrachas(fila, regras, nomeCeu) {
             const divCriancas = document.getElementById('containerCriancas');
             const divPais = document.getElementById('containerPais');
             let htmlCriancas = '';
             let htmlPais = '';
+
+            // 🌟 MOTOR DA LOGO: Se a DRE colocou link na B44, usa ele. Se não, usa a padrão.
+            const logoRender = (regras.logoPref && regras.logoPref !== "") ? regras.logoPref : LOGO_PADRAO;
 
             fila.forEach(cri => {
                 // 🛠️ Tratamento dos Ícones
@@ -176,7 +179,7 @@
                 htmlCriancas += `
                 <div class="cracha">
                     <div class="cabecalho">
-                        <div class="logo-sme"><img src="${LOGO_PADRAO}"></div>
+                        <div class="logo-sme"><img src="${logoRender}"></div>
                         <div class="textos-cabecalho">
                             <div class="txt-sme">SECRETARIA MUNICIPAL DE EDUCAÇÃO</div>
                             <div class="txt-ceu">${nomeCeu.toUpperCase()}</div>
@@ -233,7 +236,7 @@
                 htmlPais += `
                 <div class="cracha">
                     <div class="cabecalho">
-                        <div class="logo-sme"><img src="${LOGO_PADRAO}"></div>
+                        <div class="logo-sme"><img src="${logoRender}"></div>
                         <div class="textos-cabecalho">
                             <div class="txt-sme">SECRETARIA MUNICIPAL DE EDUCAÇÃO</div>
                             <div class="txt-ceu">${nomeCeu.toUpperCase()}</div>

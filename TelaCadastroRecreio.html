@@ -120,11 +120,6 @@
     <button id="btnSalvar" class="btn-salvar" onclick="salvarMatricula()"><i class="fas fa-save"></i> Efetivar Matrícula no Recreio</button>
 
     <script>
-        // ====================================================
-        // 🚨 COLOQUE O LINK DA SUA API (DO DASHBOARD) AQUI
-        // ====================================================
-/*        const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec";  */
-
         async function salvarMatricula() {
             const idPlanilha = localStorage.getItem('ceu_planilha_id');
             if (!idPlanilha) {
@@ -142,21 +137,32 @@
                 return;
             }
 
+            // 🛡️ Prepara e junta as informações de emergência na caixa de Observação
+            let obsFinal = document.getElementById('observacao').value.trim();
+            const telEmergencia = document.getElementById('telContato').value.trim();
+            const contatoEmerg = document.getElementById('contatoCom').value.trim();
+            
+            if (telEmergencia || contatoEmerg) {
+                obsFinal += ` [Emergência: ${contatoEmerg} - ${telEmergencia}]`;
+            }
+
+            // 🌟 O PACOTE DE DADOS AGORA FALA A MESMA LÍNGUA DO SERVIDOR
             const dadosMatricula = {
                 idPlanilha: idPlanilha,
                 nome: nome,
                 idade: idade,
                 abrigo: document.getElementById('abrigo').value.trim(),
-                responsavel: responsavel,
-                telefoneResp: telefoneResp,
-                telContato: document.getElementById('telContato').value.trim(),
-                contatoCom: document.getElementById('contatoCom').value.trim(),
-                piscina: document.getElementById('piscina').checked,
-                vaiSozinho: document.getElementById('vaiSozinho').checked,
-                restricaoImagem: document.getElementById('restricaoImagem').checked,
-                dietaEspecial: document.getElementById('dietaEspecial').checked,
-                inclusao: document.getElementById('inclusao').checked,
-                observacao: document.getElementById('observacao').value.trim()
+                resp: responsavel,       // Traduzido de responsavel para resp
+                tel: telefoneResp,       // Traduzido de telefoneResp para tel
+                obs: obsFinal,           // Observações consolidadadas
+                imprimir: "SIM",         // Já vai pra fila de crachás por padrão
+                
+                // Os Checkboxes convertidos para "SIM" ou "NÃO" com os nomes exatos do Servidor
+                piscina: document.getElementById('piscina').checked ? "SIM" : "NÃO",
+                sozinho: document.getElementById('vaiSozinho').checked ? "SIM" : "NÃO",
+                restImg: document.getElementById('restricaoImagem').checked ? "SIM" : "NÃO",
+                dieta: document.getElementById('dietaEspecial').checked ? "SIM" : "NÃO",
+                inclusao: document.getElementById('inclusao').checked ? "SIM" : "NÃO"
             };
 
             const btn = document.getElementById('btnSalvar');
@@ -166,6 +172,7 @@
             const pacote = { acao: "salvarCriancaRecreio", dados: dadosMatricula };
 
             try {
+                // Aqui ele pega o API_URL universal do config.js
                 const respostaRaw = await fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) });
                 const resposta = await respostaRaw.json();
 
@@ -178,7 +185,7 @@
                         html: `A criança foi salva com sucesso!<br><br>
                                <div style="font-size: 22px; color: #2980b9; font-weight: bold; background: #ebf5fb; padding: 15px; border-radius: 10px;">
                                  👉 TURMA: ${resposta.turma}<br>
-                                 <span style="font-size: 14px; color: #7f8c8d;">ID: ${resposta.idGerado || resposta.id}</span>
+                                 <span style="font-size: 14px; color: #7f8c8d;">ID: ${resposta.id}</span>
                                </div>`,
                         icon: 'success',
                         confirmButtonColor: '#2ecc71'

@@ -117,12 +117,13 @@
     <div id="containerPais" class="malha-impressao"></div>
 
     <script>
-        // Imagem padrão da Prefeitura se não houver outra configurada
+        // Imagem padrão da Prefeitura
         const LOGO_PADRAO = "https://logodownload.org/wp-content/uploads/2014/11/prefeitura-sao-paulo-logo-1.png";
 
         window.onload = async function() {
             const idPlanilha = localStorage.getItem('ceu_planilha_id');
-            const nomeCeu = localStorage.getItem('ceu_nome_unidade') || "CEU NÃO IDENTIFICADO";
+            // 🛡️ PEGA O NOME DO LOGIN SE O SERVIDOR FALHAR
+            const nomeCeuLocal = localStorage.getItem('nome_ceu') || "CEU NÃO IDENTIFICADO"; 
             
             if (!idPlanilha) {
                 Swal.fire('Erro', 'Banco de Dados não conectado.', 'error');
@@ -131,7 +132,7 @@
 
             const pacote = {
                 acao: "buscarDadosNovoCrachaHTML",
-                dados: { idPlanilha: idPlanilha, nomeCeu: nomeCeu }
+                dados: { idPlanilha: idPlanilha, nomeCeu: nomeCeuLocal }
             };
 
             try {
@@ -139,7 +140,13 @@
                 const res = await req.json();
 
                 if (res.sucesso) {
-                    renderizarCrachas(res.fila, res.regras, res.nomeCeu);
+                    // 🛡️ BLINDAGEM DO NOME: Se vier "NÃO IDENTIFICADO", usamos o do LocalStorage
+                    let nomeCeuFinal = res.nomeCeu;
+                    if (!nomeCeuFinal || nomeCeuFinal === "CEU NÃO IDENTIFICADO" || nomeCeuFinal === "") {
+                        nomeCeuFinal = nomeCeuLocal;
+                    }
+
+                    renderizarCrachas(res.fila, res.regras, nomeCeuFinal);
                     document.getElementById('statusFila').innerText = `${res.fila.length} crachás prontos para impressão!`;
                     document.getElementById('btnImprimir').disabled = false;
                     document.getElementById('btnLimpar').disabled = false;
@@ -153,23 +160,25 @@
             }
         }
 
-function renderizarCrachas(fila, regras, nomeCeu) {
+        function renderizarCrachas(fila, regras, nomeCeu) {
             const divCriancas = document.getElementById('containerCriancas');
             const divPais = document.getElementById('containerPais');
             let htmlCriancas = '';
             let htmlPais = '';
 
-            // 🌟 MOTOR DA LOGO: Se a DRE colocou link na B44, usa ele. Se não, usa a padrão.
-            const logoRender = (regras.logoPref && regras.logoPref !== "") ? regras.logoPref : LOGO_PADRAO;
+            // 🛡️ ESCUDO ANTI-#REF! (Limpa a sujeira que vem da planilha Master)
+            const limpaLink = (link) => (link && !link.includes("#REF!") && link !== "") ? link : "";
+            
+            let logoRender = limpaLink(regras.logoPref);
+            if (logoRender === "") logoRender = LOGO_PADRAO;
 
             fila.forEach(cri => {
-                // 🛠️ Tratamento dos Ícones
-                const imgDieta = cri.dieta ? regras.dieta.sim : regras.dieta.nao;
-                const imgRestImg = cri.restImg ? regras.img.sim : regras.img.nao;
-                const imgInclusao = cri.inclusao ? regras.inclusao.sim : regras.inclusao.nao;
-                const imgPiscina = cri.piscina ? regras.piscina.sim : regras.piscina.nao;
+                // 🛠️ Tratamento dos Ícones (Se vier quebrado, fica vazio e a caixa some)
+                const imgDieta = limpaLink(cri.dieta ? regras.dieta.sim : regras.dieta.nao);
+                const imgRestImg = limpaLink(cri.restImg ? regras.img.sim : regras.img.nao);
+                const imgInclusao = limpaLink(cri.inclusao ? regras.inclusao.sim : regras.inclusao.nao);
+                const imgPiscina = limpaLink(cri.piscina ? regras.piscina.sim : regras.piscina.nao);
                 
-                // 🛠️ Tratamento da Faixa Vai Sozinho
                 const textoSozinho = cri.sozinho ? "AUTORIZADO IR SOZINHO" : "NÃO PODE IR SOZINHO";
                 const corFaixaSoz = cri.sozinho ? regras.sozinho.simCor : regras.sozinho.naoCor;
 
@@ -204,19 +213,19 @@ function renderizarCrachas(fila, regras, nomeCeu) {
                             <div class="area-icones">
                                 <div class="box-icone">
                                     <div class="titulo-icone">DIETA<br>ESPECIAL</div>
-                                    <div class="img-icone"><img src="${imgDieta}"></div>
+                                    <div class="img-icone">${imgDieta ? `<img src="${imgDieta}">` : ''}</div>
                                 </div>
                                 <div class="box-icone">
                                     <div class="titulo-icone">RESTR.<br>IMAGEM</div>
-                                    <div class="img-icone"><img src="${imgRestImg}"></div>
+                                    <div class="img-icone">${imgRestImg ? `<img src="${imgRestImg}">` : ''}</div>
                                 </div>
                                 <div class="box-icone">
                                     <div class="titulo-icone"><br>INCLUSÃO</div>
-                                    <div class="img-icone"><img src="${imgInclusao}"></div>
+                                    <div class="img-icone">${imgInclusao ? `<img src="${imgInclusao}">` : ''}</div>
                                 </div>
                                 <div class="box-icone">
                                     <div class="titulo-icone"><br>PISCINA</div>
-                                    <div class="img-icone"><img src="${imgPiscina}"></div>
+                                    <div class="img-icone">${imgPiscina ? `<img src="${imgPiscina}">` : ''}</div>
                                 </div>
                             </div>
 

@@ -144,6 +144,93 @@
             }
         }
 
+function renderizarTabela(criancas, dias) {
+            let html = `<table><thead><tr>
+                <th>TURMA</th>
+                <th class="col-nome" style="background-color: #2c3e50; color: white;">NOME DA CRIANÇA</th>`;
+            
+            dias.forEach(d => { html += `<th>${d.formato}</th>`; });
+            html += `<th>PRES. (P)</th><th>FALTAS (F)</th></tr></thead><tbody>`;
+
+            criancas.forEach((c, idx) => {
+                let badgeIngresso = "";
+                if (c.dataMatPura > dias[0].dataReal) {
+                    badgeIngresso = `<span class="texto-ingresso">(Ingresso: ${c.dataMatStr})</span>`;
+                }
+
+                html += `<tr data-idx="${idx}" data-id="${c.idCrianca}" data-mat="${c.dataMatStr}">
+                    <td class="col-turma">${c.turma}</td>
+                    <td class="col-nome">${c.nome} ${badgeIngresso}</td>`;
+
+                dias.forEach((d, diaIdx) => {
+                    let bloqueado = (d.dataReal < c.dataMatPura) ? 'dia-bloqueado readonly' : '';
+                    let visual = (d.dataReal < c.dataMatPura) ? 'background-color: #e9ecef;' : '';
+                    let freqSalva = c.frequencias[d.formato] || ""; 
+                    let corTexto = freqSalva === 'P' ? 'color: #198754;' : (freqSalva === 'F' ? 'color: #dc3545;' : '');
+
+                    html += `<td style="padding: 0; ${visual}">
+                        <input type="text" class="input-freq ${bloqueado}" maxlength="1" data-dia="${diaIdx}" oninput="validarDigito(this)" value="${freqSalva}" style="${corTexto}">
+                    </td>`;
+                });
+
+                html += `<td class="totais-aluno text-success" id="tot-p-${idx}">0</td>
+                         <td class="totais-aluno text-danger" id="tot-f-${idx}">0</td></tr>`;
+            });
+
+            // 🌟 O NOVO RODAPÉ COM AS CAIXINHAS DE TOTAL GERAL
+            html += `<tr class="rodape-totais"><td colspan="2" style="text-align: right; background-color: #1a252f;">TOTAL NO DIA / GERAL:</td>`;
+            dias.forEach((d, diaIdx) => { html += `<td id="tot-dia-${diaIdx}">0</td>`; });
+            html += `<td id="tot-geral-p" style="background-color: #1a252f; color: #198754; font-size: 16px;">0</td>
+                     <td id="tot-geral-f" style="background-color: #1a252f; color: #dc3545; font-size: 16px;">0</td></tr></tbody></table>`;
+            
+            document.getElementById('area-tabela').innerHTML = html;
+            recalcularTudo();
+        }
+
+        function recalcularTudo() {
+            let totalPresencasGeral = Array(matrizDias.length).fill(0);
+            
+            // 🌟 VARIÁVEIS PARA ARMAZENAR O TOTAL GERAL DA TURMA
+            let somaGeralP = 0;
+            let somaGeralF = 0;
+            
+            const linhas = document.querySelectorAll('tbody tr[data-idx]');
+            
+            linhas.forEach(tr => {
+                let p = 0; let f = 0;
+                let idxLinha = tr.getAttribute('data-idx');
+                const inputs = tr.querySelectorAll('.input-freq');
+                
+                inputs.forEach(input => {
+                    let val = input.value;
+                    let idxDia = input.getAttribute('data-dia');
+                    if (val === 'P') { p++; totalPresencasGeral[idxDia]++; } 
+                    else if (val === 'F') { f++; }
+                });
+
+                document.getElementById(`tot-p-${idxLinha}`).innerText = p;
+                document.getElementById(`tot-f-${idxLinha}`).innerText = f;
+                
+                // 🌟 SOMA OS RESULTADOS DO ALUNO NO MONTANTE GERAL
+                somaGeralP += p;
+                somaGeralF += f;
+            });
+
+            matrizDias.forEach((d, diaIdx) => {
+                document.getElementById(`tot-dia-${diaIdx}`).innerText = totalPresencasGeral[diaIdx];
+            });
+            
+            // 🌟 EXIBE O MONTANTE GERAL NAS NOVAS CAIXINHAS DO RODAPÉ
+            document.getElementById('tot-geral-p').innerText = somaGeralP;
+            document.getElementById('tot-geral-f').innerText = somaGeralF;
+        }
+
+
+
+
+
+        
+/*
         function renderizarTabela(criancas, dias) {
             let html = `<table><thead><tr>
                 <th>TURMA</th>
@@ -184,7 +271,7 @@
             document.getElementById('area-tabela').innerHTML = html;
             recalcularTudo();
         }
-
+*/
         function validarDigito(input) {
             let valor = input.value.toUpperCase();
             if (valor !== 'P' && valor !== 'F') { input.value = ''; } 
@@ -194,7 +281,7 @@
             }
             recalcularTudo();
         }
-
+/*
         function recalcularTudo() {
             let totalPresencasGeral = Array(matrizDias.length).fill(0);
             const linhas = document.querySelectorAll('tbody tr[data-idx]');
@@ -219,7 +306,7 @@
                 document.getElementById(`tot-dia-${diaIdx}`).innerText = totalPresencasGeral[diaIdx];
             });
         }
-
+*/
         async function salvarChamada() {
             const btnSalvar = document.getElementById('btn-salvar');
             const idPlanilha = localStorage.getItem('ceu_planilha_id');

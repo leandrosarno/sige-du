@@ -11,25 +11,16 @@
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; }
         .cabecalho-chamada { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        
         .tabela-container { overflow-x: auto; background: white; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         table { width: 100%; border-collapse: collapse; min-width: 1000px; }
         th { background-color: #2c3e50; color: white; text-align: center; padding: 12px; font-size: 13px; position: sticky; top: 0; z-index: 10; }
         td { border: 1px solid #dee2e6; padding: 4px; text-align: center; vertical-align: middle; }
-        
-        /* Célula de Nome fixada na esquerda */
         .col-nome { text-align: left !important; font-weight: bold; font-size: 13px; min-width: 250px; position: sticky; left: 0; background: white; z-index: 5; box-shadow: 2px 0 5px rgba(0,0,0,0.05); }
         .col-turma { font-weight: bold; background-color: #f1f3f5; width: 60px; font-size: 13px; }
-        
-        /* O Input Mágico do Estagiário */
         .input-freq { width: 100%; height: 35px; text-align: center; border: none; font-weight: bold; font-size: 15px; outline: none; background: transparent; }
         .input-freq:focus { background-color: #e7f1ff; border-bottom: 2px solid #0d6efd; }
-        
-        /* Destaques e Bloqueios */
         .dia-bloqueado { background-color: #e9ecef !important; pointer-events: none; }
         .texto-ingresso { font-size: 10px; color: #dc3545; font-weight: bold; margin-left: 8px; }
-        
-        /* Totais */
         .totais-aluno { font-weight: 900; background-color: #f8f9fa; }
         .rodape-totais { background-color: #34495e; color: #f1c40f; font-weight: bold; }
         .rodape-totais td { padding: 10px; font-size: 14px; }
@@ -37,34 +28,24 @@
 </head>
 <body>
     <div class="container-fluid py-4">
-        
-        <!-- CABEÇALHO -->
         <div class="cabecalho-chamada d-flex justify-content-between align-items-center flex-wrap gap-3">
             <div>
                 <h4 class="text-primary fw-bold mb-1"><i class="fas fa-clipboard-list"></i> Chamada Qualitativa</h4>
                 <div class="text-muted small" id="lbl-info-ceu">Recreio nas Férias</div>
             </div>
-            
             <div class="d-flex align-items-end gap-3 flex-grow-1" style="max-width: 600px;">
                 <div class="flex-grow-1">
                     <label class="form-label small fw-bold text-muted mb-1">Agente Recreador</label>
-                    <input type="text" class="form-control" id="txt-agente" placeholder="Nome do Agente Responsável">
+                    <input type="text" class="form-control" id="txt-agente" placeholder="Nome Responsável">
                 </div>
                 <div style="width: 120px;">
                     <label class="form-label small fw-bold text-muted mb-1">Idade</label>
                     <select class="form-select" id="sel-idade">
                         <option value="">Selecione...</option>
-                        <option value="4">4 Anos</option>
-                        <option value="5">5 Anos</option>
-                        <option value="6">6 Anos</option>
-                        <option value="7">7 Anos</option>
-                        <option value="8">8 Anos</option>
-                        <option value="9">9 Anos</option>
-                        <option value="10">10 Anos</option>
-                        <option value="11">11 Anos</option>
-                        <option value="12">12 Anos</option>
-                        <option value="13">13 Anos</option>
-                        <option value="14">14 Anos</option>
+                        <option value="4">4 Anos</option><option value="5">5 Anos</option><option value="6">6 Anos</option>
+                        <option value="7">7 Anos</option><option value="8">8 Anos</option><option value="9">9 Anos</option>
+                        <option value="10">10 Anos</option><option value="11">11 Anos</option><option value="12">12 Anos</option>
+                        <option value="13">13 Anos</option><option value="14">14 Anos</option>
                     </select>
                 </div>
                 <button class="btn btn-primary fw-bold" onclick="carregarChamada()" id="btn-carregar">
@@ -76,11 +57,7 @@
             </div>
         </div>
 
-        <!-- ONDE A TABELA VAI SURGIR -->
-        <div class="tabela-container" id="area-tabela" style="display: none;">
-            <!-- Renderizado via JavaScript -->
-        </div>
-
+        <div class="tabela-container" id="area-tabela" style="display: none;"></div>
     </div>
 
     <script>
@@ -88,12 +65,10 @@
 
         async function carregarChamada() {
             const idade = document.getElementById('sel-idade').value;
-            const agente = document.getElementById('txt-agente').value;
             const idPlanilha = localStorage.getItem('ceu_planilha_id');
 
             if (!idade) {
-                Swal.fire('Atenção', 'Selecione uma idade para carregar a turma.', 'warning');
-                return;
+                Swal.fire('Atenção', 'Selecione uma idade.', 'warning'); return;
             }
 
             const btn = document.getElementById('btn-carregar');
@@ -112,17 +87,15 @@
                 if (res.sucesso) {
                     matrizDias = res.dias;
                     renderizarTabela(res.criancas, res.dias);
-                    
                     document.getElementById('area-tabela').style.display = 'block';
                     document.getElementById('btn-salvar').style.display = 'inline-block'; 
-                    
                 } else {
                     Swal.fire('Ops!', res.erro, 'info');
                     document.getElementById('area-tabela').style.display = 'none';
                     document.getElementById('btn-salvar').style.display = 'none';
                 }
             } catch (e) {
-                Swal.fire('Erro', 'Falha na comunicação com o servidor.', 'error');
+                Swal.fire('Erro', 'Falha na comunicação.', 'error');
             } finally {
                 btn.innerHTML = '<i class="fas fa-search"></i> Carregar';
                 btn.disabled = false;
@@ -134,101 +107,75 @@
                 <th>TURMA</th>
                 <th class="col-nome" style="background-color: #2c3e50; color: white;">NOME DA CRIANÇA</th>`;
             
-            // Cabeçalho dos Dias
-            dias.forEach(d => {
-                html += `<th>${d.formato}</th>`;
-            });
-
+            dias.forEach(d => { html += `<th>${d.formato}</th>`; });
             html += `<th>PRES. (P)</th><th>FALTAS (F)</th></tr></thead><tbody>`;
 
-            // Corpo da Tabela (As Crianças)
             criancas.forEach((c, idx) => {
                 let badgeIngresso = "";
-                // Verifica se a primeira data do programa é menor que a data de matrícula da criança
                 if (c.dataMatPura > dias[0].dataReal) {
                     badgeIngresso = `<span class="texto-ingresso">(Ingresso: ${c.dataMatStr})</span>`;
                 }
 
-                html += `<tr data-idx="${idx}">
+                // INJETA O ID E A DATA AQUI PARA NÃO PERDER NA HORA DE SALVAR
+                html += `<tr data-idx="${idx}" data-id="${c.idCrianca}" data-mat="${c.dataMatStr}">
                     <td class="col-turma">${c.turma}</td>
                     <td class="col-nome">${c.nome} ${badgeIngresso}</td>`;
 
-                // Colunas de Input (Bloqueando dias anteriores ao ingresso)
                 dias.forEach((d, diaIdx) => {
                     let bloqueado = (d.dataReal < c.dataMatPura) ? 'dia-bloqueado readonly' : '';
                     let visual = (d.dataReal < c.dataMatPura) ? 'background-color: #e9ecef;' : '';
-                    
+                    let freqSalva = c.frequencias[d.formato] || ""; 
+                    let corTexto = freqSalva === 'P' ? 'color: #198754;' : (freqSalva === 'F' ? 'color: #dc3545;' : '');
+
                     html += `<td style="padding: 0; ${visual}">
-                        <input type="text" class="input-freq ${bloqueado}" maxlength="1" data-dia="${diaIdx}" oninput="validarDigito(this)">
+                        <input type="text" class="input-freq ${bloqueado}" maxlength="1" data-dia="${diaIdx}" oninput="validarDigito(this)" value="${freqSalva}" style="${corTexto}">
                     </td>`;
                 });
 
-                // Totais do Aluno
                 html += `<td class="totais-aluno text-success" id="tot-p-${idx}">0</td>
-                         <td class="totais-aluno text-danger" id="tot-f-${idx}">0</td>
-                         </tr>`;
+                         <td class="totais-aluno text-danger" id="tot-f-${idx}">0</td></tr>`;
             });
 
-            // Rodapé: Totais Diários
-            html += `<tr class="rodape-totais">
-                        <td colspan="2" style="text-align: right; background-color: #1a252f;">TOTAL DE PRESENÇAS NO DIA:</td>`;
-            
-            dias.forEach((d, diaIdx) => {
-                html += `<td id="tot-dia-${diaIdx}">0</td>`;
-            });
-            
+            html += `<tr class="rodape-totais"><td colspan="2" style="text-align: right; background-color: #1a252f;">TOTAL DE PRESENÇAS:</td>`;
+            dias.forEach((d, diaIdx) => { html += `<td id="tot-dia-${diaIdx}">0</td>`; });
             html += `<td colspan="2" style="background-color: #1a252f;"></td></tr></tbody></table>`;
             
             document.getElementById('area-tabela').innerHTML = html;
+            recalcularTudo();
         }
 
-        // 🛡️ A MÁGICA DA VALIDAÇÃO E DO CÁLCULO
         function validarDigito(input) {
-            // Converte tudo para maiúsculo
             let valor = input.value.toUpperCase();
-            
-            // Só aceita P ou F
-            if (valor !== 'P' && valor !== 'F') {
-                input.value = '';
-            } else {
+            if (valor !== 'P' && valor !== 'F') { input.value = ''; } 
+            else { 
                 input.value = valor;
-                // Muda a cor da letra (Verde para P, Vermelho para F)
                 input.style.color = valor === 'P' ? '#198754' : '#dc3545';
             }
-
             recalcularTudo();
         }
 
         function recalcularTudo() {
-            let totalPresencasGeral = Array(matrizDias.length).fill(0);
-
-            // Calcula linha por linha
+            let totalPresencas = Array(matrizDias.length).fill(0);
             const linhas = document.querySelectorAll('tbody tr[data-idx]');
+            
             linhas.forEach(tr => {
-                let p = 0;
-                let f = 0;
+                let p = 0; let f = 0;
                 let idxLinha = tr.getAttribute('data-idx');
                 const inputs = tr.querySelectorAll('.input-freq');
                 
                 inputs.forEach(input => {
                     let val = input.value;
                     let idxDia = input.getAttribute('data-dia');
-
-                    if (val === 'P') {
-                        p++;
-                        totalPresencasGeral[idxDia]++;
-                    } else if (val === 'F') {
-                        f++;
-                    }
+                    if (val === 'P') { p++; totalPresencas[idxDia]++; } 
+                    else if (val === 'F') { f++; }
                 });
 
                 document.getElementById(`tot-p-${idxLinha}`).innerText = p;
                 document.getElementById(`tot-f-${idxLinha}`).innerText = f;
             });
 
-            // Atualiza o rodapé dos dias
             matrizDias.forEach((d, diaIdx) => {
-                document.getElementById(`tot-dia-${diaIdx}`).innerText = totalPresencasGeral[diaIdx];
+                document.getElementById(`tot-dia-${diaIdx}`).innerText = totalPresencas[diaIdx];
             });
         }
 
@@ -237,11 +184,13 @@
             const idPlanilha = localStorage.getItem('ceu_planilha_id');
             const idade = document.getElementById('sel-idade').value;
 
-            // Coleta os dados da tela
             let registrosParaSalvar = [];
             const linhas = document.querySelectorAll('tbody tr[data-idx]');
             
             linhas.forEach(tr => {
+                // LÊ O ID E A DATA QUE FORAM INJETADOS
+                let idCrianca = tr.getAttribute('data-id');
+                let dataMat = tr.getAttribute('data-mat');
                 let nome = tr.querySelector('.col-nome').innerText.split('(Ingresso')[0].trim();
                 let turma = tr.querySelector('.col-turma').innerText.trim();
                 let frequencias = {};
@@ -252,7 +201,7 @@
                     frequencias[dataColuna] = input.value.toUpperCase();
                 });
 
-                registrosParaSalvar.push({ nome: nome, turma: turma, frequencias: frequencias });
+                registrosParaSalvar.push({ id: idCrianca, nome: nome, turma: turma, dataMat: dataMat, frequencias: frequencias });
             });
 
             btnSalvar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
@@ -267,11 +216,8 @@
                 const req = await fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) });
                 const res = await req.json();
 
-                if (res.sucesso) {
-                    Swal.fire('Elegante!', res.mensagem, 'success');
-                } else {
-                    Swal.fire('Erro', res.erro, 'error');
-                }
+                if (res.sucesso) { Swal.fire('Elegante!', res.mensagem, 'success'); } 
+                else { Swal.fire('Erro', res.erro, 'error'); }
             } catch (e) {
                 Swal.fire('Erro', 'Falha ao salvar os dados no servidor.', 'error');
             } finally {
@@ -279,7 +225,6 @@
                 btnSalvar.disabled = false;
             }
         }
-        
     </script>
 </body>
 </html>

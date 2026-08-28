@@ -15,28 +15,60 @@
         table { width: 100%; border-collapse: collapse; min-width: 1000px; }
         th { background-color: #2c3e50; color: white; text-align: center; padding: 12px; font-size: 13px; position: sticky; top: 0; z-index: 10; }
         td { border: 1px solid #dee2e6; padding: 4px; text-align: center; vertical-align: middle; }
+        
         .col-nome { text-align: left !important; font-weight: bold; font-size: 13px; min-width: 250px; position: sticky; left: 0; background: white; z-index: 5; box-shadow: 2px 0 5px rgba(0,0,0,0.05); }
         .col-turma { font-weight: bold; background-color: #f1f3f5; width: 60px; font-size: 13px; }
+        
         .input-freq { width: 100%; height: 35px; text-align: center; border: none; font-weight: bold; font-size: 15px; outline: none; background: transparent; }
         .input-freq:focus { background-color: #e7f1ff; border-bottom: 2px solid #0d6efd; }
+        
         .dia-bloqueado { background-color: #e9ecef !important; pointer-events: none; }
         .texto-ingresso { font-size: 10px; color: #dc3545; font-weight: bold; margin-left: 8px; }
+        
         .totais-aluno { font-weight: 900; background-color: #f8f9fa; }
         .rodape-totais { background-color: #34495e; color: #f1c40f; font-weight: bold; }
         .rodape-totais td { padding: 10px; font-size: 14px; }
+
+        /* Cabeçalho que só aparece na folha de papel */
+        #cabecalho-impressao { display: none; text-align: center; margin-bottom: 20px; }
+        #cabecalho-impressao h2 { margin: 0; font-size: 20px; font-weight: bold; text-transform: uppercase; }
+        #cabecalho-impressao p { margin: 5px 0 0 0; font-size: 14px; }
+
+        /* 🖨️ A MÁGICA DA IMPRESSÃO A4 */
+        @media print {
+            @page { size: A4 landscape; margin: 10mm; }
+            body { background-color: white; margin: 0; padding: 0; }
+            .cabecalho-chamada { display: none !important; } /* Some com os botões e selects */
+            #cabecalho-impressao { display: block !important; } /* Mostra o cabeçalho oficial */
+            .tabela-container { box-shadow: none; border: none; overflow: visible; }
+            table { min-width: 100%; }
+            th { background-color: #e9ecef !important; color: black !important; -webkit-print-color-adjust: exact; position: static; }
+            .col-nome { position: static !important; box-shadow: none !important; }
+            .rodape-totais { background-color: #e9ecef !important; color: black !important; -webkit-print-color-adjust: exact; }
+            .input-freq { color: black !important; } /* Letras pretas para economizar tinta */
+        }
     </style>
 </head>
 <body>
     <div class="container-fluid py-4">
+        
+        <!-- CABEÇALHO PARA IMPRESSORA (Nasce invisível) -->
+        <div id="cabecalho-impressao">
+            <h2>Chamada Qualitativa - Recreio nas Férias</h2>
+            <p><strong>Idade:</strong> <span id="print-idade"></span> | <strong>Agente Recreador:</strong> <span id="print-agente"></span></p>
+        </div>
+
+        <!-- CABEÇALHO DO SISTEMA (Some na impressora) -->
         <div class="cabecalho-chamada d-flex justify-content-between align-items-center flex-wrap gap-3">
             <div>
                 <h4 class="text-primary fw-bold mb-1"><i class="fas fa-clipboard-list"></i> Chamada Qualitativa</h4>
                 <div class="text-muted small" id="lbl-info-ceu">Recreio nas Férias</div>
             </div>
-            <div class="d-flex align-items-end gap-3 flex-grow-1" style="max-width: 600px;">
+            
+            <div class="d-flex align-items-end gap-3 flex-grow-1" style="max-width: 700px;">
                 <div class="flex-grow-1">
                     <label class="form-label small fw-bold text-muted mb-1">Agente Recreador</label>
-                    <input type="text" class="form-control" id="txt-agente" placeholder="Nome Responsável">
+                    <input type="text" class="form-control" id="txt-agente" placeholder="Nome do Agente">
                 </div>
                 <div style="width: 120px;">
                     <label class="form-label small fw-bold text-muted mb-1">Idade</label>
@@ -51,13 +83,17 @@
                 <button class="btn btn-primary fw-bold" onclick="carregarChamada()" id="btn-carregar">
                     <i class="fas fa-search"></i> Carregar
                 </button>
-                <button class="btn btn-success fw-bold" onclick="salvarChamada()" id="btn-salvar" style="display: none; margin-left: 10px;">
-                    <i class="fas fa-save"></i> Salvar Chamada
+                <button class="btn btn-success fw-bold" onclick="salvarChamada()" id="btn-salvar" style="display: none;">
+                    <i class="fas fa-save"></i> Salvar
+                </button>
+                <button class="btn btn-dark fw-bold" onclick="window.print()" id="btn-imprimir" style="display: none;">
+                    <i class="fas fa-print"></i> Imprimir
                 </button>
             </div>
         </div>
 
         <div class="tabela-container" id="area-tabela" style="display: none;"></div>
+
     </div>
 
     <script>
@@ -65,6 +101,7 @@
 
         async function carregarChamada() {
             const idade = document.getElementById('sel-idade').value;
+            const agente = document.getElementById('txt-agente').value;
             const idPlanilha = localStorage.getItem('ceu_planilha_id');
 
             if (!idade) {
@@ -86,13 +123,20 @@
 
                 if (res.sucesso) {
                     matrizDias = res.dias;
+                    
+                    // Prepara o cabeçalho invisível para a impressora
+                    document.getElementById('print-idade').innerText = idade + " Anos";
+                    document.getElementById('print-agente').innerText = agente || "Não informado";
+
                     renderizarTabela(res.criancas, res.dias);
                     document.getElementById('area-tabela').style.display = 'block';
                     document.getElementById('btn-salvar').style.display = 'inline-block'; 
+                    document.getElementById('btn-imprimir').style.display = 'inline-block'; 
                 } else {
                     Swal.fire('Ops!', res.erro, 'info');
                     document.getElementById('area-tabela').style.display = 'none';
                     document.getElementById('btn-salvar').style.display = 'none';
+                    document.getElementById('btn-imprimir').style.display = 'none';
                 }
             } catch (e) {
                 Swal.fire('Erro', 'Falha na comunicação.', 'error');
@@ -116,7 +160,6 @@
                     badgeIngresso = `<span class="texto-ingresso">(Ingresso: ${c.dataMatStr})</span>`;
                 }
 
-                // INJETA O ID E A DATA AQUI PARA NÃO PERDER NA HORA DE SALVAR
                 html += `<tr data-idx="${idx}" data-id="${c.idCrianca}" data-mat="${c.dataMatStr}">
                     <td class="col-turma">${c.turma}</td>
                     <td class="col-nome">${c.nome} ${badgeIngresso}</td>`;
@@ -136,7 +179,7 @@
                          <td class="totais-aluno text-danger" id="tot-f-${idx}">0</td></tr>`;
             });
 
-            html += `<tr class="rodape-totais"><td colspan="2" style="text-align: right; background-color: #1a252f;">TOTAL DE PRESENÇAS:</td>`;
+            html += `<tr class="rodape-totais"><td colspan="2" style="text-align: right; background-color: #1a252f;">TOTAL DE PRESENÇAS NO DIA:</td>`;
             dias.forEach((d, diaIdx) => { html += `<td id="tot-dia-${diaIdx}">0</td>`; });
             html += `<td colspan="2" style="background-color: #1a252f;"></td></tr></tbody></table>`;
             
@@ -155,7 +198,7 @@
         }
 
         function recalcularTudo() {
-            let totalPresencas = Array(matrizDias.length).fill(0);
+            let totalPresencasGeral = Array(matrizDias.length).fill(0);
             const linhas = document.querySelectorAll('tbody tr[data-idx]');
             
             linhas.forEach(tr => {
@@ -166,7 +209,7 @@
                 inputs.forEach(input => {
                     let val = input.value;
                     let idxDia = input.getAttribute('data-dia');
-                    if (val === 'P') { p++; totalPresencas[idxDia]++; } 
+                    if (val === 'P') { p++; totalPresencasGeral[idxDia]++; } 
                     else if (val === 'F') { f++; }
                 });
 
@@ -175,7 +218,7 @@
             });
 
             matrizDias.forEach((d, diaIdx) => {
-                document.getElementById(`tot-dia-${diaIdx}`).innerText = totalPresencas[diaIdx];
+                document.getElementById(`tot-dia-${diaIdx}`).innerText = totalPresencasGeral[diaIdx];
             });
         }
 
@@ -188,7 +231,6 @@
             const linhas = document.querySelectorAll('tbody tr[data-idx]');
             
             linhas.forEach(tr => {
-                // LÊ O ID E A DATA QUE FORAM INJETADOS
                 let idCrianca = tr.getAttribute('data-id');
                 let dataMat = tr.getAttribute('data-mat');
                 let nome = tr.querySelector('.col-nome').innerText.split('(Ingresso')[0].trim();
@@ -221,10 +263,45 @@
             } catch (e) {
                 Swal.fire('Erro', 'Falha ao salvar os dados no servidor.', 'error');
             } finally {
-                btnSalvar.innerHTML = '<i class="fas fa-save"></i> Salvar Chamada';
+                btnSalvar.innerHTML = '<i class="fas fa-save"></i> Salvar';
                 btnSalvar.disabled = false;
             }
         }
     </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -52,13 +52,13 @@
 <body>
     <div class="container-fluid py-4">
         
-        <!-- CABEÇALHO PARA IMPRESSORA (Nasce invisível) -->
+        <!-- CABEÇALHO PARA IMPRESSORA -->
         <div id="cabecalho-impressao">
             <h2>Chamada Qualitativa - Recreio nas Férias</h2>
-            <p><strong>Idade:</strong> <span id="print-idade"></span> | <strong>Agente Recreador:</strong> <span id="print-agente"></span></p>
+            <p><strong>Idade:</strong> <span id="print-idade">Não informada</span> | <strong>Agente Recreador:</strong> <span id="print-agente">Não informado</span></p>
         </div>
 
-        <!-- CABEÇALHO DO SISTEMA (Some na impressora) -->
+        <!-- CABEÇALHO DO SISTEMA -->
         <div class="cabecalho-chamada d-flex justify-content-between align-items-center flex-wrap gap-3">
             <div>
                 <h4 class="text-primary fw-bold mb-1"><i class="fas fa-clipboard-list"></i> Chamada Qualitativa</h4>
@@ -68,11 +68,12 @@
             <div class="d-flex align-items-end gap-3 flex-grow-1" style="max-width: 700px;">
                 <div class="flex-grow-1">
                     <label class="form-label small fw-bold text-muted mb-1">Agente Recreador</label>
-                    <input type="text" class="form-control" id="txt-agente" placeholder="Nome do Agente">
+                    <!-- 🌟 O oninput AQUI FAZ A MÁGICA DA SINCRONIA EM TEMPO REAL -->
+                    <input type="text" class="form-control" id="txt-agente" placeholder="Nome do Agente" oninput="document.getElementById('print-agente').innerText = this.value || 'Não informado';">
                 </div>
                 <div style="width: 120px;">
                     <label class="form-label small fw-bold text-muted mb-1">Idade</label>
-                    <select class="form-select" id="sel-idade">
+                    <select class="form-select" id="sel-idade" onchange="document.getElementById('print-idade').innerText = this.value ? this.value + ' Anos' : 'Não informada';">
                         <option value="">Selecione...</option>
                         <option value="4">4 Anos</option><option value="5">5 Anos</option><option value="6">6 Anos</option>
                         <option value="7">7 Anos</option><option value="8">8 Anos</option><option value="9">9 Anos</option>
@@ -86,7 +87,7 @@
                 <button class="btn btn-success fw-bold" onclick="salvarChamada()" id="btn-salvar" style="display: none;">
                     <i class="fas fa-save"></i> Salvar
                 </button>
-                <button class="btn btn-dark fw-bold" onclick="window.print()" id="btn-imprimir" style="display: none;">
+                <button class="btn btn-dark fw-bold" onclick="prepararImpressao()" id="btn-imprimir" style="display: none;">
                     <i class="fas fa-print"></i> Imprimir
                 </button>
             </div>
@@ -101,7 +102,6 @@
 
         async function carregarChamada() {
             const idade = document.getElementById('sel-idade').value;
-            const agente = document.getElementById('txt-agente').value;
             const idPlanilha = localStorage.getItem('ceu_planilha_id');
 
             if (!idade) {
@@ -123,11 +123,6 @@
 
                 if (res.sucesso) {
                     matrizDias = res.dias;
-                    
-                    // Prepara o cabeçalho invisível para a impressora
-                    document.getElementById('print-idade').innerText = idade + " Anos";
-                    document.getElementById('print-agente').innerText = agente || "Não informado";
-
                     renderizarTabela(res.criancas, res.dias);
                     document.getElementById('area-tabela').style.display = 'block';
                     document.getElementById('btn-salvar').style.display = 'inline-block'; 
@@ -267,41 +262,13 @@
                 btnSalvar.disabled = false;
             }
         }
+        
+        // Garante que o Agente esteja atualizado mesmo se o usuário clicar antes de digitar
+        function prepararImpressao() {
+            const agente = document.getElementById('txt-agente').value;
+            document.getElementById('print-agente').innerText = agente || 'Não informado';
+            window.print();
+        }
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

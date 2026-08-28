@@ -70,6 +70,9 @@
                 <button class="btn btn-primary fw-bold" onclick="carregarChamada()" id="btn-carregar">
                     <i class="fas fa-search"></i> Carregar
                 </button>
+                <button class="btn btn-success fw-bold" onclick="salvarChamada()" id="btn-salvar" style="display: none; margin-left: 10px;">
+                    <i class="fas fa-save"></i> Salvar Chamada
+                </button>
             </div>
         </div>
 
@@ -113,6 +116,7 @@
                 } else {
                     Swal.fire('Ops!', res.erro, 'info');
                     document.getElementById('area-tabela').style.display = 'none';
+                    document.getElementById('btn-salvar').style.display = 'inline-block';
                 }
             } catch (e) {
                 Swal.fire('Erro', 'Falha na comunicação com o servidor.', 'error');
@@ -224,6 +228,54 @@
                 document.getElementById(`tot-dia-${diaIdx}`).innerText = totalPresencasGeral[diaIdx];
             });
         }
+async function salvarChamada() {
+            const btnSalvar = document.getElementById('btn-salvar');
+            const idPlanilha = localStorage.getItem('ceu_planilha_id');
+            const idade = document.getElementById('sel-idade').value;
+
+            // Coleta os dados da tela
+            let registrosParaSalvar = [];
+            const linhas = document.querySelectorAll('tbody tr[data-idx]');
+            
+            linhas.forEach(tr => {
+                let nome = tr.querySelector('.col-nome').innerText.split('(Ingresso')[0].trim();
+                let turma = tr.querySelector('.col-turma').innerText.trim();
+                let frequencias = {};
+
+                const inputs = tr.querySelectorAll('.input-freq');
+                inputs.forEach((input, idx) => {
+                    let dataColuna = matrizDias[idx].formato;
+                    frequencias[dataColuna] = input.value.toUpperCase();
+                });
+
+                registrosParaSalvar.push({ nome: nome, turma: turma, frequencias: frequencias });
+            });
+
+            btnSalvar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+            btnSalvar.disabled = true;
+
+            const pacote = {
+                acao: "salvarChamadaQualitativa",
+                dados: { idPlanilha: idPlanilha, idade: idade, dias: matrizDias, registros: registrosParaSalvar }
+            };
+
+            try {
+                const req = await fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) });
+                const res = await req.json();
+
+                if (res.sucesso) {
+                    Swal.fire('Elegante!', res.mensagem, 'success');
+                } else {
+                    Swal.fire('Erro', res.erro, 'error');
+                }
+            } catch (e) {
+                Swal.fire('Erro', 'Falha ao salvar os dados no servidor.', 'error');
+            } finally {
+                btnSalvar.innerHTML = '<i class="fas fa-save"></i> Salvar Chamada';
+                btnSalvar.disabled = false;
+            }
+        }
+        
     </script>
 </body>
 </html>

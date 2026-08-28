@@ -34,7 +34,7 @@
         #cabecalho-impressao h2 { margin: 0; font-size: 20px; font-weight: bold; text-transform: uppercase; }
         #cabecalho-impressao p { margin: 5px 0 0 0; font-size: 14px; }
 
-        /* 🖨️ A MÁGICA DA IMPRESSÃO A4 */
+/* 🖨️ A MÁGICA DA IMPRESSÃO A4 */
         @media print {
             @page { size: A4 landscape; margin: 10mm; }
             body { background-color: white; margin: 0; padding: 0; }
@@ -44,7 +44,10 @@
             table { min-width: 100%; }
             th { background-color: #e9ecef !important; color: black !important; -webkit-print-color-adjust: exact; position: static; }
             .col-nome { position: static !important; box-shadow: none !important; }
-            .rodape-totais { background-color: #e9ecef !important; color: black !important; -webkit-print-color-adjust: exact; }
+            
+            /* 🌟 A CORREÇÃO DO RODAPÉ AQUI: Forçando fundo cinza claro e letra preta nas células */
+            .rodape-totais, .rodape-totais td { background-color: #f1f3f5 !important; color: black !important; -webkit-print-color-adjust: exact; }
+            
             .input-freq { color: black !important; } /* Letras pretas para economizar tinta */
         }
     </style>

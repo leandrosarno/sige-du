@@ -112,13 +112,16 @@
                 if (res.sucesso) {
                     matrizDias = res.dias;
                     renderizarTabela(res.criancas, res.dias);
+                    
+                    // 🌟 AS DUAS LINHAS MÁGICAS AQUI:
                     document.getElementById('area-tabela').style.display = 'block';
+                    document.getElementById('btn-salvar').style.display = 'inline-block'; 
+                    
                 } else {
                     Swal.fire('Ops!', res.erro, 'info');
                     document.getElementById('area-tabela').style.display = 'none';
-                    document.getElementById('btn-salvar').style.display = 'inline-block';
-                }
-            } catch (e) {
+                    document.getElementById('btn-salvar').style.display = 'none';
+                } catch (e) {
                 Swal.fire('Erro', 'Falha na comunicação com o servidor.', 'error');
             } finally {
                 btn.innerHTML = '<i class="fas fa-search"></i> Carregar';

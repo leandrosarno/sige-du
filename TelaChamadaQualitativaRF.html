@@ -113,7 +113,6 @@
                     matrizDias = res.dias;
                     renderizarTabela(res.criancas, res.dias);
                     
-                    // 🌟 AS DUAS LINHAS MÁGICAS AQUI:
                     document.getElementById('area-tabela').style.display = 'block';
                     document.getElementById('btn-salvar').style.display = 'inline-block'; 
                     
@@ -121,7 +120,8 @@
                     Swal.fire('Ops!', res.erro, 'info');
                     document.getElementById('area-tabela').style.display = 'none';
                     document.getElementById('btn-salvar').style.display = 'none';
-                } catch (e) {
+                }
+            } catch (e) {
                 Swal.fire('Erro', 'Falha na comunicação com o servidor.', 'error');
             } finally {
                 btn.innerHTML = '<i class="fas fa-search"></i> Carregar';
@@ -231,7 +231,8 @@
                 document.getElementById(`tot-dia-${diaIdx}`).innerText = totalPresencasGeral[diaIdx];
             });
         }
-async function salvarChamada() {
+
+        async function salvarChamada() {
             const btnSalvar = document.getElementById('btn-salvar');
             const idPlanilha = localStorage.getItem('ceu_planilha_id');
             const idade = document.getElementById('sel-idade').value;

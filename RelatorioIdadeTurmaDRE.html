@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório de Idades e Turmas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="config.js"></script>
+    <style>
+        body { background-color: #f4f7f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; }
+        .cabecalho-pagina { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px; }
+        .titulo-pagina { font-size: 24px; font-weight: 700; color: #2c3e50; margin: 0; display: flex; align-items: center; gap: 10px; }
+        
+        .card-secao { background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); padding: 20px; margin-bottom: 25px; }
+        .titulo-secao { font-size: 16px; font-weight: 700; color: #0d6efd; text-transform: uppercase; margin-bottom: 15px; border-bottom: 2px solid #e9ecef; padding-bottom: 8px; }
+
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #2c3e50; color: white; padding: 12px; text-align: left; font-size: 13px; text-transform: uppercase; }
+        td { border: 1px solid #dee2e6; padding: 10px; font-size: 14px; vertical-align: middle; }
+        .col-numero { text-align: right; font-weight: 800; color: #0d6efd; width: 100px; }
+        .row-total { background-color: #e9ecef !important; font-weight: 900 !important; font-size: 15px; border-top: 3px solid #2c3e50; }
+
+        .loader-container { text-align: center; padding: 50px; color: #6c757d; }
+        .loader-container .material-icons { font-size: 40px; animation: spin 1s linear infinite; color: #0d6efd; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        .badge-info { background-color: #e8f0fe; color: #0d6efd; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; margin-right: 5px; margin-bottom: 5px; display: inline-block; border: 1px solid #0d6efd; }
+
+        @media print {
+            body { background: white !important; padding: 0 !important; }
+            .cabecalho-pagina .btn, .loader-container { display: none !important; }
+            .card-secao { box-shadow: none; border: none; padding: 0; }
+            th { background-color: #e9ecef !important; color: black !important; -webkit-print-color-adjust: exact; }
+            .row-total { background-color: #dee2e6 !important; -webkit-print-color-adjust: exact; }
+            .col-numero { color: black !important; }
+            .badge-info { border: 1px solid #999 !important; color: black !important; background: transparent !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="cabecalho-pagina">
+        <div>
+            <h2 class="titulo-pagina">
+                <span class="material-icons" style="font-size: 30px; color: #0d6efd;">pie_chart</span> 
+                Demografia Recreio nas Férias
+            </h2>
+            <div class="text-muted mt-1" style="font-weight: 600;" id="lbl-dre-nome">Aguardando dados...</div>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-danger font-weight-bold d-flex align-items-center gap-2" onclick="window.print()">
+                <span class="material-icons">picture_as_pdf</span> Imprimir Relatório
+            </button>
+        </div>
+    </div>
+
+    <div id="area-loading" class="loader-container">
+        <span class="material-icons">autorenew</span>
+        <p class="mt-3 font-weight-bold">Computando idades e turmas da rede...</p>
+    </div>
+
+    <div id="area-conteudo" style="display: none;">
+        
+        <!-- BLOCO 1: RESUMO CONSOLIDADO DA DRE (Lado a Lado) -->
+        <div class="row">
+            <!-- TABELA DE IDADES CONSOLIDADA -->
+            <div class="col-md-6">
+                <div class="card-secao">
+                    <div class="titulo-secao">Consolidado por Idades - Geral</div>
+                    <table>
+                        <thead><tr><th>Idade</th><th style="text-align: right;">Total Inscritos</th></tr></thead>
+                        <tbody id="tb-idades-geral"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TABELA DE TURMAS CONSOLIDADA -->
+            <div class="col-md-6">
+                <div class="card-secao">
+                    <div class="titulo-secao">Consolidado por Turmas - Geral</div>
+                    <table>
+                        <thead><tr><th>Turma</th><th style="text-align: right;">Total Inscritos</th></tr></thead>
+                        <tbody id="tb-turmas-geral"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- BLOCO 2: DETALHAMENTO POR CEU -->
+        <div class="card-secao">
+            <div class="titulo-secao">Detalhamento por Unidade (CEU)</div>
+            <div style="overflow-x: auto;">
+                <table style="min-width: 900px;">
+                    <thead>
+                        <tr>
+                            <th style="width: 25%;">Unidade (CEU)</th>
+                            <th style="text-align: center; width: 15%;">Total Inscritos</th>
+                            <th style="width: 30%;">Divisão por Idade</th>
+                            <th style="width: 30%;">Divisão por Turma</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tb-detalhe-ceus"></tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        function carregarRelatorio() {
+            let idDRE = String(localStorage.getItem('ceu_id') || sessionStorage.getItem('ceu_id') || localStorage.getItem('ceu_codigo_eol')).trim();
+            
+            fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "getEstatisticasIdadeTurmaDRE", dados: { idCeu: idDRE } }) })
+            .then(res => res.json())
+            .then(retorno => {
+                document.getElementById('area-loading').style.display = 'none';
+                if (retorno.sucesso) {
+                    document.getElementById('lbl-dre-nome').innerText = retorno.dre;
+                    renderizarPaineis(retorno.painel);
+                } else {
+                    alert("Erro ao ler planilhas: " + (retorno.mensagem || retorno.erro));
+                }
+            })
+            .catch(err => {
+                document.getElementById('area-loading').style.display = 'none';
+                alert("Falha de conexão com a DRE.");
+            });
+        }
+
+        function renderizarPaineis(painel) {
+            let masterIdades = {};
+            let masterTurmas = {};
+            let totalGeralRede = 0;
+
+            const tbDet = document.getElementById('tb-detalhe-ceus');
+            tbDet.innerHTML = "";
+
+            if (painel.length === 0) {
+                tbDet.innerHTML = `<tr><td colspan="4" class="text-center">Nenhum dado encontrado.</td></tr>`;
+            } else {
+                painel.forEach(ceu => {
+                    let isCon = ceu.status.includes("Conectado");
+                    let opacidade = isCon ? "1" : "0.5";
+                    let rowHtml = `<tr style="opacity: ${opacidade};"><td style="font-weight: bold;">${ceu.nome.replace("CEU ", "")}</td>`;
+                    
+                    if(isCon) {
+                        totalGeralRede += ceu.total;
+
+                        // Soma no Master Idades e monta as etiquetas
+                        let htmlIdades = "";
+                        let chavesIdade = Object.keys(ceu.idades).sort((a,b) => a.localeCompare(b, undefined, {numeric: true}));
+                        chavesIdade.forEach(id => {
+                            masterIdades[id] = (masterIdades[id] || 0) + ceu.idades[id];
+                            htmlIdades += `<span class="badge-info">${id}: <b>${ceu.idades[id]}</b></span>`;
+                        });
+
+                        // Soma no Master Turmas e monta as etiquetas
+                        let htmlTurmas = "";
+                        let chavesTurma = Object.keys(ceu.turmas).sort();
+                        chavesTurma.forEach(tr => {
+                            masterTurmas[tr] = (masterTurmas[tr] || 0) + ceu.turmas[tr];
+                            htmlTurmas += `<span class="badge-info">${tr}: <b>${ceu.turmas[tr]}</b></span>`;
+                        });
+
+                        rowHtml += `<td style="text-align: center; font-weight: 800; font-size: 16px; color: #fd7e14;">${ceu.total}</td>`;
+                        rowHtml += `<td>${htmlIdades || '-'}</td><td>${htmlTurmas || '-'}</td>`;
+                    } else {
+                        rowHtml += `<td colspan="3" style="text-align: center; color: #dc3545;">Planilha Inacessível</td>`;
+                    }
+                    rowHtml += `</tr>`;
+                    tbDet.innerHTML += rowHtml;
+                });
+            }
+
+            // --- RENDERIZA AS TABELAS CONSOLIDADAS ---
+            const renderTable = (objetoDados, idTabela) => {
+                let html = "";
+                let totalObj = 0;
+                // Ordena as chaves logicamente (números na frente)
+                let chaves = Object.keys(objetoDados).sort((a,b) => a.localeCompare(b, undefined, {numeric: true}));
+                
+                chaves.forEach(chave => {
+                    html += `<tr><td>${chave}</td><td class="col-numero">${objetoDados[chave]}</td></tr>`;
+                    totalObj += objetoDados[chave];
+                });
+                
+                html += `<tr class="row-total"><td>TOTAL GERAL DA REDE</td><td class="col-numero" style="color: #198754;">${totalObj}</td></tr>`;
+                document.getElementById(idTabela).innerHTML = html;
+            };
+
+            renderTable(masterIdades, 'tb-idades-geral');
+            renderTable(masterTurmas, 'tb-turmas-geral');
+
+            document.getElementById('area-conteudo').style.display = 'block';
+        }
+
+        window.onload = carregarRelatorio;
+    </script>
+</body>
+</html>

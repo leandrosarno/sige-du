@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório Filtrado DRE</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="config.js"></script>
+    <style>
+        body { background-color: #f4f7f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; }
+        .cabecalho-pagina { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
+        .titulo-pagina { font-size: 24px; font-weight: 700; color: #2c3e50; margin: 0; display: flex; align-items: center; gap: 10px; }
+        
+        .card-painel { background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); padding: 20px; margin-bottom: 20px; }
+        
+        /* 🎛️ ESTILOS DOS FILTROS */
+        .painel-filtros { background: #e8f0fe; border: 1px solid #b6d4fe; border-radius: 10px; padding: 15px; margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end; }
+        .grupo-filtro { flex: 1; min-width: 200px; }
+        .grupo-filtro label { font-size: 12px; font-weight: 700; color: #052c65; text-transform: uppercase; margin-bottom: 5px; display: block; }
+        .form-control, .form-select { border-radius: 8px; border: 1px solid #ced4da; font-size: 14px; padding: 10px; }
+        
+        table { width: 100%; border-collapse: collapse; min-width: 1000px; }
+        th { background: #2c3e50; color: white; padding: 14px; text-align: center; font-size: 13px; text-transform: uppercase; border: 1px solid #1a252f; }
+        td { border: 1px solid #dee2e6; padding: 12px; text-align: center; vertical-align: middle; font-size: 14px; font-weight: 500; }
+        .col-nome-ceu { text-align: left !important; font-weight: 700; color: #2c3e50; }
+        .row-total { background-color: #e9ecef !important; font-weight: 900 !important; font-size: 15px; border-top: 3px solid #2c3e50; }
+        
+        .valor-destaque { font-weight: 800; font-size: 15px; }
+        .text-recreio { color: #fd7e14; }
+        .text-presenca { color: #198754; }
+        .text-falta { color: #dc3545; }
+
+        .loader-container { text-align: center; padding: 50px; color: #6c757d; }
+        .loader-container .material-icons { font-size: 40px; animation: spin 1s linear infinite; color: #0d6efd; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* 🖨️ ESTILO EXCLUSIVO DE IMPRESSÃO */
+        @media print {
+            body { background: white !important; padding: 0 !important; }
+            .cabecalho-pagina .btn, .painel-filtros, .loader-container { display: none !important; }
+            .card-painel { box-shadow: none; border: none; padding: 0; }
+            th { background-color: #e9ecef !important; color: black !important; -webkit-print-color-adjust: exact; }
+            .row-total { background-color: #dee2e6 !important; -webkit-print-color-adjust: exact; }
+            .valor-destaque { color: black !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="cabecalho-pagina">
+        <div>
+            <h2 class="titulo-pagina">
+                <span class="material-icons" style="font-size: 30px; color: #0d6efd;">analytics</span> 
+                Relatório Analítico de Frequência
+            </h2>
+            <div class="text-muted mt-1" style="font-weight: 600;" id="lbl-dre-nome">Aguardando dados...</div>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-success font-weight-bold d-flex align-items-center gap-2" onclick="exportarExcel()">
+                <span class="material-icons">table_view</span> Exportar Excel
+            </button>
+            <button class="btn btn-outline-danger font-weight-bold d-flex align-items-center gap-2" onclick="window.print()">
+                <span class="material-icons">picture_as_pdf</span> Imprimir Tabela
+            </button>
+        </div>
+    </div>
+
+    <div class="card-painel">
+        
+        <!-- 🎛️ PAINEL DE FILTROS INTELIGENTES -->
+        <div class="painel-filtros" id="area-filtros" style="display: none;">
+            <div class="grupo-filtro">
+                <label>🔍 Buscar por Unidade</label>
+                <input type="text" id="filtroTexto" class="form-control" placeholder="Digite o nome do CEU..." onkeyup="aplicarFiltros()">
+            </div>
+            <div class="grupo-filtro">
+                <label>📡 Status de Conexão</label>
+                <select id="filtroStatus" class="form-select" onchange="aplicarFiltros()">
+                    <option value="todos">Mostrar Todas as Unidades</option>
+                    <option value="conectado">Apenas Conectados (Online)</option>
+                    <option value="erro">Apenas Sem Acesso (Offline)</option>
+                </select>
+            </div>
+            <div class="grupo-filtro">
+                <label>🎉 Recreio nas Férias</label>
+                <select id="filtroRecreio" class="form-select" onchange="aplicarFiltros()">
+                    <option value="todos">Sem restrição</option>
+                    <option value="com_inscritos">Exibir APENAS CEUs com inscritos</option>
+                    <option value="sem_inscritos">Exibir APENAS CEUs vazios (0 inscritos)</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="area-loading" class="loader-container">
+            <span class="material-icons">autorenew</span>
+            <p class="mt-3 font-weight-bold">Gerando estatísticas detalhadas da rede...</p>
+        </div>
+
+        <div style="overflow-x: auto;">
+            <table id="tabela-relatorio" style="display: none;">
+                <thead>
+                    <tr>
+                        <th class="col-nome-ceu">Unidade (CEU)</th>
+                        <th>Munícipes</th>
+                        <th>Turmas</th>
+                        <th>Matrículas</th>
+                        <th>Inscritos (RF)</th>
+                        <th>Presenças (P)</th>
+                        <th>Faltas (F)</th>
+                        <th>PCD</th>
+                        <th>Dieta Esp.</th>
+                        <th>Acolhimento</th>
+                    </tr>
+                </thead>
+                <tbody id="corpo-tabela"></tbody>
+                <tfoot id="rodape-tabela"></tfoot>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let matrizDadosGeral = []; // Guarda todos os dados puros do servidor
+        let matrizFiltrada = [];   // Guarda os dados após o filtro
+
+        function carregarRelatorio() {
+            let idDRE = String(localStorage.getItem('ceu_id') || sessionStorage.getItem('ceu_id') || localStorage.getItem('ceu_codigo_eol')).trim();
+            
+            fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "getDadosPainelDRE", dados: { idCeu: idDRE } }) })
+            .then(res => res.json())
+            .then(retorno => {
+                document.getElementById('area-loading').style.display = 'none';
+                if (retorno.status === "sucesso") {
+                    document.getElementById('lbl-dre-nome').innerText = retorno.dre;
+                    matrizDadosGeral = retorno.painel;
+                    document.getElementById('area-filtros').style.display = 'flex';
+                    aplicarFiltros(); // Roda a primeira vez para mostrar tudo
+                } else {
+                    alert("Erro ao ler planilhas: " + (retorno.mensagem || retorno.erro));
+                }
+            })
+            .catch(err => {
+                document.getElementById('area-loading').style.display = 'none';
+                alert("Falha de conexão com a DRE.");
+            });
+        }
+
+        // 🧠 MOTOR DE FILTRAGEM INTELIGENTE
+        function aplicarFiltros() {
+            let texto = document.getElementById('filtroTexto').value.toLowerCase().trim();
+            let status = document.getElementById('filtroStatus').value;
+            let recreio = document.getElementById('filtroRecreio').value;
+
+            matrizFiltrada = matrizDadosGeral.filter(ceu => {
+                let isConectado = ceu.status.includes("Conectado");
+                let qtdRecreio = ceu.recreio || 0;
+                
+                // Regra 1: Nome
+                let passaTexto = ceu.nome.toLowerCase().includes(texto);
+                
+                // Regra 2: Status
+                let passaStatus = true;
+                if (status === "conectado") passaStatus = isConectado;
+                if (status === "erro") passaStatus = !isConectado;
+
+                // Regra 3: Recreio
+                let passaRecreio = true;
+                if (recreio === "com_inscritos") passaRecreio = (qtdRecreio > 0);
+                if (recreio === "sem_inscritos") passaRecreio = (qtdRecreio === 0);
+
+                return passaTexto && passaStatus && passaRecreio;
+            });
+
+            renderizarTabela(matrizFiltrada);
+        }
+
+        // 📊 DESENHA A TABELA E SOMA OS TOTAIS COM BASE NO FILTRO ATUAL
+        function renderizarTabela(dados) {
+            const corpo = document.getElementById('corpo-tabela');
+            const rodape = document.getElementById('rodape-tabela');
+            corpo.innerHTML = ""; rodape.innerHTML = "";
+
+            let soma = { alu:0, tur:0, mat:0, rec:0, p:0, f:0, pcd:0, dieta:0, abr:0 };
+
+            if (dados.length === 0) {
+                corpo.innerHTML = `<tr><td colspan="10" style="padding: 30px; color: #dc3545; font-weight: bold;">Nenhuma unidade corresponde aos filtros aplicados.</td></tr>`;
+            } else {
+                dados.forEach(ceu => {
+                    let isCon = ceu.status.includes("Conectado");
+                    let opacidade = isCon ? "1" : "0.5";
+                    
+                    let alu = ceu.alunos||0; let tur = ceu.turmas||0; let mat = ceu.matriculas||0;
+                    let rec = ceu.recreio||0; let p = ceu.presencas||0; let f = ceu.faltas||0;
+                    let pcd = ceu.pcd||0; let dieta = ceu.dieta||0; let abr = ceu.abrigo||0;
+
+                    if (isCon) {
+                        soma.alu += alu; soma.tur += tur; soma.mat += mat;
+                        soma.rec += rec; soma.p += p; soma.f += f;
+                        soma.pcd += pcd; soma.dieta += dieta; soma.abr += abr;
+                    }
+
+                    corpo.innerHTML += `
+                        <tr style="opacity: ${opacidade};">
+                            <td class="col-nome-ceu">${ceu.nome.replace("CEU ", "")}</td>
+                            <td>${alu}</td>
+                            <td>${tur}</td>
+                            <td>${mat}</td>
+                            <td class="valor-destaque text-recreio">${rec}</td>
+                            <td class="valor-destaque text-presenca">${p}</td>
+                            <td class="valor-destaque text-falta">${f}</td>
+                            <td>${pcd}</td>
+                            <td>${dieta}</td>
+                            <td>${abr}</td>
+                        </tr>
+                    `;
+                });
+
+                rodape.innerHTML = `
+                    <tr class="row-total">
+                        <td class="col-nome-ceu" style="text-align: right !important;">TOTAIS (FILTRADOS):</td>
+                        <td>${soma.alu}</td>
+                        <td>${soma.tur}</td>
+                        <td>${soma.mat}</td>
+                        <td class="valor-destaque text-recreio">${soma.rec}</td>
+                        <td class="valor-destaque text-presenca">${soma.p}</td>
+                        <td class="valor-destaque text-falta">${soma.f}</td>
+                        <td>${soma.pcd}</td>
+                        <td>${soma.dieta}</td>
+                        <td>${soma.abr}</td>
+                    </tr>
+                `;
+            }
+            document.getElementById('tabela-relatorio').style.display = 'table';
+        }
+
+        // 📈 EXPORTA PARA EXCEL APENAS OS DADOS QUE ESTÃO NA TELA (FILTRADOS)
+        function exportarExcel() {
+            if (matrizFiltrada.length === 0) return alert("Nenhum dado disponível para exportar.");
+            let csv = "\uFEFFUnidade (CEU);Munícipes;Turmas;Matrículas;Inscritos (RF);Presenças;Faltas;PCD;Dieta Esp.;Acolhimento\n";
+            let soma = {alu:0, tur:0, mat:0, rec:0, p:0, f:0, pcd:0, dieta:0, abr:0};
+
+            matrizFiltrada.forEach(c => {
+                if(c.status.includes("Conectado")) {
+                    soma.alu += c.alunos; soma.tur += c.turmas; soma.mat += c.matriculas;
+                    soma.rec += c.recreio; soma.p += c.presencas; soma.f += c.faltas;
+                    soma.pcd += c.pcd; soma.dieta += c.dieta; soma.abr += c.abrigo;
+                }
+                csv += `"${c.nome.replace("CEU ", "")}";${c.alunos||0};${c.turmas||0};${c.matriculas||0};${c.recreio||0};${c.presencas||0};${c.faltas||0};${c.pcd||0};${c.dieta||0};${c.abrigo||0}\n`;
+            });
+            csv += `"TOTAL DOS FILTROS";${soma.alu};${soma.tur};${soma.mat};${soma.rec};${soma.p};${soma.f};${soma.pcd};${soma.dieta};${soma.abr}\n`;
+
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+            link.download = `Relatorio_Filtrado_DRE_${new Date().toLocaleDateString('pt-BR').replace(/\//g, '-')}.csv`;
+            document.body.appendChild(link); link.click(); document.body.removeChild(link);
+        }
+
+        window.onload = carregarRelatorio;
+    </script>
+</body>
+</html>

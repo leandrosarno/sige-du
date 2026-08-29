@@ -245,7 +245,7 @@
     </div>
 
     <script>
-/*        const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec";   */
+/*      const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec";   */
         
         // Memória para guardar a lista real de CEUs que vieram do servidor
         let listaCeusAtuais = [];
@@ -298,22 +298,41 @@
                                 <span class="status-badge" style="background: ${corStatus}33; color: ${corStatus}; border: 1px solid ${corStatus};">${ceu.status}</span>
                             </div>
                             <div class="dre-card-body" style="${!isConectado ? 'opacity: 0.5; pointer-events: none;' : ''}">
+                                
+                                <!-- MÉTRICAS GERAIS DO CEU -->
                                 <div class="dre-stat-row">
                                     <span class="dre-stat-label"><i class="material-icons" style="font-size: 18px; color: #0d6efd;">people</i> Munícipes</span>
-                                    <span class="dre-stat-value">${ceu.alunos}</span>
+                                    <span class="dre-stat-value">${ceu.alunos || 0}</span>
                                 </div>
                                 <div class="dre-stat-row">
                                     <span class="dre-stat-label"><i class="material-icons" style="font-size: 18px; color: #198754;">class</i> Turmas Ativas</span>
-                                    <span class="dre-stat-value" style="color: #198754; background: #d1e7dd;">${ceu.turmas}</span>
+                                    <span class="dre-stat-value" style="color: #198754; background: #d1e7dd;">${ceu.turmas || 0}</span>
                                 </div>
-                                <div class="dre-stat-row">
+                                <div class="dre-stat-row" style="margin-bottom: 20px; border-bottom: 2px solid #e9ecef;">
                                     <span class="dre-stat-label"><i class="material-icons" style="font-size: 18px; color: #6f42c1;">assignment_turned_in</i> Matrículas</span>
                                     <span class="dre-stat-value" style="color: #6f42c1; background: #e0d4f5;">${ceu.matriculas || 0}</span>
                                 </div>
+
+                                <!-- MÉTRICAS EXCLUSIVAS DO RECREIO -->
+                                <div style="font-size: 11px; font-weight: bold; color: #6c757d; margin-bottom: 10px; text-transform: uppercase;">RECREIO NAS FÉRIAS</div>
+                                
                                 <div class="dre-stat-row">
-                                    <span class="dre-stat-label"><i class="material-icons" style="font-size: 18px; color: #fd7e14;">wb_sunny</i> Recreio Férias</span>
+                                    <span class="dre-stat-label"><i class="material-icons" style="font-size: 18px; color: #fd7e14;">celebration</i> Total Inscritos</span>
                                     <span class="dre-stat-value" style="color: #fd7e14; background: #ffe5d0;">${ceu.recreio || 0}</span>
                                 </div>
+                                <div class="dre-stat-row">
+                                    <span class="dre-stat-label"><i class="material-icons" style="font-size: 18px; color: #0dcaf0;">accessible</i> Inclusão (PCD)</span>
+                                    <span class="dre-stat-value" style="color: #0dcaf0; background: #cff4fc;">${ceu.pcd || 0}</span>
+                                </div>
+                                <div class="dre-stat-row">
+                                    <span class="dre-stat-label"><i class="material-icons" style="font-size: 18px; color: #20c997;">restaurant</i> Dieta Especial</span>
+                                    <span class="dre-stat-value" style="color: #20c997; background: #d1e7dd;">${ceu.dieta || 0}</span>
+                                </div>
+                                <div class="dre-stat-row">
+                                    <span class="dre-stat-label"><i class="material-icons" style="font-size: 18px; color: #dc3545;">home</i> Acolhimento Inst.</span>
+                                    <span class="dre-stat-value" style="color: #dc3545; background: #f8d7da;">${ceu.abrigo || 0}</span>
+                                </div>
+
                             </div>
                         </div>
                     `;
@@ -382,7 +401,7 @@
             window.print();
         }
 
-        /* 📊 FUNÇÃO DE EXPORTAR EXCEL (.CSV) EM TEMPO REAL */
+        /* 📊 FUNÇÃO DE EXPORTAR EXCEL (.CSV) EM TEMPO REAL (ATUALIZADA) */
         function exportarExcel() {
             if (!listaCeusAtuais || listaCeusAtuais.length === 0) {
                 alert("Nenhum dado de CEU disponível para exportar.");
@@ -390,9 +409,9 @@
             }
 
             let csv = "\uFEFF"; // Garante codificação UTF-8 para o Excel não quebrar acentos
-            csv += "Unidade (CEU);Status;Munícipes;Turmas Ativas;Matrículas Realizadas;Inscritos Recreio Férias\n";
+            csv += "Unidade (CEU);Status;Munícipes;Turmas Ativas;Matrículas Realizadas;Total Recreio;Inclusão (PCD);Dieta Especial;Acolhimento\n";
 
-            let somaAlunos = 0, somaTurmas = 0, somaMatriculas = 0, somaRecreio = 0;
+            let somaAlunos = 0, somaTurmas = 0, somaMatriculas = 0, somaRecreio = 0, somaPcd = 0, somaDieta = 0, somaAbrigo = 0;
 
             listaCeusAtuais.forEach(ceu => {
                 let nome = ceu.nome.replace("CEU ", "");
@@ -401,25 +420,31 @@
                 let turmas = ceu.turmas || 0;
                 let matriculas = ceu.matriculas || 0;
                 let recreio = ceu.recreio || 0;
+                let pcd = ceu.pcd || 0;
+                let dieta = ceu.dieta || 0;
+                let abrigo = ceu.abrigo || 0;
 
-                csv += `"${nome}";"${status}";${alunos};${turmas};${matriculas};${recreio}\n`;
+                csv += `"${nome}";"${status}";${alunos};${turmas};${matriculas};${recreio};${pcd};${dieta};${abrigo}\n`;
 
                 if (status.includes("Conectado")) {
                     somaAlunos += alunos;
                     somaTurmas += turmas;
                     somaMatriculas += matriculas;
                     somaRecreio += recreio;
+                    somaPcd += pcd;
+                    somaDieta += dieta;
+                    somaAbrigo += abrigo;
                 }
             });
 
-            csv += `"TOTAL DRE SANTO AMARO";"Consolidado";${somaAlunos};${somaTurmas};${somaMatriculas};${somaRecreio}\n`;
+            csv += `"TOTAL GERAL";"Consolidado";${somaAlunos};${somaTurmas};${somaMatriculas};${somaRecreio};${somaPcd};${somaDieta};${somaAbrigo}\n`;
 
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement("a");
             const url = URL.createObjectURL(blob);
             link.setAttribute("href", url);
             let dataHoje = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
-            link.setAttribute("download", `Relatorio_DRE_Santo_Amaro_${dataHoje}.csv`);
+            link.setAttribute("download", `Relatorio_DRE_${dataHoje}.csv`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);

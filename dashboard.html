@@ -113,10 +113,6 @@
             <span class="material-icons">people</span> Alunos
         </a>
 
-<!--        <a href="javascript:void(0)" onclick="abrirFormFilho('ChamadaOnline.html', this)">
-            <span class="material-icons" style="font-size: 18px;">fact_check</span> Chamada On-line
-        </a>  -->
-
         <!-- 🏫 GAVETA: TURMAS E MATRÍCULAS -->
         <a href="#submenuTurmas" id="link-turmas" data-bs-toggle="collapse" style="justify-content: space-between;" onclick="removerAtivo(this)">
             <div style="display: flex; align-items: center; gap: 12px;">
@@ -166,25 +162,20 @@
             <a href="javascript:void(0)" onclick="abrirFormFilho('TelaChamadaQualitativaRF.html?v=2', this)"><span class="material-icons" style="font-size: 18px;">checklist</span> Chamada Qualitativa</a>
         </div>
 
-        <!-- BOTÃO EXCLUSIVO DRE -->
+        <!-- BOTÕES EXCLUSIVOS DRE -->
         <a href="javascript:void(0)" id="btnRegrasRF" style="display: none;" onclick="abrirFormFilho('CadastroRegrasRF.html', this)">
             <span class="material-icons">wb_sunny</span> RF - Regras
         </a>
         <a href="javascript:void(0)" id="btnPasseiosDRE" style="display: none;" onclick="abrirFormFilho('dre_passeios.html', this)">
             <span class="material-icons">directions_bus</span> RF - Passeios
         </a>
-
         <a href="javascript:void(0)" id="btnRelatorioDRE" style="display: none;" onclick="abrirFormFilho('RelatorioFrequenciaDRE.html', this)">
             <span class="material-icons">analytics</span> Relatório DRE
         </a>
-        
-        <!-- 🌟 NOVO BOTÃO DE DEMOGRAFIA -->
         <a href="javascript:void(0)" id="btnDemograficoDRE" style="display: none;" onclick="abrirFormFilho('RelatorioIdadeTurmaDRE.html', this)">
             <span class="material-icons">pie_chart</span> Relatório Idade/Turma
         </a>
 
-
-        
         <!-- ⚙️ GAVETA: CADASTROS BASE -->
         <a href="#submenuCadastros" id="link-cadastros" data-bs-toggle="collapse" style="justify-content: space-between;" onclick="removerAtivo(this)">
             <div style="display: flex; align-items: center; gap: 12px;">
@@ -208,7 +199,6 @@
 
     <div class="main-content">
         <div class="topbar">
-            <!-- 🌟 Botão Hambúrguer + Unidade -->
             <div style="display: flex; align-items: center; gap: 15px;">
                 <button id="btnToggleMenu" class="btn btn-outline-secondary border-0 p-1" onclick="alternarMenuLateral()" title="Recolher/Expandir Menu">
                     <i class="fas fa-bars fs-4" style="color: #2c3e50;"></i>
@@ -244,7 +234,7 @@
             links.forEach(l => l.classList.remove('ativo'));
             if (elementoClicado) elementoClicado.classList.add('ativo');
 
-            // 📱 Auto-fechamento inteligente: Se estiver no celular, esconde o menu assim que escolher uma opção
+            // 📱 Auto-fechamento inteligente
             if (window.innerWidth <= 768) {
                 alternarMenuLateral();
             }
@@ -254,14 +244,13 @@
             elemento.classList.remove('ativo');
         }
 
-        // 🌟 FUNÇÃO QUE CONTROLA O MENU (COMPUTADOR vs CELULAR)
+        // 🌟 FUNÇÃO QUE CONTROLA O MENU
         function alternarMenuLateral() {
             const sidebar = document.querySelector('.sidebar');
             const mainContent = document.querySelector('.main-content');
             const overlay = document.getElementById('mobile-overlay');
             
             if (window.innerWidth <= 768) {
-                // Comportamento para Celulares
                 sidebar.classList.toggle('mobile-open');
                 if (overlay.style.display === 'block') {
                     overlay.style.display = 'none';
@@ -269,7 +258,6 @@
                     overlay.style.display = 'block';
                 }
             } else {
-                // Comportamento para Computadores
                 if (sidebar) sidebar.classList.toggle('recolhido');
                 if (mainContent) mainContent.classList.toggle('expandido');
             }
@@ -289,6 +277,7 @@
                     return;
                 }
 
+                // 🚦 CONTROLE DE VISIBILIDADE POR PERFIL AQUI!
                 if (perfilUsuario === "DRE" || perfilUsuario === "SME") {
                     const btnRF = document.getElementById('btnRegrasRF');
                     if (btnRF) btnRF.style.display = 'flex';
@@ -296,742 +285,12 @@
                     const btnPasseios = document.getElementById('btnPasseiosDRE');
                     if (btnPasseios) btnPasseios.style.display = 'flex';
 
-                    const itensParaOcultar = [
-                        'link-inicio', 'link-alunos', 'link-turmas', 'submenuTurmas',
-                        'link-cadastros', 'submenuCadastros', 'link-impressao', 'submenuImpressao',
-                        'link-recreio', 'submenuRecreio'
-                    ];
-                    itensParaOcultar.forEach(id => {
-                        const elemento = document.getElementById(id);
-                        if (elemento) elemento.style.display = 'none';
-                    });
-
-                } else if (perfilUsuario === "PROFESSOR") {
-                    const sidebar = document.querySelector('.sidebar');
-                    if (sidebar) sidebar.style.display = 'none';
+                    // 🌟 AQUI ESTÁ A MÁGICA QUE LIGA OS BOTÕES NOVOS:
+                    const btnRelatorio = document.getElementById('btnRelatorioDRE');
+                    if (btnRelatorio) btnRelatorio.style.display = 'flex';
                     
-                    const topbar = document.querySelector('.topbar');
-                    if (topbar) topbar.style.display = 'none';
-                    
-                    const mainContent = document.querySelector('.main-content');
-                    if (mainContent) mainContent.style.width = '100%';
-                    
-                    document.body.style.backgroundColor = '#f0f2f5';
-                    document.getElementById('frame-filho').src = "ChamadaOnline.html";
-
-                } else {
-                    if (!idPlanilha || idPlanilha.trim() === "") {
-                        alert("⚠️ Atenção: A sua Unidade (CEU) ainda não tem um Banco de Dados configurado.");
-                        window.location.href = "index.html";
-                        return;
-                    }
-                }
-
-                if (codigoCeuUniversal && nomeCeu && nomeCeu.trim() !== "") {
-                    document.getElementById('lbl-ceu').innerText = codigoCeuUniversal + " - " + nomeCeu;
-                } else if (codigoCeuUniversal) {
-                    document.getElementById('lbl-ceu').innerText = "EOL: " + codigoCeuUniversal;
-                } else {
-                    document.getElementById('lbl-ceu').innerText = "ID: " + idPlanilha;
-                }
-
-                document.getElementById('lbl-rf').innerText = "RF: " + rfLogado;
-                
-                if (nomeUsuario && nomeUsuario !== "undefined" && nomeUsuario.trim() !== "") {
-                    document.getElementById('lbl-nome-usuario').innerText = nomeUsuario;
-                } else {
-                    document.getElementById('lbl-nome-usuario').innerText = "Funcionário";
-                }
-
-                const fotoUser = localStorage.getItem('ceu_foto_usuario');
-                if (fotoUser && fotoUser !== "undefined" && fotoUser.trim() !== "") {
-                    document.getElementById('icone-avatar-padrao').style.display = 'none';
-                    const imgAvatar = document.getElementById('img-avatar-usuario');
-                    imgAvatar.src = fotoUser;
-                    imgAvatar.style.display = 'block';
-                }
-
-                const logoSalva = localStorage.getItem('ceu_logo') || localStorage.getItem('ceu_logo_sistema') || localStorage.getItem('ceu_logo_especifica');
-                const tamanhoSalvo = localStorage.getItem('ceu_tamanho_logo'); 
-                const imgDash = document.getElementById('dash-img-logo');
-                const iconePadrao = document.getElementById('dash-icone-padrao');
-
-                if (logoSalva && logoSalva !== "undefined" && logoSalva !== "null" && imgDash) {
-                    if (iconePadrao) iconePadrao.style.display = 'none';
-                    imgDash.src = logoSalva;
-                    if (tamanhoSalvo) imgDash.style.height = tamanhoSalvo;
-                    imgDash.style.display = 'block';
-                }
-            } catch (erro) {
-                console.error("Erro ao carregar Dashboard:", erro);
-            }
-        };
-
-        function atualizarContadoresImpressao() {
-            const idPlanilha = localStorage.getItem('ceu_planilha_id');
-            if(!idPlanilha) return;
-
-            const pacote = {
-                acao: "contarPendenciasImpressao",
-                dados: { idPlanilha: idPlanilha }
-            };
-
-            fetch(API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify(pacote)
-            })
-            .then(res => res.json())
-            .then(retorno => {
-                if(retorno.status === "sucesso") {
-                    const badgeComum = document.getElementById('badge-uso-geral');
-                    const badgeAcademia = document.getElementById('badge-academia');
-                    const badgeRaia = document.getElementById('badge-raia');
-                    const badgeEnv = document.getElementById('badge-envelopes');
-                    
-                    const atualizarBolinha = (elemento, valor) => {
-                        if(elemento) {
-                            elemento.innerText = valor;
-                            elemento.className = valor > 0 ? "badge bg-danger rounded-pill ms-auto" : "badge bg-secondary rounded-pill ms-auto";
-                        }
-                    };
-
-                    atualizarBolinha(badgeComum, retorno.comum);
-                    atualizarBolinha(badgeAcademia, retorno.academia);
-                    atualizarBolinha(badgeRaia, retorno.raia);
-                    atualizarBolinha(badgeEnv, retorno.envelope);
-                }
-            })
-            .catch(err => console.log("Falha ao buscar contadores:", err));
-        }
-
-        window.addEventListener('load', () => {
-            setTimeout(atualizarContadoresImpressao, 1500); 
-        });
-
-        // 🔑 POP-UP PARA PERFIL E SENHA
-        function abrirTrocaSenhaLogado() {
-            const rf = localStorage.getItem('ceu_rf_logado');
-            const ceu = localStorage.getItem('ceu_codigo_eol');
-            const fotoAtual = localStorage.getItem('ceu_foto_usuario') || '';
-
-            const avatarSrc = (fotoAtual && fotoAtual !== "undefined" && fotoAtual.trim() !== "") 
-                ? fotoAtual 
-                : 'https://via.placeholder.com/120/0d6efd/ffffff?text=FOTO';
-
-            Swal.fire({
-                title: '👤 Meu Perfil',
-                html: `
-                    <div style="text-align: left; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
-                        <div style="text-align: center; margin-bottom: 25px; margin-top: 10px;">
-                            <div style="position: relative; display: inline-block;">
-                                <img id="swal-preview-foto" src="${avatarSrc}" style="width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 4px solid #f4f7f6; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
-                                <label for="swal-foto" style="position: absolute; bottom: 0; right: 0; background: #0d6efd; color: white; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: 0.3s;" onmouseover="this.style.background='#0b5ed7'" onmouseout="this.style.background='#0d6efd'">
-                                    <span class="material-icons" style="font-size: 20px;">camera_alt</span>
-                                </label>
-                                <input type="file" id="swal-foto" style="display: none;" accept="image/*" onchange="previewAvatar(event)">
-                            </div>
-                            <div style="margin-top: 10px; font-size: 13px; color: #6c757d; font-weight: 500;">Clique na câmera para enviar sua foto</div>
-                        </div>
-
-                        <hr style="border-color: #dee2e6; margin: 20px 0;">
-
-                        <h6 style="color: #0d6efd; font-weight: bold; margin-bottom: 15px;"><span class="material-icons" style="font-size: 18px; vertical-align: text-bottom;">lock_reset</span> Alterar Senha (Opcional)</h6>
-                        
-                        <div class="mb-3">
-                            <label class="form-label text-muted" style="font-size: 13px; font-weight: 600; margin-bottom: 4px;">Senha Atual</label>
-                            <input type="password" id="swal-senha-atual" class="form-control form-control-lg" style="border-radius: 8px; font-size: 14px;" placeholder="Digite para alterar a senha">
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-6 mb-3">
-                                <label class="form-label text-muted" style="font-size: 13px; font-weight: 600; margin-bottom: 4px;">Nova Senha</label>
-                                <input type="password" id="swal-nova-senha" class="form-control form-control-lg" style="border-radius: 8px; font-size: 14px;" placeholder="Mín. 8 caract.">
-                            </div>
-                            <div class="col-6 mb-3">
-                                <label class="form-label text-muted" style="font-size: 13px; font-weight: 600; margin-bottom: 4px;">Confirmar</label>
-                                <input type="password" id="swal-conf-senha" class="form-control form-control-lg" style="border-radius: 8px; font-size: 14px;" placeholder="Repita a senha">
-                            </div>
-                        </div>
-                        
-                        <div style="font-size:12px; background: #f8f9fa; padding: 12px; border-radius: 8px; color: #6c757d; border: 1px solid #e9ecef;">
-                            <strong>Regras para nova senha:</strong> Entre 8 e 12 caracteres. Obrigatório ter Maiúscula, minúscula, Número e Símbolo (!@#$).
-                        </div>
-                    </div>
-                `,
-                confirmButtonText: '<span class="material-icons" style="vertical-align: middle; font-size: 18px; margin-right: 5px;">save</span> Salvar Perfil',
-                confirmButtonColor: '#0d6efd',
-                showCancelButton: true,
-                cancelButtonText: 'Cancelar',
-                width: '450px',
-                focusConfirm: false,
-                preConfirm: async () => {
-                    const sAtual = document.getElementById('swal-senha-atual').value.trim();
-                    const s1 = document.getElementById('swal-nova-senha').value.trim();
-                    const s2 = document.getElementById('swal-conf-senha').value.trim();
-                    const fileInput = document.getElementById('swal-foto');
-
-                    if (sAtual || s1 || s2) {
-                        if (!sAtual || !s1 || !s2) {
-                            Swal.showValidationMessage('⚠️ Para alterar a senha, preencha a Atual, a Nova e a Confirmação!');
-                            return false;
-                        }
-                        if (s1 !== s2) {
-                            Swal.showValidationMessage('⚠️ As novas senhas não conferem!');
-                            return false;
-                        }
-                        if (!/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,12}$/.test(s1)) {
-                            Swal.showValidationMessage('⚠️ A nova senha não atende aos requisitos de segurança!');
-                            return false;
-                        }
-                    }
-
-                    if (!sAtual && !s1 && !s2 && fileInput.files.length === 0) {
-                        Swal.showValidationMessage('⚠️ Você não fez nenhuma alteração!');
-                        return false;
-                    }
-
-                    let fotoBase64 = null;
-                    let nomeArquivo = null;
-
-                    if (fileInput.files.length > 0) {
-                        const file = fileInput.files[0];
-                        nomeArquivo = file.name;
-                        
-                        fotoBase64 = await new Promise((resolve, reject) => {
-                            const reader = new FileReader();
-                            reader.onload = e => resolve(e.target.result);
-                            reader.onerror = e => reject(e);
-                            reader.readAsDataURL(file);
-                        });
-                    }
-
-                    return { senhaAtual: sAtual, novaSenha: s1, fotoBase64: fotoBase64, nomeArquivo: nomeArquivo };
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    Swal.fire({ title: 'A regravar o seu perfil...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
-
-                    const pacote = {
-                        acao: "alterarSenhaLogado",
-                        dados: {
-                            rf: rf,
-                            ceu: ceu,
-                            senhaAtual: result.value.senhaAtual,
-                            novaSenha: result.value.novaSenha,
-                            fotoBase64: result.value.fotoBase64,
-                            nomeArquivo: result.value.nomeArquivo
-                        }
-                    };
-
-                    fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) })
-                    .then(res => res.json())
-                    .then(retorno => {
-                        if (retorno.status === "sucesso") {
-                            if (retorno.novaFoto && retorno.novaFoto !== "") {
-                                localStorage.setItem('ceu_foto_usuario', retorno.novaFoto);
-                                document.getElementById('icone-avatar-padrao').style.display = 'none';
-                                const imgAvatar = document.getElementById('img-avatar-usuario');
-                                imgAvatar.src = retorno.novaFoto;
-                                imgAvatar.style.display = 'block';
-                            }
-                            Swal.fire('Elegante!', retorno.mensagem, 'success');
-                        } else {
-                            Swal.fire('Atenção', retorno.mensagem, 'warning');
-                        }
-                    })
-                    .catch(err => {
-                        Swal.fire('Erro', 'Falha ao conectar com o servidor.', 'error');
-                    });
-                }
-            });
-        }
-
-        function previewAvatar(event) {
-            const file = event.target.files[0];
-            if(file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const img = document.getElementById('swal-preview-foto');
-                    img.src = e.target.result;
-                }
-                reader.readAsDataURL(file);
-            }
-        }
-
-        function fazerLogout() {
-            localStorage.clear();
-            sessionStorage.clear();
-            window.location.href = "index.html";
-        }
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<!--
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
-    <title>Painel Principal - Sistema CEU</title> 
-    
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="config.js"></script>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            display: flex;
-            height: 100vh;
-            overflow: hidden; 
-            background-color: #f4f7f6;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        .sidebar {
-            width: 260px;
-            background: #2c3e50;
-            color: white;
-            display: flex;
-            flex-direction: column;
-            transition: width 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            height: 100vh; 
-            overflow-y: auto; 
-            overflow-x: hidden;
-            white-space: nowrap;
-        }
-
-        .sidebar-header {
-            padding: 20px;
-            text-align: center;
-            background: #1a252f;
-            border-bottom: 1px solid #34495e;
-            transition: all 0.3s;
-        }
-
-        .sidebar a {
-            color: #ecf0f1;
-            text-decoration: none;
-            padding: 15px 20px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            border-left: 4px solid transparent;
-            transition: all 0.2s;
-        }
-
-        .sidebar a:hover, .sidebar a.ativo {
-            background: #34495e;
-            border-left: 4px solid #0d6efd;
-            color: white;
-        }
-
-        .sidebar .submenu { background: #233140; }
-        .sidebar .submenu a { 
-            padding-left: 40px; 
-            padding-top: 12px; 
-            padding-bottom: 12px; 
-            font-size: 14.5px; 
-            display: flex; 
-            align-items: center; 
-        }
-        
-        .main-content {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            width: calc(100% - 260px);
-            transition: width 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-        }
-
-        .topbar {
-            height: 60px;
-            background: white;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 20px;
-            z-index: 10;
-        }
-
-        #frame-filho {
-            flex-grow: 1;
-            border: none;
-            width: 100%;
-            height: 100%;
-            background-color: #f4f7f6;
-        }
-
-        /* 📜 BARRA DE ROLAGEM ELEGANTE PARA O MENU LATERAL */
-        .sidebar::-webkit-scrollbar { width: 6px; }
-        .sidebar::-webkit-scrollbar-track { background: #1a252f; }
-        .sidebar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        .sidebar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        
-        /* 🍔 MÁGICA DO MENU RECOLHIDO */
-        .sidebar.recolhido {
-            width: 70px;
-        }
-        
-        .main-content.expandido {
-            width: calc(100% - 70px);
-        }
-
-        .sidebar.recolhido .sidebar-header {
-            padding: 20px 5px;
-        }
-
-        /* Esconde textos, selos e divs quando o menu está fininho */
-        .sidebar.recolhido a {
-            color: transparent !important;
-            padding: 15px 0;
-            justify-content: center;
-        }
-
-        .sidebar.recolhido a .material-icons {
-            color: #ecf0f1;
-            margin: 0 !important;
-        }
-
-        .sidebar.recolhido a:hover .material-icons, 
-        .sidebar.recolhido a.ativo .material-icons {
-            color: white;
-        }
-
-        .sidebar.recolhido a > div, 
-        .sidebar.recolhido .badge,
-        .sidebar.recolhido .sidebar-header img {
-            display: none !important;
-        }
-
-        /* Esconde as setinhas de submenu quando recolhido */
-        .sidebar.recolhido a[data-bs-toggle="collapse"] .material-icons:last-child {
-            display: none !important;
-        }
-
-        /* Força o fechamento visual dos submenus */
-        .sidebar.recolhido .submenu {
-            display: none !important; 
-        }
-
-    </style>
-</head>
-<body>
-
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <span class="material-icons" id="dash-icone-padrao" style="font-size: 40px;">account_balance</span>
-            <img id="dash-img-logo" src="" alt="Logo" style="display: none; width: 100%; max-height: 120px; object-fit: contain; margin: 0 auto;">
-        </div>
-
-        <a href="javascript:void(0)" class="ativo" onclick="abrirFormFilho('inicio.html', this)">
-            <span class="material-icons">home</span> Início
-        </a>
-
-        <a href="javascript:void(0)" id="link-alunos" onclick="abrirFormFilho('alunos.html', this)">
-            <span class="material-icons">people</span> Alunos
-        </a>
-
-        <a href="javascript:void(0)" onclick="abrirFormFilho('ChamadaOnline.html', this)">
-            <span class="material-icons" style="font-size: 18px;">fact_check</span> Chamada On-line
-        </a>
-
-<!-- 🏫 GAVETA: TURMAS E MATRÍCULAS -->
-<!--        <a href="#submenuTurmas" id="link-turmas" data-bs-toggle="collapse" style="justify-content: space-between;" onclick="removerAtivo(this)">
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <span class="material-icons">school</span> Turmas e Matrículas
-            </div>
-            <span class="material-icons" style="font-size: 18px;">expand_more</span>
-        </a>
-        <div class="collapse submenu" id="submenuTurmas">
-            <a href="javascript:void(0)" onclick="abrirFormFilho('ConfiguracoesCeu.html', this)">
-            <span class="material-icons" style="font-size: 18px;">fact_check</span> Config. Lista de Espera
-            </a>
-            <a href="javascript:void(0)" onclick="abrirFormFilho('turmas.html', this)">
-                <span class="material-icons" style="font-size: 18px;">class</span> Turmas
-            </a>
-            <a href="javascript:void(0)" onclick="abrirFormFilho('FormMatricula.html', this)">
-                <span class="material-icons" style="font-size: 18px;">how_to_reg</span> Fazer Matrículas
-            </a>
-            <a href="javascript:void(0)" onclick="abrirFormFilho('GerenciadorMatriculas.html', this)">
-                <span class="material-icons" style="font-size: 18px;">manage_accounts</span> Gerenciar Matrículas  
-            </a>
-        </div>
-
-        
-        <!-- 🖨️ GAVETA: IMPRESSÃO E EXPEDIÇÃO -->
-<!--        <a href="#submenuImpressao" id="link-impressao" data-bs-toggle="collapse" style="justify-content: space-between;" onclick="removerAtivo(this)">
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <span class="material-icons">print</span> Impressão / Expedição
-            </div>
-            <span class="material-icons" style="font-size: 18px;">expand_more</span>
-        </a>
-        <div class="collapse submenu" id="submenuImpressao">
-            <a href="javascript:void(0)" onclick="abrirFormFilho('ImprimirCarteirinhas.html', this)">
-                🪪 Uso Geral 
-                <span class="badge bg-danger rounded-pill ms-auto" id="badge-uso-geral">0</span>
-            </a>
-            <a href="javascript:void(0)" onclick="abrirFormFilho('TelaImpressaoAcademia.html', this)">
-                🏋️ Academia 
-                <span class="badge bg-danger rounded-pill ms-auto" id="badge-academia">0</span>
-            </a>
-            <a href="javascript:void(0)" onclick="abrirFormFilho('TelaImpressaoRaia.html', this)">
-                🏊‍♂️ Raia Livre 
-                <span class="badge bg-danger rounded-pill ms-auto" id="badge-raia">0</span>
-            </a>
-            <a href="javascript:void(0)" onclick="abrirFormFilho('FormChamada.html', this)">
-                📋 Listas de Chamada (física)
-            </a>
-            <a href="javascript:void(0)" onclick="abrirFormFilho('ImprimirChamadaOnline.html', this)">
-                📋 Listas de Chamada (on-line)
-            </a>            
-            <a href="javascript:void(0)" onclick="abrirFormFilho('ListaVagas.html', this)">
-                📄 Listas de Vagas
-            </a>
-            <a href="javascript:void(0)" onclick="abrirFormFilho('protocolo_retirada_carteirinha.html', this)">
-                📄 Prot. Ret. Carteirinha
-            </a>            
-        </div>
-        
-        <!-- 🎉 GAVETA: RECREIO NAS FÉRIAS -->
-<!--        <a href="#submenuRecreio" id="link-recreio" data-bs-toggle="collapse" style="justify-content: space-between;" onclick="removerAtivo(this)">
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <span class="material-icons">celebration</span> Recreio nas Férias
-            </div>
-            <span class="material-icons" style="font-size: 18px;">expand_more</span>
-        </a>
-        <div class="collapse submenu" id="submenuRecreio">
-            <a href="javascript:void(0)" onclick="abrirFormFilho('TelaCadastroRecreio.html', this)"><span class="material-icons" style="font-size: 18px;">person_add</span> Cadastrar</a>
-            <a href="javascript:void(0)" onclick="abrirFormFilho('TabelaCriancasRF.html', this)"><span class="material-icons" style="font-size: 18px;">table_view</span> Edição Rápida </a>
-            <a href="javascript:void(0)" onclick="abrirFormFilho('TelaTabelaRecreio.html', this)"><span class="material-icons" style="font-size: 18px;">manage_search</span> Consultar / Editar</a>
-            <a href="javascript:void(0)" onclick="abrirFormFilho('TelaImprimirCrachasRF.html', this)"><span class="material-icons" style="font-size: 18px;">badge</span> Crachás de Acesso</a>
-            <a href="javascript:void(0)" onclick="abrirFormFilho('GraficosRF.html', this)"><span class="material-icons" style="font-size: 18px;">bar_chart</span> Painel de Gráficos</a>
-            <a href="javascript:void(0)" onclick="abrirFormFilho('TelaListaChamadaRF.html?v=2', this)"><span class="material-icons" style="font-size: 18px;">checklist</span> Listas de Impressão</a>
-            <a href="javascript:void(0)" onclick="abrirFormFilho('TelaChamadaQualitativaRF.html?v=2', this)"><span class="material-icons" style="font-size: 18px;">checklist</span> Chamada Qualitativa</a>
-        </div>
-
-        <!-- BOTÃO EXCLUSIVO DRE -->
-<!--        <a href="javascript:void(0)" id="btnRegrasRF" style="display: none;" onclick="abrirFormFilho('CadastroRegrasRF.html', this)">
-            <span class="material-icons">wb_sunny</span> RF - Regras
-        </a>
-
-        <a href="javascript:void(0)" id="btnPasseiosDRE" style="display: none;" onclick="abrirFormFilho('dre_passeios.html', this)">
-            <span class="material-icons">directions_bus</span> RF - Passeios
-        </a>
-
-        
-        <!-- ⚙️ GAVETA: CADASTROS BASE -->
-<!--        <a href="#submenuCadastros" id="link-cadastros" data-bs-toggle="collapse" style="justify-content: space-between;" onclick="removerAtivo(this)">
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <span class="material-icons">settings</span> Cadastros Base
-            </div>
-            <span class="material-icons" style="font-size: 18px;">expand_more</span>
-        </a>
-        <div class="collapse submenu" id="submenuCadastros">
-            <a href="javascript:void(0)" onclick="abrirFormFilho('nucleos.html', this)"><span class="material-icons" style="font-size: 18px;">domain</span> Núcleos</a>
-            <a href="javascript:void(0)" onclick="abrirFormFilho('espacos.html', this)"><span class="material-icons" style="font-size: 18px;">place</span> Espaços</a>
-            <a href="javascript:void(0)" onclick="abrirFormFilho('professores.html', this)"><span class="material-icons" style="font-size: 18px;">school</span> Professores</a>
-            <a href="javascript:void(0)" onclick="abrirFormFilho('tipo_responsavel.html', this)"><span class="material-icons" style="font-size: 18px;">badge</span> Tipo Resp.</a>
-            <a href="javascript:void(0)" onclick="abrirFormFilho('modalidades.html', this)"><span class="material-icons" style="font-size: 18px;">sports_soccer</span> Modalidades</a>
-        </div>
-        
-        <div style="margin-top: auto;"></div>
-        <a href="#" onclick="fazerLogout()" style="background: #c0392b;">
-            <span class="material-icons">logout</span> Sair
-        </a>
-    </div>
-
-    <div class="main-content">
-        <div class="topbar">
-            <!-- 🌟 NOVO BLOCO: Botão Hambúrguer + Unidade -->
-<!--            <div style="display: flex; align-items: center; gap: 15px;">
-                <button id="btnToggleMenu" class="btn btn-outline-secondary border-0 p-1" onclick="alternarMenuLateral()" title="Recolher/Expandir Menu">
-                    <i class="fas fa-bars fs-4" style="color: #2c3e50;"></i>
-                </button>
-                <div>
-                    <span class="text-muted">Unidade: </span>
-                    <strong id="lbl-ceu">Carregando....</strong>
-                </div>
-            </div>
-            
-            <div class="text-end">
-                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px;">
-                    <img id="img-avatar-usuario" src="" alt="Avatar" style="display: none; width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid #0d6efd;">
-                    <span class="material-icons" id="icone-avatar-padrao" style="font-size: 30px; color: #0d6efd;">account_circle</span>
-                    
-                    <a href="#" onclick="abrirTrocaSenhaLogado(); return false;" id="lbl-rf" style="font-weight: bold; color: #0d6efd; text-decoration: underline;" title="Clique para alterar a sua senha">
-                        RF: Carregando...
-                    </a>
-                </div>
-                <div id="lbl-nome-usuario" style="font-size: 11px; color: #6c757d; font-weight: 600; margin-top: 2px;">
-                    Funcionário
-                </div>
-            </div>
-        </div>
-
-        <iframe id="frame-filho" src="inicio.html"></iframe>
-    </div>
-
-    <script>
-        function abrirFormFilho(nomeDaTelaHTML, elementoClicado) {
-            document.getElementById('frame-filho').src = nomeDaTelaHTML;
-            const links = document.querySelectorAll('.sidebar a');
-            links.forEach(l => l.classList.remove('ativo'));
-            if (elementoClicado) elementoClicado.classList.add('ativo');
-        }
-
-        function removerAtivo(elemento) {
-            elemento.classList.remove('ativo');
-        }
-
-        // 🌟 FUNÇÃO QUE CHAMA A MÁGICA DO MENU
-        function alternarMenuLateral() {
-            const sidebar = document.querySelector('.sidebar');
-            const mainContent = document.querySelector('.main-content');
-            
-            if (sidebar) sidebar.classList.toggle('recolhido');
-            if (mainContent) mainContent.classList.toggle('expandido');
-        }
-
-        window.onload = function() {
-            try {
-                const idPlanilha = localStorage.getItem('ceu_planilha_id');
-                const rfLogado = localStorage.getItem('ceu_rf_logado');
-                const nomeUsuario = localStorage.getItem('ceu_nome_usuario');
-                const nomeCeu = localStorage.getItem('ceu_nome_especifico');
-                const codigoCeuUniversal = localStorage.getItem('ceu_id') || sessionStorage.getItem('ceu_id') || localStorage.getItem('ceu_codigo_eol');
-                
-                const perfilUsuario = localStorage.getItem('ceu_perfil') || "CEU"; 
-
-                if (!rfLogado) {
-                    window.location.href = "index.html"; 
-                    return;
-                }
-
-                // 🚦 CONTROLE DE VISIBILIDADE POR PERFIL
-                if (perfilUsuario === "DRE" || perfilUsuario === "SME") {
-                    const btnRF = document.getElementById('btnRegrasRF');
-                    if (btnRF) btnRF.style.display = 'flex';
-                    
-                    const btnPasseios = document.getElementById('btnPasseiosDRE');
-                    if (btnPasseios) btnPasseios.style.display = 'flex';
+                    const btnDemografico = document.getElementById('btnDemograficoDRE');
+                    if (btnDemografico) btnDemografico.style.display = 'flex';
 
                     const itensParaOcultar = [
                         'link-inicio', 'link-alunos', 'link-turmas', 'submenuTurmas',

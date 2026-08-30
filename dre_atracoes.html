@@ -210,7 +210,7 @@
         }
 
         // ==========================================
-        // 🗓️ COMBO DE DATAS E BOTÕES DOS CEUs (IDÊNTICO AOS PASSEIOS)
+        // 🗓️ COMBO DE DATAS E BOTÕES DOS CEUs
         // ==========================================
         function montarComboDatas(dataInicioStr, dataFimStr) {
             let combo = document.getElementById('form_data');
@@ -292,7 +292,7 @@
         }
 
         // ==========================================
-        // 💾 SALVAR E RENDERIZAR TABELA
+        // 💾 SALVAR E RENDERIZAR TABELA (COM FILTRO)
         // ==========================================
         async function salvarAtracao() {
             let form = {
@@ -332,9 +332,30 @@
         function renderizarTabela() {
             let tbody = document.getElementById('corpo-tabela-atracoes');
             tbody.innerHTML = "";
-            document.getElementById('contador-atracoes').innerText = `${dadosGlobais.atracoesSalvas.length} atrações`;
+            
+            // 🛡️ O FILTRO MÁGICO DA DRE
+            // Descobre quais EOLs pertencem a esta DRE
+            let perfil = localStorage.getItem('ceu_perfil') || "CEU";
+            let eolsDestaDre = dadosGlobais.ceus
+                                .filter(c => perfil === 'SME' || c.dreEol === eolDreLogada)
+                                .map(c => String(c.eol).trim());
 
-            dadosGlobais.atracoesSalvas.forEach(a => {
+            // Peneira a lista que veio do servidor
+            let atracoesFiltradas = dadosGlobais.atracoesSalvas.filter(a => {
+                if (perfil === 'SME') return true; 
+                let eolsAtracao = String(a.eols).split(';').map(e => e.trim());
+                // Verifica se tem pelo menos um CEU dessa atração que cruza com os CEUs da DRE
+                return eolsAtracao.some(eol => eolsDestaDre.includes(eol));
+            });
+
+            document.getElementById('contador-atracoes').innerText = `${atracoesFiltradas.length} atrações`;
+
+            if (atracoesFiltradas.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-muted"><b>Nenhuma atração</b><br>Sua DRE ainda não possui atrações agendadas.</td></tr>`;
+                return;
+            }
+
+            atracoesFiltradas.forEach(a => {
                 let ceusFormatados = a.ceus.replace(/\|/g, '<br><small class="text-muted">'); 
                 
                 tbody.innerHTML += `
@@ -367,7 +388,6 @@
                 document.getElementById('form_nomes').value = a.ceus;
                 document.getElementById('form_titulo').value = a.titulo;
                 
-                // Trata a seleção do dropdown se o valor for diferente da lista
                 let tipoSelect = document.getElementById('form_tipo');
                 let optionExists = Array.from(tipoSelect.options).some(opt => opt.value === a.tipo);
                 if (!optionExists) {

@@ -65,7 +65,7 @@
         <i class="ri-lock-2-fill"></i>
         <h2>Acesso Negado</h2>
         <p style="color: var(--text-muted); max-width: 400px;">
-            Apenas o nível hierárquico <b>Diretoria Regional de Educação (DRE)</b> tem permissão para visualizar e alterar as regras globais do Recreio nas Férias.
+            Apenas o nível hierárquico <b>Diretoria Regional de Educação (DRE)</b> ou <b>SME</b> têm permissão para visualizar e alterar as regras globais do Recreio nas Férias.
         </p>
     </div>
 
@@ -74,7 +74,7 @@
             <i class="ri-sun-cloud-fill"></i>
             <div>
                 <h1>Gestão Global: Recreio nas Férias</h1>
-                <p>Módulo de configuração exclusiva DRE Santo Amaro</p>
+                <p>Módulo de configuração exclusiva DRE / SME</p>
             </div>
         </div>
 
@@ -252,9 +252,10 @@
         const placeholderImg = "https://via.placeholder.com/150/e2e8f0/64748b?text=Clique+Aqui";
 
         document.addEventListener("DOMContentLoaded", () => {
-            const codigoLogado = String(localStorage.getItem('ceu_id') || sessionStorage.getItem('ceu_id') || localStorage.getItem('ceu_codigo_eol')).trim();
+            const perfil = localStorage.getItem('ceu_perfil') || "CEU";
             
-            if (codigoLogado !== "777777") {
+            // 🛡️ A FECHADURA CIRÚRGICA AQUI: Libera para DRE e SME
+            if (perfil !== "DRE" && perfil !== "SME") {
                 document.getElementById('bloqueio').style.display = 'flex';
                 document.getElementById('painel-regras').style.display = 'none';
                 return; 
@@ -295,7 +296,7 @@
             .catch(err => console.error("Erro:", err));
         }
 
-function preencherTela(d) {
+        function preencherTela(d) {
             const idsTexto = ['portaria','dataPub','min0a3','min4a14','minCeci','ano','mes','diaIni','diaFim','max4e5','max6a14',
                               'cor_sozinho_sim', 'cor_sozinho_nao',
                               'c4','c5','c6','c7','c8','c9','c10','c11','c12','c13','c14'];

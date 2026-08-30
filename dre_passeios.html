@@ -152,7 +152,6 @@
     </div>
 
     <script>
-/*        const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec";   */
         let dadosGlobais = {}; 
         let eolDreLogada = ""; 
 
@@ -242,7 +241,7 @@
             ceusDestaDre.forEach(ceu => {
                 let btn = document.createElement('button');
                 btn.className = "btn-ceu";
-                btn.innerText = ceu.nome.replace("CEU ", ""); // Tira a palavra CEU para ficar menorzinho
+                btn.innerText = ceu.nome.replace("CEU ", ""); 
                 btn.onclick = () => adicionarEol(ceu.eol);
                 container.appendChild(btn);
             });
@@ -295,7 +294,7 @@
         }
 
         // ==========================================
-        // 💾 SALVAR E RENDERIZAR TABELA
+        // 💾 SALVAR E RENDERIZAR TABELA COM O FILTRO VISUAL
         // ==========================================
         async function salvarPasseio() {
             let form = {
@@ -326,7 +325,6 @@
                 if(retorno.sucesso) {
                     Swal.fire('Salvo!', 'Passeio registrado com sucesso.', 'success');
                     limparFormulario();
-                    // Atualiza a lista por trás dos panos
                     let resSalvos = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "buscarPasseiosSalvosDRE" }) });
                     let dadosSalvos = await resSalvos.json();
                     dadosGlobais.passeiosSalvos = dadosSalvos.sucesso ? dadosSalvos.passeiosSalvos : []; 
@@ -338,11 +336,29 @@
         function renderizarTabela() {
             let tbody = document.getElementById('corpo-tabela-passeios');
             tbody.innerHTML = "";
-            document.getElementById('contador-passeios').innerText = `${dadosGlobais.passeiosSalvos.length} passeios`;
 
-            // Ordenar por data (opcional, aqui vamos mostrar como vem do banco)
-            dadosGlobais.passeiosSalvos.forEach(p => {
-                let ceusFormatados = p.ceus.replace(/\|/g, '<br><small class="text-muted">'); // Quebra linha se tiver vários
+            // 🛡️ O FILTRO MÁGICO DA DRE (Mesma lógica das Atrações)
+            let perfil = localStorage.getItem('ceu_perfil') || "CEU";
+            let eolsDestaDre = dadosGlobais.ceus
+                                .filter(c => perfil === 'SME' || c.dreEol === eolDreLogada)
+                                .map(c => String(c.eol).trim());
+
+            // Peneira a lista global que veio do servidor
+            let passeiosFiltrados = dadosGlobais.passeiosSalvos.filter(p => {
+                if (perfil === 'SME') return true; 
+                let eolsPasseio = String(p.eols).split(';').map(e => e.trim());
+                return eolsPasseio.some(eol => eolsDestaDre.includes(eol));
+            });
+
+            document.getElementById('contador-passeios').innerText = `${passeiosFiltrados.length} passeios`;
+
+            if (passeiosFiltrados.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-muted"><b>Nenhum passeio agendado</b><br>Sua DRE ainda não possui passeios registrados.</td></tr>`;
+                return;
+            }
+
+            passeiosFiltrados.forEach(p => {
+                let ceusFormatados = p.ceus.replace(/\|/g, '<br><small class="text-muted">'); 
                 
                 tbody.innerHTML += `
                     <tr>
@@ -418,7 +434,6 @@
         function abrirModalRelatorioCEU() {
             if(!dadosGlobais.ceus) return Swal.fire('Aguarde', 'Os dados ainda estão carregando...', 'warning');
 
-            // 🛡️ O FILTRO MÁGICO AQUI: Separa apenas os CEUs da DRE logada (SME vê tudo)
             let ceusDestaDre = dadosGlobais.ceus.filter(c => localStorage.getItem('ceu_perfil') === 'SME' || c.dreEol === eolDreLogada);
 
             if (ceusDestaDre.length === 0) {
@@ -590,8 +605,6 @@ function gerarAutorizacoesEspecificas(id) {
             janela.document.close();
         }
 
-
-        
     </script>
 </body>
 </html>

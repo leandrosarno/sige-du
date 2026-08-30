@@ -3,210 +3,412 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cadastro de Atrações e Eventos - DRE</title>
+    <title>Gestão de Atrações Internas - DRE</title>
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="config.js"></script>
     <style>
-        body { background-color: #f4f7f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 25px; }
-        .card-container { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 25px; }
-        .titulo-secao { font-size: 18px; font-weight: 700; color: #2c3e50; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid #e9ecef; padding-bottom: 10px; }
-        table { width: 100%; border-collapse: collapse; }
-        th { background: #2c3e50; color: white; padding: 12px; font-size: 13px; text-align: center; }
-        td { border: 1px solid #dee2e6; padding: 10px; font-size: 14px; text-align: center; vertical-align: middle; }
+        body { background-color: #f4f7f6; font-family: 'Segoe UI', sans-serif; padding: 20px; }
+        
+        .header-dre { background: linear-gradient(135deg, #2c3e50, #34495e); color: white; padding: 20px 30px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
+        
+        .card-custom { background: white; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; padding: 20px; margin-bottom: 20px;}
+        .card-title { color: #0d6efd; font-weight: 800; font-size: 16px; border-bottom: 2px solid #edf2f7; padding-bottom: 10px; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;}
+        
+        .form-label { font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 2px; text-transform: uppercase; }
+        .form-control, .form-select { font-size: 13px; border-radius: 6px; padding: 8px 10px; border: 1px solid #cbd5e1; background: #f8fafc; }
+        .form-control:focus, .form-select:focus { border-color: #0d6efd; box-shadow: none; background: white; }
+        
+        .btn-ceu { background: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd; border-radius: 20px; padding: 4px 12px; font-size: 11px; font-weight: bold; cursor: pointer; transition: 0.2s;}
+        .btn-ceu:hover { background: #0ea5e9; color: white; }
+
+        /* TABELA COM SCROLL */
+        .table-container { max-height: 600px; overflow-y: auto; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .table-container::-webkit-scrollbar { width: 8px; }
+        .table-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px;}
+        thead { background: #f1f5f9; position: sticky; top: 0; z-index: 1;}
+        th { padding: 12px; text-transform: uppercase; font-size: 11px; color: #475569; font-weight: 800;}
+        td { padding: 12px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
+        
+        .btn-acao { background: none; border: none; cursor: pointer; padding: 5px; border-radius: 4px; transition: 0.2s;}
+        .btn-acao:hover { background: #f1f5f9; }
+        
+        .acesso-negado { text-align: center; margin-top: 100px; color: #dc3545; }
     </style>
 </head>
 <body>
 
-    <div class="container-fluid" style="max-width: 1200px;">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 style="color: #2c3e50; font-weight: 700;">🎭 Gestão de Atrações, Teatro e Jogos</h2>
-            <button class="btn btn-secondary" onclick="window.location.href='dashboard.html'">Voltar ao Painel</button>
-        </div>
-
-        <!-- FORMULÁRIO DE CADASTRO -->
-        <div class="card-container">
-            <div class="titulo-secao"><span class="material-icons">event_available</span> Nova Atração / Evento para a Rede</div>
-            <form id="formAtracao" onsubmit="event.preventDefault(); salvarAtracao();">
-                <input type="hidden" id="atr_id">
-                <div class="row">
-                    <div class="col-md-5 mb-3">
-                        <label class="form-label fw-bold">Título da Atração / Espetáculo</label>
-                        <input type="text" id="atr_titulo" class="form-control" placeholder="Ex: O Pequeno Príncipe / Festival de Jogos" required>
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <label class="form-label fw-bold">Categoria</label>
-                        <select id="atr_tipo" class="form-select" required>
-                            <option value="Teatro / Espetáculo">Teatro / Espetáculo</option>
-                            <option value="Contação de Histórias">Contação de Histórias</option>
-                            <option value="Jogos e Recreação">Jogos e Recreação</option>
-                            <option value="Oficina / Vivência">Oficina / Vivência</option>
-                            <option value="Outros">Outros</option>
-                        </select>
-                    </div>
-                    <div class="col-md-2 mb-3">
-                        <label class="form-label fw-bold">Data</label>
-                        <input type="date" id="atr_data" class="form-control" required>
-                    </div>
-                    <div class="col-md-2 mb-3">
-                        <label class="form-label fw-bold">Horário</label>
-                        <input type="time" id="atr_horario" class="form-control" required>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label fw-bold">Local / Espaço no CEU</label>
-                        <input type="text" id="atr_local" class="form-control" placeholder="Ex: Teatro / Quadra Coberta" required>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label fw-bold">Público-Alvo</label>
-                        <input type="text" id="atr_publico" class="form-control" placeholder="Ex: Infantil / Livre / Estudantes" required>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label fw-bold">Breve Descrição</label>
-                        <input type="text" id="atr_descricao" class="form-control" placeholder="Detalhes da atração...">
-                    </div>
-                </div>
-                <div class="text-end">
-                    <button type="button" class="btn btn-warning me-2" id="btnCancelar" style="display:none;" onclick="limparFormulario()">Cancelar</button>
-                    <button type="submit" class="btn btn-primary fw-bold px-4">Salvar Atração</button>
-                </div>
-            </form>
-        </div>
-
-        <!-- LISTA DE ATRAÇÕES CADASTRADAS -->
-        <div class="card-container">
-            <div class="titulo-secao"><span class="material-icons">list_alt</span> Atrações Cadastradas na Rede</div>
-            <div style="overflow-x: auto;">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Título</th>
-                            <th>Categoria</th>
-                            <th>Data / Horário</th>
-                            <th>Local</th>
-                            <th>Público-Alvo</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabelaAtracoes">
-                        <tr><td colspan="6" class="text-center py-3">Carregando atrações...</td></tr>
-                    </tbody>
-                </table>
+    <div id="area-restrita" style="display: none;">
+        <div class="header-dre">
+            <div>
+                <h3 style="margin: 0; font-weight: 800;"><i class="material-icons align-middle text-warning">theater_comedy</i> Atrações Internas do CEU</h3>
+                <p style="margin: 0; font-size: 14px; opacity: 0.9;" id="subtitulo-programa">Carregando Sistema...</p>
             </div>
         </div>
+
+        <div class="row" id="area-sistema" style="display: none;">
+            <!-- FORMULÁRIO (ESQUERDA) -->
+            <div class="col-md-4">
+                <div class="card-custom">
+                    <div class="card-title">
+                        <i class="material-icons">event_note</i> Dados da Atração
+                    </div>
+                    
+                    <input type="hidden" id="form_id_atracao">
+
+                    <div class="mb-3">
+                        <label class="form-label">Data da Atração</label>
+                        <select class="form-select fw-bold text-primary" id="form_data"></select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">CEUs da DRE (Clique para adicionar)</label>
+                        <div id="container-botoes-ceus" class="d-flex flex-wrap gap-2"></div>
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label">EOLs (Separados por ';')</label>
+                        <input type="text" class="form-control fw-bold" id="form_eols" placeholder="Ex: 700039; 700041" onblur="preencherNomesCEU()">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Nome(s) do(s) CEU(s)</label>
+                        <textarea class="form-control text-primary fw-bold" id="form_nomes" rows="2" readonly style="background:#e2e8f0; font-size: 11px;"></textarea>
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label">Título da Atração / Espetáculo</label>
+                        <input type="text" class="form-control text-uppercase" id="form_titulo" placeholder="Ex: O Mágico de Oz">
+                    </div>
+                    
+                    <div class="row g-2 mb-2">
+                        <div class="col-6">
+                            <label class="form-label">Categoria</label>
+                            <select class="form-select text-uppercase" id="form_tipo">
+                                <option value="Teatro / Espetáculo">Teatro / Espetáculo</option>
+                                <option value="Contação de Histórias">Contação de Histórias</option>
+                                <option value="Jogos / Gincana">Jogos / Gincana</option>
+                                <option value="Oficina Especial">Oficina Especial</option>
+                                <option value="Outros">Outros</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Horário</label>
+                            <input type="text" class="form-control text-center text-uppercase" id="form_horario" placeholder="Ex: 10h e 14h">
+                        </div>
+                    </div>
+
+                    <div class="row g-2 mb-4">
+                        <div class="col-6">
+                            <label class="form-label">Local no CEU</label>
+                            <input type="text" class="form-control text-uppercase" id="form_local" placeholder="Ex: Teatro">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Público-Alvo</label>
+                            <input type="text" class="form-control text-uppercase" id="form_publico" placeholder="Ex: Infantil">
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-secondary flex-grow-1 fw-bold" onclick="limparFormulario()"><i class="material-icons align-middle fs-5">clear_all</i> Limpar</button>
+                        <button class="btn btn-primary flex-grow-1 fw-bold" onclick="salvarAtracao()"><i class="material-icons align-middle fs-5">save</i> Salvar</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LISTAGEM (DIREITA) -->
+            <div class="col-md-8">
+                <div class="card-custom h-100">
+                    <div class="card-title d-flex justify-content-between">
+                        <span><i class="material-icons">list_alt</i> Atrações Registradas</span>
+                        <span class="badge bg-secondary" id="contador-atracoes">0 atrações</span>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Atração / Categoria</th>
+                                    <th>CEU(s)</th>
+                                    <th>Local e Horário</th>
+                                    <th class="text-center">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="corpo-tabela-atracoes">
+                                <!-- Preenchido via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="area-bloqueada" class="acesso-negado" style="display: none;">
+        <i class="material-icons" style="font-size: 80px;">gavel</i>
+        <h1 style="font-weight: 900;">ACESSO RESTRITO</h1>
+        <p>Esta tela é de uso exclusivo da Diretoria Regional de Educação (DRE).</p>
     </div>
 
     <script>
-        let listaGlobalAtracoes = [];
+        let dadosGlobais = {}; 
+        let eolDreLogada = ""; 
 
-        function carregarAtracoes() {
-            fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "buscarDadosAtracoesDRE" }) })
-            .then(res => res.json())
-            .then(retorno => {
-                if (retorno.sucesso) {
-                    listaGlobalAtracoes = retorno.atracoes || [];
-                    renderizarTabela();
-                } else {
-                    document.getElementById('tabelaAtracoes').innerHTML = `<tr><td colspan="6" class="text-danger">Erro ao carregar.</td></tr>`;
-                }
-            });
+        window.onload = function() {
+            const perfil = localStorage.getItem('ceu_perfil') || "CEU";
+            eolDreLogada = localStorage.getItem('ceu_codigo_eol'); 
+
+            if (perfil !== "DRE" && perfil !== "SME") {
+                document.getElementById('area-bloqueada').style.display = 'block';
+                return;
+            }
+            document.getElementById('area-restrita').style.display = 'block';
+            iniciarSistema();
+        };
+
+        function normalizarData(str) {
+            if (!str) return null;
+            if (str.indexOf('-') > 0) return new Date(str + "T00:00:00");
+            if (str.indexOf('/') > 0) {
+                let p = str.split('/');
+                return new Date(`${p[2]}-${p[1]}-${p[0]}T00:00:00`);
+            }
+            return null;
         }
 
-        function renderizarTabela() {
-            const tbody = document.getElementById('tabelaAtracoes');
-            tbody.innerHTML = "";
-            if (listaGlobalAtracoes.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="text-muted py-3">Nenhuma atração cadastrada até o momento.</td></tr>`;
+        async function iniciarSistema() {
+            Swal.fire({ title: 'Carregando Sistema...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+            try {
+                // Reaproveitamos a busca de passeios apenas para pegar a lista de CEUs e os Dados do Programa (Datas)
+                let resRegras = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "buscarDadosPasseiosDRE" }) });
+                let dadosRegras = await resRegras.json();
+                
+                if(!dadosRegras.sucesso) return Swal.fire('Erro', dadosRegras.erro, 'error');
+
+                dadosGlobais = dadosRegras;
+                document.getElementById('subtitulo-programa').innerText = `Programa Recreio nas Férias - ${dadosRegras.programa.mes}/${dadosRegras.programa.ano}`;
+
+                // Busca as Atrações especificamente
+                let resSalvos = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "buscarAtracoesSalvasDRE" }) });
+                let dadosSalvos = await resSalvos.json();
+                
+                dadosGlobais.atracoesSalvas = dadosSalvos.sucesso ? dadosSalvos.atracoesSalvas : []; 
+
+                montarComboDatas(dadosRegras.programa.inicio, dadosRegras.programa.fim);
+                montarBotoesCEU();
+                renderizarTabela();
+                
+                document.getElementById('area-sistema').style.display = 'flex';
+                Swal.close();
+            } catch(e) { 
+                Swal.fire('Erro', 'Falha de comunicação com o servidor.', 'error');
+            }
+        }
+
+        // ==========================================
+        // 🗓️ COMBO DE DATAS E BOTÕES DOS CEUs (IDÊNTICO AOS PASSEIOS)
+        // ==========================================
+        function montarComboDatas(dataInicioStr, dataFimStr) {
+            let combo = document.getElementById('form_data');
+            combo.innerHTML = '<option value="">Selecione a data...</option>';
+            
+            let dataAtual = normalizarData(String(dataInicioStr));
+            let dataFim = normalizarData(String(dataFimStr));
+            const diasSemana = ["DOMINGO", "SEGUNDA", "TERÇA", "QUARTA", "QUINTA", "SEXTA", "SÁBADO"];
+            
+            while (dataAtual <= dataFim) {
+                let diaFormatado = ("0" + dataAtual.getDate()).slice(-2) + "/" + ("0" + (dataAtual.getMonth() + 1)).slice(-2) + "/" + String(dataAtual.getFullYear()).slice(-2);
+                let nomeSemana = diasSemana[dataAtual.getDay()];
+                let cabecalhoDia = `${diaFormatado} (${nomeSemana})`;
+                
+                combo.innerHTML += `<option value="${cabecalhoDia}">${cabecalhoDia}</option>`;
+                dataAtual.setDate(dataAtual.getDate() + 1);
+            }
+        }
+
+        function montarBotoesCEU() {
+            let container = document.getElementById('container-botoes-ceus');
+            container.innerHTML = "";
+            let ceusDestaDre = dadosGlobais.ceus.filter(c => localStorage.getItem('ceu_perfil') === 'SME' || c.dreEol === eolDreLogada);
+            
+            if (ceusDestaDre.length === 0) {
+                container.innerHTML = "<span class='text-muted small'>Nenhum CEU vinculado encontrado.</span>";
                 return;
             }
 
-            listaGlobalAtracoes.forEach(item => {
+            ceusDestaDre.forEach(ceu => {
+                let btn = document.createElement('button');
+                btn.className = "btn-ceu";
+                btn.innerText = ceu.nome.replace("CEU ", "");
+                btn.onclick = () => adicionarEol(ceu.eol);
+                container.appendChild(btn);
+            });
+        }
+
+        function adicionarEol(eol) {
+            let campo = document.getElementById('form_eols');
+            let valoresAtuais = campo.value.split(';').map(v => v.trim()).filter(v => v !== "");
+            
+            if (!valoresAtuais.includes(String(eol))) {
+                valoresAtuais.push(eol);
+                campo.value = valoresAtuais.join('; ');
+                preencherNomesCEU();
+            }
+        }
+
+        function preencherNomesCEU() {
+            let campoEol = document.getElementById('form_eols').value;
+            let campoNomes = document.getElementById('form_nomes');
+            if(!campoEol.trim()) { campoNomes.value = ""; return; }
+
+            let eols = campoEol.split(';');
+            let nomesEncontrados = [];
+
+            eols.forEach(e => {
+                let eolLimpo = e.trim();
+                if(eolLimpo) {
+                    let ceuAchado = dadosGlobais.ceus.find(c => c.eol === eolLimpo);
+                    if(ceuAchado) nomesEncontrados.push(ceuAchado.nome);
+                    else nomesEncontrados.push(`NÃO ENCONTRADO (${eolLimpo})`);
+                }
+            });
+            campoNomes.value = nomesEncontrados.join(' | ');
+        }
+
+        function limparFormulario() {
+            document.getElementById('form_id_atracao').value = "";
+            document.getElementById('form_data').value = "";
+            document.getElementById('form_eols').value = "";
+            document.getElementById('form_nomes').value = "";
+            document.getElementById('form_titulo').value = "";
+            document.getElementById('form_tipo').value = "Teatro / Espetáculo";
+            document.getElementById('form_local').value = "";
+            document.getElementById('form_horario').value = "";
+            document.getElementById('form_publico').value = "";
+        }
+
+        // ==========================================
+        // 💾 SALVAR E RENDERIZAR TABELA
+        // ==========================================
+        async function salvarAtracao() {
+            let form = {
+                idAtracao: document.getElementById('form_id_atracao').value,
+                dataAtracao: document.getElementById('form_data').value,
+                eols: document.getElementById('form_eols').value,
+                ceus: document.getElementById('form_nomes').value,
+                titulo: document.getElementById('form_titulo').value.toUpperCase(),
+                tipo: document.getElementById('form_tipo').value.toUpperCase(),
+                local: document.getElementById('form_local').value.toUpperCase(),
+                horario: document.getElementById('form_horario').value.toUpperCase(),
+                publico: document.getElementById('form_publico').value.toUpperCase()
+            };
+
+            if(!form.dataAtracao) return Swal.fire('Atenção', 'Selecione a data da atração.', 'warning');
+            if(!form.eols || !form.ceus) return Swal.fire('Atenção', 'Preencha o(s) EOL(s) do CEU.', 'warning');
+            if(!form.titulo) return Swal.fire('Atenção', 'Preencha o título da atração.', 'warning');
+
+            Swal.fire({ title: 'Salvando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+
+            try {
+                let res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "gerenciarAtracaoDRE", dados: { subAcao: "salvar", ...form } }) });
+                let retorno = await res.json();
+                
+                if(retorno.sucesso) {
+                    Swal.fire('Salvo!', 'Atração registrada com sucesso.', 'success');
+                    limparFormulario();
+                    
+                    let resSalvos = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "buscarAtracoesSalvasDRE" }) });
+                    let dadosSalvos = await resSalvos.json();
+                    dadosGlobais.atracoesSalvas = dadosSalvos.sucesso ? dadosSalvos.atracoesSalvas : []; 
+                    renderizarTabela();
+                } else Swal.fire('Erro', retorno.erro, 'error');
+            } catch(e) { Swal.fire('Erro', 'Falha na conexão.', 'error'); }
+        }
+
+        function renderizarTabela() {
+            let tbody = document.getElementById('corpo-tabela-atracoes');
+            tbody.innerHTML = "";
+            document.getElementById('contador-atracoes').innerText = `${dadosGlobais.atracoesSalvas.length} atrações`;
+
+            dadosGlobais.atracoesSalvas.forEach(a => {
+                let ceusFormatados = a.ceus.replace(/\|/g, '<br><small class="text-muted">'); 
+                
                 tbody.innerHTML += `
                     <tr>
-                        <td style="font-weight: bold; text-align: left;">${item.titulo}<br><small class="text-muted">${item.descricao || ''}</small></td>
-                        <td><span class="badge bg-info text-dark">${item.tipo}</span></td>
-                        <td>${item.data.split('-').reverse().join('/')} às ${item.horario}</td>
-                        <td>${item.local}</td>
-                        <td>${item.publico}</td>
+                        <td class="fw-bold text-primary">${a.dataAtracao.substring(0,8)}</td>
                         <td>
-                            <button class="btn btn-sm btn-outline-primary me-1" onclick="editarAtracao('${item.id}')"><span class="material-icons" style="font-size: 16px; vertical-align: middle;">edit</span></button>
-                            <button class="btn btn-sm btn-outline-danger" onclick="excluirAtracao('${item.id}')"><span class="material-icons" style="font-size: 16px; vertical-align: middle;">delete</span></button>
+                            <b>${a.titulo}</b><br>
+                            <span class="badge bg-info text-dark" style="font-size:10px;">${a.tipo}</span>
+                        </td>
+                        <td>${ceusFormatados}</td>
+                        <td style="font-size:11px;">
+                            <i class="material-icons" style="font-size:10px;">place</i> <b>${a.local}</b><br>
+                            <i class="material-icons" style="font-size:10px;">schedule</i> <b>${a.horario}</b>
+                        </td>
+                        <td class="text-center" style="white-space: nowrap;">
+                            <button class="btn-acao text-primary" onclick="editarAtracao('${a.idAtracao}')" title="Editar"><i class="material-icons">edit</i></button>
+                            <button class="btn-acao text-danger" onclick="excluirAtracao('${a.idAtracao}')" title="Apagar"><i class="material-icons">delete</i></button>
                         </td>
                     </tr>
                 `;
             });
         }
 
-        function salvarAtracao() {
-            const pacote = {
-                acaoSub: "salvar",
-                id: document.getElementById('atr_id').value,
-                titulo: document.getElementById('atr_titulo').value,
-                tipo: document.getElementById('atr_tipo').value,
-                descricao: document.getElementById('atr_descricao').value,
-                data: document.getElementById('atr_data').value,
-                horario: document.getElementById('atr_horario').value,
-                local: document.getElementById('atr_local').value,
-                publico: document.getElementById('atr_publico').value
-            };
-
-            Swal.fire({ title: 'Salvando...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-
-            fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "gerenciarAtracaoDRE", dados: pacote }) })
-            .then(res => res.json())
-            .then(retorno => {
-                if (retorno.sucesso) {
-                    Swal.fire('Sucesso!', retorno.mensagem, 'success');
-                    limparFormulario();
-                    carregarAtracoes();
-                } else {
-                    Swal.fire('Erro', retorno.erro, 'error');
-                }
-            });
-        }
-
         function editarAtracao(id) {
-            const item = listaGlobalAtracoes.find(x => x.id === id);
-            if (!item) return;
-            document.getElementById('atr_id').value = item.id;
-            document.getElementById('atr_titulo').value = item.titulo;
-            document.getElementById('atr_tipo').value = item.tipo;
-            document.getElementById('atr_descricao').value = item.descricao;
-            document.getElementById('atr_data').value = item.data;
-            document.getElementById('atr_horario').value = item.horario;
-            document.getElementById('atr_local').value = item.local;
-            document.getElementById('atr_publico').value = item.publico;
-            document.getElementById('btnCancelar').style.display = 'inline-block';
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            let a = dadosGlobais.atracoesSalvas.find(x => x.idAtracao === id);
+            if(a) {
+                document.getElementById('form_id_atracao').value = a.idAtracao;
+                document.getElementById('form_data').value = a.dataAtracao;
+                document.getElementById('form_eols').value = a.eols;
+                document.getElementById('form_nomes').value = a.ceus;
+                document.getElementById('form_titulo').value = a.titulo;
+                
+                // Trata a seleção do dropdown se o valor for diferente da lista
+                let tipoSelect = document.getElementById('form_tipo');
+                let optionExists = Array.from(tipoSelect.options).some(opt => opt.value === a.tipo);
+                if (!optionExists) {
+                    let newOption = new Option(a.tipo, a.tipo);
+                    tipoSelect.add(newOption);
+                }
+                tipoSelect.value = a.tipo;
+
+                document.getElementById('form_local').value = a.local;
+                document.getElementById('form_horario').value = a.horario;
+                document.getElementById('form_publico').value = a.publico;
+            }
         }
 
         function excluirAtracao(id) {
             Swal.fire({
-                title: 'Tem certeza?', text: "Deseja remover esta atração da rede?", icon: 'warning',
-                showCancelButton: true, confirmButtonText: 'Sim, excluir', cancelButtonText: 'Cancelar'
-            }).then(result => {
+                title: 'Apagar Atração?',
+                text: "Isso não pode ser desfeito.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                confirmButtonText: 'Excluir'
+            }).then(async (result) => {
                 if (result.isConfirmed) {
-                    fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "gerenciarAtracaoDRE", dados: { acaoSub: "excluir", id: id } }) })
-                    .then(res => res.json())
-                    .then(retorno => {
-                        if (retorno.sucesso) {
-                            Swal.fire('Excluído!', retorno.mensagem, 'success');
-                            carregarAtracoes();
-                        }
-                    });
+                    Swal.fire({ title: 'Excluindo...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+                    try {
+                        let res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "gerenciarAtracaoDRE", dados: { subAcao: "excluir", idAtracao: id } }) });
+                        let retorno = await res.json();
+                        
+                        if(retorno.sucesso) {
+                            Swal.fire('Apagado!', '', 'success');
+                            limparFormulario();
+                            let resSalvos = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "buscarAtracoesSalvasDRE" }) });
+                            let dadosSalvos = await resSalvos.json();
+                            dadosGlobais.atracoesSalvas = dadosSalvos.sucesso ? dadosSalvos.atracoesSalvas : []; 
+                            renderizarTabela();
+                        } else Swal.fire('Erro', retorno.erro, 'error');
+                    } catch(e) { Swal.fire('Erro', 'Falha na conexão.', 'error'); }
                 }
             });
         }
-
-        function limparFormulario() {
-            document.getElementById('formAtracao').reset();
-            document.getElementById('atr_id').value = "";
-            document.getElementById('btnCancelar').style.display = 'none';
-        }
-
-        window.onload = carregarAtracoes;
     </script>
 </body>
 </html>

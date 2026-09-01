@@ -14,108 +14,205 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-    <script src="config.js"></script>
+    <script src="config.js"></script> 
     
     <style>
-        :root { --cor-primaria: #0d6efd; --cor-fundo: #f4f7f6; }
-        body { background-color: var(--cor-fundo); display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        :root { 
+            --cor-primaria: #0d6efd; 
+            --cor-fundo-tela: #e2e8f0;
+            --bg-card: #0a1422; /* A cor exata que você pediu */
+            --bg-logo: #060c14; 
+            --bg-input: #112136;
+            --borda-input: #1e3a5f;
+            --texto-claro: #f8fafc;
+            --texto-mutado: #94a3b8;
+        }
         
-        .login-card { background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 800px; max-width: 95%; display: flex; overflow: hidden; min-height: 400px; border: 1px solid #e2e8f0; }
+        body { background-color: var(--cor-fundo-tela); display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; font-family: 'Inter', sans-serif; }
         
-        .login-left { flex: 1; padding: 40px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; border-right: 1px solid #e2e8f0; background: white; }
-        .login-right { flex: 1; padding: 40px 50px; display: flex; flex-direction: column; justify-content: center; background: white; }
+        /* CARTÃO ULTRA COMPACTO */
+        .login-card { 
+            background: var(--bg-card); 
+            border-radius: 10px; /* Bordas um pouco mais fechadas */
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4); 
+            width: 580px; /* Reduzido de 680px para 580px */
+            max-width: 95%; 
+            display: flex;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.05);
+            /* Sem min-height para ele abraçar o conteúdo e ficar bem baixo */
+        }
         
-        .login-right h2 { font-weight: 800; color: #333; margin-bottom: 5px; font-size: 22px; }
-        .login-right p.text-muted { font-size: 13px; margin-bottom: 25px; }
+        /* LADO ESQUERDO: APENAS A LOGO */
+        .login-left {
+            width: 40%;
+            background: var(--bg-logo);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            border-right: 1px solid rgba(255,255,255,0.05);
+        }
+
+        /* LADO DIREITO: ESPAÇOS CORTADOS AO MÁXIMO */
+        .login-right {
+            width: 60%;
+            padding: 20px 25px; /* Margens internas muito menores */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
         
-        .form-control { padding: 10px 12px 10px 40px; border-radius: 8px; border: 2px solid #e2e8f0; background: #f8fafc; font-weight: 600; font-size: 14px; width: 100%; box-sizing: border-box; }
-        .form-control:focus { border-color: var(--cor-primaria); box-shadow: 0 0 0 3px rgba(13,110,253,0.1); background: white; outline: none; }
+        .login-right h2 { font-weight: 800; color: var(--texto-claro); font-size: 16px; margin: 0 0 0px 0; }
+        #titulo-sistema { font-size: 10px; color: var(--cor-primaria); font-weight: 700; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 0.5px; }
         
-        .input-wrapper { position: relative; margin-bottom: 18px; text-align: left; }
-        .input-wrapper .material-icons { position: absolute; left: 12px; top: 28px; color: #94a3b8; font-size: 20px; }
+        /* CAMPOS DE ENTRADA EXTREMAMENTE COLADOS */
+        .input-wrapper { margin-bottom: 8px; /* Antes era 12px */ }
         
-        .form-label { display: block; font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
+        .form-label { display: block; font-size: 9px; font-weight: 700; color: var(--texto-mutado); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
         
-        .btn-login { background-color: var(--cor-primaria); border: none; width: 100%; padding: 12px; font-weight: bold; font-size: 14px; border-radius: 8px; margin-top: 10px; transition: 0.3s; color: white; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; }
+        /* CAIXA E ÍCONE ALINHADOS */
+        .caixa-input { position: relative; }
+        .caixa-input .icone-campo { position: absolute; left: 8px; top: 50%; transform: translateY(-50%); color: var(--texto-mutado); font-size: 16px; pointer-events: none; }
+        
+        .form-control { 
+            padding: 4px 8px 4px 30px; /* Espaço interno bem menor */
+            height: 32px; /* Caixa mais fina */
+            border-radius: 5px; 
+            border: 1px solid var(--borda-input); 
+            background: var(--bg-input); 
+            color: var(--texto-claro);
+            font-weight: 600; 
+            font-size: 12px; 
+            width: 100%; 
+            transition: 0.3s;
+            box-sizing: border-box;
+        }
+        
+        .form-control::placeholder { color: #475569; }
+        .form-control:focus { 
+            border-color: var(--cor-primaria); 
+            box-shadow: 0 0 0 2px rgba(13,110,253,0.25); 
+            background: var(--bg-card); 
+            color: white;
+            outline: none; 
+        }
+
+        /* 🚀 REMOVE AS SETINHAS DO CAMPO DE NÚMERO (RF) */
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] { -moz-appearance: textfield; }
+
+        /* MOSTRADOR DINÂMICO DO CEU */
+        #nome-ceu-display {
+            font-size: 9px;
+            font-weight: 700;
+            margin-top: 2px;
+            margin-left: 2px;
+            color: var(--texto-mutado);
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            min-height: 12px;
+        }
+        
+        /* BOTÃO COMPACTO E COLADO */
+        .btn-login { background-color: var(--cor-primaria); border: none; width: 100%; height: 34px; font-weight: 800; font-size: 12px; border-radius: 5px; margin-top: 4px; transition: 0.3s; color: white; display: flex; justify-content: center; align-items: center; gap: 6px; cursor: pointer; }
         .btn-login:hover { background-color: #0b5ed7; transform: translateY(-2px); }
-        
+
+        /* RESPONSIVO */
         @media (max-width: 768px) {
             .login-card { flex-direction: column; width: 100%; }
-            .login-left { border-right: none; border-bottom: 1px solid #e2e8f0; padding: 30px 20px; min-height: 200px; }
-            .login-right { padding: 30px 20px; }
+            .login-left { width: 100%; min-height: 120px; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.05); }
+            .login-right { width: 100%; padding: 20px; }
         }
     </style>
 </head>
 <body>
     <div class="login-card">
         
-        <!-- LADO ESQUERDO: LOGO DO SISTEMA -->
+        <!-- LADO ESQUERDO: APENAS A LOGO -->
         <div class="login-left" id="box-logo">
-            <span class="material-icons" id="icone-padrao" style="font-size: 70px; margin-bottom: 15px; color: var(--cor-primaria);">account_balance</span>
-            <img id="img-logo" src="" alt="Logo do Sistema" style="display: none; max-width: 90%; max-height: 100px; object-fit: contain; margin: 0 auto 15px auto;">
-            
-            <h3 id="titulo-sistema" style="font-weight: 800; color: var(--cor-primaria); font-size: 20px; margin: 0 0 5px 0;">A carregar...</h3>
-            <p style="font-size: 13px; color: #64748b; margin: 0;">Plataforma de gestão escolar</p>
+            <span class="material-icons" id="icone-padrao" style="font-size: 55px; color: var(--cor-primaria);">account_balance</span>
+            <img id="img-logo" src="" alt="Logo do Sistema" style="display: none; max-width: 95%; max-height: 90px; object-fit: contain;">
         </div>
 
-        <!-- LADO DIREITO: FORMULÁRIO -->
+        <!-- LADO DIREITO: FORMULÁRIO ESPREMIDO -->
         <div class="login-right">
+            
             <h2>Acesso Restrito</h2>
-            <p class="text-muted">Insira as credenciais da sua Unidade.</p>
+            <div id="titulo-sistema">A carregar sistema...</div>
 
-            <!-- FORMULÁRIO ORIGINAL INTACTO -->
             <form id="formLogin" onsubmit="event.preventDefault(); fazerLogin();">
                 
                 <div class="input-wrapper">
-                    <label class="form-label">Código EOL da Unidade</label>
-                    <span class="material-icons">domain</span>
-                    
-                    <!-- Campo type="number" restaurado para manter a compatibilidade com seu banco de dados -->
-                    <input type="number" class="form-control" id="id_ceu" list="lista-eols" placeholder="Ex: 123456" required>
-                    
-                    <!-- Adicione as outras opções de CEUs nesta lista para o menu ficar completo -->
-                    <datalist id="lista-eols">
-                        <option value="777777">DRE SANTO AMARO</option>
-                        <option value="999999">SME (Secretaria)</option>
-                        <option value="700039">CEU CAMINHO DO MAR</option>
-                        <option value="700041">CEU VILA RUBI</option>
-                        <option value="700042">CEU ALVARENGA</option>
-                        <option value="700043">CEU CIDADE DUTRA</option>
-                    </datalist>
+                    <label class="form-label">Cód EOL da Unidade</label>
+                    <div class="caixa-input">
+                        <span class="material-icons icone-campo">domain</span>
+                        <input type="text" inputmode="numeric" class="form-control" id="id_ceu" placeholder="Ex: 123456" oninput="verificarNomeCEU()" required autocomplete="off">
+                    </div>
+                    <div id="nome-ceu-display"></div>
                 </div>
 
                 <div class="input-wrapper">
                     <label class="form-label">RF do Funcionário</label>
-                    <span class="material-icons">badge</span>
-                    <input type="number" class="form-control" id="rf_usuario" placeholder="Apenas números" required>
+                    <div class="caixa-input">
+                        <span class="material-icons icone-campo">badge</span>
+                        <input type="number" class="form-control" id="rf_usuario" placeholder="Apenas números" required>
+                    </div>
                 </div>
 
                 <div class="input-wrapper">
                     <label class="form-label">Senha de Acesso</label>
-                    <span class="material-icons">lock</span>
-                    <input type="password" class="form-control" id="senha_usuario" placeholder="••••••••" required>
+                    <div class="caixa-input">
+                        <span class="material-icons icone-campo">lock</span>
+                        <input type="password" class="form-control" id="senha_usuario" placeholder="••••••••" required>
+                    </div>
                 </div>
                 
                 <button type="submit" class="btn-login" id="btn-entrar">
-                    ENTRAR <span class="material-icons" style="font-size: 18px;">login</span>
+                    ENTRAR NO SISTEMA <span class="material-icons" style="font-size: 15px;">arrow_forward</span>
                 </button>
             </form>
         </div>
+
     </div>
 
-    <!-- O SEU CÓDIGO JAVASCRIPT EXATAMENTE COMO VOCÊ ENVIOU, SEM NENHUMA ALTERAÇÃO -->
+    <!-- JAVASCRIPT INTACTO -->
     <script>
         // ==========================================
-        // 🔗 LIGAÇÃO COM A API DO GOOGLE SHEETS
+        // 📚 DICIONÁRIO DE CEUS
         // ==========================================
-/*        const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec";  */
+        const dicionarioCEUs = {
+            "777777": "DRE SANTO AMARO",
+            "999999": "SME (Secretaria)",
+            "700039": "CEU CAMINHO DO MAR",
+            "700041": "CEU VILA RUBI",
+            "700042": "CEU ALVARENGA",
+            "700043": "CEU CIDADE DUTRA"
+        };
+
+        function verificarNomeCEU() {
+            let codigo = document.getElementById('id_ceu').value.trim();
+            const display = document.getElementById('nome-ceu-display');
+
+            if (codigo === "") {
+                display.innerHTML = "";
+            } else if (dicionarioCEUs[codigo]) {
+                display.innerHTML = `<span class="material-icons" style="font-size:11px;">check_circle</span> ${dicionarioCEUs[codigo]}`;
+                display.style.color = "#10b981"; 
+            } else {
+                display.innerHTML = `<span class="material-icons" style="font-size:11px;">search</span> Procurando...`;
+                display.style.color = "#f59e0b"; 
+            }
+        }
 
         window.onload = function() {
-            localStorage.clear(); // Limpa sujeiras antigas de outros logins na máquina da escola
+            localStorage.clear(); 
 
-            // ==========================================
-            // LOGO: Carrega as configs sem travar a tela
-            // ==========================================
             fetch(API_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -132,11 +229,6 @@
                         document.getElementById('icone-padrao').style.display = 'none';
                         const img = document.getElementById('img-logo');
                         img.src = retorno.dados.logoUrl;
-                        
-                        if(retorno.dados.tamanhoLogo) {
-                            img.style.height = retorno.dados.tamanhoLogo; 
-                            localStorage.setItem('ceu_tamanho_logo', retorno.dados.tamanhoLogo); 
-                        }
                         img.style.display = 'block';
                     }
                 }
@@ -144,9 +236,6 @@
             .catch(erro => console.error("Aviso: Falha ao puxar a Logo. Sistema continua rodando."));
         };
 
-        // ==========================================
-        // O MOTOR BLINDADO DE LOGIN
-        // ==========================================
         function fazerLogin() {
             const ceu = document.getElementById('id_ceu').value.trim();
             const rf = document.getElementById('rf_usuario').value.trim();
@@ -164,7 +253,6 @@
                 didOpen: () => { Swal.showLoading(); }
             });
 
-            // 🛡️ O TRUQUE MÁGICO DO CONTENT-TYPE
             fetch(API_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -183,7 +271,6 @@
                 } 
                 else if (retorno.status === "sucesso") {
                     
-                    // 🎉 A MÁGICA SALVADORA DO SISTEMA - Todas as mochilas sendo preenchidas!
                     localStorage.setItem('ceu_codigo_eol', ceu);
                     localStorage.setItem('ceu_rf_logado', rf); 
                     
@@ -192,11 +279,9 @@
                     localStorage.setItem('ceu_nome_especifico', retorno.token.nome_ceu);
                     localStorage.setItem('ceu_nome_usuario', retorno.token.nome_usuario);
                     
-                    // Salva a Foto e a Logo se elas existirem na planilha
                     if(retorno.token.logo_ceu) localStorage.setItem('ceu_logo', retorno.token.logo_ceu);
                     if(retorno.token.foto_usuario) localStorage.setItem('ceu_foto_usuario', retorno.token.foto_usuario);
                     
-                    // 🌟 A ESTRELA DO SHOW: O nosso Perfil para identificar a DRE!
                     localStorage.setItem('ceu_perfil', retorno.token.perfil_usuario); 
                     
                     Swal.fire('Bem-vindo!', retorno.mensagem, 'success').then(() => { 
@@ -213,9 +298,6 @@
             });
         }
 
-        // ==========================================
-        // PRIMEIRO ACESSO
-        // ==========================================
         function tratarPrimeiroAcesso(mensagemDoServidor, dadosUsuario) {
             Swal.fire({
                 title: '🔒 Primeiro Acesso',

@@ -182,7 +182,7 @@
     </div>
 
     <!-- JAVASCRIPT INTACTO -->
-    <script>
+<script>
         // ==========================================
         // 📚 DICIONÁRIO DE CEUS
         // ==========================================
@@ -242,14 +242,17 @@
             const senha = document.getElementById('senha_usuario').value.trim();
 
             if(!ceu || !rf || !senha) {
-                Swal.fire('Atenção', 'Preencha todos os campos.', 'warning');
+                // Adicionado heightAuto: false para a tela não pular
+                Swal.fire({ title: 'Atenção', text: 'Preencha todos os campos.', icon: 'warning', heightAuto: false });
                 return;
             }
 
+            // Adicionado heightAuto: false para a tela não pular no carregamento
             Swal.fire({
                 title: 'A validar acessos...',
                 text: 'A comunicar com o servidor central.',
                 allowOutsideClick: false,
+                heightAuto: false, 
                 didOpen: () => { Swal.showLoading(); }
             });
 
@@ -284,16 +287,17 @@
                     
                     localStorage.setItem('ceu_perfil', retorno.token.perfil_usuario); 
                     
-                    Swal.fire('Bem-vindo!', retorno.mensagem, 'success').then(() => { 
-                        window.location.href = "dashboard.html"; 
-                    }); 
+                    // 🚀 MUDANÇA AQUI: Sem modal de sucesso. Vai direto para o dashboard!
+                    window.location.href = "dashboard.html"; 
                 } 
                 else {
-                    Swal.fire('Acesso Negado', retorno.mensagem || retorno.erro || 'Credenciais inválidas.', 'error');
+                    // Adicionado heightAuto: false
+                    Swal.fire({ title: 'Acesso Negado', text: retorno.mensagem || retorno.erro || 'Credenciais inválidas.', icon: 'error', heightAuto: false });
                 }
             })
             .catch(erro => {
-                Swal.fire('Erro de Comunicação', 'Falha ao ligar ao servidor do Google. Tente novamente.', 'error');
+                // Adicionado heightAuto: false
+                Swal.fire({ title: 'Erro de Comunicação', text: 'Falha ao ligar ao servidor do Google. Tente novamente.', icon: 'error', heightAuto: false });
                 console.error("Erro fatal no Fetch de Login: ", erro);
             });
         }
@@ -303,6 +307,7 @@
                 title: '🔒 Primeiro Acesso',
                 text: mensagemDoServidor,
                 icon: 'info',
+                heightAuto: false, // Adicionado aqui também
                 html: `
                     <div style="text-align: left; font-size: 14px;">
                         <label class="mt-2 fw-bold">Nova Senha:</label>
@@ -331,7 +336,7 @@
         }
 
         function enviarNovaSenha(rf, ceu, novaSenha) {
-            Swal.fire({ title: 'A gravar...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+            Swal.fire({ title: 'A gravar...', allowOutsideClick: false, heightAuto: false, didOpen: () => { Swal.showLoading(); }});
             
             fetch(API_URL, { 
                 method: 'POST', 
@@ -341,12 +346,13 @@
             .then(resp => resp.json())
             .then(retorno => {
                 if(retorno.status === "sucesso") {
-                    Swal.fire('Sucesso!', retorno.mensagem, 'success').then(() => { document.getElementById('senha_usuario').value = ''; });
+                    Swal.fire({ title: 'Sucesso!', text: retorno.mensagem, icon: 'success', heightAuto: false }).then(() => { document.getElementById('senha_usuario').value = ''; });
                 } else {
-                    Swal.fire('Erro', retorno.mensagem, 'error');
+                    Swal.fire({ title: 'Erro', text: retorno.mensagem, icon: 'error', heightAuto: false });
                 }
             });
         }
     </script>
+
 </body>
 </html>

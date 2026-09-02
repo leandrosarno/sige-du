@@ -460,7 +460,7 @@
             document.body.removeChild(link);
         }
 
-        window.onload = function() {
+window.onload = function() {
             atualizarSaudacao();
             
             const ceuLogado = String(localStorage.getItem('ceu_id') || sessionStorage.getItem('ceu_id') || localStorage.getItem('ceu_codigo_eol')).trim();
@@ -474,8 +474,8 @@
             }
         };
 
+        // MOTOR DE CORES ACOPLADO CORRETAMENTE NO MESMO SCRIPT
         document.addEventListener("DOMContentLoaded", function() {
-            // Captura o container da saudação
             const containerSaudacao = document.querySelector('.saudacao-container');
             
             if (containerSaudacao) {
@@ -494,7 +494,6 @@
                 }
             }
         });
-
     </script>
 </body>
 </html>

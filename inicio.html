@@ -16,13 +16,33 @@
             padding: 30px;
         }
 
+/* 1. ESTRUTURA BASE (Mantém o formato e a transição) */
         .saudacao-container {
-            background: linear-gradient(135deg, #0a1422 0%, #0d6efd 100%); /* #0a1422 #0d6efd*/
             border-radius: 15px;
             padding: 30px;
-            color: white;
             margin-bottom: 30px;
-            box-shadow: 0 4px 15px rgba(13, 110, 253, 0.2);
+            transition: background 0.8s ease, color 0.8s ease; /* Troca de cor suave */
+        }
+
+        /* 🌅 2. TEMA MANHÃ (5h às 11h59) - Tons claros e amarelados */
+        .tema-manha {
+            background: linear-gradient(135deg, white 0%, #E3CF57 100%);
+            color: black;
+            box-shadow: 0 4px 15px rgba(227, 207, 87, 0.3);
+        }
+
+        /* ☀️ 3. TEMA TARDE (12h às 17h59) - Tons alaranjados/quentes */
+        .tema-tarde {
+            background: linear-gradient(135deg, white 0%, #fdba74 100%);
+            color: #1e293b; /* Cinza bem escuro para leitura */
+            box-shadow: 0 4px 15px rgba(253, 186, 116, 0.3);
+        }
+
+        /* 🌙 4. TEMA NOITE (18h às 4h59) - O tom escuro corporativo que você gosta */
+        .tema-noite {
+            background: linear-gradient(135deg, #1e293b 0%, #0a1422 100%);
+            color: #f8fafc; /* Texto quase branco */
+            box-shadow: 0 4px 15px rgba(10, 20, 34, 0.4);
         }
 
         .saudacao-titulo { font-size: 24px; font-weight: 700; margin-bottom: 5px; }
@@ -453,6 +473,32 @@
                 carregarDadosCEU(ceuLogado);
             }
         };
+
+
+<script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Captura o container da saudação
+            const containerSaudacao = document.querySelector('.saudacao-container');
+            
+            if (containerSaudacao) {
+                const horaAtual = new Date().getHours();
+                
+                // Remove temas anteriores por segurança
+                containerSaudacao.classList.remove('tema-manha', 'tema-tarde', 'tema-noite');
+
+                // Aplica a cor com base no relógio do funcionário
+                if (horaAtual >= 5 && horaAtual < 12) {
+                    containerSaudacao.classList.add('tema-manha');
+                } else if (horaAtual >= 12 && horaAtual < 18) {
+                    containerSaudacao.classList.add('tema-tarde');
+                } else {
+                    containerSaudacao.classList.add('tema-noite');
+                }
+            }
+        });
+    </script>
+
+
     </script>
 </body>
 </html>

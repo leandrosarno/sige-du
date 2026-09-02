@@ -152,10 +152,16 @@
                     // 🌟 A ESTRELA DO SHOW: O nosso Perfil para identificar a DRE!
                     localStorage.setItem('ceu_perfil', retorno.token.perfil_usuario); 
                     
-                    Swal.fire('Bem-vindo!', retorno.mensagem, 'success').then(() => { 
+/*                    Swal.fire('Bem-vindo!', retorno.mensagem, 'success').then(() => { 
                         window.location.href = "dashboard.html"; 
                     }); 
                 } 
+                    localStorage.setItem('ceu_perfil', retorno.token.perfil_usuario); */
+                    
+                    // 🚀 LOGIN EXPRESSO: Removemos o Modal. Joga direto para o Dashboard!
+                    window.location.href = "dashboard.html"; 
+
+                    
                 else {
                     Swal.fire('Acesso Negado', retorno.mensagem || retorno.erro || 'Credenciais inválidas.', 'error');
                 }

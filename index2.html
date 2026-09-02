@@ -181,19 +181,9 @@
 
     </div>
 
-    <!-- JAVASCRIPT INTACTO -->
 <script>
-        // ==========================================
-        // 📚 DICIONÁRIO DE CEUS
-        // ==========================================
-        const dicionarioCEUs = {
-            "777777": "DRE SANTO AMARO",
-            "999999": "SME (Secretaria)",
-            "700039": "CEU CAMINHO DO MAR",
-            "700041": "CEU VILA RUBI",
-            "700042": "CEU ALVARENGA",
-            "700043": "CEU CIDADE DUTRA"
-        };
+        // 1. O Dicionário começa VAZIO. Será preenchido pela Planilha Master!
+        let dicionarioCEUs = {};
 
         function verificarNomeCEU() {
             let codigo = document.getElementById('id_ceu').value.trim();
@@ -203,15 +193,22 @@
                 display.innerHTML = "";
             } else if (dicionarioCEUs[codigo]) {
                 display.innerHTML = `<span class="material-icons" style="font-size:11px;">check_circle</span> ${dicionarioCEUs[codigo]}`;
-                display.style.color = "#10b981"; 
+                display.style.color = "#10b981"; // Verde
+            } else if (Object.keys(dicionarioCEUs).length === 0) {
+                // Fica em silêncio se a API ainda não tiver mandado os dados
+                display.innerHTML = "";
             } else {
-                display.innerHTML = `<span class="material-icons" style="font-size:11px;">search</span> Procurando...`;
-                display.style.color = "#f59e0b"; 
+                display.innerHTML = `<span class="material-icons" style="font-size:11px;">search</span> Unidade não encontrada...`;
+                display.style.color = "#f59e0b"; // Amarelo
             }
         }
 
         window.onload = function() {
             localStorage.clear(); 
+            
+            // Aviso discreto de que o sistema está buscando a lista na Master
+            document.getElementById('nome-ceu-display').innerHTML = `<span class="material-icons" style="font-size:11px;">sync</span> Sincronizando banco de unidades...`;
+            document.getElementById('nome-ceu-display').style.color = "#94a3b8";
 
             fetch(API_URL, {
                 method: 'POST',
@@ -231,9 +228,17 @@
                         img.src = retorno.dados.logoUrl;
                         img.style.display = 'block';
                     }
+
+                    // 🌟 AQUI ACONTECE A MÁGICA: Salva a lista que veio da Master!
+                    if (retorno.dados.listaCEUs) {
+                        dicionarioCEUs = retorno.dados.listaCEUs;
+                        document.getElementById('nome-ceu-display').innerHTML = ""; // Limpa a mensagem de sincronização
+                    } else {
+                        document.getElementById('nome-ceu-display').innerHTML = ""; // API não enviou a lista, fica invisível
+                    }
                 }
             })
-            .catch(erro => console.error("Aviso: Falha ao puxar a Logo. Sistema continua rodando."));
+            .catch(erro => console.error("Aviso: Falha ao puxar a Logo ou a Lista. Sistema continua rodando."));
         };
 
         function fazerLogin() {
@@ -242,12 +247,10 @@
             const senha = document.getElementById('senha_usuario').value.trim();
 
             if(!ceu || !rf || !senha) {
-                // Adicionado heightAuto: false para a tela não pular
                 Swal.fire({ title: 'Atenção', text: 'Preencha todos os campos.', icon: 'warning', heightAuto: false });
                 return;
             }
 
-            // Adicionado heightAuto: false para a tela não pular no carregamento
             Swal.fire({
                 title: 'A validar acessos...',
                 text: 'A comunicar com o servidor central.',
@@ -287,16 +290,14 @@
                     
                     localStorage.setItem('ceu_perfil', retorno.token.perfil_usuario); 
                     
-                    // 🚀 MUDANÇA AQUI: Sem modal de sucesso. Vai direto para o dashboard!
+                    // 🚀 LOGIN EXPRESSO: Removemos o Modal. Joga direto para o Dashboard!
                     window.location.href = "dashboard.html"; 
                 } 
                 else {
-                    // Adicionado heightAuto: false
                     Swal.fire({ title: 'Acesso Negado', text: retorno.mensagem || retorno.erro || 'Credenciais inválidas.', icon: 'error', heightAuto: false });
                 }
             })
             .catch(erro => {
-                // Adicionado heightAuto: false
                 Swal.fire({ title: 'Erro de Comunicação', text: 'Falha ao ligar ao servidor do Google. Tente novamente.', icon: 'error', heightAuto: false });
                 console.error("Erro fatal no Fetch de Login: ", erro);
             });
@@ -307,7 +308,7 @@
                 title: '🔒 Primeiro Acesso',
                 text: mensagemDoServidor,
                 icon: 'info',
-                heightAuto: false, // Adicionado aqui também
+                heightAuto: false, 
                 html: `
                     <div style="text-align: left; font-size: 14px;">
                         <label class="mt-2 fw-bold">Nova Senha:</label>
@@ -353,6 +354,5 @@
             });
         }
     </script>
-
 </body>
 </html>

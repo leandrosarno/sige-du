@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIG-EDU - Painel Administrativo</title>
+    
+    <!-- Chamada das bibliotecas externas -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
+    <!-- Nosso arquivo de configuração onde mora a URL do Google -->
+    <script src="config.js"></script>
+
+    <style>
+        /* As suas variáveis modernas de cores e sombras */
+        :root, [data-theme="dark"] { 
+            --bg-primary: #0b0f19; 
+            --bg-secondary: #111827; 
+            --bg-card: rgba(30, 41, 59, 0.6); 
+            --text-primary: #f8fafc; 
+            --text-secondary: #94a3b8; 
+            --accent-primary: #6366f1; 
+            --danger-color: #ef4444; 
+        }
+
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            display: flex; 
+            height: 100vh; 
+            overflow: hidden; 
+            background-color: #f4f7f6; 
+        }
+
+        /* Estrutura do Menu Lateral */
+        .sidebar { 
+            width: 260px; 
+            background: #2c3e50; 
+            color: white; 
+            display: flex; 
+            flex-direction: column; 
+            padding: 15px; 
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+        
+        .sidebar h4 { text-align: center; margin-bottom: 30px; font-weight: 800; letter-spacing: 1px; }
+        
+        .sidebar a { 
+            color: #ecf0f1; 
+            text-decoration: none; 
+            padding: 12px 15px; 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            border-radius: 8px; 
+            margin-bottom: 8px; 
+            transition: 0.2s;
+            font-weight: 500;
+        }
+        
+        .sidebar a:hover, .sidebar a.ativo { background: #34495e; color: white; }
+
+        /* Estrutura da Tela Principal e Topbar */
+        .main-content { 
+            flex: 1; 
+            display: flex; 
+            flex-direction: column; 
+            overflow: hidden; 
+        }
+        
+        .topbar { 
+            background: white; 
+            padding: 15px 30px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05); 
+            z-index: 10; 
+        }
+        
+        #frame-filho { 
+            flex: 1; 
+            width: 100%; 
+            border: none; 
+            background-color: var(--text-primary);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- GAVETA ESQUERDA (Menu) -->
+    <div class="sidebar">
+        <h4>SIG-EDU</h4>
+        
+        <a href="javascript:void(0)" class="ativo" onclick="abrirFormFilho('inicio.html', this)">
+            <span class="material-icons">dashboard</span> Início
+        </a>
+        
+        <a href="javascript:void(0)" onclick="abrirFormFilho('alunos.html', this)">
+            <span class="material-icons">people</span> Munícipes
+        </a>
+
+        <!-- Empurra o botão de Sair para o fim da tela -->
+        <div style="margin-top: auto;"></div> 
+        <a href="#" onclick="fazerLogout()" style="background: #c0392b;"> 
+            <span class="material-icons">logout</span> Sair 
+        </a> 
+    </div>
+
+    <!-- ÁREA DIREITA (Topo e Telas) -->
+    <div class="main-content"> 
+        <div class="topbar"> 
+            <div> 
+                <span class="text-muted">Unidade: </span> 
+                <strong id="lbl-ceu">Carregando...</strong> 
+            </div> 
+            
+            <div class="text-end"> 
+                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px;"> 
+                    <img id="img-avatar-usuario" src="" alt="Avatar" style="display: none; width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid #0d6efd;"> 
+                    <span class="material-icons" id="icone-avatar-padrao" style="font-size: 30px; color: #0d6efd;">account_circle</span> 
+                    
+                    <a href="#" onclick="alert('Troca de senha em breve!'); return false;" id="lbl-rf" style="font-weight: bold; color: #0d6efd; text-decoration: underline;" title="Clique para alterar a sua senha"> 
+                        RF: Carregando... 
+                    </a> 
+                </div> 
+                <div id="lbl-nome-usuario" style="font-size: 11px; color: #6c757d; font-weight: 600; margin-top: 2px;"> 
+                    Funcionário 
+                </div> 
+            </div> 
+        </div>
+
+        <!-- O "Buraco" onde as outras telas vão aparecer sem recarregar a página -->
+        <iframe id="frame-filho" src="inicio.html"></iframe> 
+    </div>
+
+    <script>
+        // Quando a tela carrega, ele pega os dados do Login (que salvamos na Mochila/localStorage) e preenche o cabeçalho
+        window.onload = function() {
+            document.getElementById('lbl-ceu').innerText = localStorage.getItem('ceu_nome') || "Unidade Desconhecida";
+            document.getElementById('lbl-rf').innerText = "RF: " + (localStorage.getItem('ceu_rf_logado') || "---");
+            document.getElementById('lbl-nome-usuario').innerText = localStorage.getItem('ceu_nome_usuario') || "Funcionário";
+
+            // Se o usuário tiver foto, esconde o ícone padrão e mostra a imagem
+            let foto = localStorage.getItem('ceu_foto_usuario');
+            if (foto && foto.length > 10) {
+                document.getElementById('icone-avatar-padrao').style.display = 'none';
+                let img = document.getElementById('img-avatar-usuario');
+                img.src = foto;
+                img.style.display = 'block';
+            }
+        };
+
+        // Função que troca a tela dentro do Iframe sem piscar o site
+        function abrirFormFilho(nomeDaTelaHTML, elementoClicado) { 
+            document.getElementById('frame-filho').src = nomeDaTelaHTML; 
+            
+            // Gerencia a cor cinza do menu ativo
+            const links = document.querySelectorAll('.sidebar a'); 
+            links.forEach(l => l.classList.remove('ativo')); 
+            if (elementoClicado) elementoClicado.classList.add('ativo'); 
+        }
+
+        function fazerLogout() {
+            localStorage.clear(); // Limpa as senhas da máquina
+            window.location.href = "index.html"; // Joga de volta pra tela inicial
+        }
+    </script>
+</body>
+</html>

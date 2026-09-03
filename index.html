@@ -141,7 +141,7 @@
                     localStorage.setItem('ceu_perfil', retorno.token.perfil_usuario); 
                     
                     // 🚀 O REDIRECIONAMENTO CORRIGIDO: Joga direto para o admin.html!
-                    window.location.href = "dashboard2.html"; 
+                    window.location.href = "dashboard.html"; 
                 }
                 else {
                     Swal.fire('Acesso Negado', retorno.mensagem || retorno.erro || 'Credenciais inválidas.', 'error');

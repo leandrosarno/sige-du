@@ -36,7 +36,6 @@
         .floating-btn-save { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; padding: 15px; font-size: 18px; font-weight: bold; border-radius: 30px; box-shadow: 0 5px 15px rgba(13, 110, 253, 0.4); z-index: 1000;}
         select.form-control { height: 50px; font-size: 15px; font-weight: bold;}
 
-        /* Modais */
         .table-diario th, .table-diario td { vertical-align: middle; text-align: center; font-size: 13px; white-space: nowrap;}
         .table-diario th:first-child, .table-diario td:first-child { text-align: left; position: sticky; left: 0; background: white; z-index: 2; box-shadow: 2px 0 5px rgba(0,0,0,0.05); font-weight: bold;}
         .badge-status-P { background-color: #198754; color: white; padding: 5px 8px; border-radius: 4px;}
@@ -58,7 +57,6 @@
                 <i class="fas fa-user-cog"></i> Perfil
             </button>
             
-            <!-- 🌟 SINO DE NOTIFICAÇÃO (FICA INVISÍVEL ATÉ A CHEFIA LIBERAR) -->
             <button id="btnSinoAtrasadas" class="btn btn-sm btn-warning fw-bold text-dark" style="display: none;" onclick="abrirModalRetroativas()">
                 <i class="fas fa-bell fa-shake me-1"></i> Atrasadas (<span id="qtdAtrasadas">0</span>)
             </button>
@@ -85,7 +83,6 @@
 
             <div class="mb-3">
                 <label class="text-muted fw-bold mb-1"><i class="fas fa-users-class me-1"></i> Minhas Turmas *</label>
-                <!-- FLUXO NORMAL DE HOJE -->
                 <select id="comboTurmas" class="form-control" onchange="carregarAlunosFluxoNormal()">
                     <option value="">Aguarde, carregando turmas...</option>
                 </select>
@@ -105,7 +102,7 @@
     <i class="fas fa-cloud-upload-alt me-2"></i> SALVAR CHAMADA
 </button>
 
-<!-- 🌟 MODAL DE CHAMADAS ATRASADAS LIBERADAS -->
+<!-- MODAL DE CHAMADAS ATRASADAS LIBERADAS -->
 <div class="modal fade" id="modalRetroativas" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
@@ -117,15 +114,12 @@
         <div class="p-3 bg-light text-muted small border-bottom">
             A chefia liberou as seguintes chamadas atrasadas. Clique em uma para preencher agora:
         </div>
-        <div class="list-group list-group-flush" id="listaTurmasAtrasadas">
-            <!-- Injetado via JS -->
-        </div>
+        <div class="list-group list-group-flush" id="listaTurmasAtrasadas"></div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- (MANTIVE OS MODAIS ORIGINAIS DE DIÁRIO E LISTA DE ALUNOS AQUI PARA NÃO QUEBRAR NADA) -->
 <!-- MODAL DO DIÁRIO DE CLASSE -->
 <div class="modal fade" id="modalDiario" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -149,7 +143,7 @@
   </div>
 </div>
 
-<!-- MODAL: LISTA DE ALUNOS (CONSULTA LIVRE) -->
+<!-- MODAL DE LISTA DE ALUNOS -->
 <div class="modal fade" id="modalListaAlunos" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content">
@@ -232,8 +226,6 @@
                         htmlOpcoesTurmaCache += `<option value="${t.id}">${t.modalidade} - [${t.id}]</option>`; 
                         idsParaVerificar.push(t.id);
                     });
-                    
-                    // Dispara o Radar para ver se a chefia liberou algo no passado
                     verificarAtrasosNoRadar(idsParaVerificar);
                 }
                 combo.innerHTML = htmlOpcoesTurmaCache;
@@ -241,7 +233,6 @@
         });
     }
 
-    // 📡 RADAR DE ATRASOS
     function verificarAtrasosNoRadar(idsTurmas) {
         fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify({ acao: "buscarChamadasAtrasadasLiberadas", dados: { idPlanilha: idPlanilhaCeu, turmas: idsTurmas } }) 
@@ -277,16 +268,13 @@
         new bootstrap.Modal(document.getElementById('modalRetroativas')).show();
     }
 
-    // ⏱️ AÇÃO: O PROFESSOR CLICOU NA CHAMADA ATRASADA DENTRO DO MODAL
     function iniciarChamadaRetroativa(indexLiberacao) {
         const lib = arrayChamadasAtrasadas[indexLiberacao];
         const campoData = document.getElementById('dataAula');
         const combo = document.getElementById('comboTurmas');
         
-        // Fecha o Modal
         bootstrap.Modal.getInstance(document.getElementById('modalRetroativas')).hide();
         
-        // Aplica o Efeito Viagem no Tempo (Amarelo)
         combo.value = lib.idTurma;
         campoData.value = lib.dataPerdida;
         campoData.style.backgroundColor = '#fff3cd'; 
@@ -294,11 +282,9 @@
         campoData.style.borderColor = '#ffeeba';
         document.getElementById('lblDataAula').innerHTML = `<i class="fas fa-history me-1"></i> Data Retroativa Liberada`;
 
-        // Executa a busca DIRETO, pulando a trava de tempo (porque a chefia já autorizou)
-        executarBuscaDeAlunos(lib.idTurma);
+        executarBuscaDeAlunosComMemoria(lib.idTurma);
     }
 
-    // ⏳ VALIDAÇÃO DE HORÁRIO NORMAL (PARA HOJE)
     function isChamadaLiberada(diasString, horarioString) {
         const diasMapa = ["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SÁB"];
         const hoje = new Date();
@@ -325,14 +311,13 @@
         return { liberado: true };
     }
 
-    // 🌟 FLUXO NORMAL (O Professor escolheu a turma na combo box para fazer a aula de hoje)
     function carregarAlunosFluxoNormal() {
         const idTurma = document.getElementById('comboTurmas').value;
         const container = document.getElementById('listaAlunosContainer');
         const btnSalvar = document.getElementById('btnSalvar');
 
         container.innerHTML = ""; btnSalvar.style.display = "none";
-        resetarDataParaHoje(); // Garante que saiu do modo viagem no tempo
+        resetarDataParaHoje(); 
         
         if (!idTurma) return;
 
@@ -345,49 +330,62 @@
                 return; 
             }
         }
-        executarBuscaDeAlunos(idTurma);
+        executarBuscaDeAlunosComMemoria(idTurma);
     }
 
-    // 📡 MOTOR CENTRAL DE BUSCA DE ALUNOS
-    function executarBuscaDeAlunos(idTurma) {
+    // 📡 MOTOR CENTRAL DE BUSCA (AGORA COM MEMÓRIA DO PASSADO)
+    function executarBuscaDeAlunosComMemoria(idTurma) {
         const loader = document.getElementById('statusLoader');
         const container = document.getElementById('listaAlunosContainer');
         const btnSalvar = document.getElementById('btnSalvar');
+        const dataSelecionada = document.getElementById('dataAula').value.trim();
 
         presencas = {}; 
-        loader.innerHTML = `<i class="fas fa-circle-notch fa-spin fa-2x"></i><p class="mt-2 fw-bold">Buscando alunos da turma...</p>`;
+        loader.innerHTML = `<i class="fas fa-circle-notch fa-spin fa-2x"></i><p class="mt-2 fw-bold">Puxando histórico de presenças...</p>`;
         loader.style.display = "block";
 
-        fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({ acao: "buscarAlunosParaChamadaNovoSistema", dados: { idPlanilha: idPlanilhaCeu, idTurma: idTurma } }) 
-        })
-        .then(res => res.json())
-        .then(data => {
+        // MÁGICA: O app dispara duas buscas ao mesmo tempo (Alunos e Status Salvos)
+        Promise.all([
+            fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ acao: "buscarAlunosParaChamadaNovoSistema", dados: { idPlanilha: idPlanilhaCeu, idTurma: idTurma } }) }).then(res => res.json()),
+            fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ acao: "buscarStatusDiaNovoSistema", dados: { idPlanilha: idPlanilhaCeu, idTurma: idTurma, dataAula: dataSelecionada } }) }).then(res => res.json())
+        ])
+        .then(([dataAlunos, dataStatus]) => {
             loader.style.display = "none";
-            if (data.sucesso || data.status === "sucesso") {
-                alunosAtuais = data.alunos || (data.dados ? data.dados.alunos : []);
+            if (dataAlunos.sucesso || dataAlunos.status === "sucesso") {
+                alunosAtuais = dataAlunos.alunos || (dataAlunos.dados ? dataAlunos.dados.alunos : []);
                 if (!alunosAtuais || alunosAtuais.length === 0) {
                     container.innerHTML = `<div class="alert alert-warning text-center"><i class="fas fa-exclamation-triangle"></i> Nenhum aluno matriculado nesta turma.</div>`;
                     return;
                 }
 
+                // Dicionário com quem já tinha recebido chamada nesse dia
+                let statusSalvosNoBanco = (dataStatus.sucesso && dataStatus.presencas) ? dataStatus.presencas : {};
+
                 let html = ``;
                 alunosAtuais.forEach(al => {
-                    presencas[al.idAluno] = 'P'; 
+                    // SE o banco já tem P, F ou FJ para ele, puxa a cor correta. SE for aula nova (zerada), o padrão é P.
+                    let statusAtual = statusSalvosNoBanco[al.idAluno] ? statusSalvosNoBanco[al.idAluno] : 'P';
+                    presencas[al.idAluno] = statusAtual; 
+
+                    let classRow = statusAtual === 'P' ? 'presente' : (statusAtual === 'FJ' ? 'fj' : 'falta');
+                    let ativoP = statusAtual === 'P' ? 'ativo' : '';
+                    let ativoFJ = statusAtual === 'FJ' ? 'ativo' : '';
+                    let ativoF = statusAtual === 'F' ? 'ativo' : '';
+
                     html += `
-                    <div class="aluno-row presente" id="row-${al.idAluno}">
+                    <div class="aluno-row ${classRow}" id="row-${al.idAluno}">
                         <div><p class="nome-aluno">${al.nomeAluno}</p><p class="id-aluno">CÓD. EOL: ${al.idAluno}</p></div>
                         <div class="botoes-status">
-                            <div class="btn-status btn-p ativo" id="btn-p-${al.idAluno}" onclick="marcar('${al.idAluno}', 'P')" title="Presente"><i class="fas fa-check-circle me-1"></i> P</div>
-                            <div class="btn-status btn-fj" id="btn-fj-${al.idAluno}" onclick="marcar('${al.idAluno}', 'FJ')" title="Falta Justificada"><i class="fas fa-file-medical me-1"></i> FJ</div>
-                            <div class="btn-status btn-f" id="btn-f-${al.idAluno}" onclick="marcar('${al.idAluno}', 'F')" title="Falta"><i class="fas fa-times-circle me-1"></i> F</div>
+                            <div class="btn-status btn-p ${ativoP}" id="btn-p-${al.idAluno}" onclick="marcar('${al.idAluno}', 'P')" title="Presente"><i class="fas fa-check-circle me-1"></i> P</div>
+                            <div class="btn-status btn-fj ${ativoFJ}" id="btn-fj-${al.idAluno}" onclick="marcar('${al.idAluno}', 'FJ')" title="Falta Justificada"><i class="fas fa-file-medical me-1"></i> FJ</div>
+                            <div class="btn-status btn-f ${ativoF}" id="btn-f-${al.idAluno}" onclick="marcar('${al.idAluno}', 'F')" title="Falta"><i class="fas fa-times-circle me-1"></i> F</div>
                         </div>
                     </div>`;
                 });
                 container.innerHTML = html;
                 btnSalvar.style.display = "block";
-            } else { Swal.fire('Aviso', data.erro || data.mensagem, 'warning'); }
-        }).catch(e => { loader.style.display = "none"; Swal.fire('Erro', 'Falha ao buscar os alunos.', 'error'); });
+            } else { Swal.fire('Aviso', dataAlunos.erro || dataAlunos.mensagem, 'warning'); }
+        }).catch(e => { loader.style.display = "none"; Swal.fire('Erro', 'Falha ao cruzar o histórico de chamadas.', 'error'); });
     }
 
     function marcar(idAluno, status) {
@@ -417,22 +415,14 @@
         btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> SALVANDO...'; btn.disabled = true;
 
         fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({ 
-                acao: "salvarChamadaOnlineNovoSistema", 
-                dados: { 
-                    idPlanilha: idPlanilhaCeu, dataAula: dataAulaRaw, idTurma: idTurma, 
-                    nomeProfessor: usuarioAtual, idProfessor: rfLogadoAtual, frequencia: listaFrequencia 
-                } 
-            }) 
+            body: JSON.stringify({ acao: "salvarChamadaOnlineNovoSistema", dados: { idPlanilha: idPlanilhaCeu, dataAula: dataAulaRaw, idTurma: idTurma, operador: rfLogadoAtual, frequencia: listaFrequencia } }) 
         })
         .then(res => res.json())
         .then(obj => {
             if (obj.sucesso || obj.status === "sucesso") {
                 Swal.fire({ title: 'Salvo!', icon: 'success', timer: 1500, showConfirmButton: false }).then(() => {
-                    document.getElementById('comboTurmas').value = ""; 
-                    document.getElementById('listaAlunosContainer').innerHTML = ""; 
-                    btn.style.display = "none";
-                    resetarDataParaHoje(); // Limpa e volta pro fluxo normal
+                    document.getElementById('comboTurmas').value = ""; document.getElementById('listaAlunosContainer').innerHTML = ""; btn.style.display = "none";
+                    resetarDataParaHoje(); // Reseta para aula normal e evita novos erros
                     carregarTurmas(); // Atualiza o sino se a liberação já foi usada
                 });
             } else { Swal.fire('Erro', obj.erro || obj.mensagem, 'error'); }
@@ -440,9 +430,6 @@
         .finally(() => { btn.innerHTML = txtAnterior; btn.disabled = false; });
     }
 
-    // ==========================================
-    // MÁGICAS: DIÁRIO DE CLASSE & LISTA DE CONSULTA MANTIDAS INTACTAS
-    // ==========================================
     function abrirModalDiario() {
         document.getElementById('comboTurmasModal').innerHTML = htmlOpcoesTurmaCache;
         document.getElementById('tabelaDiarioContainer').style.display = 'none';

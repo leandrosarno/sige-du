@@ -33,10 +33,10 @@
 
         .folha-chamada { font-family: Arial, sans-serif; width: 100%; page-break-after: always; color: #000; }
         
-        /* 🌟 NOVO DESIGN BICOLOR DO CABEÇALHO */
+        /* 🌟 CABEÇALHO OFICIAL BRANCO COM LETRAS PRETAS */
         .cabecalho-oficial { 
-            background-color: white !important; 
-            color: black !important; 
+            background-color: white !important;
+            color: black !important;
             font-size: 13px; 
             font-weight: bold; 
             text-align: center; 
@@ -46,18 +46,20 @@
             border-bottom: none;
             border-radius: 6px 6px 0 0;
             line-height: 1.2; 
-            -webkit-print-color-adjust: exact; print-color-adjust: exact;
+            -webkit-print-color-adjust: exact; 
+            print-color-adjust: exact;
         }
 
+        /* 🌟 BLOCO INFERIOR AZUL */
         .bloco-topo-azul {
             background-color: #0a429c !important; 
             color: white !important;
-            padding: 4px 8px;
+            padding: 5px 8px;
             margin-bottom: 0px !important; 
             border: 2px solid #000;
             border-top: 1px solid #000;
-            border-radius: 0 0 6px 6px;
-            -webkit-print-color-adjust: exact; print-color-adjust: exact;
+            -webkit-print-color-adjust: exact; 
+            print-color-adjust: exact;
         }
 
         .tabela-info { width: 100%; font-size: 11px; border-collapse: collapse; border: none !important; margin: 0 !important; }
@@ -275,13 +277,13 @@
               
               let htmlFolha = `
               <div class="folha-chamada">
-                  <!-- CAIXA BRANCA INDEPENDENTE -->
+                  <!-- 🌟 CAIXA BRANCA INDEPENDENTE -->
                   <div class="cabecalho-oficial">
                       ${txtCabecalho}<br>
                       ${dados.nomeCeu}
                   </div>
                   
-                  <!-- CAIXA AZUL INFERIOR -->
+                  <!-- 🌟 CAIXA AZUL INFERIOR -->
                   <div class="bloco-topo-azul">
                       <table class="tabela-info">
                           <tr>
@@ -342,7 +344,6 @@
                           <td class="col-nome">${aluno.nome}</td>
                           <td>${aluno.eol}</td>`;
                       
-                      // 🌟 A MÁGICA RECUPERADA INTACTA 
                       let faltasTotais = 0;
                       let faltasJustificadas = 0;
 

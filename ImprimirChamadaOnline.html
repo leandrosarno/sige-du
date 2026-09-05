@@ -7,8 +7,10 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="config.js"></script>
-  
   <style>
+    /* =========================================
+       🎨 TELA DO FORMULÁRIO
+       ========================================= */
     body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; }
     .card-premium { border: none; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); background: #fff; }
     .card-header-custom { background: linear-gradient(135deg, #198754, #146c43); color: white; border-radius: 15px 15px 0 0 !important; padding: 20px; }
@@ -18,6 +20,9 @@
     .radio-box:hover { background: #f8f9fa; }
     input[type="radio"]:checked + .radio-box { background: #d1e7dd; border-color: #198754; color: #198754; box-shadow: 0 0 0 2px rgba(25, 135, 84, 0.2); }
 
+    /* =========================================
+       🖨️ MODO DE IMPRESSÃO (DIÁRIO OFICIAL PAISAGEM)
+       ========================================= */
     #areaImpressao { display: none; }
     
     @media print {
@@ -28,18 +33,35 @@
 
         .folha-chamada { font-family: Arial, sans-serif; width: 100%; page-break-after: always; color: #000; }
         
+        /* 🌟 NOVO DESIGN BICOLOR DO CABEÇALHO */
+        .cabecalho-oficial { 
+            background-color: white !important; 
+            color: black !important; 
+            font-size: 13px; 
+            font-weight: bold; 
+            text-align: center; 
+            margin-bottom: 0px !important; 
+            padding: 4px;
+            border: 2px solid #000;
+            border-bottom: none;
+            border-radius: 6px 6px 0 0;
+            line-height: 1.2; 
+            -webkit-print-color-adjust: exact; print-color-adjust: exact;
+        }
+
         .bloco-topo-azul {
             background-color: #0a429c !important; 
             color: white !important;
-            padding: 8px 10px;
-            margin-bottom: 5px;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
+            padding: 4px 8px;
+            margin-bottom: 0px !important; 
+            border: 2px solid #000;
+            border-top: 1px solid #000;
+            border-radius: 0 0 6px 6px;
+            -webkit-print-color-adjust: exact; print-color-adjust: exact;
         }
 
-        .cabecalho-oficial { font-size: 14px; font-weight: bold; text-align: center; margin-bottom: 12px; line-height: 1.3; }
-        .tabela-info { width: 100%; font-size: 11px; border-collapse: collapse; border: none !important; }
-        .tabela-info td { padding: 4px; border: none !important; vertical-align: middle; color: white !important; }
+        .tabela-info { width: 100%; font-size: 11px; border-collapse: collapse; border: none !important; margin: 0 !important; }
+        .tabela-info td { padding: 2px 4px; border: none !important; vertical-align: middle; color: white !important; }
 
         .lbl-azul {
             background-color: #0a429c !important; color: white !important; font-weight: bold;
@@ -48,14 +70,18 @@
 
         .dado-branco {
             background-color: white !important; color: black !important; font-weight: bold;
-            padding: 3px 6px; display: inline-block; min-width: 50px;
+            padding: 2px 6px; display: inline-block; min-width: 50px;
             border: none !important; border-radius: 0 !important; 
             -webkit-print-color-adjust: exact; print-color-adjust: exact;
         }
 
-        .tabela-grid { width: 100%; border-collapse: collapse; font-size: 8px; text-align: center; }
-        .tabela-grid th, .tabela-grid td { border: 1px solid #000; padding: 3px 2px; }
-        .tabela-grid th { background-color: white !important; color: black !important; font-weight: bold; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .tabela-grid { width: 100%; border-collapse: collapse; font-size: 8px; text-align: center; margin: 0 !important;}
+        .tabela-grid th, .tabela-grid td { border: 1px solid #000; padding: 2px 1px; }
+        
+        .tabela-grid th { 
+            background-color: white !important; color: black !important; font-weight: bold; 
+            -webkit-print-color-adjust: exact; print-color-adjust: exact;
+        }
         
         .bg-cinza { background-color: #cccccc !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         
@@ -65,11 +91,11 @@
         .col-dia { width: 2%; }
         .col-falta { width: 3%; font-weight: bold; }
 
-        .rodape-oficial { width: 100%; font-size: 10px; margin-top: 15px; border-collapse: collapse; }
-        .rodape-oficial td { border: 1px solid #000; padding: 5px; vertical-align: top; }
-        .box-obs { width: 30%; height: 60px; }
-        .box-ocorrencias { width: 45%; height: 60px; }
-        .box-assinatura { width: 25%; height: 60px; text-align: center; vertical-align: bottom; padding-bottom: 5px; }
+        .rodape-oficial { width: 100%; font-size: 10px; border-collapse: collapse; margin-top: 0px !important; }
+        .rodape-oficial td { border: 1px solid #000; padding: 4px; vertical-align: top; }
+        .box-obs { width: 30%; height: 50px; }
+        .box-ocorrencias { width: 45%; height: 50px; }
+        .box-assinatura { width: 25%; height: 50px; text-align: center; vertical-align: bottom; padding-bottom: 2px; }
     }
   </style>
 </head>
@@ -110,17 +136,22 @@
 
         <div class="mb-3" id="divProfessor" style="display:none;">
           <label class="form-label fw-bold"><i class="fas fa-chalkboard-teacher text-success me-1"></i> Selecione o Professor</label>
-          <select class="form-select form-select-lg fw-bold text-uppercase" id="nomeProfessor"><option value="">Carregando...</option></select>
+          <select class="form-select form-select-lg fw-bold text-uppercase" id="nomeProfessor">
+             <option value="">Carregando professores...</option>
+          </select>
         </div>
 
         <div class="mb-3" id="divNucleo" style="display:none;">
           <label class="form-label fw-bold"><i class="fas fa-building text-success me-1"></i> Selecione o Núcleo</label>
-          <select class="form-select form-select-lg fw-bold text-uppercase" id="nomeNucleo"><option value="">Carregando...</option></select>
+          <select class="form-select form-select-lg fw-bold text-uppercase" id="nomeNucleo">
+             <option value="">Carregando núcleos...</option>
+          </select>
         </div>
 
         <div class="mb-4">
           <label class="form-label fw-bold"><i class="fas fa-calendar-alt text-success me-1"></i> Mês e Ano de Referência</label>
           <input type="text" class="form-control form-control-lg text-center" id="mesAno" required placeholder="ex: 08/2026" maxlength="7">
+          <div class="form-text text-center">Formato padrão: <strong>MM/AAAA</strong></div>
         </div>
 
         <button type="submit" class="btn btn-gerar" id="btnSubmit">
@@ -143,8 +174,10 @@
 
   async function carregarCombosDependencias() {
       try {
-          const resRaw = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao: "buscarDependenciasTurma", dados: { id_planilha: idPlanilhaCeu } }) });
+          const pacote = { acao: "buscarDependenciasTurma", dados: { id_planilha: idPlanilhaCeu } };
+          const resRaw = await fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) });
           const res = await resRaw.json();
+
           if (res.status === "sucesso") {
               let htmlProf = '<option value="">-- Escolha um Professor --</option>';
               res.professores.forEach(p => htmlProf += `<option value="${p}">${p}</option>`);
@@ -170,18 +203,18 @@
 
     const tipoBusca = document.querySelector('input[name="tipoBusca"]:checked').value;
     const mesAno = document.getElementById("mesAno").value.trim();
-    let valorBuscado = "";
     
+    let valorBuscado = "";
     if (tipoBusca === "turma") valorBuscado = document.getElementById("idTurma").value.trim();
     if (tipoBusca === "professor") valorBuscado = document.getElementById("nomeProfessor").value.trim();
     if (tipoBusca === "nucleo") valorBuscado = document.getElementById("nomeNucleo").value.trim();
 
-    if (!valorBuscado) return Swal.fire('Aviso', 'Preencha o campo de busca!', 'warning');
+    if (!valorBuscado) return Swal.fire('Aviso', 'Preencha ou selecione o campo de busca!', 'warning');
+    if(!/^\d{2}\/\d{4}$/.test(mesAno)) return Swal.fire('Aviso', 'Data deve ser MM/AAAA.', 'warning');
 
     Swal.fire({ title: 'Buscando Base de Alunos...', text: 'Acessando os diários...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
 
     try {
-        // 1. Puxa as turmas
         const pacote = { acao: "buscarDadosChamadaHTML", dados: { idPlanilha: idPlanilhaCeu, tipoBusca: tipoBusca, valorBuscado: valorBuscado, mesAno: mesAno } };
         const resRaw = await fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) });
         const res = await resRaw.json();
@@ -189,7 +222,6 @@
         if (res.status === "sucesso") {
             Swal.fire({ title: 'Cruzando Frequências...', text: 'Localizando "P" e "F" gravados...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
             
-            // 2. Puxa as presenças registradas no mês (A peça que estava faltando!)
             const pacoteFreq = { acao: "buscarFrequenciaMesOnline", dados: { idPlanilha: idPlanilhaCeu, mesAno: mesAno } };
             const resFreqRaw = await fetch(API_URL, { method: 'POST', body: JSON.stringify(pacoteFreq) });
             const resFreq = await resFreqRaw.json();
@@ -219,14 +251,13 @@
           const ALUNOS_POR_PAG = 25; 
           const paginas = Math.ceil(turma.alunos.length / ALUNOS_POR_PAG) || 1;
 
-          // Pega as presenças SÓ desta turma
           let registrosTurma = registros[turma.id] || {};
 
           let diasFundo = [];
           for (let d = 1; d <= 31; d++) {
               if (d <= qtdDiasNoMes) {
                   let objData = new Date(numAno, numMes, d, 12, 0, 0);
-                  if (turma.diasAtivos && turma.diasAtivos.length > 0 && !turma.diasAtivos.includes(objData.getDay())) {
+                  if (turma.diasAtivos.length > 0 && !turma.diasAtivos.includes(objData.getDay())) {
                       diasFundo.push("bg-cinza"); 
                   } else {
                       diasFundo.push(""); 
@@ -235,7 +266,7 @@
                   diasFundo.push("bg-cinza"); 
               }
           }
-
+          
           let txtCabecalho = turma.cabecalho && turma.cabecalho !== "" ? turma.cabecalho : `SME/COCEU/${turma.sigla} - FREQUÊNCIA PREENCHIDA`;
           let txtRodape = turma.rodape && turma.rodape !== "" ? turma.rodape : "Carimbo e<br>assinatura do NEL";
 
@@ -244,19 +275,22 @@
               
               let htmlFolha = `
               <div class="folha-chamada">
+                  <!-- CAIXA BRANCA INDEPENDENTE -->
+                  <div class="cabecalho-oficial">
+                      ${txtCabecalho}<br>
+                      ${dados.nomeCeu}
+                  </div>
+                  
+                  <!-- CAIXA AZUL INFERIOR -->
                   <div class="bloco-topo-azul">
-                      <div class="cabecalho-oficial">
-                          ${txtCabecalho}<br>
-                          CEU ${dados.nomeCeu}
-                      </div>
-
                       <table class="tabela-info">
                           <tr>
                               <td width="28%"><span class="lbl-azul">NOME:</span> <span class="dado-branco">${turma.professor}</span></td>
                               <td width="28%"><span class="lbl-azul">ATIVIDADE:</span> <span class="dado-branco">${turma.modalidade}</span></td>
                               <td width="20%"><span class="lbl-azul">TURMA:</span> <span class="dado-branco" style="min-width: 50px;">&nbsp;</span></td>
-                              <td width="24%" rowspan="3" style="vertical-align: top; text-align: left;">
-                                  <div class="dado-branco" style="width: 100%; height: 100%; font-size: 10px; padding: 4px;">
+                              
+                              <td width="24%" rowspan="3" style="vertical-align: top; text-align: right; padding-left: 10px;">
+                                  <div class="dado-branco" style="width: 100%; height: 100%; font-size: 9px; line-height: 1.2; padding: 4px; text-align: left;">
                                       <strong>Legenda:</strong><br>
                                       P - PRESENÇA<br>
                                       F - FALTA<br>
@@ -308,7 +342,7 @@
                           <td class="col-nome">${aluno.nome}</td>
                           <td>${aluno.eol}</td>`;
                       
-                      // 🌟 A MÁGICA RECUPERADA: Injetando as Presenças e Contando as Faltas!
+                      // 🌟 A MÁGICA RECUPERADA INTACTA 
                       let faltasTotais = 0;
                       let faltasJustificadas = 0;
 

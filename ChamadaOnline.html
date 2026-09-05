@@ -492,7 +492,7 @@ function carregarTurmas() {
         new bootstrap.Modal(document.getElementById('modalListaAlunos')).show();
     }
 
-    function carregarListaAlunosConsulta() {
+function carregarListaAlunosConsulta() {
         const idTurma = document.getElementById('comboTurmasConsulta').value;
         const loader = document.getElementById('loaderConsulta');
         const container = document.getElementById('tabelaConsultaContainer');
@@ -502,8 +502,9 @@ function carregarTurmas() {
         if(!idTurma) return;
         loader.style.display = 'block';
 
+        // 🚀 A CORREÇÃO: Agora o HTML chama a ação "buscarAlunosConsultaNovoSistema" que traz o EOL!
         fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({ acao: "buscarAlunosParaChamadaNovoSistema", dados: { idPlanilha: idPlanilhaCeu, idTurma: idTurma } }) 
+            body: JSON.stringify({ acao: "buscarAlunosConsultaNovoSistema", dados: { idPlanilha: idPlanilhaCeu, idTurma: idTurma } }) 
         })
         .then(res => res.json())
         .then(data => {
@@ -517,13 +518,21 @@ function carregarTurmas() {
                     alunos.forEach((al, index) => {
                         let pront = al.prontuario || "-";
                         let eolNum = al.eol || "-";
-                        if(!al.prontuario && !al.eol) pront = al.idAluno; 
-                        trBody += `<tr><td class="text-center fw-bold align-middle">${index + 1}</td><td class="text-center text-primary fw-bold align-middle">${pront}</td><td class="text-center fw-bold text-muted align-middle">${eolNum}</td><td class="fw-bold align-middle text-start ps-2">${al.nomeAluno}</td></tr>`;
+                        if(!al.prontuario && !al.eol) pront = al.idAluno; // Fallback caso seja o formato antigo
+
+                        trBody += `<tr>
+                            <td class="text-center fw-bold align-middle">${index + 1}</td>
+                            <td class="text-center text-primary fw-bold align-middle">${pront}</td>
+                            <td class="text-center fw-bold text-muted align-middle">${eolNum}</td>
+                            <td class="fw-bold align-middle text-start ps-2">${al.nomeAluno}</td>
+                        </tr>`;
                     });
                     tbody.innerHTML = trBody;
                 }
                 container.style.display = 'block';
-            } else { Swal.fire('Aviso', data.erro || 'Falha ao buscar os alunos.', 'warning'); }
+            } else {
+                Swal.fire('Aviso', data.erro || 'Falha ao buscar os alunos.', 'warning');
+            }
         }).catch(e => { loader.style.display = 'none'; Swal.fire('Erro', 'Falha na conexão.', 'error'); });
     }
 </script>

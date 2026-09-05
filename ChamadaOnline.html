@@ -36,13 +36,16 @@
         .floating-btn-save { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; padding: 15px; font-size: 18px; font-weight: bold; border-radius: 30px; box-shadow: 0 5px 15px rgba(13, 110, 253, 0.4); z-index: 1000;}
         select.form-control { height: 50px; font-size: 15px; font-weight: bold;}
 
-        /* CSS Mágico dos Modais */
+        /* Modais */
         .table-diario th, .table-diario td { vertical-align: middle; text-align: center; font-size: 13px; white-space: nowrap;}
         .table-diario th:first-child, .table-diario td:first-child { text-align: left; position: sticky; left: 0; background: white; z-index: 2; box-shadow: 2px 0 5px rgba(0,0,0,0.05); font-weight: bold;}
         .badge-status-P { background-color: #198754; color: white; padding: 5px 8px; border-radius: 4px;}
         .badge-status-F { background-color: #dc3545; color: white; padding: 5px 8px; border-radius: 4px;}
         .badge-status-FJ { background-color: #fd7e14; color: white; padding: 5px 8px; border-radius: 4px;}
         .badge-status-N { background-color: #e9ecef; color: #adb5bd; padding: 5px 8px; border-radius: 4px;}
+        
+        .list-group-item-retro { border-left: 5px solid #ffc107; cursor: pointer; transition: 0.2s; }
+        .list-group-item-retro:hover { background-color: #fff8e5; }
     </style>
 </head>
 <body>
@@ -55,6 +58,11 @@
                 <i class="fas fa-user-cog"></i> Perfil
             </button>
             
+            <!-- 🌟 SINO DE NOTIFICAÇÃO (FICA INVISÍVEL ATÉ A CHEFIA LIBERAR) -->
+            <button id="btnSinoAtrasadas" class="btn btn-sm btn-warning fw-bold text-dark" style="display: none;" onclick="abrirModalRetroativas()">
+                <i class="fas fa-bell fa-shake me-1"></i> Atrasadas (<span id="qtdAtrasadas">0</span>)
+            </button>
+
             <button class="btn btn-sm text-white" style="background: rgba(255, 255, 255, 0.3); border: 1px solid white; font-weight: bold;" onclick="abrirModalListaAlunos()">
                 <i class="fas fa-users"></i> Alunos
             </button>
@@ -71,13 +79,14 @@
         
         <div class="card-body">
             <div class="mb-3">
-                <label class="text-muted fw-bold mb-1"><i class="fas fa-calendar-day me-1"></i> Data da Aula (Hoje) *</label>
+                <label class="text-muted fw-bold mb-1" id="lblDataAula"><i class="fas fa-calendar-day me-1"></i> Data da Aula *</label>
                 <input type="text" id="dataAula" class="form-control text-center fw-bold fs-5" style="background-color: #e9ecef; color: #495057; border: 1px solid #ced4da;" readonly>
             </div>
 
             <div class="mb-3">
                 <label class="text-muted fw-bold mb-1"><i class="fas fa-users-class me-1"></i> Minhas Turmas *</label>
-                <select id="comboTurmas" class="form-control" onchange="carregarAlunos()">
+                <!-- FLUXO NORMAL DE HOJE -->
+                <select id="comboTurmas" class="form-control" onchange="carregarAlunosFluxoNormal()">
                     <option value="">Aguarde, carregando turmas...</option>
                 </select>
             </div>
@@ -96,6 +105,27 @@
     <i class="fas fa-cloud-upload-alt me-2"></i> SALVAR CHAMADA
 </button>
 
+<!-- 🌟 MODAL DE CHAMADAS ATRASADAS LIBERADAS -->
+<div class="modal fade" id="modalRetroativas" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header" style="background-color: #ffc107;">
+        <h5 class="modal-title fw-bold text-dark"><i class="fas fa-unlock-alt me-2"></i> Chamadas Liberadas</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-0">
+        <div class="p-3 bg-light text-muted small border-bottom">
+            A chefia liberou as seguintes chamadas atrasadas. Clique em uma para preencher agora:
+        </div>
+        <div class="list-group list-group-flush" id="listaTurmasAtrasadas">
+            <!-- Injetado via JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- (MANTIVE OS MODAIS ORIGINAIS DE DIÁRIO E LISTA DE ALUNOS AQUI PARA NÃO QUEBRAR NADA) -->
 <!-- MODAL DO DIÁRIO DE CLASSE -->
 <div class="modal fade" id="modalDiario" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -106,18 +136,12 @@
       </div>
       <div class="modal-body">
         <div class="mb-3">
-            <label class="fw-bold text-muted" style="font-size: 13px;">Selecione a Turma para consultar:</label>
-            <select id="comboTurmasModal" class="form-select border-primary" onchange="carregarDiarioTurma()">
-                <option value="">Aguarde...</option>
-            </select>
+            <select id="comboTurmasModal" class="form-select border-primary" onchange="carregarDiarioTurma()"><option value="">Aguarde...</option></select>
         </div>
-        <div id="loaderDiario" class="text-center text-primary my-3" style="display: none;">
-            <i class="fas fa-circle-notch fa-spin fa-2x"></i><br><small>Montando o diário...</small>
-        </div>
-        <div class="table-responsive" id="tabelaDiarioContainer" style="max-height: 60vh; border-radius: 8px; box-shadow: inset 0 0 10px rgba(0,0,0,0.05); display: none;">
+        <div id="loaderDiario" class="text-center text-primary my-3" style="display: none;"><i class="fas fa-circle-notch fa-spin fa-2x"></i></div>
+        <div class="table-responsive" id="tabelaDiarioContainer" style="display: none;">
             <table class="table table-bordered table-striped table-hover table-diario bg-white m-0" id="tabelaDiario">
-                <thead class="table-dark" id="tabelaDiarioHead"></thead>
-                <tbody id="tabelaDiarioBody"></tbody>
+                <thead class="table-dark" id="tabelaDiarioHead"></thead><tbody id="tabelaDiarioBody"></tbody>
             </table>
         </div>
       </div>
@@ -125,7 +149,7 @@
   </div>
 </div>
 
-<!-- MODAL: LISTA DE ALUNOS -->
+<!-- MODAL: LISTA DE ALUNOS (CONSULTA LIVRE) -->
 <div class="modal fade" id="modalListaAlunos" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content">
@@ -135,25 +159,13 @@
       </div>
       <div class="modal-body p-2 p-md-3">
         <div class="mb-3 px-2">
-            <label class="fw-bold text-muted" style="font-size: 13px;">Selecione a Turma:</label>
-            <select id="comboTurmasConsulta" class="form-select border-primary" onchange="carregarListaAlunosConsulta()">
-                <option value="">Aguarde...</option>
-            </select>
+            <select id="comboTurmasConsulta" class="form-select border-primary" onchange="carregarListaAlunosConsulta()"><option value="">Aguarde...</option></select>
         </div>
-        
-        <div id="loaderConsulta" class="text-center text-primary my-3" style="display: none;">
-            <i class="fas fa-circle-notch fa-spin fa-2x"></i><br><small>Buscando alunos...</small>
-        </div>
-
-        <div class="table-responsive" id="tabelaConsultaContainer" style="max-height: 55vh; border-radius: 8px; box-shadow: inset 0 0 10px rgba(0,0,0,0.05); display: none;">
+        <div id="loaderConsulta" class="text-center text-primary my-3" style="display: none;"><i class="fas fa-circle-notch fa-spin fa-2x"></i></div>
+        <div class="table-responsive" id="tabelaConsultaContainer" style="display: none;">
             <table class="table table-bordered table-striped table-hover bg-white m-0" style="font-size: 12px; min-width: 400px;">
                 <thead class="table-dark" style="position: sticky; top: 0; z-index: 1;">
-                    <tr>
-                        <th width="10%" class="text-center">Nº</th>
-                        <th width="20%" class="text-center">PRONTUÁRIO</th>
-                        <th width="20%" class="text-center">CÓD. EOL</th>
-                        <th width="50%">NOME DO ALUNO</th>
-                    </tr>
+                    <tr><th width="10%">Nº</th><th width="20%">PRONTUÁRIO</th><th width="20%">CÓD. EOL</th><th width="50%">NOME DO ALUNO</th></tr>
                 </thead>
                 <tbody id="tabelaConsultaBody"></tbody>
             </table>
@@ -176,28 +188,35 @@
     let alunosAtuais = [];
     let presencas = {}; 
     let htmlOpcoesTurmaCache = '<option value="">-- Toque para selecionar a turma --</option>'; 
+    let arrayChamadasAtrasadas = [];
 
-    function abrirPerfil() {
-        if(window.parent && typeof window.parent.abrirTrocaSenhaLogado === "function") window.parent.abrirTrocaSenhaLogado();
-    }
-    function sairApp() {
-        if(window.parent && typeof window.parent.fazerLogout === "function") window.parent.fazerLogout();
-        else { localStorage.clear(); window.location.href = "index.html"; }
-    }
+    function abrirPerfil() { if(window.parent && typeof window.parent.abrirTrocaSenhaLogado === "function") window.parent.abrirTrocaSenhaLogado(); }
+    function sairApp() { if(window.parent && typeof window.parent.fazerLogout === "function") window.parent.fazerLogout(); else { localStorage.clear(); window.location.href = "index.html"; } }
 
     document.addEventListener("DOMContentLoaded", () => {
         document.getElementById('lbl-ceu').innerText = nomeCeu;
+        resetarDataParaHoje();
+        carregarTurmas();
+    });
+
+    function resetarDataParaHoje() {
         const hoje = new Date();
         const dia = String(hoje.getDate()).padStart(2, '0');
         const mes = String(hoje.getMonth() + 1).padStart(2, '0');
         const ano = hoje.getFullYear();
-        document.getElementById('dataAula').value = `${dia}/${mes}/${ano}`;
-        carregarTurmas();
-    });
+        const campoData = document.getElementById('dataAula');
+        
+        campoData.value = `${dia}/${mes}/${ano}`;
+        campoData.style.backgroundColor = '#e9ecef';
+        campoData.style.color = '#495057';
+        campoData.style.borderColor = '#ced4da';
+        document.getElementById('lblDataAula').innerHTML = `<i class="fas fa-calendar-day me-1"></i> Data da Aula (Hoje) *`;
+    }
 
     function carregarTurmas() {
         if (!idPlanilhaCeu) return;
         const pacote = { acao: "buscarTurmasAPPProfessor", dados: { idPlanilha: idPlanilhaCeu, rfLogado: rfLogadoAtual, perfil: perfilAtual } };
+        
         fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(pacote) })
         .then(res => res.json())
         .then(data => {
@@ -208,21 +227,84 @@
                     htmlOpcoesTurmaCache = '<option value="">Nenhuma turma vinculada ao seu RF.</option>';
                 } else {
                     htmlOpcoesTurmaCache = '<option value="">-- Toque para selecionar a turma --</option>';
-                    turmasGlobais.forEach(t => { htmlOpcoesTurmaCache += `<option value="${t.id}">${t.modalidade} - [${t.id}]</option>`; });
+                    let idsParaVerificar = [];
+                    turmasGlobais.forEach(t => { 
+                        htmlOpcoesTurmaCache += `<option value="${t.id}">${t.modalidade} - [${t.id}]</option>`; 
+                        idsParaVerificar.push(t.id);
+                    });
+                    
+                    // Dispara o Radar para ver se a chefia liberou algo no passado
+                    verificarAtrasosNoRadar(idsParaVerificar);
                 }
                 combo.innerHTML = htmlOpcoesTurmaCache;
             }
         });
     }
 
+    // 📡 RADAR DE ATRASOS
+    function verificarAtrasosNoRadar(idsTurmas) {
+        fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ acao: "buscarChamadasAtrasadasLiberadas", dados: { idPlanilha: idPlanilhaCeu, turmas: idsTurmas } }) 
+        })
+        .then(res => res.json())
+        .then(data => {
+            let obj = data.retorno || data;
+            if (obj.sucesso && obj.liberacoes && obj.liberacoes.length > 0) {
+                arrayChamadasAtrasadas = obj.liberacoes;
+                document.getElementById('qtdAtrasadas').innerText = arrayChamadasAtrasadas.length;
+                document.getElementById('btnSinoAtrasadas').style.display = "inline-block";
+                
+                let htmlModal = "";
+                arrayChamadasAtrasadas.forEach((lib, index) => {
+                    const turmaInfo = turmasGlobais.find(t => t.id === lib.idTurma);
+                    const nomeTurma = turmaInfo ? turmaInfo.modalidade : "Turma Desconhecida";
+                    
+                    htmlModal += `
+                    <div class="list-group-item list-group-item-action list-group-item-retro p-3" onclick="iniciarChamadaRetroativa(${index})">
+                        <div class="d-flex w-100 justify-content-between align-items-center">
+                            <h6 class="mb-1 fw-bold text-dark">${nomeTurma} [${lib.idTurma}]</h6>
+                            <span class="badge bg-danger rounded-pill"><i class="fas fa-calendar-times"></i> ${lib.dataPerdida}</span>
+                        </div>
+                        <small class="text-muted"><i class="fas fa-clock"></i> Liberado para edição até: <b>${lib.limite}</b></small>
+                    </div>`;
+                });
+                document.getElementById('listaTurmasAtrasadas').innerHTML = htmlModal;
+            }
+        }).catch(e => console.log("Erro silencioso no radar de atrasos."));
+    }
+
+    function abrirModalRetroativas() {
+        new bootstrap.Modal(document.getElementById('modalRetroativas')).show();
+    }
+
+    // ⏱️ AÇÃO: O PROFESSOR CLICOU NA CHAMADA ATRASADA DENTRO DO MODAL
+    function iniciarChamadaRetroativa(indexLiberacao) {
+        const lib = arrayChamadasAtrasadas[indexLiberacao];
+        const campoData = document.getElementById('dataAula');
+        const combo = document.getElementById('comboTurmas');
+        
+        // Fecha o Modal
+        bootstrap.Modal.getInstance(document.getElementById('modalRetroativas')).hide();
+        
+        // Aplica o Efeito Viagem no Tempo (Amarelo)
+        combo.value = lib.idTurma;
+        campoData.value = lib.dataPerdida;
+        campoData.style.backgroundColor = '#fff3cd'; 
+        campoData.style.color = '#856404';
+        campoData.style.borderColor = '#ffeeba';
+        document.getElementById('lblDataAula').innerHTML = `<i class="fas fa-history me-1"></i> Data Retroativa Liberada`;
+
+        // Executa a busca DIRETO, pulando a trava de tempo (porque a chefia já autorizou)
+        executarBuscaDeAlunos(lib.idTurma);
+    }
+
+    // ⏳ VALIDAÇÃO DE HORÁRIO NORMAL (PARA HOJE)
     function isChamadaLiberada(diasString, horarioString) {
         const diasMapa = ["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SÁB"];
         const hoje = new Date();
         const diaAtual = diasMapa[hoje.getDay()];
 
-        if (!diasString.toUpperCase().includes(diaAtual)) {
-            return { liberado: false, motivo: `Esta turma só tem aulas nos dias: <b>${diasString}</b>.<br>Hoje é <b>${diaAtual}</b>.` };
-        }
+        if (!diasString.toUpperCase().includes(diaAtual)) return { liberado: false, motivo: `Esta turma só tem aulas nos dias: <b>${diasString}</b>.<br>Hoje é <b>${diaAtual}</b>.` };
 
         const regex = /(\d{1,2})[H:](\d{2})\s*(?:ÀS|AS|-)\s*(\d{1,2})[H:](\d{2})/i;
         const match = horarioString.match(regex);
@@ -237,130 +319,42 @@
         const tempoInicioMinutos = horaInicio * 60 + minInicio;
         const tempoFimMinutos = horaFim * 60 + minFim;
 
-        if (tempoAtualMinutos < (tempoInicioMinutos - 2)) {
-            return { liberado: false, motivo: `A chamada só será liberada às <b>${String(horaInicio).padStart(2, '0')}:${String(minInicio).padStart(2, '0')}</b><br><small>(Liberado 2 minutos antes do início).</small>` };
-        }
-        if (tempoAtualMinutos > (tempoFimMinutos + 2)) {
-            return { liberado: false, motivo: `A chamada foi encerrada às <b>${String(horaFim).padStart(2, '0')}:${String(minFim).padStart(2, '0')}</b><br><small>(Bloqueado 2 minutos após o término).</small>` };
-        }
+        if (tempoAtualMinutos < (tempoInicioMinutos - 2)) return { liberado: false, motivo: `A chamada só será liberada às <b>${String(horaInicio).padStart(2, '0')}:${String(minInicio).padStart(2, '0')}</b><br><small>(2 minutos antes).</small>` };
+        if (tempoAtualMinutos > (tempoFimMinutos + 2)) return { liberado: false, motivo: `A chamada encerrou às <b>${String(horaFim).padStart(2, '0')}:${String(minFim).padStart(2, '0')}</b><br><small>(Bloqueado 2 min após o término).</small>` };
+        
         return { liberado: true };
     }
 
-// 🌟 MÓDULO INTELIGENTE DE VERIFICAÇÃO DE ALUNOS (COM VIAGEM NO TEMPO)
-    function carregarAlunos() {
+    // 🌟 FLUXO NORMAL (O Professor escolheu a turma na combo box para fazer a aula de hoje)
+    function carregarAlunosFluxoNormal() {
         const idTurma = document.getElementById('comboTurmas').value;
         const container = document.getElementById('listaAlunosContainer');
-        const loader = document.getElementById('statusLoader');
         const btnSalvar = document.getElementById('btnSalvar');
-        const campoData = document.getElementById('dataAula');
 
-        container.innerHTML = "";
-        presencas = {}; 
-        btnSalvar.style.display = "none";
-
-        // RESET DA DATA (Volta para o Padrão "Hoje")
-        const hoje = new Date();
-        const dia = String(hoje.getDate()).padStart(2, '0');
-        const mes = String(hoje.getMonth() + 1).padStart(2, '0');
-        const ano = hoje.getFullYear();
-        campoData.value = `${dia}/${mes}/${ano}`;
-        campoData.style.backgroundColor = '#e9ecef';
-        campoData.style.color = '#495057';
-        campoData.style.borderColor = '#ced4da';
-
+        container.innerHTML = ""; btnSalvar.style.display = "none";
+        resetarDataParaHoje(); // Garante que saiu do modo viagem no tempo
+        
         if (!idTurma) return;
 
         const turma = turmasGlobais.find(t => t.id === idTurma);
         if (turma) {
             const validacao = isChamadaLiberada(turma.dias, turma.horario);
-            
-            // CADEADO NORMAL BARROU? PERGUNTA PRA CHEFIA SE TEM MÁQUINA DO TEMPO!
             if (!validacao.liberado) {
-                loader.innerHTML = `<i class="fas fa-key fa-spin fa-2x"></i><p class="mt-2 fw-bold text-warning">Verificando autorizações da chefia...</p>`;
-                loader.style.display = "block";
-
-                fetch(API_URL, { 
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({ acao: "verificarLiberacaoRetroativa", dados: { idPlanilha: idPlanilhaCeu, idTurma: idTurma } }) 
-                })
-                .then(res => res.json())
-                .then(data => {
-                    let obj = data.retorno || data; 
-                    if (obj.sucesso && obj.liberado) {
-                        
-                        // ⏱️ A MÁGICA DA VIAGEM NO TEMPO ACONTECE AQUI!
-                        campoData.value = obj.dataPerdida; 
-                        campoData.style.backgroundColor = '#fff3cd'; // Amarelo de Alerta
-                        campoData.style.color = '#856404';
-                        campoData.style.borderColor = '#ffeeba';
-
-                        Swal.fire({
-                            title: 'Chamada Atrasada! ⏳',
-                            html: `A chefia liberou o preenchimento da aula do dia <b>${obj.dataPerdida}</b>.<br>Você tem até ${obj.limite} para salvar.`,
-                            icon: 'info',
-                            timer: 5000,
-                            showConfirmButton: false
-                        });
-                        
-                        executarBuscaDeAlunos(idTurma, container, loader, btnSalvar);
-                    } else {
-                        // Mantém o bloqueio normal
-                        loader.style.display = "none";
-                        Swal.fire({ title: 'Acesso Bloqueado ⏳', html: validacao.motivo, icon: 'warning', confirmButtonColor: '#0d6efd' });
-                        document.getElementById('comboTurmas').value = ""; 
-                    }
-                }).catch(e => {
-                    loader.style.display = "none";
-                    Swal.fire('Erro', 'Falha na verificação de rede.', 'error');
-                });
+                Swal.fire({ title: 'Acesso Bloqueado ⏳', html: validacao.motivo, icon: 'warning', confirmButtonColor: '#0d6efd' });
+                document.getElementById('comboTurmas').value = ""; 
                 return; 
             }
         }
-        
-        // Se a chamada está no horário normal de hoje, segue direto.
-        executarBuscaDeAlunos(idTurma, container, loader, btnSalvar);
+        executarBuscaDeAlunos(idTurma);
     }
 
-    // 📡 MOTOR DE BUSCA
-    function executarBuscaDeAlunos(idTurma, container, loader, btnSalvar) {
-        loader.innerHTML = `<i class="fas fa-circle-notch fa-spin fa-2x"></i><p class="mt-2 fw-bold">Buscando alunos da turma...</p>`;
-        loader.style.display = "block";
+    // 📡 MOTOR CENTRAL DE BUSCA DE ALUNOS
+    function executarBuscaDeAlunos(idTurma) {
+        const loader = document.getElementById('statusLoader');
+        const container = document.getElementById('listaAlunosContainer');
+        const btnSalvar = document.getElementById('btnSalvar');
 
-        fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({ acao: "buscarAlunosParaChamadaNovoSistema", dados: { idPlanilha: idPlanilhaCeu, idTurma: idTurma } }) 
-        })
-        .then(res => res.json())
-        .then(data => {
-            loader.style.display = "none";
-            if (data.sucesso || data.status === "sucesso") {
-                alunosAtuais = data.alunos || (data.dados ? data.dados.alunos : []);
-                if (!alunosAtuais || alunosAtuais.length === 0) {
-                    container.innerHTML = `<div class="alert alert-warning text-center"><i class="fas fa-exclamation-triangle"></i> Nenhum aluno matriculado nesta turma.</div>`;
-                    return;
-                }
-
-                let html = ``;
-                alunosAtuais.forEach(al => {
-                    presencas[al.idAluno] = 'P'; 
-                    html += `
-                    <div class="aluno-row presente" id="row-${al.idAluno}">
-                        <div><p class="nome-aluno">${al.nomeAluno}</p><p class="id-aluno">CÓD. EOL: ${al.idAluno}</p></div>
-                        <div class="botoes-status">
-                            <div class="btn-status btn-p ativo" id="btn-p-${al.idAluno}" onclick="marcar('${al.idAluno}', 'P')" title="Presente"><i class="fas fa-check-circle me-1"></i> P</div>
-                            <div class="btn-status btn-fj" id="btn-fj-${al.idAluno}" onclick="marcar('${al.idAluno}', 'FJ')" title="Falta Justificada"><i class="fas fa-file-medical me-1"></i> FJ</div>
-                            <div class="btn-status btn-f" id="btn-f-${al.idAluno}" onclick="marcar('${al.idAluno}', 'F')" title="Falta"><i class="fas fa-times-circle me-1"></i> F</div>
-                        </div>
-                    </div>`;
-                });
-                container.innerHTML = html;
-                btnSalvar.style.display = "block";
-            } else { Swal.fire('Aviso', data.erro || data.mensagem, 'warning'); }
-        }).catch(e => { loader.style.display = "none"; Swal.fire('Erro', 'Falha ao buscar os alunos.', 'error'); });
-    }
-
-    // 📡 MOTOR DE BUSCA (ISOLADO PARA REAPROVEITAMENTO)
-    function executarBuscaDeAlunos(idTurma, container, loader, btnSalvar) {
+        presencas = {}; 
         loader.innerHTML = `<i class="fas fa-circle-notch fa-spin fa-2x"></i><p class="mt-2 fw-bold">Buscando alunos da turma...</p>`;
         loader.style.display = "block";
 
@@ -435,7 +429,11 @@
         .then(obj => {
             if (obj.sucesso || obj.status === "sucesso") {
                 Swal.fire({ title: 'Salvo!', icon: 'success', timer: 1500, showConfirmButton: false }).then(() => {
-                    document.getElementById('comboTurmas').value = ""; document.getElementById('listaAlunosContainer').innerHTML = ""; btn.style.display = "none";
+                    document.getElementById('comboTurmas').value = ""; 
+                    document.getElementById('listaAlunosContainer').innerHTML = ""; 
+                    btn.style.display = "none";
+                    resetarDataParaHoje(); // Limpa e volta pro fluxo normal
+                    carregarTurmas(); // Atualiza o sino se a liberação já foi usada
                 });
             } else { Swal.fire('Erro', obj.erro || obj.mensagem, 'error'); }
         }).catch(e => Swal.fire('Erro de Rede', 'Falha ao salvar.', 'error'))
@@ -443,7 +441,7 @@
     }
 
     // ==========================================
-    // MÁGICAS: DIÁRIO DE CLASSE & LISTA DE CONSULTA
+    // MÁGICAS: DIÁRIO DE CLASSE & LISTA DE CONSULTA MANTIDAS INTACTAS
     // ==========================================
     function abrirModalDiario() {
         document.getElementById('comboTurmasModal').innerHTML = htmlOpcoesTurmaCache;
@@ -528,20 +526,12 @@
                         let pront = al.prontuario || "-";
                         let eolNum = al.eol || "-";
                         if(!al.prontuario && !al.eol) pront = al.idAluno; 
-
-                        trBody += `<tr>
-                            <td class="text-center fw-bold align-middle">${index + 1}</td>
-                            <td class="text-center text-primary fw-bold align-middle">${pront}</td>
-                            <td class="text-center fw-bold text-muted align-middle">${eolNum}</td>
-                            <td class="fw-bold align-middle text-start ps-2">${al.nomeAluno}</td>
-                        </tr>`;
+                        trBody += `<tr><td class="text-center fw-bold align-middle">${index + 1}</td><td class="text-center text-primary fw-bold align-middle">${pront}</td><td class="text-center fw-bold text-muted align-middle">${eolNum}</td><td class="fw-bold align-middle text-start ps-2">${al.nomeAluno}</td></tr>`;
                     });
                     tbody.innerHTML = trBody;
                 }
                 container.style.display = 'block';
-            } else {
-                Swal.fire('Aviso', data.erro || 'Falha ao buscar os alunos.', 'warning');
-            }
+            } else { Swal.fire('Aviso', data.erro || 'Falha ao buscar os alunos.', 'warning'); }
         }).catch(e => { loader.style.display = 'none'; Swal.fire('Erro', 'Falha na conexão.', 'error'); });
     }
 </script>

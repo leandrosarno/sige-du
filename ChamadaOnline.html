@@ -246,16 +246,27 @@
         return { liberado: true };
     }
 
-    // 🌟 MÓDULO INTELIGENTE DE VERIFICAÇÃO DE ALUNOS
+// 🌟 MÓDULO INTELIGENTE DE VERIFICAÇÃO DE ALUNOS (COM VIAGEM NO TEMPO)
     function carregarAlunos() {
         const idTurma = document.getElementById('comboTurmas').value;
         const container = document.getElementById('listaAlunosContainer');
         const loader = document.getElementById('statusLoader');
         const btnSalvar = document.getElementById('btnSalvar');
+        const campoData = document.getElementById('dataAula');
 
         container.innerHTML = "";
         presencas = {}; 
         btnSalvar.style.display = "none";
+
+        // RESET DA DATA (Volta para o Padrão "Hoje")
+        const hoje = new Date();
+        const dia = String(hoje.getDate()).padStart(2, '0');
+        const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+        const ano = hoje.getFullYear();
+        campoData.value = `${dia}/${mes}/${ano}`;
+        campoData.style.backgroundColor = '#e9ecef';
+        campoData.style.color = '#495057';
+        campoData.style.borderColor = '#ced4da';
 
         if (!idTurma) return;
 
@@ -263,7 +274,7 @@
         if (turma) {
             const validacao = isChamadaLiberada(turma.dias, turma.horario);
             
-            // Se o cadeado do tempo barrou, nós acionamos a chefia silenciosamente!
+            // CADEADO NORMAL BARROU? PERGUNTA PRA CHEFIA SE TEM MÁQUINA DO TEMPO!
             if (!validacao.liberado) {
                 loader.innerHTML = `<i class="fas fa-key fa-spin fa-2x"></i><p class="mt-2 fw-bold text-warning">Verificando autorizações da chefia...</p>`;
                 loader.style.display = "block";
@@ -277,17 +288,24 @@
                 .then(data => {
                     let obj = data.retorno || data; 
                     if (obj.sucesso && obj.liberado) {
+                        
+                        // ⏱️ A MÁGICA DA VIAGEM NO TEMPO ACONTECE AQUI!
+                        campoData.value = obj.dataPerdida; 
+                        campoData.style.backgroundColor = '#fff3cd'; // Amarelo de Alerta
+                        campoData.style.color = '#856404';
+                        campoData.style.borderColor = '#ffeeba';
+
                         Swal.fire({
-                            title: 'Liberação Especial Ativa! 🔓',
-                            html: `Sua chefia liberou esta chamada até <b>${obj.limite}</b>.<br>Faça o registro agora!`,
-                            icon: 'success',
-                            timer: 3500,
+                            title: 'Chamada Atrasada! ⏳',
+                            html: `A chefia liberou o preenchimento da aula do dia <b>${obj.dataPerdida}</b>.<br>Você tem até ${obj.limite} para salvar.`,
+                            icon: 'info',
+                            timer: 5000,
                             showConfirmButton: false
                         });
-                        // O cofre abriu! Vai buscar os alunos
+                        
                         executarBuscaDeAlunos(idTurma, container, loader, btnSalvar);
                     } else {
-                        // Não tem liberação. Mantém o bloqueio normal da aula.
+                        // Mantém o bloqueio normal
                         loader.style.display = "none";
                         Swal.fire({ title: 'Acesso Bloqueado ⏳', html: validacao.motivo, icon: 'warning', confirmButtonColor: '#0d6efd' });
                         document.getElementById('comboTurmas').value = ""; 
@@ -296,12 +314,49 @@
                     loader.style.display = "none";
                     Swal.fire('Erro', 'Falha na verificação de rede.', 'error');
                 });
-                return; // Pausa o script aqui para esperar o servidor responder
+                return; 
             }
         }
         
-        // Se a chamada está no horário normal, pula a chefia e busca direto!
+        // Se a chamada está no horário normal de hoje, segue direto.
         executarBuscaDeAlunos(idTurma, container, loader, btnSalvar);
+    }
+
+    // 📡 MOTOR DE BUSCA
+    function executarBuscaDeAlunos(idTurma, container, loader, btnSalvar) {
+        loader.innerHTML = `<i class="fas fa-circle-notch fa-spin fa-2x"></i><p class="mt-2 fw-bold">Buscando alunos da turma...</p>`;
+        loader.style.display = "block";
+
+        fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ acao: "buscarAlunosParaChamadaNovoSistema", dados: { idPlanilha: idPlanilhaCeu, idTurma: idTurma } }) 
+        })
+        .then(res => res.json())
+        .then(data => {
+            loader.style.display = "none";
+            if (data.sucesso || data.status === "sucesso") {
+                alunosAtuais = data.alunos || (data.dados ? data.dados.alunos : []);
+                if (!alunosAtuais || alunosAtuais.length === 0) {
+                    container.innerHTML = `<div class="alert alert-warning text-center"><i class="fas fa-exclamation-triangle"></i> Nenhum aluno matriculado nesta turma.</div>`;
+                    return;
+                }
+
+                let html = ``;
+                alunosAtuais.forEach(al => {
+                    presencas[al.idAluno] = 'P'; 
+                    html += `
+                    <div class="aluno-row presente" id="row-${al.idAluno}">
+                        <div><p class="nome-aluno">${al.nomeAluno}</p><p class="id-aluno">CÓD. EOL: ${al.idAluno}</p></div>
+                        <div class="botoes-status">
+                            <div class="btn-status btn-p ativo" id="btn-p-${al.idAluno}" onclick="marcar('${al.idAluno}', 'P')" title="Presente"><i class="fas fa-check-circle me-1"></i> P</div>
+                            <div class="btn-status btn-fj" id="btn-fj-${al.idAluno}" onclick="marcar('${al.idAluno}', 'FJ')" title="Falta Justificada"><i class="fas fa-file-medical me-1"></i> FJ</div>
+                            <div class="btn-status btn-f" id="btn-f-${al.idAluno}" onclick="marcar('${al.idAluno}', 'F')" title="Falta"><i class="fas fa-times-circle me-1"></i> F</div>
+                        </div>
+                    </div>`;
+                });
+                container.innerHTML = html;
+                btnSalvar.style.display = "block";
+            } else { Swal.fire('Aviso', data.erro || data.mensagem, 'warning'); }
+        }).catch(e => { loader.style.display = "none"; Swal.fire('Erro', 'Falha ao buscar os alunos.', 'error'); });
     }
 
     // 📡 MOTOR DE BUSCA (ISOLADO PARA REAPROVEITAMENTO)

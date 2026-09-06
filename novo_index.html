@@ -256,8 +256,8 @@
             .login-left { width: 100%; min-height: 120px; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.05); }
             .login-right { width: 100%; padding: 25px; }
         }
-		
-		/* =========================
+        
+        /* =========================
            BARRA FIXA (ESTILO DESKTOP)
         ========================= */
         .barra-fixa {
@@ -267,8 +267,7 @@
             width: 100%;
             box-shadow: 0 4px 10px rgba(0,0,0,0.08); /* Sombra para separar o menu do resto do site */
         }
-		
-		
+        
     </style>
 </head>
 <body>
@@ -283,6 +282,7 @@
         
         <button class="botao-usuario" id="botaoUsuario" title="Fazer Login no Sistema">
             <span class="material-icons" style="font-size: 18px;">login</span>
+            Acesso Restrito
         </button>
     </header>
 
@@ -407,9 +407,10 @@
     });
 
     /* =========================
-       LINK DA LOGO (Opcional)
+       LINK DA LOGO (RESOLVIDO)
     ========================= */
     const linkGoogleDriveLogo = "https://drive.google.com/file/d/1SmywG6nN0XteLCDuf7rLC2JRPT52Pm_i/view";
+    
     function converterLinkGoogleDrive(link) {
         const resultado = link.match(/\/d\/([^/]+)/);
         if (resultado && resultado[1]) {
@@ -417,8 +418,9 @@
         }
         return link;
     }
-    // Descomente a linha abaixo se quiser carregar a logo do drive!
-    // document.getElementById("logoSistema").src = converterLinkGoogleDrive(linkGoogleDriveLogo);
+    
+    // A MÁGICA ACONTECE AQUI: Tirei as duas barras (//) da frente do código!
+    document.getElementById("logoSistema").src = converterLinkGoogleDrive(linkGoogleDriveLogo);
 </script>
 
 </body>

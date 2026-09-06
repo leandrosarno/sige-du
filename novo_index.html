@@ -10,7 +10,7 @@
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
 
-    <!-- Importação de Fontes e Ícones -->
+    <!-- Importação de Fontes, Ícones e SweetAlert -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -43,7 +43,7 @@
 
         .cabecalho { height: 70px; background-color: var(--bg-card); display: flex; align-items: center; justify-content: space-between; padding: 0 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
 
-        /* 🚀 CORREÇÃO: Uma caixa fixa segura a esquerda para o botão não pular pra lá! */
+        /* Caixa que segura o espaço da Logo na esquerda */
         .logo-container { width: 250px; display: flex; align-items: center; }
         .logo { max-height: 55px; max-width: 100%; object-fit: contain; display: none; }
 
@@ -67,7 +67,7 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
 
         /* =========================
-           MODAL LINDÃO DE LOGIN (O ORIGINAL DO INDEX2!)
+           MODAL LINDÃO DE LOGIN (O EXATO DO INDEX2)
         ========================= */
         .modal-fundo { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px); align-items: center; justify-content: center; }
 
@@ -141,7 +141,6 @@
 <div class="barra-fixa">
     <header class="cabecalho">
         
-        <!-- Caixa que trava a logo na esquerda -->
         <div class="logo-container">
             <img id="logoSistema" class="logo" src="" alt="Logotipo do Sistema">
         </div>
@@ -192,7 +191,7 @@
 </div>
 
 <!-- =========================
-     MODAL LINDÃO DE LOGIN (O ORIGINAL!)
+     MODAL LINDÃO DE LOGIN (EXATAMENTE O DO INDEX2.HTML)
 ========================= -->
 <div id="modalLoginFundo" class="modal-fundo">
     <div class="login-card">
@@ -201,18 +200,16 @@
             <span class="material-icons">close</span>
         </button>
 
-        <!-- LADO ESQUERDO: APENAS A LOGO -->
         <div class="login-left" id="box-logo">
             <span class="material-icons" id="icone-padrao" style="font-size: 55px; color: var(--cor-primaria);">account_balance</span>
             <img id="img-logo" src="" alt="Logo do Sistema" style="display: none; width: 100%; max-height: 180px; object-fit: contain; transform: scale(1.1);">
         </div>
 
-        <!-- LADO DIREITO: FORMULÁRIO ESPREMIDO ORIGINAL -->
         <div class="login-right">
-            
             <h2>Acesso Restrito</h2>
             <div id="titulo-sistema">A carregar sistema...</div>
 
+            <!-- O MOTOR REAL DO SISTEMA FOI RELIGADO AQUI! (fazerLogin) -->
             <form id="formLogin" onsubmit="event.preventDefault(); fazerLogin();">
                 
                 <div class="input-wrapper">
@@ -262,7 +259,7 @@
     window.addEventListener("click", function (evento) { if (evento.target === modalFundo) modalFundo.style.display = "none"; });
 
     /* ========================================================
-       O SCRIPT ORIGINAL DO SEU INDEX2.HTML (RESTAURADO!)
+       A LÓGICA E O MOTOR EXATOS DO INDEX2.HTML
     ======================================================== */
     let dicionarioCEUs = {};
 
@@ -283,7 +280,7 @@
         }
     }
 
-    // 🧠 Mágica do Link do Drive
+    // Função sagrada para driblar o bloqueio de imagem do Drive
     function converterLinkDrive(url) {
         if (!url) return "";
         const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
@@ -294,7 +291,6 @@
     window.onload = function() {
         localStorage.clear(); 
         
-        // Só tenta avisar sobre sincronização se a API não estiver quebrada
         if(typeof API_URL === 'undefined') {
             console.error("ERRO: config.js não carregado.");
             return;

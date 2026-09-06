@@ -3,13 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIG-EDU</title>
+    <title>Portal do Sistema</title>
+
+    <!-- Bloqueadores de Cache -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
 
     <!-- Importação de Fontes e Ícones -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     
-    <!-- 🌟 AQUI ESTÁ A PONTE PARA O SEU SERVIDOR (Igual ao index antigo) -->
+    <!-- 🌟 A PONTE PARA O SEU SERVIDOR -->
     <script src="config.js"></script>
 
     <style>
@@ -18,6 +25,7 @@
         ========================= */
         :root { 
             --cor-primaria: #0d6efd; 
+            --cor-fundo-tela: #f4f7f6; /* Fundo do Portal */
             --bg-card: #0a1422; 
             --bg-logo: #060c14; 
             --bg-input: #112136;
@@ -26,15 +34,18 @@
             --texto-mutado: #94a3b8;
         }
 
-        body { margin: 0; padding: 0; background-color: #f4f7f6; font-family: 'Inter', Arial, sans-serif; }
+        body { margin: 0; padding: 0; background-color: var(--cor-fundo-tela); font-family: 'Inter', Arial, sans-serif; }
 
         /* =========================
-           BARRA FIXA (ESTILO DESKTOP)
+           BARRA FIXA E CABEÇALHO
         ========================= */
         .barra-fixa { position: sticky; top: 0; z-index: 1500; width: 100%; box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
 
         .cabecalho { height: 70px; background-color: var(--bg-card); display: flex; align-items: center; justify-content: space-between; padding: 0 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
-        .logo { max-height: 55px; max-width: 250px; object-fit: contain; display: none; /* Inicia oculto até a API carregar */ }
+
+        /* 🚀 CORREÇÃO: Uma caixa fixa segura a esquerda para o botão não pular pra lá! */
+        .logo-container { width: 250px; display: flex; align-items: center; }
+        .logo { max-height: 55px; max-width: 100%; object-fit: contain; display: none; }
 
         .botao-usuario { background-color: var(--cor-primaria); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.3s; box-shadow: 0 4px 6px rgba(13, 110, 253, 0.2); }
         .botao-usuario:hover { background-color: #0b5ed7; transform: translateY(-2px); }
@@ -56,10 +67,22 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
 
         /* =========================
-           MODAL LINDÃO DE LOGIN
+           MODAL LINDÃO DE LOGIN (O ORIGINAL DO INDEX2!)
         ========================= */
         .modal-fundo { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px); align-items: center; justify-content: center; }
-        .login-card { background: var(--bg-card); border-radius: 10px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); width: 580px; max-width: 95%; display: flex; overflow: hidden; border: 1px solid rgba(255,255,255,0.08); position: relative; animation: zoomIn 0.3s ease-out; }
+
+        .login-card { 
+            background: var(--bg-card); 
+            border-radius: 10px; 
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5); 
+            width: 580px; 
+            max-width: 95%; 
+            display: flex;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.05);
+            position: relative;
+            animation: zoomIn 0.3s ease-out;
+        }
 
         @keyframes zoomIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
 
@@ -67,39 +90,61 @@
         .btn-fechar-modal:hover { color: white; transform: scale(1.1); }
 
         .login-left { width: 40%; background: var(--bg-logo); display: flex; align-items: center; justify-content: center; padding: 15px; border-right: 1px solid rgba(255,255,255,0.05); }
-        .login-right { width: 60%; padding: 30px 25px; display: flex; flex-direction: column; justify-content: center; }
+        .login-right { width: 60%; padding: 20px 25px; display: flex; flex-direction: column; justify-content: center; }
         
-        .login-right h2 { font-weight: 800; color: var(--texto-claro); font-size: 18px; margin: 0 0 2px 0; }
-        #titulo-sistema { font-size: 11px; color: var(--cor-primaria); font-weight: 700; text-transform: uppercase; margin-bottom: 15px; letter-spacing: 0.5px; }
+        .login-right h2 { font-weight: 800; color: var(--texto-claro); font-size: 16px; margin: 0 0 0px 0; }
+        #titulo-sistema { font-size: 10px; color: var(--cor-primaria); font-weight: 700; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 0.5px; }
         
-        .input-wrapper { margin-bottom: 10px; }
-        .form-label { display: block; font-size: 10px; font-weight: 700; color: var(--texto-mutado); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+        .input-wrapper { margin-bottom: 8px; }
+        .form-label { display: block; font-size: 9px; font-weight: 700; color: var(--texto-mutado); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+        
         .caixa-input { position: relative; }
-        .caixa-input .icone-campo { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--texto-mutado); font-size: 16px; pointer-events: none; }
+        .caixa-input .icone-campo { position: absolute; left: 8px; top: 50%; transform: translateY(-50%); color: var(--texto-mutado); font-size: 16px; pointer-events: none; }
         
-        .form-control { padding: 6px 10px 6px 35px; height: 36px; border-radius: 6px; border: 1px solid var(--borda-input); background: var(--bg-input); color: var(--texto-claro); font-weight: 600; font-size: 13px; width: 100%; transition: 0.3s; box-sizing: border-box; }
-        .form-control::placeholder { color: #475569; font-weight: 400;}
+        .form-control { 
+            padding: 4px 8px 4px 30px; 
+            height: 32px; 
+            border-radius: 5px; 
+            border: 1px solid var(--borda-input); 
+            background: var(--bg-input); 
+            color: var(--texto-claro);
+            font-weight: 600; 
+            font-size: 12px; 
+            width: 100%; 
+            transition: 0.3s;
+            box-sizing: border-box;
+        }
+        
+        .form-control::placeholder { color: #475569; }
         .form-control:focus { border-color: var(--cor-primaria); box-shadow: 0 0 0 2px rgba(13,110,253,0.25); background: var(--bg-card); color: white; outline: none; }
 
         input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         input[type="number"] { -moz-appearance: textfield; }
 
-        .btn-login { background-color: var(--cor-primaria); border: none; width: 100%; height: 38px; font-weight: 800; font-size: 13px; border-radius: 6px; margin-top: 10px; transition: 0.3s; color: white; display: flex; justify-content: center; align-items: center; gap: 6px; cursor: pointer; }
+        #nome-ceu-display { font-size: 9px; font-weight: 700; margin-top: 2px; margin-left: 2px; color: var(--texto-mutado); display: flex; align-items: center; gap: 3px; min-height: 12px; }
+        
+        .btn-login { background-color: var(--cor-primaria); border: none; width: 100%; height: 34px; font-weight: 800; font-size: 12px; border-radius: 5px; margin-top: 4px; transition: 0.3s; color: white; display: flex; justify-content: center; align-items: center; gap: 6px; cursor: pointer; }
         .btn-login:hover { background-color: #0b5ed7; transform: translateY(-2px); }
 
         @media (max-width: 768px) {
             .login-card { flex-direction: column; width: 100%; }
             .login-left { width: 100%; min-height: 120px; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.05); }
-            .login-right { width: 100%; padding: 25px; }
+            .login-right { width: 100%; padding: 20px; }
         }
     </style>
 </head>
 <body>
 
+<!-- =========================
+     BARRA FIXA (CABEÇALHO + MENU)
+========================= -->
 <div class="barra-fixa">
     <header class="cabecalho">
-        <!-- A Tag aguardando o Script preencher com a imagem da planilha -->
-        <img id="logoSistema" class="logo" src="" alt="Logotipo do Sistema">
+        
+        <!-- Caixa que trava a logo na esquerda -->
+        <div class="logo-container">
+            <img id="logoSistema" class="logo" src="" alt="Logotipo do Sistema">
+        </div>
         
         <button class="botao-usuario" id="botaoUsuario" title="Fazer Login no Sistema">
             <span class="material-icons" style="font-size: 18px;">login</span>
@@ -146,6 +191,9 @@
     </nav>
 </div>
 
+<!-- =========================
+     MODAL LINDÃO DE LOGIN (O ORIGINAL!)
+========================= -->
 <div id="modalLoginFundo" class="modal-fundo">
     <div class="login-card">
         
@@ -153,23 +201,29 @@
             <span class="material-icons">close</span>
         </button>
 
-        <div class="login-left">
-            <span class="material-icons" id="iconePadraoModal" style="font-size: 60px; color: var(--cor-primaria);">account_balance</span>
-            <img id="logoModal" src="" alt="Logo do Sistema" style="display: none; max-width: 90%; max-height: 120px; object-fit: contain;">
+        <!-- LADO ESQUERDO: APENAS A LOGO -->
+        <div class="login-left" id="box-logo">
+            <span class="material-icons" id="icone-padrao" style="font-size: 55px; color: var(--cor-primaria);">account_balance</span>
+            <img id="img-logo" src="" alt="Logo do Sistema" style="display: none; width: 100%; max-height: 180px; object-fit: contain; transform: scale(1.1);">
         </div>
 
+        <!-- LADO DIREITO: FORMULÁRIO ESPREMIDO ORIGINAL -->
         <div class="login-right">
+            
             <h2>Acesso Restrito</h2>
-            <div id="titulo-sistema">Faça login para continuar</div>
+            <div id="titulo-sistema">A carregar sistema...</div>
 
-            <form id="formLogin" onsubmit="event.preventDefault(); alert('Login disparado!');">
+            <form id="formLogin" onsubmit="event.preventDefault(); fazerLogin();">
+                
                 <div class="input-wrapper">
                     <label class="form-label">Cód EOL da Unidade</label>
                     <div class="caixa-input">
                         <span class="material-icons icone-campo">domain</span>
-                        <input type="text" inputmode="numeric" class="form-control" id="id_ceu" placeholder="Ex: 123456" required autocomplete="off">
+                        <input type="text" inputmode="numeric" class="form-control" id="id_ceu" placeholder="Ex: 123456" oninput="verificarNomeCEU()" required autocomplete="off">
                     </div>
+                    <div id="nome-ceu-display"></div>
                 </div>
+
                 <div class="input-wrapper">
                     <label class="form-label">RF do Funcionário</label>
                     <div class="caixa-input">
@@ -177,6 +231,7 @@
                         <input type="number" class="form-control" id="rf_usuario" placeholder="Apenas números" required>
                     </div>
                 </div>
+
                 <div class="input-wrapper">
                     <label class="form-label">Senha de Acesso</label>
                     <div class="caixa-input">
@@ -184,15 +239,20 @@
                         <input type="password" class="form-control" id="senha_usuario" placeholder="••••••••" required>
                     </div>
                 </div>
+                
                 <button type="submit" class="btn-login" id="btn-entrar">
                     ENTRAR NO SISTEMA <span class="material-icons" style="font-size: 15px;">arrow_forward</span>
                 </button>
             </form>
         </div>
+
     </div>
 </div>
 
 <script>
+    /* =========================
+       CONTROLE DO MODAL
+    ========================= */
     const modalFundo = document.getElementById("modalLoginFundo");
     const botaoUsuario = document.getElementById("botaoUsuario");
     const fecharModal = document.getElementById("fecharModal");
@@ -202,14 +262,46 @@
     window.addEventListener("click", function (evento) { if (evento.target === modalFundo) modalFundo.style.display = "none"; });
 
     /* ========================================================
-       🌟 A LÓGICA DO INDEX ANTIGO RESTAURADA E APLICADA AQUI
+       O SCRIPT ORIGINAL DO SEU INDEX2.HTML (RESTAURADO!)
     ======================================================== */
+    let dicionarioCEUs = {};
+
+    function verificarNomeCEU() {
+        let codigo = document.getElementById('id_ceu').value.trim();
+        const display = document.getElementById('nome-ceu-display');
+
+        if (codigo === "") {
+            display.innerHTML = "";
+        } else if (dicionarioCEUs[codigo]) {
+            display.innerHTML = `<span class="material-icons" style="font-size:11px;">check_circle</span> ${dicionarioCEUs[codigo]}`;
+            display.style.color = "#10b981"; 
+        } else if (Object.keys(dicionarioCEUs).length === 0) {
+            display.innerHTML = "";
+        } else {
+            display.innerHTML = `<span class="material-icons" style="font-size:11px;">search</span> Unidade não encontrada...`;
+            display.style.color = "#f59e0b"; 
+        }
+    }
+
+    // 🧠 Mágica do Link do Drive
+    function converterLinkDrive(url) {
+        if (!url) return "";
+        const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+        if (match && match[1]) return `https://drive.google.com/uc?export=view&id=${match[1]}`;
+        return url.trim();
+    }
+
     window.onload = function() {
-        // Verifica se a API_URL carregou do config.js
+        localStorage.clear(); 
+        
+        // Só tenta avisar sobre sincronização se a API não estiver quebrada
         if(typeof API_URL === 'undefined') {
-            console.error("ERRO: config.js não carregado. Verifique o arquivo.");
+            console.error("ERRO: config.js não carregado.");
             return;
         }
+
+        document.getElementById('nome-ceu-display').innerHTML = `<span class="material-icons" style="font-size:11px;">sync</span> Sincronizando banco de unidades...`;
+        document.getElementById('nome-ceu-display').style.color = "#94a3b8";
 
         fetch(API_URL, {
             method: 'POST',
@@ -219,36 +311,150 @@
         .then(res => res.json())
         .then(retorno => {
             if(retorno.status === "sucesso") {
+                document.getElementById('titulo-sistema').innerText = retorno.dados.nomeSistema;
+                localStorage.setItem('ceu_nome_sistema', retorno.dados.nomeSistema);
                 
-                // Puxa o nome e joga no modal
-                if(retorno.dados.nomeSistema) {
-                    document.getElementById('titulo-sistema').innerText = retorno.dados.nomeSistema;
-                }
-                
-                // Se o servidor mandou a URL do Logo da aba configsistema
                 if (retorno.dados.logoUrl) {
-                    const logoOficial = retorno.dados.logoUrl;
+                    const logoOficial = converterLinkDrive(retorno.dados.logoUrl);
                     
-                    // 1. Injeta no Cabeçalho
+                    localStorage.setItem('ceu_logo_sistema', logoOficial);
+                    
+                    // Injeta na barra superior
                     const logoCabecalho = document.getElementById("logoSistema");
                     if(logoCabecalho) {
                         logoCabecalho.src = logoOficial;
-                        logoCabecalho.style.display = "block"; // Revela a imagem
+                        logoCabecalho.style.display = "block";
                     }
-                    
-                    // 2. Injeta no Modal
-                    const logoModal = document.getElementById("logoModal");
-                    const iconePadrao = document.getElementById("iconePadraoModal");
-                    if(logoModal && iconePadrao) {
-                        logoModal.src = logoOficial;
-                        logoModal.style.display = "block"; // Revela a imagem no modal
-                        iconePadrao.style.display = "none"; // Esconde a balança azul
-                    }
+
+                    // Injeta no modal (ocultando o ícone padrão)
+                    document.getElementById('icone-padrao').style.display = 'none';
+                    const img = document.getElementById('img-logo');
+                    img.src = logoOficial;
+                    img.style.display = 'block';
+                }
+
+                if (retorno.dados.listaCEUs) {
+                    dicionarioCEUs = retorno.dados.listaCEUs;
+                    document.getElementById('nome-ceu-display').innerHTML = ""; 
+                } else {
+                    document.getElementById('nome-ceu-display').innerHTML = ""; 
                 }
             }
         })
-        .catch(erro => console.error("Aviso: Falha ao puxar configurações. A API_URL está correta?", erro));
+        .catch(erro => console.error("Aviso: Falha ao puxar a Logo ou a Lista.", erro));
     };
+
+    function fazerLogin() {
+        const ceu = document.getElementById('id_ceu').value.trim();
+        const rf = document.getElementById('rf_usuario').value.trim();
+        const senha = document.getElementById('senha_usuario').value.trim();
+
+        if(!ceu || !rf || !senha) {
+            Swal.fire({ title: 'Atenção', text: 'Preencha todos os campos.', icon: 'warning', heightAuto: false });
+            return;
+        }
+
+        Swal.fire({
+            title: 'A validar acessos...',
+            text: 'A comunicar com o servidor central.',
+            allowOutsideClick: false,
+            heightAuto: false, 
+            didOpen: () => { Swal.showLoading(); }
+        });
+
+        fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ 
+                acao: "validarLogin", 
+                dados: { id_ceu: ceu, rf_usuario: rf, senha_usuario: senha } 
+            })
+        })
+        .then(resposta => {
+            if (!resposta.ok) throw new Error("Erro de servidor (HTTP " + resposta.status + ")");
+            return resposta.json();
+        })
+        .then(retorno => {
+            if (retorno.status === "primeiro_acesso") {
+                tratarPrimeiroAcesso(retorno.mensagem, retorno.dados_usuario);
+            } 
+            else if (retorno.status === "sucesso") {
+                
+                localStorage.setItem('ceu_codigo_eol', ceu);
+                localStorage.setItem('ceu_rf_logado', rf); 
+                
+                localStorage.setItem('ceu_planilha_id', retorno.token.id_planilha_banco);
+                localStorage.setItem('ceu_nome', retorno.token.nome_ceu);
+                localStorage.setItem('ceu_nome_especifico', retorno.token.nome_ceu);
+                localStorage.setItem('ceu_nome_usuario', retorno.token.nome_usuario);
+                
+                if(retorno.token.logo_ceu) localStorage.setItem('ceu_logo', retorno.token.logo_ceu);
+                if(retorno.token.foto_usuario) localStorage.setItem('ceu_foto_usuario', retorno.token.foto_usuario);
+                
+                localStorage.setItem('ceu_perfil', retorno.token.perfil_usuario); 
+                
+                window.location.href = "dashboard.html"; 
+            } 
+            else {
+                Swal.fire({ title: 'Acesso Negado', text: retorno.mensagem || retorno.erro || 'Credenciais inválidas.', icon: 'error', heightAuto: false });
+            }
+        })
+        .catch(erro => {
+            Swal.fire({ title: 'Erro de Comunicação', text: 'Falha ao ligar ao servidor do Google. Tente novamente.', icon: 'error', heightAuto: false });
+            console.error("Erro fatal no Fetch de Login: ", erro);
+        });
+    }
+
+    function tratarPrimeiroAcesso(mensagemDoServidor, dadosUsuario) {
+        Swal.fire({
+            title: '🔒 Primeiro Acesso',
+            text: mensagemDoServidor,
+            icon: 'info',
+            heightAuto: false, 
+            html: `
+                <div style="text-align: left; font-size: 14px;">
+                    <label class="mt-2 fw-bold">Nova Senha:</label>
+                    <input type="password" id="swal-nova-senha" class="swal2-input" placeholder="Mínimo 8 caracteres">
+                    <label class="mt-2 fw-bold">Confirmar Nova Senha:</label>
+                    <input type="password" id="swal-conf-senha" class="swal2-input" placeholder="Repita a senha">
+                </div>
+            `,
+            confirmButtonText: 'Gravar Nova Senha',
+            confirmButtonColor: '#198754',
+            allowOutsideClick: false,
+            preConfirm: () => {
+                const s1 = document.getElementById('swal-nova-senha').value;
+                const s2 = document.getElementById('swal-conf-senha').value;
+                if (s1 !== s2) { Swal.showValidationMessage('As senhas não conferem!'); return false; }
+                if (!/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,12}$/.test(s1)) {
+                    Swal.showValidationMessage('A senha é muito fraca!'); return false;
+                }
+                return s1;
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                enviarNovaSenha(dadosUsuario.rf, dadosUsuario.ceu, result.value);
+            }
+        });
+    }
+
+    function enviarNovaSenha(rf, ceu, novaSenha) {
+        Swal.fire({ title: 'A gravar...', allowOutsideClick: false, heightAuto: false, didOpen: () => { Swal.showLoading(); }});
+        
+        fetch(API_URL, { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ acao: "alterarSenhaPrimeiroAcesso", dados: { rf: rf, ceu: ceu, novaSenha: novaSenha } }) 
+        })
+        .then(resp => resp.json())
+        .then(retorno => {
+            if(retorno.status === "sucesso") {
+                Swal.fire({ title: 'Sucesso!', text: retorno.mensagem, icon: 'success', heightAuto: false }).then(() => { document.getElementById('senha_usuario').value = ''; });
+            } else {
+                Swal.fire({ title: 'Erro', text: retorno.mensagem, icon: 'error', heightAuto: false });
+            }
+        });
+    }
 </script>
 
 </body>

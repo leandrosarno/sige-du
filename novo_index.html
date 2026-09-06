@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal do Sistema</title>
+
+    <!-- Importação de Fontes e Ícones -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* =========================
+           VARIÁVEIS DO TEMA ESCURO (O "LINDÃO")
+        ========================= */
+        :root { 
+            --cor-primaria: #0d6efd; 
+            --bg-card: #0a1422; 
+            --bg-logo: #060c14; 
+            --bg-input: #112136;
+            --borda-input: #1e3a5f;
+            --texto-claro: #f8fafc;
+            --texto-mutado: #94a3b8;
+        }
+
+        /* =========================
+           CONFIGURAÇÃO GERAL
+        ========================= */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7f6;
+            font-family: 'Inter', Arial, sans-serif;
+        }
+
+        /* =========================
+           CABEÇALHO (AZUL ESCURO)
+        ========================= */
+        .cabecalho {
+            height: 70px;
+            background-color: var(--bg-card); /* Azul Escuro Premium */
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+
+        .logo {
+            max-height: 55px;
+            max-width: 250px;
+            object-fit: contain;
+        }
+
+        /* BOTÃO DO USUÁRIO COM ÍCONE */
+        .botao-usuario {
+            background-color: var(--cor-primaria);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.3s;
+            box-shadow: 0 4px 6px rgba(13, 110, 253, 0.2);
+        }
+
+        .botao-usuario:hover {
+            background-color: #0b5ed7;
+            transform: translateY(-2px);
+        }
+
+        /* =========================
+           MENU PRINCIPAL E SUBMENUS
+        ========================= */
+        .menu-principal {
+            background-color: white;
+            border-bottom: 1px solid #e2e8f0;
+            padding-left: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+
+        .menu-principal > ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+        }
+
+        .menu-principal > ul > li {
+            position: relative;
+        }
+
+        .menu-principal a {
+            display: block;
+            padding: 15px 20px;
+            text-decoration: none;
+            color: #334155;
+            font-weight: 600;
+            font-size: 13px;
+            transition: 0.2s;
+        }
+
+        .menu-principal a:hover {
+            background-color: #f8fafc;
+            color: var(--cor-primaria);
+        }
+
+        .submenu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: white;
+            min-width: 220px;
+            list-style: none;
+            margin: 0;
+            padding: 5px 0;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+            z-index: 1000;
+            border-top: 3px solid var(--cor-primaria);
+        }
+
+        .submenu li { display: block; width: 100%; }
+        
+        .submenu a { padding: 12px 20px; font-weight: 500; }
+
+        .menu-principal > ul > li:hover > .submenu {
+            display: block;
+            animation: fadeIn 0.2s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* =========================
+           MODAL LINDÃO DE LOGIN
+        ========================= */
+        .modal-fundo {
+            display: none; /* Controlado pelo JS (Muda para flex) */
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px); /* Efeito vidro na tela de fundo */
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* O CARTÃO EXTRAÍDO DO SEU TEMA ESCURO */
+        .login-card { 
+            background: var(--bg-card); 
+            border-radius: 10px; 
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5); 
+            width: 580px; 
+            max-width: 95%; 
+            display: flex;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.08);
+            position: relative;
+            animation: zoomIn 0.3s ease-out;
+        }
+
+        @keyframes zoomIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* BOTÃO DE FECHAR O MODAL (O "X") */
+        .btn-fechar-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: transparent;
+            border: none;
+            color: var(--texto-mutado);
+            cursor: pointer;
+            z-index: 10;
+            transition: 0.2s;
+        }
+        .btn-fechar-modal:hover { color: white; transform: scale(1.1); }
+
+        .login-left {
+            width: 40%;
+            background: var(--bg-logo);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            border-right: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .login-right {
+            width: 60%;
+            padding: 30px 25px; 
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .login-right h2 { font-weight: 800; color: var(--texto-claro); font-size: 18px; margin: 0 0 2px 0; }
+        #titulo-sistema { font-size: 11px; color: var(--cor-primaria); font-weight: 700; text-transform: uppercase; margin-bottom: 15px; letter-spacing: 0.5px; }
+        
+        .input-wrapper { margin-bottom: 10px; }
+        .form-label { display: block; font-size: 10px; font-weight: 700; color: var(--texto-mutado); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+        
+        .caixa-input { position: relative; }
+        .caixa-input .icone-campo { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--texto-mutado); font-size: 16px; pointer-events: none; }
+        
+        .form-control { 
+            padding: 6px 10px 6px 35px; 
+            height: 36px; 
+            border-radius: 6px; 
+            border: 1px solid var(--borda-input); 
+            background: var(--bg-input); 
+            color: var(--texto-claro);
+            font-weight: 600; 
+            font-size: 13px; 
+            width: 100%; 
+            transition: 0.3s;
+            box-sizing: border-box;
+        }
+        
+        .form-control::placeholder { color: #475569; font-weight: 400;}
+        .form-control:focus { 
+            border-color: var(--cor-primaria); 
+            box-shadow: 0 0 0 2px rgba(13,110,253,0.25); 
+            background: var(--bg-card); 
+            color: white;
+            outline: none; 
+        }
+
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type="number"] { -moz-appearance: textfield; }
+
+        .btn-login { 
+            background-color: var(--cor-primaria); border: none; width: 100%; height: 38px; 
+            font-weight: 800; font-size: 13px; border-radius: 6px; margin-top: 10px; 
+            transition: 0.3s; color: white; display: flex; justify-content: center; align-items: center; gap: 6px; cursor: pointer; 
+        }
+        .btn-login:hover { background-color: #0b5ed7; transform: translateY(-2px); }
+
+        @media (max-width: 768px) {
+            .login-card { flex-direction: column; width: 100%; }
+            .login-left { width: 100%; min-height: 120px; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.05); }
+            .login-right { width: 100%; padding: 25px; }
+        }
+		
+		/* =========================
+           BARRA FIXA (ESTILO DESKTOP)
+        ========================= */
+        .barra-fixa {
+            position: sticky;
+            top: 0;
+            z-index: 1500;
+            width: 100%;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08); /* Sombra para separar o menu do resto do site */
+        }
+		
+		
+    </style>
+</head>
+<body>
+
+
+<!-- =========================
+     BARRA FIXA (CABEÇALHO + MENU)
+========================= -->
+<div class="barra-fixa">
+    <header class="cabecalho">
+        <img id="logoSistema" class="logo" src="" alt="Logotipo do Sistema">
+        
+        <button class="botao-usuario" id="botaoUsuario" title="Fazer Login no Sistema">
+            <span class="material-icons" style="font-size: 18px;">login</span>
+        </button>
+    </header>
+
+    <nav class="menu-principal">
+        <ul>
+            <li>
+                <a href="#">SOBRE O PROJETO</a>
+                <ul class="submenu">
+                    <li><a href="#">O que é o SIG-EDU</a></li>
+                    <li><a href="#">O Programador</a></li>
+                    <li><a href="#">O Gemini PRO</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="#">SUPORTE</a>
+                <ul class="submenu">
+                    <li><a href="#">FAQ</a></li>
+                    <li><a href="#">Abrir chamado</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="#">MANUAIS</a>
+                <ul class="submenu">
+                    <li><a href="#">Módulo SME/COCEU</a></li>
+                    <li><a href="#">Módulo SME/DRE</a></li>
+                    <li><a href="#">Módulo CEU</a></li>
+                    <li><a href="#">Módulo POLO</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="#">APLICATIVOS</a>
+                <ul class="submenu">
+                    <li><a href="#">Lista de Espera On-line</a></li>
+                    <li><a href="#">Quadro de Matrículas Global</a></li>
+                    <li><a href="#">Chamada On-line</a></li>
+                    <li><a href="#">Reserva de Espaços On-line</a></li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+</div>
+
+<!-- =========================
+     MODAL LINDÃO DE LOGIN
+========================= -->
+<div id="modalLoginFundo" class="modal-fundo">
+    <div class="login-card">
+        
+        <!-- Botão de Fechar o Modal (X) -->
+        <button class="btn-fechar-modal" id="fecharModal">
+            <span class="material-icons">close</span>
+        </button>
+
+        <!-- Lado Esquerdo -->
+        <div class="login-left">
+            <span class="material-icons" style="font-size: 60px; color: var(--cor-primaria);">account_balance</span>
+        </div>
+
+        <!-- Lado Direito -->
+        <div class="login-right">
+            <h2>Acesso Restrito</h2>
+            <div id="titulo-sistema">Faça login para continuar</div>
+
+            <form id="formLogin" onsubmit="event.preventDefault(); alert('Login disparado!');">
+                <div class="input-wrapper">
+                    <label class="form-label">Cód EOL da Unidade</label>
+                    <div class="caixa-input">
+                        <span class="material-icons icone-campo">domain</span>
+                        <input type="text" inputmode="numeric" class="form-control" id="id_ceu" placeholder="Ex: 123456" required autocomplete="off">
+                    </div>
+                </div>
+
+                <div class="input-wrapper">
+                    <label class="form-label">RF do Funcionário</label>
+                    <div class="caixa-input">
+                        <span class="material-icons icone-campo">badge</span>
+                        <input type="number" class="form-control" id="rf_usuario" placeholder="Apenas números" required>
+                    </div>
+                </div>
+
+                <div class="input-wrapper">
+                    <label class="form-label">Senha de Acesso</label>
+                    <div class="caixa-input">
+                        <span class="material-icons icone-campo">lock</span>
+                        <input type="password" class="form-control" id="senha_usuario" placeholder="••••••••" required>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn-login" id="btn-entrar">
+                    ENTRAR NO SISTEMA <span class="material-icons" style="font-size: 15px;">arrow_forward</span>
+                </button>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    /* =========================
+       SCRIPT DO MODAL LINDÃO
+    ========================= */
+    const modalFundo = document.getElementById("modalLoginFundo");
+    const botaoUsuario = document.getElementById("botaoUsuario");
+    const fecharModal = document.getElementById("fecharModal");
+
+    // Abrir Modal
+    botaoUsuario.addEventListener("click", function () {
+        // Usamos 'flex' para o cartão ficar centralizado na tela
+        modalFundo.style.display = "flex"; 
+    });
+
+    // Fechar Modal pelo X
+    fecharModal.addEventListener("click", function () {
+        modalFundo.style.display = "none";
+    });
+
+    // Fechar Modal clicando fora do cartão (no fundo escuro)
+    window.addEventListener("click", function (evento) {
+        if (evento.target === modalFundo) {
+            modalFundo.style.display = "none";
+        }
+    });
+
+    /* =========================
+       LINK DA LOGO (Opcional)
+    ========================= */
+    const linkGoogleDriveLogo = "https://drive.google.com/file/d/1SmywG6nN0XteLCDuf7rLC2JRPT52Pm_i/view";
+    function converterLinkGoogleDrive(link) {
+        const resultado = link.match(/\/d\/([^/]+)/);
+        if (resultado && resultado[1]) {
+            return "https://drive.google.com/uc?export=view&id=" + resultado[1];
+        }
+        return link;
+    }
+    // Descomente a linha abaixo se quiser carregar a logo do drive!
+    // document.getElementById("logoSistema").src = converterLinkGoogleDrive(linkGoogleDriveLogo);
+</script>
+
+</body>
+</html>

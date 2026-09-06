@@ -38,7 +38,7 @@
         ========================= */
         .cabecalho {
             height: 70px;
-            background-color: var(--bg-card); /* Azul Escuro Premium */
+            background-color: var(--bg-card);
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -144,7 +144,7 @@
            MODAL LINDÃO DE LOGIN
         ========================= */
         .modal-fundo {
-            display: none; /* Controlado pelo JS (Muda para flex) */
+            display: none;
             position: fixed;
             z-index: 2000;
             left: 0;
@@ -152,12 +152,11 @@
             width: 100%;
             height: 100%;
             background-color: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(5px); /* Efeito vidro na tela de fundo */
+            backdrop-filter: blur(5px);
             align-items: center;
             justify-content: center;
         }
 
-        /* O CARTÃO EXTRAÍDO DO SEU TEMA ESCURO */
         .login-card { 
             background: var(--bg-card); 
             border-radius: 10px; 
@@ -176,7 +175,6 @@
             to { opacity: 1; transform: scale(1); }
         }
 
-        /* BOTÃO DE FECHAR O MODAL (O "X") */
         .btn-fechar-modal {
             position: absolute;
             top: 15px;
@@ -265,7 +263,7 @@
             top: 0;
             z-index: 1500;
             width: 100%;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.08); /* Sombra para separar o menu do resto do site */
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
         }
         
     </style>
@@ -336,9 +334,11 @@
             <span class="material-icons">close</span>
         </button>
 
-        <!-- Lado Esquerdo -->
+        <!-- 🌟 LADO ESQUERDO CORRIGIDO: Agora com a tag <img> esperando o logo -->
         <div class="login-left">
-            <span class="material-icons" style="font-size: 60px; color: var(--cor-primaria);">account_balance</span>
+            <span class="material-icons" id="iconePadraoModal" style="font-size: 60px; color: var(--cor-primaria);">account_balance</span>
+            <!-- A imagem inicia escondida (display: none), e o script vai exibi-la assim que carregar -->
+            <img id="logoModal" src="" alt="Logo do Sistema" style="display: none; max-width: 90%; max-height: 120px; object-fit: contain;">
         </div>
 
         <!-- Lado Direito -->
@@ -390,7 +390,6 @@
 
     // Abrir Modal
     botaoUsuario.addEventListener("click", function () {
-        // Usamos 'flex' para o cartão ficar centralizado na tela
         modalFundo.style.display = "flex"; 
     });
 
@@ -407,9 +406,9 @@
     });
 
     /* =========================
-       LINK DA LOGO (RESOLVIDO) https://drive.google.com/file/d/1BAozAReNn5WY-HJg49ig2MDuVbhdVBLz/view?usp=sharing
+       MAGIA DA LOGO (CABEÇALHO + MODAL)
     ========================= */
-    const linkGoogleDriveLogo = "https://drive.google.com/file/d/1BAozAReNn5WY-HJg49ig2MDuVbhdVBLz/view";
+    const linkGoogleDriveLogo = "https://drive.google.com/file/d/1SmywG6nN0XteLCDuf7rLC2JRPT52Pm_i/view";
     
     function converterLinkGoogleDrive(link) {
         const resultado = link.match(/\/d\/([^/]+)/);
@@ -419,8 +418,20 @@
         return link;
     }
     
-    // A MÁGICA ACONTECE AQUI: Tirei as duas barras (//) da frente do código!
-    document.getElementById("logoSistema").src = converterLinkGoogleDrive(linkGoogleDriveLogo);
+    const linkConvertido = converterLinkGoogleDrive(linkGoogleDriveLogo);
+    
+    // 1. Aplica a logo no cabeçalho
+    document.getElementById("logoSistema").src = linkConvertido;
+
+    // 2. Aplica a logo dentro do Modal e esconde o ícone de balança/cadeado
+    const imgModal = document.getElementById("logoModal");
+    const iconePadrao = document.getElementById("iconePadraoModal");
+    
+    if (imgModal && iconePadrao) {
+        imgModal.src = linkConvertido;
+        imgModal.style.display = "block"; // Revela a imagem
+        iconePadrao.style.display = "none"; // Esconde o ícone padrão
+    }
 </script>
 
 </body>

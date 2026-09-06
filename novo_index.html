@@ -51,6 +51,34 @@
         .submenu a { padding: 12px 20px; font-weight: 500; }
         .menu-principal > ul > li:hover > .submenu { display: block; animation: fadeIn 0.2s ease-in-out; }
 
+/* =========================
+           SUB-SUBMENU (TERCEIRO NÍVEL)
+        ========================= */
+        .submenu li { position: relative; } /* Prepara a linha para ancorar a nova gaveta */
+        
+        .sub-submenu {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 100%; /* Faz a gaveta abrir para a direita */
+            background-color: white;
+            min-width: 220px;
+            list-style: none;
+            margin: 0;
+            padding: 5px 0;
+            border-radius: 0 8px 8px 8px;
+            box-shadow: 0 10px 15px rgba(0,0,0,0.15);
+            z-index: 1001;
+            border-left: 3px solid var(--cor-primaria); /* Borda na lateral para dar destaque */
+        }
+
+        /* Mostra o sub-submenu quando passa o mouse na opção pai */
+        .submenu > li:hover > .sub-submenu {
+            display: block;
+            animation: fadeIn 0.2s ease-in-out;
+        }
+
+        
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
 
         /* =========================
@@ -121,14 +149,25 @@
                     <li><a onclick="abrirNoFrame('emconstrucao.html')">Abrir chamado</a></li>
                 </ul>
             </li>
-            <li>
+<li>
                 <a href="#">MANUAIS</a>
-                <!-- A MÁGICA: O clique avisa o Iframe para carregar a seção exata -->
                 <ul class="submenu">
-                    <li><a onclick="abrirNoFrame('emconstrucao.html')">Módulo SME/COCEU</a></li>
-                    <li><a onclick="abrirNoFrame('emconstrucao.html')">Módulo SME/DRE</a></li>
-                    <li><a onclick="abrirNoFrame('emconstrucao.html')">Módulo CEU</a></li>
-                    <li><a href="https://drive.google.com/file/d/1OvqJjZYyTyJs7EhpYjk2yYikxUxpvLbh/view" target="_blank" >Chamada On-line</a></li>
+                    <li><a onclick="abrirNoFrame('manual_coceu.html')">Módulo SME/COCEU</a></li>
+                    <li><a onclick="abrirNoFrame('manual_dre.html')">Módulo SME/DRE</a></li>
+                    <li><a onclick="abrirNoFrame('manual_ceu.html')">Módulo CEU</a></li>
+                    <li><a onclick="abrirNoFrame('manual_polo.html')">Módulo POLO</a></li>
+                    
+                    <!-- NOVO MENU CASCATA: RECREIO NAS FÉRIAS -->
+                    <li>
+                        <a href="#" style="display: flex; justify-content: space-between; align-items: center;">
+                            Recreio nas Férias <span class="material-icons" style="font-size: 16px;">chevron_right</span>
+                        </a>
+                        <ul class="sub-submenu">
+                            <li><a onclick="abrirNoFrame('manual_rf_cadastro.html')">Cadastro de Crianças</a></li>
+                            <li><a onclick="abrirNoFrame('manual_rf_crachas.html')">Crachás</a></li>
+                            <li><a onclick="abrirNoFrame('manual_rf_listas.html')">Listas de Chamada</a></li>
+                        </ul>
+                    </li>
                 </ul>
             </li>
             <li>

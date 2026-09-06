@@ -34,7 +34,7 @@
            BARRA FIXA E CABEÇALHO (A PARTE 1)
         ========================= */
         .barra-fixa { position: relative; z-index: 1500; width: 100%; box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
-        .cabecalho { height: 70px; background-color: var(--bg-card); display: flex; align-items: center; justify-content: space-between; padding: 0 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
+        .cabecalho { height: 70px; background-color: white; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
         .logo-container { width: 250px; display: flex; align-items: center; }
         .logo { max-height: 55px; max-width: 100%; object-fit: contain; display: none; }
         .botao-usuario { background-color: var(--cor-primaria); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.3s; box-shadow: 0 4px 6px rgba(13, 110, 253, 0.2); }
@@ -103,14 +103,10 @@
         <div class="logo-container">
             <img id="logoSistema" class="logo" src="" alt="Logotipo do Sistema">
         </div>
-        <button class="botao-usuario" id="botaoUsuario" title="Fazer Login no Sistema">
-            <span class="material-icons" style="font-size: 18px;">login</span>
-            Acesso Restrito
-        </button>
-    </header>
 
-    <nav class="menu-principal">
-        <ul>
+   <nav class="menu-principal">
+
+         <ul>
             <li>
                 <a href="#">SOBRE O PROJETO</a>
                 <ul class="submenu">
@@ -145,9 +141,54 @@
                 </ul>
             </li>
         </ul>
+ 
+ 
+ </nav>
+         <button class="botao-usuario" id="botaoUsuario" title="Fazer Login no Sistema">
+            <span class="material-icons" style="font-size: 18px;">login</span>
+         </button>
+      
+    </header>
+<!--
+    <nav class="menu-principal">
+        <ul>
+            <li>
+                <a href="#">SOBRE O PROJETO</a>
+                <ul class="submenu">
+                    <li><a onclick="abrirNoFrame('sobre_sigedu.html')">O que é o SIG-EDU</a></li>
+                    <li><a onclick="abrirNoFrame('emconstrucao.html')">O Programador</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="#">SUPORTE</a>
+                <ul class="submenu">
+                    <li><a onclick="abrirNoFrame('emconstrucao.html')">FAQ</a></li>
+                    <li><a onclick="abrirNoFrame('emconstrucao.html')">Abrir chamado</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="#">MANUAIS</a>
+                <!-- A MÁGICA: O clique avisa o Iframe para carregar a seção exata -->
+<!--                <ul class="submenu">
+                    <li><a onclick="abrirNoFrame('emconstrucao.html')">Módulo SME/COCEU</a></li>
+                    <li><a onclick="abrirNoFrame('emconstrucao.html')">Módulo SME/DRE</a></li>
+                    <li><a onclick="abrirNoFrame('emconstrucao.html')">Módulo CEU</a></li>
+                    <li><a onclick="abrirNoFrame('https://drive.google.com/file/d/1OvqJjZYyTyJs7EhpYjk2yYikxUxpvLbh/preview')" target="_blank" >Chamada On-line</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="#">APLICATIVOS</a>
+                <ul class="submenu">
+                    <li><a onclick="abrirNoFrame('emconstrucao.html')">Lista de Espera On-line</a></li>
+                    <li><a onclick="abrirNoFrame('emconstrucao.html')">Quadro de Matrículas Global</a></li>
+                    <li><a onclick="abrirNoFrame('emconstrucao.html')">Chamada On-line</a></li>
+                    <li><a href="https://drive.google.com/file/d/1OvqJjZYyTyJs7EhpYjk2yYikxUxpvLbh/view">Reserva de Espaços On-line</a></li>
+                </ul>
+            </li>
+        </ul>
     </nav>
-</div>
-
+</div> -->
+                
 <!-- O BURACO ONDE AS PÁGINAS ABREM (A PARTE 2) -->
 <div class="area-trabalho">
     <iframe id="frame-principal" src=""></iframe>

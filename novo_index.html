@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+menu-principal<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -33,22 +33,22 @@
         /* =========================
            BARRA FIXA E CABEÇALHO (A PARTE 1)
         ========================= */
-        .barra-fixa { position: relative; z-index: 1500; width: 100%; box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
+        .barra-fixa { position: relative; z-index: 1500; width: 100%; box-shadow: 0 0px 0px rgba(0,0,0,0.08); }
         .cabecalho { height: 50px; background-color: white; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
         .logo-container { width: 250px; display: flex; align-items: center; }
         .logo { max-height: 55px; max-width: 100%; object-fit: contain; display: none; }
-        .botao-usuario { background-color: black; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.3s; box-shadow: 0 4px 6px rgba(13, 110, 253, 0.2); }
+        .botao-usuario { background-color: black; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 11px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.3s; box-shadow: 0 4px 6px rgba(13, 110, 253, 0.2); }
         .botao-usuario:hover { background-color: #0b5ed7; transform: translateY(-2px); }
 
-        .menu-principal { background-color: white; border-bottom: 1px solid #e2e8f0; padding-left: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .menu-principal { background-color: white; border-bottom: 0px solid #e2e8f0; padding-left: 20px; box-shadow: 0 4px 8px rgba(0, 86, 179, 0.15); }
         .menu-principal > ul { list-style: none; margin: 0; padding: 0; display: flex; }
         .menu-principal > ul > li { position: relative; }
-        .menu-principal a { display: block; padding: 15px 20px; text-decoration: none; color: #334155; font-weight: 600; font-size: 13px; transition: 0.2s; cursor: pointer; }
-        .menu-principal a:hover { background-color: #f8fafc; color: var(--cor-primaria); }
+        .menu-principal a { display: block; padding: 15px 20px; text-decoration: none; color: #334155; font-weight: 600; font-size: 11px; transition: 0.2s; cursor: pointer; }
+        .menu-principal a:hover { background-color: #e2e8f0; color: var(--cor-primaria); }
         
-        .submenu { display: none; position: absolute; top: 100%; left: 0; background-color: white; min-width: 220px; list-style: none; margin: 0; padding: 5px 0; border-radius: 0 0 8px 8px; box-shadow: 0 10px 15px rgba(0,0,0,0.1); z-index: 1000; border-top: 3px solid var(--cor-primaria); }
+        .submenu { display: none; position: absolute; top: 100%; left: 0; background-color: white; min-width: 220px; list-style: none; margin: 0; padding: 5px 0; border-radius: 0 0 8px 8px; box-shadow: 0 10px 15px rgba(255,255,255,0.1); z-index: 1000; border-top: 3px solid ; }
         .submenu li { display: block; width: 100%; }
-        .submenu a { padding: 12px 20px; font-weight: 500; }
+        .submenu a { padding: 5px 20px; font-weight: 500; }
         .menu-principal > ul > li:hover > .submenu { display: block; animation: fadeIn 0.2s ease-in-out; }
 
 /* =========================
@@ -65,11 +65,11 @@
             min-width: 220px;
             list-style: none;
             margin: 0;
-            padding: 5px 0;
-            border-radius: 0 8px 8px 8px;
-            box-shadow: 0 10px 15px rgba(0,0,0,0.15);
+            padding: 1px 0;
+            border-radius: 0 0px 0px 0px;
+            box-shadow: 0 0px 4px rgba(0, 86, 179, 0.15);
             z-index: 1001;
-            border-left: 3px solid var(--cor-primaria); /* Borda na lateral para dar destaque */
+            border-left: 3px solid ; /* Borda na lateral para dar destaque */
         }
 
         /* Mostra o sub-submenu quando passa o mouse na opção pai */
@@ -133,7 +133,6 @@
         </div>
 
    <nav class="menu-principal">
-
          <ul>
             <li>
                 <a href="#">SOBRE O PROJETO</a>
@@ -188,46 +187,7 @@
          </button>
       
     </header>
-<!--
-    <nav class="menu-principal">
-        <ul>
-            <li>
-                <a href="#">SOBRE O PROJETO</a>
-                <ul class="submenu">
-                    <li><a onclick="abrirNoFrame('sobre_sigedu.html')">O que é o SIG-EDU</a></li>
-                    <li><a onclick="abrirNoFrame('emconstrucao.html')">O Programador</a></li>
-                </ul>
-            </li>
-            <li>
-                <a href="#">SUPORTE</a>
-                <ul class="submenu">
-                    <li><a onclick="abrirNoFrame('emconstrucao.html')">FAQ</a></li>
-                    <li><a onclick="abrirNoFrame('emconstrucao.html')">Abrir chamado</a></li>
-                </ul>
-            </li>
-            <li>
-                <a href="#">MANUAIS</a>
-                <!-- A MÁGICA: O clique avisa o Iframe para carregar a seção exata -->
-<!--                <ul class="submenu">
-                    <li><a onclick="abrirNoFrame('emconstrucao.html')">Módulo SME/COCEU</a></li>
-                    <li><a onclick="abrirNoFrame('emconstrucao.html')">Módulo SME/DRE</a></li>
-                    <li><a onclick="abrirNoFrame('emconstrucao.html')">Módulo CEU</a></li>
-                    <li><a onclick="abrirNoFrame('https://drive.google.com/file/d/1OvqJjZYyTyJs7EhpYjk2yYikxUxpvLbh/preview')" target="_blank" >Chamada On-line</a></li>
-                </ul>
-            </li>
-            <li>
-                <a href="#">APLICATIVOS</a>
-                <ul class="submenu">
-                    <li><a onclick="abrirNoFrame('emconstrucao.html')">Lista de Espera On-line</a></li>
-                    <li><a onclick="abrirNoFrame('emconstrucao.html')">Quadro de Matrículas Global</a></li>
-                    <li><a onclick="abrirNoFrame('emconstrucao.html')">Chamada On-line</a></li>
-                    <li><a href="https://drive.google.com/file/d/1OvqJjZYyTyJs7EhpYjk2yYikxUxpvLbh/view">Reserva de Espaços On-line</a></li>
-                </ul>
-            </li>
-        </ul>
-    </nav>
-</div> -->
-                
+  
 <!-- O BURACO ONDE AS PÁGINAS ABREM (A PARTE 2) -->
 <div class="area-trabalho">
     <iframe id="frame-principal" src=""></iframe>

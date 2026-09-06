@@ -3,11 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal do Sistema</title>
+    <title>SIG-EDU</title>
 
     <!-- Importação de Fontes e Ícones -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    
+    <!-- 🌟 AQUI ESTÁ A PONTE PARA O SEU SERVIDOR (Igual ao index antigo) -->
+    <script src="config.js"></script>
 
     <style>
         /* =========================
@@ -23,230 +26,65 @@
             --texto-mutado: #94a3b8;
         }
 
-        /* =========================
-           CONFIGURAÇÃO GERAL
-        ========================= */
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #f4f7f6;
-            font-family: 'Inter', Arial, sans-serif;
-        }
+        body { margin: 0; padding: 0; background-color: #f4f7f6; font-family: 'Inter', Arial, sans-serif; }
 
         /* =========================
-           CABEÇALHO (AZUL ESCURO)
+           BARRA FIXA (ESTILO DESKTOP)
         ========================= */
-        .cabecalho {
-            height: 70px;
-            background-color: var(--bg-card);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 30px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-        }
+        .barra-fixa { position: sticky; top: 0; z-index: 1500; width: 100%; box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
 
-        .logo {
-            max-height: 55px;
-            max-width: 250px;
-            object-fit: contain;
-        }
+        .cabecalho { height: 70px; background-color: var(--bg-card); display: flex; align-items: center; justify-content: space-between; padding: 0 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
+        .logo { max-height: 55px; max-width: 250px; object-fit: contain; display: none; /* Inicia oculto até a API carregar */ }
 
-        /* BOTÃO DO USUÁRIO COM ÍCONE */
-        .botao-usuario {
-            background-color: var(--cor-primaria);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 14px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: 0.3s;
-            box-shadow: 0 4px 6px rgba(13, 110, 253, 0.2);
-        }
-
-        .botao-usuario:hover {
-            background-color: #0b5ed7;
-            transform: translateY(-2px);
-        }
+        .botao-usuario { background-color: var(--cor-primaria); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.3s; box-shadow: 0 4px 6px rgba(13, 110, 253, 0.2); }
+        .botao-usuario:hover { background-color: #0b5ed7; transform: translateY(-2px); }
 
         /* =========================
            MENU PRINCIPAL E SUBMENUS
         ========================= */
-        .menu-principal {
-            background-color: white;
-            border-bottom: 1px solid #e2e8f0;
-            padding-left: 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
-        }
+        .menu-principal { background-color: white; border-bottom: 1px solid #e2e8f0; padding-left: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .menu-principal > ul { list-style: none; margin: 0; padding: 0; display: flex; }
+        .menu-principal > ul > li { position: relative; }
+        .menu-principal a { display: block; padding: 15px 20px; text-decoration: none; color: #334155; font-weight: 600; font-size: 13px; transition: 0.2s; }
+        .menu-principal a:hover { background-color: #f8fafc; color: var(--cor-primaria); }
 
-        .menu-principal > ul {
-            list-style: none;
-            margin: 0;
-            padding: 0;
-            display: flex;
-        }
-
-        .menu-principal > ul > li {
-            position: relative;
-        }
-
-        .menu-principal a {
-            display: block;
-            padding: 15px 20px;
-            text-decoration: none;
-            color: #334155;
-            font-weight: 600;
-            font-size: 13px;
-            transition: 0.2s;
-        }
-
-        .menu-principal a:hover {
-            background-color: #f8fafc;
-            color: var(--cor-primaria);
-        }
-
-        .submenu {
-            display: none;
-            position: absolute;
-            top: 100%;
-            left: 0;
-            background-color: white;
-            min-width: 220px;
-            list-style: none;
-            margin: 0;
-            padding: 5px 0;
-            border-radius: 0 0 8px 8px;
-            box-shadow: 0 10px 15px rgba(0,0,0,0.1);
-            z-index: 1000;
-            border-top: 3px solid var(--cor-primaria);
-        }
-
+        .submenu { display: none; position: absolute; top: 100%; left: 0; background-color: white; min-width: 220px; list-style: none; margin: 0; padding: 5px 0; border-radius: 0 0 8px 8px; box-shadow: 0 10px 15px rgba(0,0,0,0.1); z-index: 1000; border-top: 3px solid var(--cor-primaria); }
         .submenu li { display: block; width: 100%; }
-        
         .submenu a { padding: 12px 20px; font-weight: 500; }
+        .menu-principal > ul > li:hover > .submenu { display: block; animation: fadeIn 0.2s ease-in-out; }
 
-        .menu-principal > ul > li:hover > .submenu {
-            display: block;
-            animation: fadeIn 0.2s ease-in-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-5px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
 
         /* =========================
            MODAL LINDÃO DE LOGIN
         ========================= */
-        .modal-fundo {
-            display: none;
-            position: fixed;
-            z-index: 2000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(5px);
-            align-items: center;
-            justify-content: center;
-        }
+        .modal-fundo { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px); align-items: center; justify-content: center; }
+        .login-card { background: var(--bg-card); border-radius: 10px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); width: 580px; max-width: 95%; display: flex; overflow: hidden; border: 1px solid rgba(255,255,255,0.08); position: relative; animation: zoomIn 0.3s ease-out; }
 
-        .login-card { 
-            background: var(--bg-card); 
-            border-radius: 10px; 
-            box-shadow: 0 25px 50px rgba(0,0,0,0.5); 
-            width: 580px; 
-            max-width: 95%; 
-            display: flex;
-            overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.08);
-            position: relative;
-            animation: zoomIn 0.3s ease-out;
-        }
+        @keyframes zoomIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
 
-        @keyframes zoomIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
-        }
-
-        .btn-fechar-modal {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: transparent;
-            border: none;
-            color: var(--texto-mutado);
-            cursor: pointer;
-            z-index: 10;
-            transition: 0.2s;
-        }
+        .btn-fechar-modal { position: absolute; top: 15px; right: 15px; background: transparent; border: none; color: var(--texto-mutado); cursor: pointer; z-index: 10; transition: 0.2s; }
         .btn-fechar-modal:hover { color: white; transform: scale(1.1); }
 
-        .login-left {
-            width: 40%;
-            background: var(--bg-logo);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 15px;
-            border-right: 1px solid rgba(255,255,255,0.05);
-        }
-
-        .login-right {
-            width: 60%;
-            padding: 30px 25px; 
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
+        .login-left { width: 40%; background: var(--bg-logo); display: flex; align-items: center; justify-content: center; padding: 15px; border-right: 1px solid rgba(255,255,255,0.05); }
+        .login-right { width: 60%; padding: 30px 25px; display: flex; flex-direction: column; justify-content: center; }
         
         .login-right h2 { font-weight: 800; color: var(--texto-claro); font-size: 18px; margin: 0 0 2px 0; }
         #titulo-sistema { font-size: 11px; color: var(--cor-primaria); font-weight: 700; text-transform: uppercase; margin-bottom: 15px; letter-spacing: 0.5px; }
         
         .input-wrapper { margin-bottom: 10px; }
         .form-label { display: block; font-size: 10px; font-weight: 700; color: var(--texto-mutado); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
-        
         .caixa-input { position: relative; }
         .caixa-input .icone-campo { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--texto-mutado); font-size: 16px; pointer-events: none; }
         
-        .form-control { 
-            padding: 6px 10px 6px 35px; 
-            height: 36px; 
-            border-radius: 6px; 
-            border: 1px solid var(--borda-input); 
-            background: var(--bg-input); 
-            color: var(--texto-claro);
-            font-weight: 600; 
-            font-size: 13px; 
-            width: 100%; 
-            transition: 0.3s;
-            box-sizing: border-box;
-        }
-        
+        .form-control { padding: 6px 10px 6px 35px; height: 36px; border-radius: 6px; border: 1px solid var(--borda-input); background: var(--bg-input); color: var(--texto-claro); font-weight: 600; font-size: 13px; width: 100%; transition: 0.3s; box-sizing: border-box; }
         .form-control::placeholder { color: #475569; font-weight: 400;}
-        .form-control:focus { 
-            border-color: var(--cor-primaria); 
-            box-shadow: 0 0 0 2px rgba(13,110,253,0.25); 
-            background: var(--bg-card); 
-            color: white;
-            outline: none; 
-        }
+        .form-control:focus { border-color: var(--cor-primaria); box-shadow: 0 0 0 2px rgba(13,110,253,0.25); background: var(--bg-card); color: white; outline: none; }
 
-        input[type="number"]::-webkit-outer-spin-button,
-        input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         input[type="number"] { -moz-appearance: textfield; }
 
-        .btn-login { 
-            background-color: var(--cor-primaria); border: none; width: 100%; height: 38px; 
-            font-weight: 800; font-size: 13px; border-radius: 6px; margin-top: 10px; 
-            transition: 0.3s; color: white; display: flex; justify-content: center; align-items: center; gap: 6px; cursor: pointer; 
-        }
+        .btn-login { background-color: var(--cor-primaria); border: none; width: 100%; height: 38px; font-weight: 800; font-size: 13px; border-radius: 6px; margin-top: 10px; transition: 0.3s; color: white; display: flex; justify-content: center; align-items: center; gap: 6px; cursor: pointer; }
         .btn-login:hover { background-color: #0b5ed7; transform: translateY(-2px); }
 
         @media (max-width: 768px) {
@@ -254,28 +92,13 @@
             .login-left { width: 100%; min-height: 120px; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.05); }
             .login-right { width: 100%; padding: 25px; }
         }
-        
-        /* =========================
-           BARRA FIXA (ESTILO DESKTOP)
-        ========================= */
-        .barra-fixa {
-            position: sticky;
-            top: 0;
-            z-index: 1500;
-            width: 100%;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-        }
-        
     </style>
 </head>
 <body>
 
-
-<!-- =========================
-     BARRA FIXA (CABEÇALHO + MENU)
-========================= -->
 <div class="barra-fixa">
     <header class="cabecalho">
+        <!-- A Tag aguardando o Script preencher com a imagem da planilha -->
         <img id="logoSistema" class="logo" src="" alt="Logotipo do Sistema">
         
         <button class="botao-usuario" id="botaoUsuario" title="Fazer Login no Sistema">
@@ -323,25 +146,18 @@
     </nav>
 </div>
 
-<!-- =========================
-     MODAL LINDÃO DE LOGIN
-========================= -->
 <div id="modalLoginFundo" class="modal-fundo">
     <div class="login-card">
         
-        <!-- Botão de Fechar o Modal (X) -->
         <button class="btn-fechar-modal" id="fecharModal">
             <span class="material-icons">close</span>
         </button>
 
-        <!-- 🌟 LADO ESQUERDO CORRIGIDO: Agora com a tag <img> esperando o logo -->
         <div class="login-left">
             <span class="material-icons" id="iconePadraoModal" style="font-size: 60px; color: var(--cor-primaria);">account_balance</span>
-            <!-- A imagem inicia escondida (display: none), e o script vai exibi-la assim que carregar -->
             <img id="logoModal" src="" alt="Logo do Sistema" style="display: none; max-width: 90%; max-height: 120px; object-fit: contain;">
         </div>
 
-        <!-- Lado Direito -->
         <div class="login-right">
             <h2>Acesso Restrito</h2>
             <div id="titulo-sistema">Faça login para continuar</div>
@@ -354,7 +170,6 @@
                         <input type="text" inputmode="numeric" class="form-control" id="id_ceu" placeholder="Ex: 123456" required autocomplete="off">
                     </div>
                 </div>
-
                 <div class="input-wrapper">
                     <label class="form-label">RF do Funcionário</label>
                     <div class="caixa-input">
@@ -362,7 +177,6 @@
                         <input type="number" class="form-control" id="rf_usuario" placeholder="Apenas números" required>
                     </div>
                 </div>
-
                 <div class="input-wrapper">
                     <label class="form-label">Senha de Acesso</label>
                     <div class="caixa-input">
@@ -370,68 +184,71 @@
                         <input type="password" class="form-control" id="senha_usuario" placeholder="••••••••" required>
                     </div>
                 </div>
-                
                 <button type="submit" class="btn-login" id="btn-entrar">
                     ENTRAR NO SISTEMA <span class="material-icons" style="font-size: 15px;">arrow_forward</span>
                 </button>
             </form>
         </div>
-
     </div>
 </div>
 
 <script>
-    /* =========================
-       SCRIPT DO MODAL LINDÃO
-    ========================= */
     const modalFundo = document.getElementById("modalLoginFundo");
     const botaoUsuario = document.getElementById("botaoUsuario");
     const fecharModal = document.getElementById("fecharModal");
 
-    // Abrir Modal
-    botaoUsuario.addEventListener("click", function () {
-        modalFundo.style.display = "flex"; 
-    });
+    botaoUsuario.addEventListener("click", function () { modalFundo.style.display = "flex"; });
+    fecharModal.addEventListener("click", function () { modalFundo.style.display = "none"; });
+    window.addEventListener("click", function (evento) { if (evento.target === modalFundo) modalFundo.style.display = "none"; });
 
-    // Fechar Modal pelo X
-    fecharModal.addEventListener("click", function () {
-        modalFundo.style.display = "none";
-    });
-
-    // Fechar Modal clicando fora do cartão (no fundo escuro)
-    window.addEventListener("click", function (evento) {
-        if (evento.target === modalFundo) {
-            modalFundo.style.display = "none";
+    /* ========================================================
+       🌟 A LÓGICA DO INDEX ANTIGO RESTAURADA E APLICADA AQUI
+    ======================================================== */
+    window.onload = function() {
+        // Verifica se a API_URL carregou do config.js
+        if(typeof API_URL === 'undefined') {
+            console.error("ERRO: config.js não carregado. Verifique o arquivo.");
+            return;
         }
-    });
 
-    /* =========================
-       MAGIA DA LOGO (CABEÇALHO + MODAL)
-    ========================= */
-    const linkGoogleDriveLogo = "https://drive.google.com/file/d/1SmywG6nN0XteLCDuf7rLC2JRPT52Pm_i/view";
-    
-    function converterLinkGoogleDrive(link) {
-        const resultado = link.match(/\/d\/([^/]+)/);
-        if (resultado && resultado[1]) {
-            return "https://drive.google.com/uc?export=view&id=" + resultado[1];
-        }
-        return link;
-    }
-    
-    const linkConvertido = converterLinkGoogleDrive(linkGoogleDriveLogo);
-    
-    // 1. Aplica a logo no cabeçalho
-    document.getElementById("logoSistema").src = linkConvertido;
-
-    // 2. Aplica a logo dentro do Modal e esconde o ícone de balança/cadeado
-    const imgModal = document.getElementById("logoModal");
-    const iconePadrao = document.getElementById("iconePadraoModal");
-    
-    if (imgModal && iconePadrao) {
-        imgModal.src = linkConvertido;
-        imgModal.style.display = "block"; // Revela a imagem
-        iconePadrao.style.display = "none"; // Esconde o ícone padrão
-    }
+        fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ acao: "obterConfiguracoes", dados: {} })
+        })
+        .then(res => res.json())
+        .then(retorno => {
+            if(retorno.status === "sucesso") {
+                
+                // Puxa o nome e joga no modal
+                if(retorno.dados.nomeSistema) {
+                    document.getElementById('titulo-sistema').innerText = retorno.dados.nomeSistema;
+                }
+                
+                // Se o servidor mandou a URL do Logo da aba configsistema
+                if (retorno.dados.logoUrl) {
+                    const logoOficial = retorno.dados.logoUrl;
+                    
+                    // 1. Injeta no Cabeçalho
+                    const logoCabecalho = document.getElementById("logoSistema");
+                    if(logoCabecalho) {
+                        logoCabecalho.src = logoOficial;
+                        logoCabecalho.style.display = "block"; // Revela a imagem
+                    }
+                    
+                    // 2. Injeta no Modal
+                    const logoModal = document.getElementById("logoModal");
+                    const iconePadrao = document.getElementById("iconePadraoModal");
+                    if(logoModal && iconePadrao) {
+                        logoModal.src = logoOficial;
+                        logoModal.style.display = "block"; // Revela a imagem no modal
+                        iconePadrao.style.display = "none"; // Esconde a balança azul
+                    }
+                }
+            }
+        })
+        .catch(erro => console.error("Aviso: Falha ao puxar configurações. A API_URL está correta?", erro));
+    };
 </script>
 
 </body>

@@ -3,177 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manuais do Sistema - SIG-EDU</title>
-
-    <!-- Bloqueadores de Cache -->
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-    <meta http-equiv="Pragma" content="no-cache" />
-    <meta http-equiv="Expires" content="0" />
-
-    <!-- Importação de Fontes, Ícones e SweetAlert -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
-    
-    <!-- 🌟 A PONTE PARA O SEU SERVIDOR -->
-    <script src="config.js"></script>
 
     <style>
-        /* =========================
-           VARIÁVEIS DO TEMA ESCURO E MANUAIS
-        ========================= */
-        :root { 
-            --cor-primaria: #0d6efd; 
-            --cor-fundo-tela: #f4f7f6;
-            --bg-card: #0a1422; 
-            --bg-logo: #060c14; 
-            --bg-input: #112136;
-            --borda-input: #1e3a5f;
-            --texto-claro: #f8fafc;
-            --texto-mutado: #94a3b8;
-            --texto-escuro: #1e293b;
-            --fundo-menu: #ffffff;
+        body { 
+            margin: 0; padding: 40px; 
+            background-color: transparent; 
+            font-family: 'Inter', Arial, sans-serif; 
         }
-
-        body { margin: 0; padding: 0; background-color: var(--cor-fundo-tela); font-family: 'Inter', Arial, sans-serif; overflow-x: hidden; }
-
-        /* =========================
-           BARRA FIXA E CABEÇALHO (DO INDEX)
-        ========================= */
-        .barra-fixa { position: sticky; top: 0; z-index: 1500; width: 100%; box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
-
-        .cabecalho { height: 70px; background-color: var(--bg-card); display: flex; align-items: center; justify-content: space-between; padding: 0 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
-
-        .logo-container { width: 250px; display: flex; align-items: center; }
-        .logo { max-height: 55px; max-width: 100%; object-fit: contain; display: none; }
-
-        .botao-usuario { background-color: var(--cor-primaria); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.3s; box-shadow: 0 4px 6px rgba(13, 110, 253, 0.2); }
-        .botao-usuario:hover { background-color: #0b5ed7; transform: translateY(-2px); }
-
-        /* =========================
-           MENU PRINCIPAL E SUBMENUS (DO INDEX)
-        ========================= */
-        .menu-principal { background-color: white; border-bottom: 1px solid #e2e8f0; padding-left: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
-        .menu-principal > ul { list-style: none; margin: 0; padding: 0; display: flex; }
-        .menu-principal > ul > li { position: relative; }
-        .menu-principal a { display: block; padding: 15px 20px; text-decoration: none; color: #334155; font-weight: 600; font-size: 13px; transition: 0.2s; cursor: pointer; }
-        .menu-principal a:hover { background-color: #f8fafc; color: var(--cor-primaria); }
-
-        .submenu { display: none; position: absolute; top: 100%; left: 0; background-color: white; min-width: 220px; list-style: none; margin: 0; padding: 5px 0; border-radius: 0 0 8px 8px; box-shadow: 0 10px 15px rgba(0,0,0,0.1); z-index: 1000; border-top: 3px solid var(--cor-primaria); }
-        .submenu li { display: block; width: 100%; }
-        .submenu a { padding: 12px 20px; font-weight: 500; }
-        .menu-principal > ul > li:hover > .submenu { display: block; animation: fadeIn 0.2s ease-in-out; }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* =========================
-           MODAL LINDÃO DE LOGIN (INTOCADO)
-        ========================= */
-        .modal-fundo { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px); align-items: center; justify-content: center; }
-
-        .login-card { background: var(--bg-card); border-radius: 10px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); width: 580px; max-width: 95%; display: flex; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); position: relative; animation: zoomIn 0.3s ease-out; }
-
-        @keyframes zoomIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-
-        .btn-fechar-modal { position: absolute; top: 15px; right: 15px; background: transparent; border: none; color: var(--texto-mutado); cursor: pointer; z-index: 10; transition: 0.2s; }
-        .btn-fechar-modal:hover { color: white; transform: scale(1.1); }
-
-        .login-left { width: 40%; background: var(--bg-logo); display: flex; align-items: center; justify-content: center; padding: 15px; border-right: 1px solid rgba(255,255,255,0.05); }
-        .login-right { width: 60%; padding: 20px 25px; display: flex; flex-direction: column; justify-content: center; }
-        
-        .login-right h2 { font-weight: 800; color: var(--texto-claro); font-size: 16px; margin: 0 0 0px 0; }
-        #titulo-sistema { font-size: 10px; color: var(--cor-primaria); font-weight: 700; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 0.5px; }
-        
-        .input-wrapper { margin-bottom: 8px; }
-        .form-label { display: block; font-size: 9px; font-weight: 700; color: var(--texto-mutado); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
-        
-        .caixa-input { position: relative; }
-        .caixa-input .icone-campo { position: absolute; left: 8px; top: 50%; transform: translateY(-50%); color: var(--texto-mutado); font-size: 16px; pointer-events: none; }
-        
-        .form-control { padding: 4px 8px 4px 30px; height: 32px; border-radius: 5px; border: 1px solid var(--borda-input); background: var(--bg-input); color: var(--texto-claro); font-weight: 600; font-size: 12px; width: 100%; transition: 0.3s; box-sizing: border-box; }
-        .form-control::placeholder { color: #475569; }
-        .form-control:focus { border-color: var(--cor-primaria); box-shadow: 0 0 0 2px rgba(13,110,253,0.25); background: var(--bg-card); color: white; outline: none; }
-
-        input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-        input[type="number"] { -moz-appearance: textfield; }
-
-        #nome-ceu-display { font-size: 9px; font-weight: 700; margin-top: 2px; margin-left: 2px; color: var(--texto-mutado); display: flex; align-items: center; gap: 3px; min-height: 12px; }
-        
-        .btn-login { background-color: var(--cor-primaria); border: none; width: 100%; height: 34px; font-weight: 800; font-size: 12px; border-radius: 5px; margin-top: 4px; transition: 0.3s; color: white; display: flex; justify-content: center; align-items: center; gap: 6px; cursor: pointer; }
-        .btn-login:hover { background-color: #0b5ed7; transform: translateY(-2px); }
-
-        @media (max-width: 768px) {
-            .login-card { flex-direction: column; width: 100%; }
-            .login-left { width: 100%; min-height: 120px; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.05); }
-            .login-right { width: 100%; padding: 20px; }
-        }
-
-        /* GARANTE QUE OS AVISOS APAREÇAM NA FRENTE DO LOGIN */
-        .swal2-container { z-index: 99999 !important; }
-
-        /* =========================
-           LAYOUT DA DOCUMENTAÇÃO
-        ========================= */
-        .doc-container {
-            display: flex;
-            max-width: 1400px;
-            margin: 0 auto;
-            min-height: calc(100vh - 120px);
-        }
-
-        /* MENU LATERAL DE MANUAIS */
-        .doc-sidebar {
-            width: 300px;
-            background: var(--fundo-menu);
-            border-right: 1px solid #e2e8f0;
-            padding: 30px 20px;
-            position: sticky;
-            top: 120px; 
-            height: calc(100vh - 120px);
-            overflow-y: auto;
-        }
-
-        .doc-sidebar h3 { font-size: 14px; color: var(--texto-mutado); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; font-weight: 800; }
-        
-        .doc-nav-btn {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            width: 100%;
-            padding: 12px 15px;
-            background: transparent;
-            border: none;
-            text-align: left;
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--texto-escuro);
-            border-radius: 8px;
-            cursor: pointer;
-            transition: 0.2s;
-            margin-bottom: 5px;
-        }
-
-        .doc-nav-btn:hover { background: #f1f5f9; color: var(--cor-primaria); }
-        .doc-nav-btn.ativo { background: #e0f2fe; color: #0284c7; border-left: 4px solid #0284c7; }
-
-        /* ÁREA PRINCIPAL DO CONTEÚDO */
-        .doc-content { flex: 1; padding: 40px 60px; background: var(--cor-fundo-tela); }
 
         .manual-secao {
-            display: none; 
+            display: none; /* Inicia oculto */
             background: white;
             padding: 40px;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.03);
             border: 1px solid #e2e8f0;
+            max-width: 1000px;
+            margin: 0 auto;
             animation: fadeIn 0.3s ease-in-out;
         }
 
-        .manual-secao.ativo { display: block; }
-
-        .manual-secao h1 { font-size: 28px; color: var(--bg-card); font-weight: 800; margin-top: 0; border-bottom: 2px solid #f1f5f9; padding-bottom: 15px; margin-bottom: 30px; }
-        .manual-secao h2 { font-size: 18px; color: var(--cor-primaria); font-weight: 700; margin-top: 30px; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+        .manual-secao h1 { font-size: 28px; color: #0a1422; font-weight: 800; margin-top: 0; border-bottom: 2px solid #f1f5f9; padding-bottom: 15px; margin-bottom: 30px; }
+        .manual-secao h2 { font-size: 18px; color: #0d6efd; font-weight: 700; margin-top: 30px; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
         .manual-secao p { font-size: 15px; line-height: 1.7; color: #475569; margin-bottom: 15px; }
         .manual-secao ul { padding-left: 20px; color: #475569; line-height: 1.7; font-size: 15px; margin-bottom: 20px; }
         .manual-secao li { margin-bottom: 8px; }
@@ -181,425 +34,75 @@
         .dica-box { background: #f0fdf4; border-left: 4px solid #22c55e; padding: 15px; border-radius: 4px; margin: 20px 0; font-size: 14px; color: #166534; }
         .alerta-box { background: #fffbeb; border-left: 4px solid #f59e0b; padding: 15px; border-radius: 4px; margin: 20px 0; font-size: 14px; color: #b45309; }
 
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body>
 
-<!-- =========================
-     BARRA FIXA (O MESMO CABEÇALHO DO INDEX)
-========================= -->
-<div class="barra-fixa">
-    <header class="cabecalho">
-        <div class="logo-container">
-            <img id="logoSistema" class="logo" src="" alt="Logotipo do Sistema">
+    <!-- MÓDULO SME/COCEU -->
+    <section id="coceu" class="manual-secao">
+        <h1>Módulo SME/COCEU</h1>
+        <p>A Coordenadoria dos Centros Educacionais Unificados (COCEU) detém a visão administrativa global e de auditoria da rede.</p>
+        <div class="dica-box">
+            <strong>Em Desenvolvimento:</strong> O detalhamento operacional dos fluxos da COCEU será adicionado nesta página em atualizações futuras.
         </div>
-        
-        <button class="botao-usuario" id="botaoUsuario" title="Fazer Login no Sistema">
-            <span class="material-icons" style="font-size: 18px;">login</span>
-            Acesso Restrito
-        </button>
-    </header>
+    </section>
 
-    <nav class="menu-principal">
+    <!-- MÓDULO SME/DRE -->
+    <section id="dre" class="manual-secao">
+        <h1>Módulo SME/DRE</h1>
+        <p>A Diretoria Regional de Educação atua como a gestora global da rede. Neste módulo, o funcionário define regras, cadastra atrações e acompanha os números de todos os CEUs vinculados.</p>
+        <h2><span class="material-icons">settings</span> 1. Painel de Indicadores e Regras</h2>
+        <p>Estatísticas agregadas de inscrições, consolidando dados de inclusão e dietas especiais de todas as unidades.</p>
+        <h2><span class="material-icons">directions_bus</span> 2. Gestão de Passeios</h2>
         <ul>
-            <li>
-                <a href="#">SOBRE O PROJETO</a>
-                <ul class="submenu">
-                    <li><a href="#">O que é o SIG-EDU</a></li>
-                    <li><a href="#">O Programador</a></li>
-                    <li><a href="#">O Gemini PRO</a></li>
-                </ul>
-            </li>
-            <li>
-                <a href="#">SUPORTE</a>
-                <ul class="submenu">
-                    <li><a href="#">FAQ</a></li>
-                    <li><a href="#">Abrir chamado</a></li>
-                </ul>
-            </li>
-            <li>
-                <a href="#">MANUAIS</a>
-                <!-- A MÁGICA DOS SUBMENUS AQUI: Abrem direto as telas de baixo! -->
-                <ul class="submenu">
-                    <li><a onclick="mostrarManual('manual-login', document.getElementById('btn-lat-login')); return false;">Módulo Acesso / Login</a></li>
-                    <li><a onclick="mostrarManual('manual-rf-dre', document.getElementById('btn-lat-dre')); return false;">Módulo SME/DRE</a></li>
-                    <li><a onclick="mostrarManual('manual-rf-ceu', document.getElementById('btn-lat-ceu')); return false;">Módulo CEU Ativo</a></li>
-                </ul>
-            </li>
-            <li>
-                <a href="#">APLICATIVOS</a>
-                <ul class="submenu">
-                    <li><a href="#">Lista de Espera On-line</a></li>
-                    <li><a href="#">Quadro de Matrículas Global</a></li>
-                    <li><a href="#">Chamada On-line</a></li>
-                    <li><a href="#">Reserva de Espaços On-line</a></li>
-                </ul>
-            </li>
+            <li><strong>Cadastro Simplificado:</strong> Insira o Cód EOL dos CEUs que receberão passeios.</li>
+            <li><strong>Detalhes da Viagem:</strong> Preencha os horários, destino e quantidade de alunos por van.</li>
         </ul>
-    </nav>
-</div>
+    </section>
 
-<!-- =========================
-     MODAL LINDÃO DE LOGIN (INTOCADO!)
-========================= -->
-<div id="modalLoginFundo" class="modal-fundo">
-    <div class="login-card">
-        
-        <button class="btn-fechar-modal" id="fecharModal">
-            <span class="material-icons">close</span>
-        </button>
+    <!-- MÓDULO CEU -->
+    <section id="ceu" class="manual-secao">
+        <h1>Módulo CEU Ativo</h1>
+        <p>Desenhado para agilizar a operação local: desde a inscrição no balcão até a expedição de crachás.</p>
+        <h2><span class="material-icons">person_add</span> 1. Inscrição e Formulário</h2>
+        <p>Registros isolados na aba <code>RF - CRIANCAS</code>. O formulário exige informações críticas de saúde como Inclusão e Restrição Alimentar.</p>
+        <h2><span class="material-icons">manage_search</span> 2. Tabela de Edição Rápida</h2>
+        <ul>
+            <li>Busque por nome ou turma na barra de pesquisa.</li>
+            <li>Alterne o status de impressão de crachás com o botão <strong>🪪 SIM / NÃO</strong>.</li>
+        </ul>
+    </section>
 
-        <div class="login-left" id="box-logo">
-            <span class="material-icons" id="icone-padrao" style="font-size: 55px; color: var(--cor-primaria);">account_balance</span>
-            <img id="img-logo" src="" alt="Logo do Sistema" style="display: none; width: 100%; max-height: 180px; object-fit: contain; transform: scale(1.1);">
+    <!-- MÓDULO POLO -->
+    <section id="polo" class="manual-secao">
+        <h1>Módulo POLO</h1>
+        <p>Controle de unidades de extensão e apoio que integram a infraestrutura descentralizada do SIG-EDU.</p>
+        <div class="dica-box">
+            <strong>Em Desenvolvimento:</strong> O guia operacional para Polos está sendo estruturado junto à documentação oficial.
         </div>
+    </section>
 
-        <div class="login-right">
-            <h2>Acesso Restrito</h2>
-            <div id="titulo-sistema">A carregar sistema...</div>
-
-            <form id="formLogin" onsubmit="event.preventDefault(); fazerLogin();">
+    <script>
+        // Lógica Inteligente: Lê a URL enviada pelo Iframe e mostra a seção correta
+        window.onload = function() {
+            const params = new URLSearchParams(window.location.search);
+            const moduloSolicitado = params.get('mod');
+            
+            if(moduloSolicitado) {
+                // Esconde todas as seções
+                document.querySelectorAll('.manual-secao').forEach(secao => secao.style.display = 'none');
                 
-                <div class="input-wrapper">
-                    <label class="form-label">Cód EOL da Unidade</label>
-                    <div class="caixa-input">
-                        <span class="material-icons icone-campo">domain</span>
-                        <input type="text" inputmode="numeric" class="form-control" id="id_ceu" placeholder="Ex: 123456" oninput="verificarNomeCEU()" required autocomplete="off">
-                    </div>
-                    <div id="nome-ceu-display"></div>
-                </div>
-
-                <div class="input-wrapper">
-                    <label class="form-label">RF do Funcionário</label>
-                    <div class="caixa-input">
-                        <span class="material-icons icone-campo">badge</span>
-                        <input type="number" class="form-control" id="rf_usuario" placeholder="Apenas números" required>
-                    </div>
-                </div>
-
-                <div class="input-wrapper">
-                    <label class="form-label">Senha de Acesso</label>
-                    <div class="caixa-input">
-                        <span class="material-icons icone-campo">lock</span>
-                        <input type="password" class="form-control" id="senha_usuario" placeholder="••••••••" required>
-                    </div>
-                </div>
-                
-                <button type="submit" class="btn-login" id="btn-entrar">
-                    ENTRAR NO SISTEMA <span class="material-icons" style="font-size: 15px;">arrow_forward</span>
-                </button>
-            </form>
-        </div>
-
-    </div>
-</div>
-
-<!-- =========================
-     CONTAINER DOS MANUAIS 
-========================= -->
-<div class="doc-container">
-
-    <!-- MENU LATERAL -->
-    <aside class="doc-sidebar">
-        <h3>Módulo de Acesso</h3>
-        <button id="btn-lat-login" class="doc-nav-btn ativo" onclick="mostrarManual('manual-login', this)">
-            <span class="material-icons">login</span> 1. Acesso ao Sistema
-        </button>
-
-        <h3 style="margin-top: 30px;">Recreio nas Férias</h3>
-        <button id="btn-lat-dre" class="doc-nav-btn" onclick="mostrarManual('manual-rf-dre', this)">
-            <span class="material-icons">account_balance</span> 2. Módulo DRE
-        </button>
-        <button id="btn-lat-ceu" class="doc-nav-btn" onclick="mostrarManual('manual-rf-ceu', this)">
-            <span class="material-icons">park</span> 3. Módulo CEU Ativo
-        </button>
-    </aside>
-
-    <!-- CONTEÚDO DOS MANUAIS -->
-    <main class="doc-content">
-
-        <section id="manual-login" class="manual-secao ativo">
-            <h1>Como Acessar o Sistema</h1>
-            <p>O SIG-EDU utiliza um sistema de validação em tempo real conectado à Secretaria de Educação. Siga os passos abaixo para realizar o seu acesso de forma segura.</p>
-
-            <h2><span class="material-icons">domain</span> Passo 1: Identificação da Unidade</h2>
-            <p>No primeiro campo, digite o <strong>Código EOL</strong> (Ex: 123456) da sua unidade. O sistema verificará automaticamente a nossa base de dados. Se o código estiver correto, o nome do seu CEU aparecerá em verde logo abaixo do campo.</p>
-
-            <h2><span class="material-icons">badge</span> Passo 2: Credenciais do Funcionário</h2>
-            <ul>
-                <li><strong>RF do Funcionário:</strong> Digite o seu Registro Funcional contendo apenas números.</li>
-                <li><strong>Senha:</strong> Insira a sua senha de uso pessoal.</li>
-            </ul>
-
-            <div class="alerta-box">
-                <strong>🔒 Regra de Primeiro Acesso:</strong> Se for a sua primeira vez no sistema ou se a sua senha foi resetada pela chefia, o sistema exibirá um aviso. Você será obrigado a criar uma <strong>Senha Forte</strong> (mínimo de 8 caracteres, contendo letras maiúsculas, minúsculas, números e um símbolo).
-            </div>
-
-            <h2><span class="material-icons">dashboard</span> Passo 3: O Painel (Dashboard)</h2>
-            <p>Ao clicar em "Entrar no Sistema", você verá a mensagem "A validar acessos...". Uma vez confirmado, você será levado ao Painel Principal, onde as permissões e o menu lateral serão ajustados automaticamente dependendo do seu nível de acesso (CEU ou DRE).</p>
-        </section>
-
-        <section id="manual-rf-dre" class="manual-secao">
-            <h1>Recreio nas Férias - Visão DRE</h1>
-            <p>A Diretoria Regional de Educação atua como a gestora global da rede. Neste módulo, o funcionário da DRE define as regras, cadastra atrações e acompanha os números agregados de todos os CEUs vinculados.</p>
-
-            <h2><span class="material-icons">settings</span> 1. Painel de Indicadores e Regras</h2>
-            <p>Ao acessar o sistema com o perfil DRE, o painel inicial exibirá estatísticas agregadas: total de alunos inscritos no programa em todos os seus CEUs, consolidando os números de crianças de inclusão e dietas especiais.</p>
-
-            <h2><span class="material-icons">directions_bus</span> 2. Gestão de Passeios e Atrações</h2>
-            <p>A DRE possui uma tela exclusiva para mapear os passeios da rede.</p>
-            <ul>
-                <li><strong>Cadastro Simplificado:</strong> O funcionário insere o Cód EOL dos CEUs que receberão o passeio, e o sistema preenche os nomes automaticamente.</li>
-                <li><strong>Detalhes da Viagem:</strong> Preencha os horários de saída, destino, quantidade de alunos por van e faixa etária.</li>
-            </ul>
-
-            <div class="dica-box">
-                <strong>📄 Impressão do Cronograma de Mural:</strong> No topo da tela de passeios, há o botão "Cronograma por CEU". Ao clicar nele e selecionar um CEU da sua jurisdição, o sistema gera uma planilha executiva em formato paisagem (dividida semana a semana) pronta para ser afixada na sala dos professores!
-            </div>
-        </section>
-
-        <section id="manual-rf-ceu" class="manual-secao">
-            <h1>Recreio nas Férias - Visão CEU Ativo</h1>
-            <p>O módulo do CEU Ativo foi desenhado para agilizar a operação local: desde a inscrição da criança no balcão de atendimento até a impressão dos crachás e listas de portas.</p>
-
-            <h2><span class="material-icons">person_add</span> 1. Inscrição e Formulário</h2>
-            <p>As inscrições são registradas diretamente na aba <code>RF - CRIANCAS</code> da planilha específica do seu CEU, garantindo total privacidade e isolamento dos dados. O formulário exige informações críticas de saúde como: Inclusão, Restrição Alimentar e Uso de Piscina.</p>
-
-            <h2><span class="material-icons">manage_search</span> 2. Tabela de Edição Rápida</h2>
-            <p>Esqueça procurar as crianças no meio da planilha do Google! Utilize a <strong>Tabela de Edição Rápida</strong>:</p>
-            <ul>
-                <li>Busque por nome ou turma na barra de pesquisa.</li>
-                <li>Alterne o status de impressão de crachás com apenas um clique no botão <strong>🪪 SIM / NÃO</strong>.</li>
-                <li>Visualize rapidamente os ícones de saúde e restrições na própria linha do aluno.</li>
-            </ul>
-
-            <h2><span class="material-icons">print</span> 3. Central de Impressão</h2>
-            <p>No menu "Listagem Especial", o CEU tem acesso à Central de Impressão de Documentos do Recreio nas Férias. Selecione o modo "Todas as Turmas" ou "Apenas uma Turma" para gerar:</p>
-            <ul>
-                <li><strong>📋 Chamada Oficial:</strong> Lista diária padrão.</li>
-                <li><strong>🚪 Lista de Porta de Sala:</strong> Lista simplificada contendo os nomes, idade consolidada (Ex: "4 e 5 anos") e a sala de destino.</li>
-                <li><strong>✍️ Assinatura dos Pais:</strong> Lista otimizada com campo de assinatura para a entrega diária da criança e dos crachás.</li>
-            </ul>
-        </section>
-
-    </main>
-</div>
-
-<script>
-    // ========================================================
-    // LÓGICA DOS MANUAIS (Troca as telas sem recarregar)
-    // ========================================================
-    function mostrarManual(idManual, botaoClicado) {
-        const sessoes = document.querySelectorAll('.manual-secao');
-        sessoes.forEach(sessao => sessao.classList.remove('ativo'));
-
-        const botoes = document.querySelectorAll('.doc-nav-btn');
-        botoes.forEach(btn => btn.classList.remove('ativo'));
-
-        document.getElementById(idManual).classList.add('ativo');
-        if(botaoClicado) botaoClicado.classList.add('ativo');
-        
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    // ========================================================
-    // CONTROLE DO MODAL DE LOGIN (Intocado)
-    // ========================================================
-    const modalFundo = document.getElementById("modalLoginFundo");
-    const botaoUsuario = document.getElementById("botaoUsuario");
-    const fecharModal = document.getElementById("fecharModal");
-
-    botaoUsuario.addEventListener("click", function () { modalFundo.style.display = "flex"; });
-    fecharModal.addEventListener("click", function () { modalFundo.style.display = "none"; });
-    window.addEventListener("click", function (evento) { if (evento.target === modalFundo) modalFundo.style.display = "none"; });
-
-    // ========================================================
-    // O MOTOR EXATO DO INDEX PARA CARREGAR OS DADOS E LOGO
-    // ========================================================
-    let dicionarioCEUs = {};
-
-    function verificarNomeCEU() {
-        let codigo = document.getElementById('id_ceu').value.trim();
-        const display = document.getElementById('nome-ceu-display');
-
-        if (codigo === "") {
-            display.innerHTML = "";
-        } else if (dicionarioCEUs[codigo]) {
-            display.innerHTML = `<span class="material-icons" style="font-size:11px;">check_circle</span> ${dicionarioCEUs[codigo]}`;
-            display.style.color = "#10b981"; 
-        } else if (Object.keys(dicionarioCEUs).length === 0) {
-            display.innerHTML = "";
-        } else {
-            display.innerHTML = `<span class="material-icons" style="font-size:11px;">search</span> Unidade não encontrada...`;
-            display.style.color = "#f59e0b"; 
-        }
-    }
-
-    function converterLinkDrive(url) {
-        if (!url) return "";
-        const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-        if (match && match[1]) return `https://drive.google.com/uc?export=view&id=${match[1]}`;
-        return url.trim();
-    }
-
-    window.onload = function() {
-        localStorage.clear(); 
-        
-        if(typeof API_URL === 'undefined') {
-            console.error("ERRO: config.js não carregado.");
-            return;
-        }
-
-        document.getElementById('nome-ceu-display').innerHTML = `<span class="material-icons" style="font-size:11px;">sync</span> Sincronizando banco de unidades...`;
-        document.getElementById('nome-ceu-display').style.color = "#94a3b8";
-
-        fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({ acao: "obterConfiguracoes", dados: {} })
-        })
-        .then(res => res.json())
-        .then(retorno => {
-            if(retorno.status === "sucesso") {
-                document.getElementById('titulo-sistema').innerText = retorno.dados.nomeSistema;
-                localStorage.setItem('ceu_nome_sistema', retorno.dados.nomeSistema);
-                
-                if (retorno.dados.logoUrl) {
-                    const logoOficial = converterLinkDrive(retorno.dados.logoUrl);
-                    localStorage.setItem('ceu_logo_sistema', logoOficial);
-                    
-                    const logoCabecalho = document.getElementById("logoSistema");
-                    if(logoCabecalho) {
-                        logoCabecalho.src = logoOficial;
-                        logoCabecalho.style.display = "block";
-                    }
-
-                    document.getElementById('icone-padrao').style.display = 'none';
-                    const img = document.getElementById('img-logo');
-                    img.src = logoOficial;
-                    img.style.display = 'block';
-                }
-
-                if (retorno.dados.listaCEUs) {
-                    dicionarioCEUs = retorno.dados.listaCEUs;
-                    document.getElementById('nome-ceu-display').innerHTML = ""; 
-                } else {
-                    document.getElementById('nome-ceu-display').innerHTML = ""; 
+                // Exibe apenas a seção solicitada
+                const elementoAlvo = document.getElementById(moduloSolicitado);
+                if(elementoAlvo) {
+                    elementoAlvo.style.display = 'block';
                 }
             }
-        })
-        .catch(erro => console.error("Aviso: Falha ao puxar a Logo ou a Lista.", erro));
-    };
-
-    function fazerLogin() {
-        const ceu = document.getElementById('id_ceu').value.trim();
-        const rf = document.getElementById('rf_usuario').value.trim();
-        const senha = document.getElementById('senha_usuario').value.trim();
-
-        if(!ceu || !rf || !senha) {
-            Swal.fire({ title: 'Atenção', text: 'Preencha todos os campos.', icon: 'warning', heightAuto: false });
-            return;
-        }
-
-        Swal.fire({
-            title: 'A validar acessos...',
-            text: 'A comunicar com o servidor central.',
-            allowOutsideClick: false,
-            heightAuto: false, 
-            didOpen: () => { Swal.showLoading(); }
-        });
-
-        fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({ 
-                acao: "validarLogin", 
-                dados: { id_ceu: ceu, rf_usuario: rf, senha_usuario: senha } 
-            })
-        })
-        .then(resposta => {
-            if (!resposta.ok) throw new Error("Erro de servidor (HTTP " + resposta.status + ")");
-            return resposta.json();
-        })
-        .then(retorno => {
-            if (retorno.status === "primeiro_acesso") {
-                tratarPrimeiroAcesso(retorno.mensagem, retorno.dados_usuario);
-            } 
-            else if (retorno.status === "sucesso") {
-                localStorage.setItem('ceu_codigo_eol', ceu);
-                localStorage.setItem('ceu_rf_logado', rf); 
-                localStorage.setItem('ceu_planilha_id', retorno.token.id_planilha_banco);
-                localStorage.setItem('ceu_nome', retorno.token.nome_ceu);
-                localStorage.setItem('ceu_nome_especifico', retorno.token.nome_ceu);
-                localStorage.setItem('ceu_nome_usuario', retorno.token.nome_usuario);
-                
-                if(retorno.token.logo_ceu) localStorage.setItem('ceu_logo', retorno.token.logo_ceu);
-                if(retorno.token.foto_usuario) localStorage.setItem('ceu_foto_usuario', retorno.token.foto_usuario);
-                
-                localStorage.setItem('ceu_perfil', retorno.token.perfil_usuario); 
-                window.location.href = "dashboard.html"; 
-            } 
-            else {
-                Swal.fire({ title: 'Acesso Negado', text: retorno.mensagem || retorno.erro || 'Credenciais inválidas.', icon: 'error', heightAuto: false });
-            }
-        })
-        .catch(erro => {
-            Swal.fire({ title: 'Erro de Comunicação', text: 'Falha ao ligar ao servidor do Google. Tente novamente.', icon: 'error', heightAuto: false });
-            console.error("Erro fatal no Fetch de Login: ", erro);
-        });
-    }
-
-    function tratarPrimeiroAcesso(mensagemDoServidor, dadosUsuario) {
-        Swal.fire({
-            title: '🔒 Primeiro Acesso',
-            text: mensagemDoServidor,
-            icon: 'info',
-            heightAuto: false, 
-            html: `
-                <div style="text-align: left; font-size: 14px;">
-                    <label class="mt-2 fw-bold">Nova Senha:</label>
-                    <input type="password" id="swal-nova-senha" class="swal2-input" placeholder="Mínimo 8 caracteres">
-                    <label class="mt-2 fw-bold">Confirmar Nova Senha:</label>
-                    <input type="password" id="swal-conf-senha" class="swal2-input" placeholder="Repita a senha">
-                </div>
-            `,
-            confirmButtonText: 'Gravar Nova Senha',
-            confirmButtonColor: '#198754',
-            allowOutsideClick: false,
-            preConfirm: () => {
-                const s1 = document.getElementById('swal-nova-senha').value;
-                const s2 = document.getElementById('swal-conf-senha').value;
-                if (s1 !== s2) { Swal.showValidationMessage('As senhas não conferem!'); return false; }
-                if (!/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,12}$/.test(s1)) {
-                    Swal.showValidationMessage('A senha é muito fraca!'); return false;
-                }
-                return s1;
-            }
-        }).then((result) => {
-            if (result.isConfirmed) {
-                enviarNovaSenha(dadosUsuario.rf, dadosUsuario.ceu, result.value);
-            }
-        });
-    }
-
-    function enviarNovaSenha(rf, ceu, novaSenha) {
-        Swal.fire({ title: 'A gravar...', allowOutsideClick: false, heightAuto: false, didOpen: () => { Swal.showLoading(); }});
-        
-        fetch(API_URL, { 
-            method: 'POST', 
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({ acao: "alterarSenhaPrimeiroAcesso", dados: { rf: rf, ceu: ceu, novaSenha: novaSenha } }) 
-        })
-        .then(resp => resp.json())
-        .then(retorno => {
-            if(retorno.status === "sucesso") {
-                Swal.fire({ title: 'Sucesso!', text: retorno.mensagem, icon: 'success', heightAuto: false }).then(() => { document.getElementById('senha_usuario').value = ''; });
-            } else {
-                Swal.fire({ title: 'Erro', text: retorno.mensagem, icon: 'error', heightAuto: false });
-            }
-        });
-    }
-</script>
-
+        };
+    </script>
 </body>
 </html>

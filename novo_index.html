@@ -5,66 +5,47 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal do Sistema</title>
 
-    <!-- Bloqueadores de Cache -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
 
-    <!-- Importação de Fontes, Ícones e SweetAlert -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-    
-    <!-- 🌟 A PONTE PARA O SEU SERVIDOR -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
     <script src="config.js"></script>
 
     <style>
-        /* GARANTE QUE OS AVISOS APAREÇAM NA FRENTE DO LOGIN */
-        .swal2-container {
-            z-index: 99999 !important;
-            }
-
-        
-        /* =========================
-           VARIÁVEIS DO TEMA ESCURO (O "LINDÃO")
-        ========================= */
         :root { 
             --cor-primaria: #0d6efd; 
-            --cor-fundo-tela: #f4f7f6; /* Fundo do Portal */
+            --cor-fundo-tela: #f4f7f6;
             --bg-card: #0a1422; 
             --bg-logo: #060c14; 
             --bg-input: #112136;
             --borda-input: #1e3a5f;
             --texto-claro: #f8fafc;
             --texto-mutado: #94a3b8;
+            --texto-escuro: #1e293b;
         }
 
-        body { margin: 0; padding: 0; background-color: var(--cor-fundo-tela); font-family: 'Inter', Arial, sans-serif; }
+        body { margin: 0; padding: 0; background-color: var(--cor-fundo-tela); font-family: 'Inter', Arial, sans-serif; overflow: hidden; }
 
         /* =========================
-           BARRA FIXA E CABEÇALHO
+           BARRA FIXA E CABEÇALHO (A PARTE 1)
         ========================= */
-        .barra-fixa { position: sticky; top: 0; z-index: 1500; width: 100%; box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
-
+        .barra-fixa { position: relative; z-index: 1500; width: 100%; box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
         .cabecalho { height: 70px; background-color: var(--bg-card); display: flex; align-items: center; justify-content: space-between; padding: 0 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
-
-        /* Caixa que segura o espaço da Logo na esquerda */
         .logo-container { width: 250px; display: flex; align-items: center; }
         .logo { max-height: 55px; max-width: 100%; object-fit: contain; display: none; }
-
         .botao-usuario { background-color: var(--cor-primaria); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.3s; box-shadow: 0 4px 6px rgba(13, 110, 253, 0.2); }
         .botao-usuario:hover { background-color: #0b5ed7; transform: translateY(-2px); }
 
-        /* =========================
-           MENU PRINCIPAL E SUBMENUS
-        ========================= */
         .menu-principal { background-color: white; border-bottom: 1px solid #e2e8f0; padding-left: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
         .menu-principal > ul { list-style: none; margin: 0; padding: 0; display: flex; }
         .menu-principal > ul > li { position: relative; }
-        .menu-principal a { display: block; padding: 15px 20px; text-decoration: none; color: #334155; font-weight: 600; font-size: 13px; transition: 0.2s; }
+        .menu-principal a { display: block; padding: 15px 20px; text-decoration: none; color: #334155; font-weight: 600; font-size: 13px; transition: 0.2s; cursor: pointer; }
         .menu-principal a:hover { background-color: #f8fafc; color: var(--cor-primaria); }
-
+        
         .submenu { display: none; position: absolute; top: 100%; left: 0; background-color: white; min-width: 220px; list-style: none; margin: 0; padding: 5px 0; border-radius: 0 0 8px 8px; box-shadow: 0 10px 15px rgba(0,0,0,0.1); z-index: 1000; border-top: 3px solid var(--cor-primaria); }
         .submenu li { display: block; width: 100%; }
         .submenu a { padding: 12px 20px; font-weight: 500; }
@@ -73,84 +54,55 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
 
         /* =========================
-           MODAL LINDÃO DE LOGIN (O EXATO DO INDEX2)
+           ÁREA DE TRABALHO (A PARTE 2 - IFRAME)
+        ========================= */
+        .area-trabalho {
+            width: 100%;
+            height: calc(100vh - 120px); /* Ocupa exatamente o espaço abaixo do menu */
+            display: flex;
+        }
+        #frame-principal {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background-color: var(--cor-fundo-tela);
+        }
+
+        /* =========================
+           MODAL LINDÃO DE LOGIN (INTOCADO)
         ========================= */
         .modal-fundo { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px); align-items: center; justify-content: center; }
-
-        .login-card { 
-            background: var(--bg-card); 
-            border-radius: 10px; 
-            box-shadow: 0 25px 50px rgba(0,0,0,0.5); 
-            width: 580px; 
-            max-width: 95%; 
-            display: flex;
-            overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.05);
-            position: relative;
-            animation: zoomIn 0.3s ease-out;
-        }
-
+        .login-card { background: var(--bg-card); border-radius: 10px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); width: 580px; max-width: 95%; display: flex; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); position: relative; animation: zoomIn 0.3s ease-out; }
         @keyframes zoomIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-
         .btn-fechar-modal { position: absolute; top: 15px; right: 15px; background: transparent; border: none; color: var(--texto-mutado); cursor: pointer; z-index: 10; transition: 0.2s; }
         .btn-fechar-modal:hover { color: white; transform: scale(1.1); }
-
         .login-left { width: 40%; background: var(--bg-logo); display: flex; align-items: center; justify-content: center; padding: 15px; border-right: 1px solid rgba(255,255,255,0.05); }
         .login-right { width: 60%; padding: 20px 25px; display: flex; flex-direction: column; justify-content: center; }
-        
         .login-right h2 { font-weight: 800; color: var(--texto-claro); font-size: 16px; margin: 0 0 0px 0; }
         #titulo-sistema { font-size: 10px; color: var(--cor-primaria); font-weight: 700; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 0.5px; }
-        
         .input-wrapper { margin-bottom: 8px; }
         .form-label { display: block; font-size: 9px; font-weight: 700; color: var(--texto-mutado); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
-        
         .caixa-input { position: relative; }
         .caixa-input .icone-campo { position: absolute; left: 8px; top: 50%; transform: translateY(-50%); color: var(--texto-mutado); font-size: 16px; pointer-events: none; }
-        
-        .form-control { 
-            padding: 4px 8px 4px 30px; 
-            height: 32px; 
-            border-radius: 5px; 
-            border: 1px solid var(--borda-input); 
-            background: var(--bg-input); 
-            color: var(--texto-claro);
-            font-weight: 600; 
-            font-size: 12px; 
-            width: 100%; 
-            transition: 0.3s;
-            box-sizing: border-box;
-        }
-        
+        .form-control { padding: 4px 8px 4px 30px; height: 32px; border-radius: 5px; border: 1px solid var(--borda-input); background: var(--bg-input); color: var(--texto-claro); font-weight: 600; font-size: 12px; width: 100%; transition: 0.3s; box-sizing: border-box; }
         .form-control::placeholder { color: #475569; }
         .form-control:focus { border-color: var(--cor-primaria); box-shadow: 0 0 0 2px rgba(13,110,253,0.25); background: var(--bg-card); color: white; outline: none; }
-
         input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         input[type="number"] { -moz-appearance: textfield; }
-
         #nome-ceu-display { font-size: 9px; font-weight: 700; margin-top: 2px; margin-left: 2px; color: var(--texto-mutado); display: flex; align-items: center; gap: 3px; min-height: 12px; }
-        
         .btn-login { background-color: var(--cor-primaria); border: none; width: 100%; height: 34px; font-weight: 800; font-size: 12px; border-radius: 5px; margin-top: 4px; transition: 0.3s; color: white; display: flex; justify-content: center; align-items: center; gap: 6px; cursor: pointer; }
         .btn-login:hover { background-color: #0b5ed7; transform: translateY(-2px); }
-
-        @media (max-width: 768px) {
-            .login-card { flex-direction: column; width: 100%; }
-            .login-left { width: 100%; min-height: 120px; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.05); }
-            .login-right { width: 100%; padding: 20px; }
-        }
+        .swal2-container { z-index: 99999 !important; }
     </style>
 </head>
 <body>
 
-<!-- =========================
-     BARRA FIXA (CABEÇALHO + MENU)
-========================= -->
+<!-- BARRA FIXA (A PARTE 1) -->
 <div class="barra-fixa">
     <header class="cabecalho">
-        
         <div class="logo-container">
             <img id="logoSistema" class="logo" src="" alt="Logotipo do Sistema">
         </div>
-        
         <button class="botao-usuario" id="botaoUsuario" title="Fazer Login no Sistema">
             <span class="material-icons" style="font-size: 18px;">login</span>
             Acesso Restrito
@@ -175,12 +127,13 @@
                 </ul>
             </li>
             <li>
-                <a href="manuais.html">MANUAIS</a>
+                <a href="#">MANUAIS</a>
+                <!-- A MÁGICA: O clique avisa o Iframe para carregar a seção exata -->
                 <ul class="submenu">
-                    <li><a href="manuais.html">Módulo SME/COCEU</a></li>
-                    <li><a href="manuais.html">Módulo SME/DRE</a></li>
-                    <li><a href="manuais.html">Módulo CEU</a></li>
-                    <li><a href="manuais.html">Módulo POLO</a></li>
+                    <li><a onclick="abrirNoFrame('manuais.html?mod=coceu')">Módulo SME/COCEU</a></li>
+                    <li><a onclick="abrirNoFrame('manuais.html?mod=dre')">Módulo SME/DRE</a></li>
+                    <li><a onclick="abrirNoFrame('manuais.html?mod=ceu')">Módulo CEU</a></li>
+                    <li><a onclick="abrirNoFrame('manuais.html?mod=polo')">Módulo POLO</a></li>
                 </ul>
             </li>
             <li>
@@ -196,28 +149,23 @@
     </nav>
 </div>
 
-<!-- =========================
-     MODAL LINDÃO DE LOGIN (EXATAMENTE O DO INDEX2.HTML)
-========================= -->
+<!-- O BURACO ONDE AS PÁGINAS ABREM (A PARTE 2) -->
+<div class="area-trabalho">
+    <iframe id="frame-principal" src=""></iframe>
+</div>
+
+<!-- MODAL DE LOGIN (INTOCADO) -->
 <div id="modalLoginFundo" class="modal-fundo">
     <div class="login-card">
-        
-        <button class="btn-fechar-modal" id="fecharModal">
-            <span class="material-icons">close</span>
-        </button>
-
+        <button class="btn-fechar-modal" id="fecharModal"><span class="material-icons">close</span></button>
         <div class="login-left" id="box-logo">
             <span class="material-icons" id="icone-padrao" style="font-size: 55px; color: var(--cor-primaria);">account_balance</span>
             <img id="img-logo" src="" alt="Logo do Sistema" style="display: none; width: 100%; max-height: 180px; object-fit: contain; transform: scale(1.1);">
         </div>
-
         <div class="login-right">
             <h2>Acesso Restrito</h2>
             <div id="titulo-sistema">A carregar sistema...</div>
-
-            <!-- O MOTOR REAL DO SISTEMA FOI RELIGADO AQUI! (fazerLogin) -->
             <form id="formLogin" onsubmit="event.preventDefault(); fazerLogin();">
-                
                 <div class="input-wrapper">
                     <label class="form-label">Cód EOL da Unidade</label>
                     <div class="caixa-input">
@@ -226,7 +174,6 @@
                     </div>
                     <div id="nome-ceu-display"></div>
                 </div>
-
                 <div class="input-wrapper">
                     <label class="form-label">RF do Funcionário</label>
                     <div class="caixa-input">
@@ -234,7 +181,6 @@
                         <input type="number" class="form-control" id="rf_usuario" placeholder="Apenas números" required>
                     </div>
                 </div>
-
                 <div class="input-wrapper">
                     <label class="form-label">Senha de Acesso</label>
                     <div class="caixa-input">
@@ -242,20 +188,23 @@
                         <input type="password" class="form-control" id="senha_usuario" placeholder="••••••••" required>
                     </div>
                 </div>
-                
                 <button type="submit" class="btn-login" id="btn-entrar">
                     ENTRAR NO SISTEMA <span class="material-icons" style="font-size: 15px;">arrow_forward</span>
                 </button>
             </form>
         </div>
-
     </div>
 </div>
 
 <script>
-    /* =========================
-       CONTROLE DO MODAL
-    ========================= */
+    // FUNÇÃO QUE CARREGA AS PÁGINAS NA "PARTE 2"
+    function abrirNoFrame(url) {
+        document.getElementById('frame-principal').src = url;
+    }
+
+    // ========================================================
+    // CONTROLES DO MODAL E SERVIDOR (INTOCADOS DO INDEX2.HTML)
+    // ========================================================
     const modalFundo = document.getElementById("modalLoginFundo");
     const botaoUsuario = document.getElementById("botaoUsuario");
     const fecharModal = document.getElementById("fecharModal");
@@ -264,29 +213,23 @@
     fecharModal.addEventListener("click", function () { modalFundo.style.display = "none"; });
     window.addEventListener("click", function (evento) { if (evento.target === modalFundo) modalFundo.style.display = "none"; });
 
-    /* ========================================================
-       A LÓGICA E O MOTOR EXATOS DO INDEX2.HTML
-    ======================================================== */
     let dicionarioCEUs = {};
 
     function verificarNomeCEU() {
         let codigo = document.getElementById('id_ceu').value.trim();
         const display = document.getElementById('nome-ceu-display');
 
-        if (codigo === "") {
-            display.innerHTML = "";
-        } else if (dicionarioCEUs[codigo]) {
+        if (codigo === "") { display.innerHTML = ""; } 
+        else if (dicionarioCEUs[codigo]) {
             display.innerHTML = `<span class="material-icons" style="font-size:11px;">check_circle</span> ${dicionarioCEUs[codigo]}`;
             display.style.color = "#10b981"; 
-        } else if (Object.keys(dicionarioCEUs).length === 0) {
-            display.innerHTML = "";
-        } else {
+        } else if (Object.keys(dicionarioCEUs).length === 0) { display.innerHTML = ""; } 
+        else {
             display.innerHTML = `<span class="material-icons" style="font-size:11px;">search</span> Unidade não encontrada...`;
             display.style.color = "#f59e0b"; 
         }
     }
 
-    // Função sagrada para driblar o bloqueio de imagem do Drive
     function converterLinkDrive(url) {
         if (!url) return "";
         const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
@@ -296,11 +239,7 @@
 
     window.onload = function() {
         localStorage.clear(); 
-        
-        if(typeof API_URL === 'undefined') {
-            console.error("ERRO: config.js não carregado.");
-            return;
-        }
+        if(typeof API_URL === 'undefined') { console.error("ERRO: config.js não carregado."); return; }
 
         document.getElementById('nome-ceu-display').innerHTML = `<span class="material-icons" style="font-size:11px;">sync</span> Sincronizando banco de unidades...`;
         document.getElementById('nome-ceu-display').style.color = "#94a3b8";
@@ -318,17 +257,11 @@
                 
                 if (retorno.dados.logoUrl) {
                     const logoOficial = converterLinkDrive(retorno.dados.logoUrl);
-                    
                     localStorage.setItem('ceu_logo_sistema', logoOficial);
                     
-                    // Injeta na barra superior
                     const logoCabecalho = document.getElementById("logoSistema");
-                    if(logoCabecalho) {
-                        logoCabecalho.src = logoOficial;
-                        logoCabecalho.style.display = "block";
-                    }
+                    if(logoCabecalho) { logoCabecalho.src = logoOficial; logoCabecalho.style.display = "block"; }
 
-                    // Injeta no modal (ocultando o ícone padrão)
                     document.getElementById('icone-padrao').style.display = 'none';
                     const img = document.getElementById('img-logo');
                     img.src = logoOficial;
@@ -338,9 +271,7 @@
                 if (retorno.dados.listaCEUs) {
                     dicionarioCEUs = retorno.dados.listaCEUs;
                     document.getElementById('nome-ceu-display').innerHTML = ""; 
-                } else {
-                    document.getElementById('nome-ceu-display').innerHTML = ""; 
-                }
+                } else { document.getElementById('nome-ceu-display').innerHTML = ""; }
             }
         })
         .catch(erro => console.error("Aviso: Falha ao puxar a Logo ou a Lista.", erro));
@@ -351,40 +282,26 @@
         const rf = document.getElementById('rf_usuario').value.trim();
         const senha = document.getElementById('senha_usuario').value.trim();
 
-        if(!ceu || !rf || !senha) {
-            Swal.fire({ title: 'Atenção', text: 'Preencha todos os campos.', icon: 'warning', heightAuto: false });
-            return;
-        }
+        if(!ceu || !rf || !senha) { Swal.fire({ title: 'Atenção', text: 'Preencha todos os campos.', icon: 'warning', heightAuto: false }); return; }
 
         Swal.fire({
-            title: 'A validar acessos...',
-            text: 'A comunicar com o servidor central.',
-            allowOutsideClick: false,
-            heightAuto: false, 
-            didOpen: () => { Swal.showLoading(); }
+            title: 'A validar acessos...', text: 'A comunicar com o servidor central.',
+            allowOutsideClick: false, heightAuto: false, didOpen: () => { Swal.showLoading(); }
         });
 
         fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({ 
-                acao: "validarLogin", 
-                dados: { id_ceu: ceu, rf_usuario: rf, senha_usuario: senha } 
-            })
+            method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ acao: "validarLogin", dados: { id_ceu: ceu, rf_usuario: rf, senha_usuario: senha } })
         })
         .then(resposta => {
             if (!resposta.ok) throw new Error("Erro de servidor (HTTP " + resposta.status + ")");
             return resposta.json();
         })
         .then(retorno => {
-            if (retorno.status === "primeiro_acesso") {
-                tratarPrimeiroAcesso(retorno.mensagem, retorno.dados_usuario);
-            } 
+            if (retorno.status === "primeiro_acesso") { tratarPrimeiroAcesso(retorno.mensagem, retorno.dados_usuario); } 
             else if (retorno.status === "sucesso") {
-                
                 localStorage.setItem('ceu_codigo_eol', ceu);
                 localStorage.setItem('ceu_rf_logado', rf); 
-                
                 localStorage.setItem('ceu_planilha_id', retorno.token.id_planilha_banco);
                 localStorage.setItem('ceu_nome', retorno.token.nome_ceu);
                 localStorage.setItem('ceu_nome_especifico', retorno.token.nome_ceu);
@@ -394,67 +311,38 @@
                 if(retorno.token.foto_usuario) localStorage.setItem('ceu_foto_usuario', retorno.token.foto_usuario);
                 
                 localStorage.setItem('ceu_perfil', retorno.token.perfil_usuario); 
-                
                 window.location.href = "dashboard.html"; 
-            } 
-            else {
-                Swal.fire({ title: 'Acesso Negado', text: retorno.mensagem || retorno.erro || 'Credenciais inválidas.', icon: 'error', heightAuto: false });
-            }
+            } else { Swal.fire({ title: 'Acesso Negado', text: retorno.mensagem || retorno.erro || 'Credenciais inválidas.', icon: 'error', heightAuto: false }); }
         })
         .catch(erro => {
             Swal.fire({ title: 'Erro de Comunicação', text: 'Falha ao ligar ao servidor do Google. Tente novamente.', icon: 'error', heightAuto: false });
-            console.error("Erro fatal no Fetch de Login: ", erro);
         });
     }
 
     function tratarPrimeiroAcesso(mensagemDoServidor, dadosUsuario) {
         Swal.fire({
-            title: '🔒 Primeiro Acesso',
-            text: mensagemDoServidor,
-            icon: 'info',
-            heightAuto: false, 
-            html: `
-                <div style="text-align: left; font-size: 14px;">
-                    <label class="mt-2 fw-bold">Nova Senha:</label>
-                    <input type="password" id="swal-nova-senha" class="swal2-input" placeholder="Mínimo 8 caracteres">
-                    <label class="mt-2 fw-bold">Confirmar Nova Senha:</label>
-                    <input type="password" id="swal-conf-senha" class="swal2-input" placeholder="Repita a senha">
-                </div>
-            `,
-            confirmButtonText: 'Gravar Nova Senha',
-            confirmButtonColor: '#198754',
-            allowOutsideClick: false,
+            title: '🔒 Primeiro Acesso', text: mensagemDoServidor, icon: 'info', heightAuto: false, 
+            html: `<div style="text-align: left; font-size: 14px;"><label class="mt-2 fw-bold">Nova Senha:</label><input type="password" id="swal-nova-senha" class="swal2-input" placeholder="Mínimo 8 caracteres"><label class="mt-2 fw-bold">Confirmar Nova Senha:</label><input type="password" id="swal-conf-senha" class="swal2-input" placeholder="Repita a senha"></div>`,
+            confirmButtonText: 'Gravar Nova Senha', confirmButtonColor: '#198754', allowOutsideClick: false,
             preConfirm: () => {
-                const s1 = document.getElementById('swal-nova-senha').value;
-                const s2 = document.getElementById('swal-conf-senha').value;
+                const s1 = document.getElementById('swal-nova-senha').value; const s2 = document.getElementById('swal-conf-senha').value;
                 if (s1 !== s2) { Swal.showValidationMessage('As senhas não conferem!'); return false; }
-                if (!/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,12}$/.test(s1)) {
-                    Swal.showValidationMessage('A senha é muito fraca!'); return false;
-                }
+                if (!/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,12}$/.test(s1)) { Swal.showValidationMessage('A senha é muito fraca!'); return false; }
                 return s1;
             }
-        }).then((result) => {
-            if (result.isConfirmed) {
-                enviarNovaSenha(dadosUsuario.rf, dadosUsuario.ceu, result.value);
-            }
-        });
+        }).then((result) => { if (result.isConfirmed) { enviarNovaSenha(dadosUsuario.rf, dadosUsuario.ceu, result.value); } });
     }
 
     function enviarNovaSenha(rf, ceu, novaSenha) {
         Swal.fire({ title: 'A gravar...', allowOutsideClick: false, heightAuto: false, didOpen: () => { Swal.showLoading(); }});
-        
         fetch(API_URL, { 
-            method: 'POST', 
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify({ acao: "alterarSenhaPrimeiroAcesso", dados: { rf: rf, ceu: ceu, novaSenha: novaSenha } }) 
         })
         .then(resp => resp.json())
         .then(retorno => {
-            if(retorno.status === "sucesso") {
-                Swal.fire({ title: 'Sucesso!', text: retorno.mensagem, icon: 'success', heightAuto: false }).then(() => { document.getElementById('senha_usuario').value = ''; });
-            } else {
-                Swal.fire({ title: 'Erro', text: retorno.mensagem, icon: 'error', heightAuto: false });
-            }
+            if(retorno.status === "sucesso") { Swal.fire({ title: 'Sucesso!', text: retorno.mensagem, icon: 'success', heightAuto: false }).then(() => { document.getElementById('senha_usuario').value = ''; }); } 
+            else { Swal.fire({ title: 'Erro', text: retorno.mensagem, icon: 'error', heightAuto: false }); }
         });
     }
 </script>

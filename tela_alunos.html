@@ -422,7 +422,7 @@
             }
         }
 
-        async function salvarNovoAluno() {
+/*        async function salvarNovoAluno() {
             const codigoCeu = localStorage.getItem('ceu_codigo_eol'); 
             if(!codigoCeu) return Swal.fire('Acesso Negado', 'Você precisa estar logado num CEU.', 'error');
 
@@ -536,7 +536,151 @@
             })
             .catch(err => Swal.fire('Erro', 'Falha ao comunicar com o servidor.', 'error'));
         }
+*/
 
+async function salvarNovoAluno() {
+            const codigoCeu = localStorage.getItem('ceu_codigo_eol'); 
+            if(!codigoCeu) return Swal.fire('Acesso Negado', 'Você precisa estar logado num CEU.', 'error');
+
+            // 🛡️ TRAVA DE DUPLICIDADE: Esconde o botão imediatamente após o clique
+            const btnSalvar = document.getElementById('btn-salvar-aluno');
+            if (btnSalvar) btnSalvar.style.display = 'none';
+
+            const nome = document.getElementById('aluno-nome').value.trim();
+            const cin = document.getElementById('aluno-cin').value.trim();
+            
+            if(!nome || !cin) {
+                // 🛡️ Devolve o botão se o usuário esqueceu de preencher os campos obrigatórios
+                if (btnSalvar) btnSalvar.style.display = 'flex';
+                return Swal.fire('Atenção', 'Nome Completo e CIN (CPF/RG) são obrigatórios!', 'warning');
+            }
+
+            const fotoInput = document.getElementById('aluno-foto');
+            let fotoBase64 = null;
+            let nomeArquivo = null;
+
+            if (fotoInput.files.length > 0) {
+                const file = fotoInput.files[0];
+                nomeArquivo = file.name;
+                fotoBase64 = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = e => resolve(e.target.result);
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            const pacoteAluno = {
+                idCeu: codigoCeu,
+                eolAluno: document.getElementById('aluno-eol').value,
+                nomeCompleto: nome,
+                nomeSocial: document.getElementById('aluno-social').value,
+                cin: cin,
+                dataNascimento: document.getElementById('aluno-nasc').value,
+                respLegal: document.getElementById('aluno-resp').value,
+                logradouro: document.getElementById('aluno-logradouro').value,
+                endereco: document.getElementById('aluno-endereco').value,
+                numero: document.getElementById('aluno-numero').value,
+                complemento: document.getElementById('aluno-complemento').value,
+                bairro: document.getElementById('aluno-bairro').value,
+                cep: document.getElementById('aluno-cep').value,
+                cidade: document.getElementById('aluno-cidade').value,
+                estado: document.getElementById('aluno-estado').value,
+                telProprio: document.getElementById('aluno-tel1').value,
+                telPligWaths: document.getElementById('aluno-tipo-tel1').value,
+                telRecados: document.getElementById('aluno-tel-recado').value,
+                recadosCom: document.getElementById('aluno-recado-com').value,
+                obs: document.getElementById('aluno-obs').value,
+                pcd: document.getElementById('aluno-pcd').value,
+                especificarDeficiencia: document.getElementById('aluno-def-qual').value,
+                laudoPcd: document.getElementById('aluno-laudo-pcd').value,
+                restricaoAlimentar: document.getElementById('aluno-restr').value,
+                especificarRestricao: document.getElementById('aluno-restr-qual').value,
+                laudoRestricao: document.getElementById('aluno-laudo-restr').value,
+                autorizacaoSaida: document.getElementById('aluno-saida').value,
+                quemAutorizou: document.getElementById('aluno-quem-autorizou').value,
+                parq: document.getElementById('aluno-parq').checked ? "SIM" : "NÃO",
+                imprimirCG: document.getElementById('aluno-print-geral').value,
+                imprimirCAL: document.getElementById('aluno-print-academia').value,
+                permissaoAcademia: document.getElementById('aluno-perm-academia').value,
+                imprimirCRL: document.getElementById('aluno-print-raia').value,
+                permissaoRaia: document.getElementById('aluno-perm-raia').value,
+                viaGeral: document.getElementById('aluno-via-geral').value,
+                viaAcademia: document.getElementById('aluno-via-academia').value,
+                viaPiscina: document.getElementById('aluno-via-piscina').value,
+                fotoBase64: fotoBase64,
+                nomeArquivoFoto: nomeArquivo
+            };
+
+            const idEdicao = document.body.getAttribute('data-id-edicao');
+            let acaoParaServidor = "salvarAlunoNovoSistema"; 
+
+            if (idEdicao) {
+                pacoteAluno.idAluno = idEdicao; 
+                acaoParaServidor = "atualizarAlunoNovoSistema"; 
+            }
+
+            Swal.fire({ title: idEdicao ? 'A atualizar Ficha...' : 'A gravar Munícipe...', text: 'Processando dados seguros.', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+
+            fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify({ acao: acaoParaServidor, dados: pacoteAluno })
+            })
+            .then(res => res.json())
+            .then(retorno => {
+                if (retorno.status === "sucesso") {
+                    
+                    Swal.fire({
+                        title: 'Cadastro Realizado!',
+                        html: `
+                            ${retorno.mensagem}<br><br>
+                            <div style="background: #e8f0fe; padding: 15px; border-radius: 10px; border: 1px dashed #0d6efd; margin-top: 10px;">
+                                <span style="font-size: 14px; color: #495057; text-transform: uppercase; font-weight: bold;">Número do Prontuário</span><br>
+                                <span style="font-size: 32px; color: #0d6efd; font-weight: 900; letter-spacing: 2px;">${retorno.prontuario}</span>
+                            </div>
+                        `,
+                        icon: 'success',
+                        confirmButtonText: 'OK, VOLTAR PARA LISTA',
+                        confirmButtonColor: '#0d6efd',
+                        allowOutsideClick: false 
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            if(window.parent && typeof window.parent.abrirFormFilho === 'function') {
+                                window.parent.abrirFormFilho('alunos.html'); 
+                            } else {
+                                window.location.href = "alunos.html"; 
+                            }
+                        }
+                    });
+                    
+                } else {
+                    // 🛡️ Devolve o botão se o servidor retornar status de erro
+                    if (btnSalvar) btnSalvar.style.display = 'flex';
+                    Swal.fire('Atenção', retorno.mensagem, 'warning');
+                }
+            })
+            .catch(err => {
+                // 🛡️ Devolve o botão se houver queda de internet ou erro de fetch
+                if (btnSalvar) btnSalvar.style.display = 'flex';
+                Swal.fire('Erro', 'Falha ao comunicar com o servidor.', 'error');
+            });
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
         // ==========================================
         // 🔎 INICIALIZAÇÃO E CARREGAMENTO DE EDIÇÃO
         // ==========================================

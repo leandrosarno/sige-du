@@ -3,128 +3,163 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIG-EDU - Login (Homologação Firebase)</title>
+    <title>SIG-EDU | Acesso Restrito</title>
     
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
     
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     
     <style>
-        :root { --cor-primaria: #0d6efd; --cor-fundo: #f4f7f6; }
+        :root {
+            --google-blue: #1a73e8;
+            --bg-color: #eef0f3;
+            --border-color: #999;
+        }
+
         body { 
-            background-color: var(--cor-fundo); 
+            background-color: var(--bg-color); 
             display: flex; 
             align-items: center; 
             justify-content: center; 
             height: 100vh; 
             margin: 0; 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            font-size: 10px;
+            color: #333;
         }
         
-        /* NOVO DESIGN: MODAL HORIZONTAL */
-        .login-horizontal {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            width: 95%;
-            max-width: 950px; /* Bem mais largo para acomodar os campos */
-            border-left: 6px solid #ff9800; /* Linha laranja indica o ambiente de testes Firebase */
-            display: flex;
-            align-items: center;
-            gap: 30px;
+        /* O MODAL QUADRADO E CORPORATIVO DE LOGIN */
+        .login-box {
+            background: #fff;
+            width: 280px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            border-top: 4px solid var(--google-blue);
+            box-shadow: 2px 2px 10px rgba(0,0,0,0.15);
+            border-radius: 0;
         }
 
-        /* COLUNA DA LOGO */
-        .login-brand {
-            flex: 0 0 240px;
+        .login-header {
             text-align: center;
-            border-right: 1px solid #eee;
-            padding-right: 25px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
         }
-        .login-brand span { font-size: 50px; color: var(--cor-primaria); }
-        .login-brand h3 { font-weight: 700; color: #333; margin-top: 10px; font-size: 20px; }
-        
-        /* COLUNA DO FORMULÁRIO */
-        .login-form { flex-grow: 1; }
-        
-        .btn-login { 
-            background-color: var(--cor-primaria); 
-            border: none; 
-            font-weight: bold; 
-            font-size: 14px; 
-            height: 42px; /* Alinha a altura do botão com os inputs */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .btn-login:hover { background-color: #0b5ed7; }
-        
-        .form-control { padding: 10px; border-radius: 8px; font-size: 13px; height: 42px; }
-        .form-label { font-size: 12px; margin-bottom: 4px; color: #555; }
 
-        /* RESPONSIVIDADE PARA CELULARES (Empilha tudo de novo se a tela for pequena) */
-        @media (max-width: 768px) {
-            .login-horizontal { 
-                flex-direction: column; 
-                max-width: 400px; 
-                border-left: none; 
-                border-top: 6px solid #ff9800; 
-                padding: 20px; 
-                gap: 15px;
-            }
-            .login-brand { 
-                border-right: none; 
-                border-bottom: 1px solid #eee; 
-                padding-right: 0; 
-                padding-bottom: 15px; 
-                flex: auto; 
-                width: 100%; 
-            }
+        .login-header span { font-size: 32px; color: var(--google-blue); }
+        .login-header h3 { font-weight: bold; margin: 5px 0 2px 0; font-size: 11px; }
+        .login-header p { margin: 0; color: #666; font-size: 9px; }
+
+        .form-group { margin-bottom: 10px; }
+        
+        .form-label { display: block; font-weight: bold; margin-bottom: 3px; font-size: 10px; }
+        
+        .form-control { 
+            width: 100%; padding: 4px 6px; border: 1px solid #aaa; 
+            border-radius: 0; font-size: 10px; box-sizing: border-box; height: 22px;
         }
+        .form-control:focus { outline: none; border-color: var(--google-blue); }
+
+        .btn-login { 
+            background-color: var(--google-blue); color: white; border: 1px solid #0d47a1; 
+            width: 100%; padding: 4px; font-weight: bold; font-size: 10px; 
+            cursor: pointer; margin-top: 10px; height: 24px; border-radius: 0;
+        }
+        .btn-login:hover { background-color: #1557b0; }
+
+        .link-senha {
+            display: block; text-align: center; margin-top: 12px; color: var(--google-blue);
+            text-decoration: underline; cursor: pointer; font-size: 9px;
+        }
+        .link-senha:hover { color: #0d47a1; }
+
+        /* =========================================================
+           FORÇANDO OS ALERTAS DO SWEETALERT A TEREM O MESMO DESIGN
+           ========================================================= */
+        div:where(.swal2-container) div:where(.swal2-popup) {
+            width: 280px !important;
+            padding: 20px !important;
+            border-radius: 0 !important;
+            border: 1px solid var(--border-color) !important;
+            border-top: 4px solid var(--google-blue) !important;
+            box-shadow: 2px 2px 10px rgba(0,0,0,0.15) !important;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+        }
+        div:where(.swal2-container) h2:where(.swal2-title) {
+            font-size: 11px !important;
+            font-weight: bold !important;
+            color: #333 !important;
+            padding: 0 !important;
+            margin: 0 0 5px 0 !important;
+        }
+        div:where(.swal2-container) div:where(.swal2-html-container) {
+            font-size: 10px !important;
+            color: #666 !important;
+            margin: 5px 0 15px 0 !important;
+            padding: 0 !important;
+        }
+        div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm {
+            border-radius: 0 !important;
+            font-size: 10px !important;
+            font-weight: bold !important;
+            padding: 4px !important;
+            width: 100% !important;
+            height: 24px !important;
+            background-color: var(--google-blue) !important;
+            border: 1px solid #0d47a1 !important;
+            margin: 0 !important;
+        }
+        div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm:hover {
+            background-color: #1557b0 !important;
+        }
+        div:where(.swal2-container) .swal2-icon {
+            transform: scale(0.5) !important; /* Encolhe os ícones gigantes do SweetAlert */
+            margin: 0 auto 5px auto !important;
+        }
+        /* Estilizando os campos dentro do modal de Primeiro Acesso */
+        .swal2-input {
+            width: 100% !important; height: 22px !important; padding: 4px 6px !important;
+            font-size: 10px !important; border: 1px solid #aaa !important;
+            border-radius: 0 !important; margin: 2px 0 8px 0 !important;
+            box-sizing: border-box !important;
+        }
+        .swal2-input:focus { border-color: var(--google-blue) !important; outline: none !important; box-shadow: none !important; }
+        .swal-label { font-weight: bold; display: block; text-align: left; font-size: 10px; margin-bottom: 2px;}
     </style>
 </head>
 <body>
 
-    <div class="login-horizontal">
-        
-        <!-- LADO ESQUERDO: Branding -->
-        <div class="login-brand" id="box-logo">
-            <span class="material-icons" id="icone-padrao">account_balance</span>
-            <img id="img-logo" src="" alt="Logo do Sistema" style="display: none; width: 100%; height: 70px; object-fit: contain; margin: 0 auto 10px auto;">
+    <div class="login-box">
+        <div class="login-header" id="box-logo">
+            <span class="material-icons" id="icone-padrao">admin_panel_settings</span>
+            <img id="img-logo" src="" alt="Logo" style="display: none; width: 100%; height: 60px; object-fit: contain; margin: 0 auto 5px auto;">
             <h3 id="titulo-sistema">A carregar...</h3>
-            <p class="text-muted" style="font-size: 11px; margin: 0;">Acesso Restrito - Firebase</p>
+            <p>Acesso Restrito ao Sistema</p>
         </div>
 
-        <!-- LADO DIREITO: Campos Alinhados -->
-        <div class="login-form">
-            <!-- Ao usar o preventDefault, evitamos o recarregamento da tela e chamamos a função do Firebase -->
-            <form id="formLogin" onsubmit="event.preventDefault(); window.fazerLogin();">
-                <!-- Usamos a grade do Bootstrap dividida em 4 colunas iguais (col-md-3) -->
-                <div class="row g-2 align-items-end">
-                    <div class="col-md-3">
-                        <label class="form-label fw-bold">Código EOL</label>
-                        <input type="number" class="form-control" id="id_ceu" placeholder="Ex: 123456" required>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label fw-bold">RF Servidor</label>
-                        <input type="number" class="form-control" id="rf_usuario" placeholder="Apenas números" required>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label fw-bold">Senha de Acesso</label>
-                        <input type="password" class="form-control" id="senha_usuario" placeholder="******" required>
-                    </div>
-                    <div class="col-md-3">
-                        <button type="submit" class="btn btn-primary btn-login w-100" id="btn-entrar">ENTRAR</button>
-                    </div>
-                </div>
-            </form>
-        </div>
-        
+        <form id="formLogin" onsubmit="event.preventDefault(); window.fazerLogin();">
+            <div class="form-group">
+                <label class="form-label">Código EOL da Unidade</label>
+                <input type="text" class="form-control" id="id_ceu" placeholder="Ex: 123456" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">RF do Servidor</label>
+                <input type="text" class="form-control" id="rf_usuario" placeholder="Apenas números" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Senha</label>
+                <input type="password" class="form-control" id="senha_usuario" placeholder="******" required>
+            </div>
+            
+            <button type="submit" class="btn-login" id="btn-entrar">CONECTAR</button>
+        </form>
+
+        <a class="link-senha" onclick="window.recuperarSenha()">Esqueci minha senha</a>
     </div>
 
     <!-- SCRIPT DO SISTEMA COM FIREBASE -->
@@ -132,7 +167,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
         import { getFirestore, collection, getDocs, getDoc, doc, query, where, updateDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
-        // CHAVE DO SEU PROJETO SIG-EDU
         const firebaseConfig = {
             apiKey: "AIzaSyCpCXxJbD8dPXkT7mcoz4qK8Wjt7WTRwFA",
             authDomain: "sig-edu.firebaseapp.com",
@@ -146,12 +180,8 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // ==========================================
-        // LOGO E CONFIGURAÇÕES GERAIS
-        // ==========================================
         window.onload = async function() {
             localStorage.clear();
-
             try {
                 const docRef = doc(db, "configuracoes", "sistema");
                 const docSnap = await getDoc(docRef);
@@ -177,27 +207,24 @@
                     document.getElementById('titulo-sistema').innerText = "SIG-EDU Central";
                 }
             } catch (erro) {
-                console.error("Aviso: Banco de dados ainda sem configurações registradas.", erro);
+                console.error("Aviso: Banco de dados ainda sem configurações registradas.");
                 document.getElementById('titulo-sistema').innerText = "SIG-EDU Central";
             }
         };
 
-        // ==========================================
-        // MOTOR DE LOGIN (FIREBASE)
-        // ==========================================
         window.fazerLogin = async function() {
             const ceu = document.getElementById('id_ceu').value.trim();
             const rf = document.getElementById('rf_usuario').value.trim();
             const senha = document.getElementById('senha_usuario').value.trim();
 
             if(!ceu || !rf || !senha) {
-                Swal.fire('Atenção', 'Preencha todos os campos.', 'warning');
+                Swal.fire({ icon: 'warning', title: 'Atenção', text: 'Preencha todos os campos.' });
                 return;
             }
 
             Swal.fire({
                 title: 'A validar acessos...',
-                text: 'Consultando o banco de dados seguro.',
+                text: 'Consultando servidor.',
                 allowOutsideClick: false,
                 didOpen: () => { Swal.showLoading(); }
             });
@@ -212,7 +239,7 @@
                 const querySnapshot = await getDocs(q);
 
                 if (querySnapshot.empty) {
-                    Swal.fire('Acesso Negado', 'Usuário não encontrado.', 'error');
+                    Swal.fire({ icon: 'error', title: 'Acesso Negado', text: 'Usuário não encontrado.' });
                     return;
                 }
 
@@ -230,62 +257,53 @@
                 });
 
                 if (!usuarioValido) {
-                    Swal.fire('Acesso Negado', 'Senha incorreta.', 'error');
+                    Swal.fire({ icon: 'error', title: 'Acesso Negado', text: 'Senha incorreta.' });
                     return;
                 }
 
                 if (dadosUsuario.primeiro_acesso === true) {
-                    window.tratarPrimeiroAcesso("É necessário redefinir a sua senha inicial de segurança.", { idDoc: idDocumentoFirebase });
+                    window.tratarPrimeiroAcesso("Redefina sua senha inicial de segurança.", { idDoc: idDocumentoFirebase });
                     return;
                 }
 
-                // SUCESSO
                 localStorage.setItem('ceu_codigo_eol', ceu);
                 localStorage.setItem('ceu_rf_logado', rf); 
                 localStorage.setItem('ceu_planilha_id', dadosUsuario.id_planilha_banco || "");
                 localStorage.setItem('ceu_nome', dadosUsuario.nome_ceu || "Escola");
                 localStorage.setItem('ceu_nome_especifico', dadosUsuario.nome_ceu || "Escola");
                 localStorage.setItem('ceu_nome_usuario', dadosUsuario.nome_usuario || "Gestor");
+                localStorage.setItem('ceu_perfil', dadosUsuario.perfil_usuario || "padrao"); 
                 
                 if(dadosUsuario.logo_ceu) localStorage.setItem('ceu_logo', dadosUsuario.logo_ceu);
                 if(dadosUsuario.foto_usuario) localStorage.setItem('ceu_foto_usuario', dadosUsuario.foto_usuario);
                 
-                localStorage.setItem('ceu_perfil', dadosUsuario.perfil_usuario || "padrao"); 
-                
                 window.location.href = "dashboard.html"; 
 
             } catch (erro) {
-                Swal.fire('Erro de Conexão', 'Falha ao conectar com o banco de dados.', 'error');
-                console.error("Erro no Login Firebase: ", erro);
+                Swal.fire({ icon: 'error', title: 'Erro de Conexão', text: 'Falha ao conectar.' });
+                console.error(erro);
             }
         };
 
-        // ==========================================
-        // FLUXO DE PRIMEIRO ACESSO 
-        // ==========================================
         window.tratarPrimeiroAcesso = function(mensagemDoServidor, dadosAuxiliares) {
             Swal.fire({
-                title: '🔒 Primeiro Acesso',
+                title: 'Primeiro Acesso',
                 text: mensagemDoServidor,
-                icon: 'info',
                 html: `
-                    <div style="text-align: left; font-size: 14px;">
-                        <label class="mt-2 fw-bold">Nova Senha:</label>
-                        <input type="password" id="swal-nova-senha" class="swal2-input" placeholder="Mínimo 8 caracteres">
-                        <label class="mt-2 fw-bold">Confirmar Nova Senha:</label>
-                        <input type="password" id="swal-conf-senha" class="swal2-input" placeholder="Repita a senha">
+                    <div style="text-align: left;">
+                        <span class="swal-label">Nova Senha:</span>
+                        <input type="password" id="swal-nova-senha" class="swal2-input">
+                        <span class="swal-label" style="margin-top:6px;">Confirmar Nova Senha:</span>
+                        <input type="password" id="swal-conf-senha" class="swal2-input">
                     </div>
                 `,
-                confirmButtonText: 'Gravar Nova Senha',
-                confirmButtonColor: '#198754',
+                confirmButtonText: 'GRAVAR SENHA',
                 allowOutsideClick: false,
                 preConfirm: () => {
                     const s1 = document.getElementById('swal-nova-senha').value;
                     const s2 = document.getElementById('swal-conf-senha').value;
-                    if (s1 !== s2) { Swal.showValidationMessage('As senhas não conferem!'); return false; }
-                    if (!/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,12}$/.test(s1)) {
-                        Swal.showValidationMessage('A senha é muito fraca (use maiúsculas, números e símbolos)!'); return false;
-                    }
+                    if (s1 !== s2) { Swal.showValidationMessage('Senhas não conferem.'); return false; }
+                    if (s1.length < 6) { Swal.showValidationMessage('Mínimo 6 caracteres.'); return false; }
                     return s1;
                 }
             }).then((result) => {
@@ -296,7 +314,7 @@
         };
 
         window.enviarNovaSenha = async function(idDocumentoFirebase, novaSenha) {
-            Swal.fire({ title: 'A gravar no Firebase...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+            Swal.fire({ title: 'A gravar...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
             
             try {
                 const usuarioRef = doc(db, "usuarios", idDocumentoFirebase);
@@ -305,13 +323,22 @@
                     primeiro_acesso: false
                 });
 
-                Swal.fire('Sucesso!', 'Senha alterada. Faça login com a nova senha!', 'success').then(() => { 
+                Swal.fire({ icon: 'success', title: 'Sucesso', text: 'Senha alterada. Faça login.' }).then(() => { 
                     document.getElementById('senha_usuario').value = ''; 
                 });
             } catch (erro) {
-                Swal.fire('Erro', 'Ocorreu um erro ao atualizar a senha no banco.', 'error');
+                Swal.fire({ icon: 'error', title: 'Erro', text: 'Falha ao atualizar.' });
                 console.error(erro);
             }
+        };
+
+        window.recuperarSenha = function() {
+            Swal.fire({
+                title: 'Recuperar Acesso',
+                text: 'Contate o Administrador de TI da DRE para solicitar uma nova credencial.',
+                icon: 'warning',
+                confirmButtonText: 'ENTENDIDO'
+            });
         };
     </script>
 </body>

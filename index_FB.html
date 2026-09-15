@@ -15,52 +15,124 @@
     
     <style>
         :root { --cor-primaria: #0d6efd; --cor-fundo: #f4f7f6; }
-        body { background-color: var(--cor-fundo); display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .login-card { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 400px; border-top: 5px solid #ff9800; /* Borda laranja para lembrar que é ambiente de teste */ }
-        .login-header { text-align: center; margin-bottom: 30px; }
-        .login-header span { font-size: 50px; color: var(--cor-primaria); }
-        .login-header h3 { font-weight: 700; color: #333; margin-top: 10px; }
-        .btn-login { background-color: var(--cor-primaria); border: none; width: 100%; padding: 12px; font-weight: bold; font-size: 16px; margin-top: 20px; }
+        body { 
+            background-color: var(--cor-fundo); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100vh; 
+            margin: 0; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+        }
+        
+        /* NOVO DESIGN: MODAL HORIZONTAL */
+        .login-horizontal {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            width: 95%;
+            max-width: 950px; /* Bem mais largo para acomodar os campos */
+            border-left: 6px solid #ff9800; /* Linha laranja indica o ambiente de testes Firebase */
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+
+        /* COLUNA DA LOGO */
+        .login-brand {
+            flex: 0 0 240px;
+            text-align: center;
+            border-right: 1px solid #eee;
+            padding-right: 25px;
+        }
+        .login-brand span { font-size: 50px; color: var(--cor-primaria); }
+        .login-brand h3 { font-weight: 700; color: #333; margin-top: 10px; font-size: 20px; }
+        
+        /* COLUNA DO FORMULÁRIO */
+        .login-form { flex-grow: 1; }
+        
+        .btn-login { 
+            background-color: var(--cor-primaria); 
+            border: none; 
+            font-weight: bold; 
+            font-size: 14px; 
+            height: 42px; /* Alinha a altura do botão com os inputs */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
         .btn-login:hover { background-color: #0b5ed7; }
-        .form-control { padding: 12px; border-radius: 8px; }
+        
+        .form-control { padding: 10px; border-radius: 8px; font-size: 13px; height: 42px; }
+        .form-label { font-size: 12px; margin-bottom: 4px; color: #555; }
+
+        /* RESPONSIVIDADE PARA CELULARES (Empilha tudo de novo se a tela for pequena) */
+        @media (max-width: 768px) {
+            .login-horizontal { 
+                flex-direction: column; 
+                max-width: 400px; 
+                border-left: none; 
+                border-top: 6px solid #ff9800; 
+                padding: 20px; 
+                gap: 15px;
+            }
+            .login-brand { 
+                border-right: none; 
+                border-bottom: 1px solid #eee; 
+                padding-right: 0; 
+                padding-bottom: 15px; 
+                flex: auto; 
+                width: 100%; 
+            }
+        }
     </style>
 </head>
 <body>
 
-    <div class="login-card">
-        <div class="login-header" id="box-logo">
-            <span class="material-icons" id="icone-padrao" style="font-size: 75px; color: var(--cor-primaria);">account_balance</span>
-            <img id="img-logo" src="" alt="Logo do Sistema" style="display: none; width: 100%; height: 120px; object-fit: contain; margin: 0 auto 15px auto;">
+    <div class="login-horizontal">
+        
+        <!-- LADO ESQUERDO: Branding -->
+        <div class="login-brand" id="box-logo">
+            <span class="material-icons" id="icone-padrao">account_balance</span>
+            <img id="img-logo" src="" alt="Logo do Sistema" style="display: none; width: 100%; height: 70px; object-fit: contain; margin: 0 auto 10px auto;">
             <h3 id="titulo-sistema">A carregar...</h3>
-            <p class="text-muted">Acesso Restrito - Firebase</p>
+            <p class="text-muted" style="font-size: 11px; margin: 0;">Acesso Restrito - Firebase</p>
         </div>
 
-        <!-- O formulário agora chama window.fazerLogin() devido ao script module -->
-        <form id="formLogin" onsubmit="event.preventDefault(); window.fazerLogin();">
-            <div class="mb-3">
-                <label class="form-label fw-bold">Código EOL da Unidade</label>
-                <input type="number" class="form-control" id="id_ceu" placeholder="Ex: 123456" required>
-            </div>
-            <div class="mb-3">
-                <label class="form-label fw-bold">RF do Funcionário</label>
-                <input type="number" class="form-control" id="rf_usuario" placeholder="Apenas números" required>
-            </div>
-            <div class="mb-3">
-                <label class="form-label fw-bold">Senha de Acesso</label>
-                <input type="password" class="form-control" id="senha_usuario" placeholder="Sua senha" required>
-            </div>
-            
-            <button type="submit" class="btn btn-primary btn-login" id="btn-entrar">ENTRAR NO SISTEMA</button>
-        </form>
+        <!-- LADO DIREITO: Campos Alinhados -->
+        <div class="login-form">
+            <!-- Ao usar o preventDefault, evitamos o recarregamento da tela e chamamos a função do Firebase -->
+            <form id="formLogin" onsubmit="event.preventDefault(); window.fazerLogin();">
+                <!-- Usamos a grade do Bootstrap dividida em 4 colunas iguais (col-md-3) -->
+                <div class="row g-2 align-items-end">
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Código EOL</label>
+                        <input type="number" class="form-control" id="id_ceu" placeholder="Ex: 123456" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">RF Servidor</label>
+                        <input type="number" class="form-control" id="rf_usuario" placeholder="Apenas números" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Senha de Acesso</label>
+                        <input type="password" class="form-control" id="senha_usuario" placeholder="******" required>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-primary btn-login w-100" id="btn-entrar">ENTRAR</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        
     </div>
 
     <!-- SCRIPT DO SISTEMA COM FIREBASE -->
     <script type="module">
-        // 1. IMPORTAÇÃO DAS BIBLIOTECAS OFICIAIS DO FIRESTORE
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
         import { getFirestore, collection, getDocs, getDoc, doc, query, where, updateDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
-        // 2. A CHAVE MESTRE DO SEU PROJETO SIG-EDU
+        // CHAVE DO SEU PROJETO SIG-EDU
         const firebaseConfig = {
             apiKey: "AIzaSyCpCXxJbD8dPXkT7mcoz4qK8Wjt7WTRwFA",
             authDomain: "sig-edu.firebaseapp.com",
@@ -71,7 +143,6 @@
             measurementId: "G-E5LLYGW7DN"
         };
 
-        // 3. INICIALIZANDO O BANCO DE DADOS
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
@@ -82,7 +153,6 @@
             localStorage.clear();
 
             try {
-                // Ao invés da API, ele lê um documento chamado "sistema" dentro da coleção "configuracoes"
                 const docRef = doc(db, "configuracoes", "sistema");
                 const docSnap = await getDoc(docRef);
 
@@ -113,7 +183,7 @@
         };
 
         // ==========================================
-        // MOTOR DE LOGIN BLINDADO (FIREBASE)
+        // MOTOR DE LOGIN (FIREBASE)
         // ==========================================
         window.fazerLogin = async function() {
             const ceu = document.getElementById('id_ceu').value.trim();
@@ -133,7 +203,6 @@
             });
 
             try {
-                // Consulta rápida no Firebase: "Procure na coleção usuarios onde EOL e RF sejam iguais ao digitado"
                 const usuariosRef = collection(db, "usuarios");
                 const q = query(usuariosRef, 
                     where("id_ceu", "==", ceu),
@@ -151,13 +220,12 @@
                 let dadosUsuario = null;
                 let idDocumentoFirebase = null;
 
-                // O Firebase devolve a lista (mesmo que seja só 1). Validamos a senha.
                 querySnapshot.forEach((documento) => {
                     const dados = documento.data();
                     if (dados.senha_usuario === senha) {
                         usuarioValido = true;
                         dadosUsuario = dados;
-                        idDocumentoFirebase = documento.id; // Guardamos o ID real do banco para alterar a senha
+                        idDocumentoFirebase = documento.id; 
                     }
                 });
 
@@ -166,13 +234,12 @@
                     return;
                 }
 
-                // Verifica se precisa trocar a senha
                 if (dadosUsuario.primeiro_acesso === true) {
                     window.tratarPrimeiroAcesso("É necessário redefinir a sua senha inicial de segurança.", { idDoc: idDocumentoFirebase });
                     return;
                 }
 
-                // LOGIN COM SUCESSO - Preenche as mochilas do localStorage
+                // SUCESSO
                 localStorage.setItem('ceu_codigo_eol', ceu);
                 localStorage.setItem('ceu_rf_logado', rf); 
                 localStorage.setItem('ceu_planilha_id', dadosUsuario.id_planilha_banco || "");
@@ -185,7 +252,6 @@
                 
                 localStorage.setItem('ceu_perfil', dadosUsuario.perfil_usuario || "padrao"); 
                 
-                // Joga para o Dashboard instantaneamente!
                 window.location.href = "dashboard.html"; 
 
             } catch (erro) {
@@ -195,7 +261,7 @@
         };
 
         // ==========================================
-        // FLUXO DE PRIMEIRO ACESSO (MUDAR SENHA)
+        // FLUXO DE PRIMEIRO ACESSO 
         // ==========================================
         window.tratarPrimeiroAcesso = function(mensagemDoServidor, dadosAuxiliares) {
             Swal.fire({
@@ -233,7 +299,6 @@
             Swal.fire({ title: 'A gravar no Firebase...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
             
             try {
-                // Atualiza o documento específico no banco de dados e remove o status de primeiro acesso
                 const usuarioRef = doc(db, "usuarios", idDocumentoFirebase);
                 await updateDoc(usuarioRef, {
                     senha_usuario: novaSenha,

@@ -31,7 +31,6 @@
             color: #333;
         }
         
-        /* O MODAL QUADRADO E CORPORATIVO DE LOGIN */
         .login-box {
             background: #fff;
             width: 280px;
@@ -54,7 +53,6 @@
         .login-header p { margin: 0; color: #666; font-size: 9px; }
 
         .form-group { margin-bottom: 10px; }
-        
         .form-label { display: block; font-weight: bold; margin-bottom: 3px; font-size: 10px; }
         
         .form-control { 
@@ -76,74 +74,37 @@
         }
         .link-senha:hover { color: #0d47a1; }
 
-        /* =========================================================
-           FORÇANDO OS ALERTAS DO SWEETALERT A TEREM O MESMO DESIGN
-           ========================================================= */
+        /* SWEETALERT DESIGN CORPORATIVO */
         div:where(.swal2-container) div:where(.swal2-popup) {
-            width: 280px !important;
-            padding: 20px !important;
-            border-radius: 0 !important;
-            border: 1px solid var(--border-color) !important;
-            border-top: 4px solid var(--google-blue) !important;
+            width: 280px !important; padding: 20px !important; border-radius: 0 !important;
+            border: 1px solid var(--border-color) !important; border-top: 4px solid var(--google-blue) !important;
             box-shadow: 2px 2px 10px rgba(0,0,0,0.15) !important;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
         }
-        div:where(.swal2-container) h2:where(.swal2-title) {
-            font-size: 11px !important;
-            font-weight: bold !important;
-            color: #333 !important;
-            padding: 0 !important;
-            margin: 0 0 5px 0 !important;
-        }
-        div:where(.swal2-container) div:where(.swal2-html-container) {
-            font-size: 10px !important;
-            color: #666 !important;
-            margin: 5px 0 15px 0 !important;
-            padding: 0 !important;
-        }
+        div:where(.swal2-container) h2:where(.swal2-title) { font-size: 11px !important; font-weight: bold !important; color: #333 !important; margin: 0 0 5px 0 !important; }
+        div:where(.swal2-container) div:where(.swal2-html-container) { font-size: 10px !important; color: #666 !important; margin: 5px 0 15px 0 !important; }
         div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm {
-            border-radius: 0 !important;
-            font-size: 10px !important;
-            font-weight: bold !important;
-            padding: 4px !important;
-            width: 100% !important;
-            height: 24px !important;
-            background-color: var(--google-blue) !important;
-            border: 1px solid #0d47a1 !important;
-            margin: 0 !important;
+            border-radius: 0 !important; font-size: 10px !important; font-weight: bold !important;
+            padding: 4px !important; width: 100% !important; height: 24px !important;
+            background-color: var(--google-blue) !important; border: 1px solid #0d47a1 !important;
         }
-        div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm:hover {
-            background-color: #1557b0 !important;
-        }
-        div:where(.swal2-container) .swal2-icon {
-            transform: scale(0.5) !important; /* Encolhe os ícones gigantes do SweetAlert */
-            margin: 0 auto 5px auto !important;
-        }
-        /* Estilizando os campos dentro do modal de Primeiro Acesso */
-        .swal2-input {
-            width: 100% !important; height: 22px !important; padding: 4px 6px !important;
-            font-size: 10px !important; border: 1px solid #aaa !important;
-            border-radius: 0 !important; margin: 2px 0 8px 0 !important;
-            box-sizing: border-box !important;
-        }
-        .swal2-input:focus { border-color: var(--google-blue) !important; outline: none !important; box-shadow: none !important; }
-        .swal-label { font-weight: bold; display: block; text-align: left; font-size: 10px; margin-bottom: 2px;}
+        div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm:hover { background-color: #1557b0 !important; }
+        div:where(.swal2-container) .swal2-icon { transform: scale(0.5) !important; margin: 0 auto 5px auto !important; }
     </style>
 </head>
 <body>
 
     <div class="login-box">
-        <div class="login-header" id="box-logo">
-            <span class="material-icons" id="icone-padrao">admin_panel_settings</span>
-            <img id="img-logo" src="" alt="Logo" style="display: none; width: 100%; height: 60px; object-fit: contain; margin: 0 auto 5px auto;">
-            <h3 id="titulo-sistema">A carregar...</h3>
+        <div class="login-header">
+            <span class="material-icons">admin_panel_settings</span>
+            <h3>SIG-EDU Central</h3>
             <p>Acesso Restrito ao Sistema</p>
         </div>
 
         <form id="formLogin" onsubmit="event.preventDefault(); window.fazerLogin();">
             <div class="form-group">
                 <label class="form-label">Código EOL da Unidade</label>
-                <input type="text" class="form-control" id="id_ceu" placeholder="Ex: 123456" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
+                <input type="text" class="form-control" id="id_unidade" placeholder="Ex: 700038" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
             </div>
             
             <div class="form-group">
@@ -156,16 +117,15 @@
                 <input type="password" class="form-control" id="senha_usuario" placeholder="******" required>
             </div>
             
-            <button type="submit" class="btn-login" id="btn-entrar">CONECTAR</button>
+            <button type="submit" class="btn-login">CONECTAR</button>
         </form>
 
         <a class="link-senha" onclick="window.recuperarSenha()">Esqueci minha senha</a>
     </div>
 
-    <!-- SCRIPT DO SISTEMA COM FIREBASE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
-        import { getFirestore, collection, getDocs, getDoc, doc, query, where, updateDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCpCXxJbD8dPXkT7mcoz4qK8Wjt7WTRwFA",
@@ -180,50 +140,15 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-// ==========================================
-        // LOGO E CONFIGURAÇÕES GERAIS (CORRIGIDO)
-        // ==========================================
-        async function carregarSistema() {
-            localStorage.clear();
-            try {
-                const docRef = doc(db, "configuracoes", "sistema");
-                const docSnap = await getDoc(docRef);
-
-                if (docSnap.exists()) {
-                    const dados = docSnap.data();
-                    document.getElementById('titulo-sistema').innerText = dados.nomeSistema || "SIG-EDU";
-                    localStorage.setItem('ceu_nome_sistema', dados.nomeSistema || "SIG-EDU");
-                    
-                    if (dados.logoUrl) {
-                        localStorage.setItem('ceu_logo_sistema', dados.logoUrl);
-                        document.getElementById('icone-padrao').style.display = 'none';
-                        const img = document.getElementById('img-logo');
-                        img.src = dados.logoUrl;
-                        
-                        if(dados.tamanhoLogo) {
-                            img.style.height = dados.tamanhoLogo; 
-                            localStorage.setItem('ceu_tamanho_logo', dados.tamanhoLogo); 
-                        }
-                        img.style.display = 'block';
-                    }
-                } else {
-                    document.getElementById('titulo-sistema').innerText = "SIG-EDU Central";
-                }
-            } catch (erro) {
-                console.error("Aviso: Banco de dados inoperante.", erro);
-                document.getElementById('titulo-sistema').innerText = "SIG-EDU Central";
-            }
-        }
-        
-        // MANDAMOS O MOTOR RODAR IMEDIATAMENTE AQUI:
-        carregarSistema();
+        // Limpa resíduos de acessos anteriores
+        localStorage.clear();
 
         window.fazerLogin = async function() {
-            const ceu = document.getElementById('id_ceu').value.trim();
+            const unidade = document.getElementById('id_unidade').value.trim();
             const rf = document.getElementById('rf_usuario').value.trim();
             const senha = document.getElementById('senha_usuario').value.trim();
 
-            if(!ceu || !rf || !senha) {
+            if(!unidade || !rf || !senha) {
                 Swal.fire({ icon: 'warning', title: 'Atenção', text: 'Preencha todos os campos.' });
                 return;
             }
@@ -237,28 +162,29 @@
 
             try {
                 const usuariosRef = collection(db, "usuarios");
+                
+                // MÁGICA 1: Busca exatamente pelas chaves numéricas que criamos!
                 const q = query(usuariosRef, 
-                    where("id_ceu", "==", ceu),
+                    where("id_unidade", "==", unidade),
                     where("rf_usuario", "==", rf)
                 );
                 
                 const querySnapshot = await getDocs(q);
 
                 if (querySnapshot.empty) {
-                    Swal.fire({ icon: 'error', title: 'Acesso Negado', text: 'Usuário não encontrado.' });
+                    Swal.fire({ icon: 'error', title: 'Acesso Negado', text: 'Credenciais não encontradas ou Unidade incorreta.' });
                     return;
                 }
 
                 let usuarioValido = false;
                 let dadosUsuario = null;
-                let idDocumentoFirebase = null;
 
                 querySnapshot.forEach((documento) => {
                     const dados = documento.data();
+                    // Valida a senha (como string)
                     if (dados.senha_usuario === senha) {
                         usuarioValido = true;
                         dadosUsuario = dados;
-                        idDocumentoFirebase = documento.id; 
                     }
                 });
 
@@ -267,73 +193,19 @@
                     return;
                 }
 
-                if (dadosUsuario.primeiro_acesso === true) {
-                    window.tratarPrimeiroAcesso("Redefina sua senha inicial de segurança.", { idDoc: idDocumentoFirebase });
-                    return;
-                }
-
-                localStorage.setItem('ceu_codigo_eol', ceu);
-                localStorage.setItem('ceu_rf_logado', rf); 
-                localStorage.setItem('ceu_planilha_id', dadosUsuario.id_planilha_banco || "");
-                localStorage.setItem('ceu_nome', dadosUsuario.nome_ceu || "Escola");
-                localStorage.setItem('ceu_nome_especifico', dadosUsuario.nome_ceu || "Escola");
-                localStorage.setItem('ceu_nome_usuario', dadosUsuario.nome_usuario || "Gestor");
-                localStorage.setItem('ceu_perfil', dadosUsuario.perfil_usuario || "padrao"); 
+                // MÁGICA 2: Guardando as Chaves Estrangeiras no bolso do navegador
+                localStorage.setItem('sig_rf', dadosUsuario.rf_usuario); 
+                localStorage.setItem('sig_id_unidade', dadosUsuario.id_unidade);
+                localStorage.setItem('sig_nivel_acesso', dadosUsuario.id_nivel_acesso);
+                localStorage.setItem('sig_nome', dadosUsuario.nome_usuario);
+                localStorage.setItem('sig_email', dadosUsuario.email_usuario || "");
+                localStorage.setItem('sig_foto', dadosUsuario.url_foto || "");
                 
-                if(dadosUsuario.logo_ceu) localStorage.setItem('ceu_logo', dadosUsuario.logo_ceu);
-                if(dadosUsuario.foto_usuario) localStorage.setItem('ceu_foto_usuario', dadosUsuario.foto_usuario);
-                
-                window.location.href = "dashboard.html"; 
+                // Redireciona para o Painel de Controle
+                window.location.href = "dashboard_FB.html"; 
 
             } catch (erro) {
-                Swal.fire({ icon: 'error', title: 'Erro de Conexão', text: 'Falha ao conectar.' });
-                console.error(erro);
-            }
-        };
-
-        window.tratarPrimeiroAcesso = function(mensagemDoServidor, dadosAuxiliares) {
-            Swal.fire({
-                title: 'Primeiro Acesso',
-                text: mensagemDoServidor,
-                html: `
-                    <div style="text-align: left;">
-                        <span class="swal-label">Nova Senha:</span>
-                        <input type="password" id="swal-nova-senha" class="swal2-input">
-                        <span class="swal-label" style="margin-top:6px;">Confirmar Nova Senha:</span>
-                        <input type="password" id="swal-conf-senha" class="swal2-input">
-                    </div>
-                `,
-                confirmButtonText: 'GRAVAR SENHA',
-                allowOutsideClick: false,
-                preConfirm: () => {
-                    const s1 = document.getElementById('swal-nova-senha').value;
-                    const s2 = document.getElementById('swal-conf-senha').value;
-                    if (s1 !== s2) { Swal.showValidationMessage('Senhas não conferem.'); return false; }
-                    if (s1.length < 6) { Swal.showValidationMessage('Mínimo 6 caracteres.'); return false; }
-                    return s1;
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.enviarNovaSenha(dadosAuxiliares.idDoc, result.value);
-                }
-            });
-        };
-
-        window.enviarNovaSenha = async function(idDocumentoFirebase, novaSenha) {
-            Swal.fire({ title: 'A gravar...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
-            
-            try {
-                const usuarioRef = doc(db, "usuarios", idDocumentoFirebase);
-                await updateDoc(usuarioRef, {
-                    senha_usuario: novaSenha,
-                    primeiro_acesso: false
-                });
-
-                Swal.fire({ icon: 'success', title: 'Sucesso', text: 'Senha alterada. Faça login.' }).then(() => { 
-                    document.getElementById('senha_usuario').value = ''; 
-                });
-            } catch (erro) {
-                Swal.fire({ icon: 'error', title: 'Erro', text: 'Falha ao atualizar.' });
+                Swal.fire({ icon: 'error', title: 'Erro de Conexão', text: 'Falha ao conectar no banco de dados.' });
                 console.error(erro);
             }
         };
@@ -341,7 +213,7 @@
         window.recuperarSenha = function() {
             Swal.fire({
                 title: 'Recuperar Acesso',
-                text: 'Contate o Administrador de TI da DRE para solicitar uma nova credencial.',
+                text: 'Contate o Administrador de TI da sua Regional para solicitar uma nova credencial.',
                 icon: 'warning',
                 confirmButtonText: 'ENTENDIDO'
             });

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Robô de Migração SIG-EDU</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; padding: 50px; text-align: center; background-color: #f4f6f8; }
+        .caixa { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); display: inline-block; }
+        button { background-color: #1a73e8; color: white; border: none; padding: 12px 24px; font-weight: bold; cursor: pointer; border-radius: 4px; font-size: 14px; }
+        button:hover { background-color: #1557b0; }
+        #status { margin-top: 20px; font-weight: bold; color: #333; }
+    </style>
+</head>
+<body>
+
+    <div class="caixa">
+        <h2>Injeção de Dados - SIG-EDU</h2>
+        <p>Aperte o botão para migrar as primeiras unidades para o Firebase.</p>
+        <button onclick="iniciarImportacao()">INICIAR MIGRAÇÃO</button>
+        <p id="status"></p>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+
+        // ==========================================
+        // 1. COLE SUAS CHAVES DO FIREBASE AQUI
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "SUA_API_KEY",
+            authDomain: "sig-edu.firebaseapp.com",
+            projectId: "sig-edu"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // ==========================================
+        // 2. DADOS TRATADOS E CONVERTIDOS (JSON)
+        // ==========================================
+        const listaUnidades = [
+            { 
+                id_unidade: "700038", 
+                id_regional: "777777", // DRE Santo Amaro
+                nome_unidade: "CEU ALVARENGA", 
+                endereco_logradouro: "ESTRADA DO ALVARENGA",
+                endereco_numero: "3752",
+                endereco_bairro: "JARDIM SANTA TEREZINHA",
+                endereco_cep: "4474340",
+                url_logo: "https://drive.google.com/thumbnail?id=1sERSVpl5jIpjzQXs2vozPXHnVcYJPIRR",
+                tipo_acesso: "CEU",
+                telefones: { fixo: "", whatsapp: "" }
+            },
+            { 
+                id_unidade: "700039", 
+                id_regional: "777777", 
+                nome_unidade: "CEU CAMINHO DO MAR", 
+                endereco_logradouro: "AV. ENG. ARMANDO DE ARRUDA PEREIRA",
+                endereco_numero: "5241",
+                endereco_bairro: "VILA DO ENCONTRO",
+                endereco_cep: "4325001",
+                url_logo: "https://drive.google.com/thumbnail?id=1jidQtIiQXPMVZ79AVwgP2flhUKg9L1Fg",
+                tipo_acesso: "CEU",
+                telefones: { fixo: "3396-5600", whatsapp: "" }
+            },
+            { 
+                id_unidade: "700019", 
+                id_regional: "", // Preencher depois se necessário
+                nome_unidade: "CEU AGUA AZUL - PAULO RENATO COSTA SOUZA, PROF", 
+                endereco_logradouro: "AVENIDA DOS METALÚRGICOS",
+                endereco_numero: "1262",
+                endereco_bairro: "JARDIM DA LARANJEIRA",
+                endereco_cep: "8471000",
+                url_logo: "",
+                tipo_acesso: "CEU",
+                telefones: { fixo: "", whatsapp: "" }
+            },
+            { 
+                id_unidade: "700044", 
+                id_regional: "", 
+                nome_unidade: "CEU ALTO ALEGRE - PAULO SUYOSH MINAMI, PROF.", 
+                endereco_logradouro: "AVENIDA BENTO GUELFI",
+                endereco_numero: "S/N",
+                endereco_bairro: "BALNEÁRIO SÃO FRANCISCO",
+                endereco_cep: "8381001",
+                url_logo: "",
+                tipo_acesso: "CEU",
+                telefones: { fixo: "", whatsapp: "" }
+            },
+            { 
+                id_unidade: "700023", 
+                id_regional: "", 
+                nome_unidade: "CEU ARICANDUVA - IRENE GALVAO DE SOUZA, PROFA.", 
+                endereco_logradouro: "RUA OLGA FADEL ABARCA",
+                endereco_numero: "S/N",
+                endereco_bairro: "CIDADE ANTÔNIO ESTEVÃO DE CARVALHO",
+                endereco_cep: "3572020",
+                url_logo: "",
+                tipo_acesso: "CEU",
+                telefones: { fixo: "", whatsapp: "" }
+            }
+        ];
+
+        // ==========================================
+        // 3. MOTOR DE MIGRAÇÃO
+        // ==========================================
+        window.iniciarImportacao = async function() {
+            document.getElementById('status').innerText = "Conectando ao Firebase... Aguarde!";
+            let sucesso = 0;
+
+            for (let i = 0; i < listaUnidades.length; i++) {
+                const uni = listaUnidades[i];
+                
+                try {
+                    // Cria o documento usando o Código EOL como Chave Primária!
+                    const docRef = doc(db, "unidades", uni.id_unidade);
+                    
+                    await setDoc(docRef, {
+                        id_regional: uni.id_regional,
+                        nome_unidade: uni.nome_unidade,
+                        endereco_logradouro: uni.endereco_logradouro,
+                        endereco_numero: uni.endereco_numero,
+                        endereco_bairro: uni.endereco_bairro,
+                        endereco_cep: uni.endereco_cep,
+                        url_logo: uni.url_logo,
+                        tipo_acesso: uni.tipo_acesso,
+                        telefones: uni.telefones
+                    });
+                    
+                    sucesso++;
+                } catch (erro) {
+                    console.error("Falha ao gravar CEU EOL: " + uni.id_unidade, erro);
+                }
+            }
+            document.getElementById('status').innerText = `✅ Migração Concluída! ${sucesso} CEUs cadastrados no Firestore.`;
+        };
+    </script>
+</body>
+</html>

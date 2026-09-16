@@ -56,13 +56,12 @@
     <!-- BARRA LATERAL -->
     <aside class="sidebar">
         <div class="sidebar-header">
-            <!-- ID Atualizado e vazio, aguardando o Firebase -->
             <img id="painel-logo" src="" alt="Logo Unidade">
             <h3 id="painel-nome-ceu">Carregando...</h3>
             <p id="painel-nome-usuario">Usuário</p>
         </div>
         <ul class="menu-lista" id="menu-dinamico">
-            <!-- O MENU SERÁ INJETADO AQUI PELO JAVASCRIPT DEPENDENDO DO PERFIL -->
+            <!-- O MENU SERÁ INJETADO AQUI PELO JAVASCRIPT -->
         </ul>
     </aside>
 
@@ -77,12 +76,11 @@
         </div>
     </main>
 
-    <!-- SCRIPT COMO MÓDULO PARA LER O FIREBASE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
-        import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+        // Importamos também o doc e getDoc para caso você tenha salvo o código como ID do documento
+        import { getFirestore, collection, getDocs, query, where, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
-        // As mesmas credenciais do login
         const firebaseConfig = {
             apiKey: "AIzaSyCpCXxJbD8dPXkT7mcoz4qK8Wjt7WTRwFA",
             authDomain: "sig-edu.firebaseapp.com",
@@ -97,10 +95,9 @@
         const db = getFirestore(app);
 
         // ==========================================
-        // 1. FUNÇÃO PRINCIPAL AO CARREGAR
+        // 1. CARREGAMENTO DOS DADOS DO CEU LOGADO
         // ==========================================
         async function inicializarDashboard() {
-            // Verifica a chave correta criada no index_FB.html
             if(!localStorage.getItem('sig_rf')) {
                 window.location.href = "index_FB.html";
                 return;
@@ -109,65 +106,79 @@
             const idUnidadeSalva = localStorage.getItem('sig_id_unidade');
             document.getElementById('painel-nome-usuario').innerText = localStorage.getItem('sig_nome') || "Gestor";
 
-            // Buscando as configurações exclusivas da Unidade no Firebase
             try {
-                const unidadesRef = collection(db, "unidades");
-                // Pesquisa a unidade do usuário logado
-                const q = query(unidadesRef, where("id_unidade", "==", idUnidadeSalva));
-                const unidadeSnapshot = await getDocs(q);
+                let dadosUnidade = null;
 
-                if (!unidadeSnapshot.empty) {
-                    const dadosUnidade = unidadeSnapshot.docs[0].data();
+                // TENTATIVA 1: Busca direto pelo ID do Documento (caso a unidade seja o nome do doc no Firebase)
+                const docRef = doc(db, "unidades", idUnidadeSalva);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    dadosUnidade = docSnap.data();
+                } else {
+                    // TENTATIVA 2: Busca usando "where" como TEXTO
+                    const unidadesRef = collection(db, "unidades");
+                    const qTexto = query(unidadesRef, where("id_unidade", "==", idUnidadeSalva));
+                    const snapTexto = await getDocs(qTexto);
                     
-                    // Substitui o texto pelo nome_unidade do banco
+                    if (!snapTexto.empty) {
+                        dadosUnidade = snapTexto.docs[0].data();
+                    } else {
+                        // TENTATIVA 3: Busca usando "where" como NÚMERO
+                        const qNumero = query(unidadesRef, where("id_unidade", "==", Number(idUnidadeSalva)));
+                        const snapNumero = await getDocs(qNumero);
+                        if (!snapNumero.empty) {
+                            dadosUnidade = snapNumero.docs[0].data();
+                        }
+                    }
+                }
+
+                // Se encontrou dados na coleção 'unidades', aplica na tela!
+                if (dadosUnidade) {
                     if (dadosUnidade.nome_unidade) {
                         document.getElementById('painel-nome-ceu').innerText = dadosUnidade.nome_unidade;
                     } else {
                         document.getElementById('painel-nome-ceu').innerText = "UNIDADE " + idUnidadeSalva;
                     }
 
-                    // Se tiver logo, mostra na tela
                     if (dadosUnidade.url_logo) {
                         const logoElement = document.getElementById('painel-logo');
                         logoElement.src = dadosUnidade.url_logo;
-                        logoElement.style.display = 'block'; 
+                        logoElement.style.display = 'block'; // Mostra a imagem lindona
                     }
                 } else {
                     document.getElementById('painel-nome-ceu').innerText = "UNIDADE " + idUnidadeSalva;
                 }
+
             } catch (erro) {
                 console.error("Erro ao buscar a coleção unidades:", erro);
                 document.getElementById('painel-nome-ceu').innerText = "UNIDADE " + idUnidadeSalva;
             }
             
-            // Roteamento de Interface (O que o usuário pode ver?)
+            // Verifica o nível e injeta HTML
             const perfil = localStorage.getItem('sig_nivel_acesso');
             if(perfil === 'DRE') {
                 window.montarInterfaceDRE();
             } else if (perfil === 'SME') {
                 window.montarInterfaceSME();
             } else {
-                window.montarInterfaceUnidade(); // Padrão: Modo CEU / UNIDADE
+                window.montarInterfaceUnidade(); 
             }
         }
 
         // ==========================================
-        // 2. CONSTRUTOR DO MODO UNIDADE (CEU)
+        // 2. CONSTRUTORES DE TELA E MENUS
         // ==========================================
         window.montarInterfaceUnidade = function() {
             document.getElementById('painel-titulo-modulo').innerText = "VISÃO GERAL - UNIDADE";
-            
-            // Árvore de Menus usando crases
             document.getElementById('menu-dinamico').innerHTML = `
                 <li class="menu-item" onclick="window.alternarMenu(this)"><span class="material-icons">home</span> Início</li>
-                
                 <li class="menu-item" onclick="window.alternarMenu(this)"><span class="material-icons">people</span> Cadastros</li>
                 <ul class="submenu">
                     <li>Munícipes</li>
                     <li>Incluir Novo munícipe</li>
                     <li>Edição Rápida</li>
                 </ul>
-
                 <li class="menu-item" onclick="window.alternarMenu(this)"><span class="material-icons">school</span> Turmas e Matrículas</li>
                 <ul class="submenu">
                     <li>Turmas</li>
@@ -179,7 +190,6 @@
                     <div class="menu-separador"></div>
                     <li>Configurar Lista de Espera</li>
                 </ul>
-
                 <li class="menu-item" onclick="window.alternarMenu(this)"><span class="material-icons">print</span> Impressão/Expedição</li>
                 <ul class="submenu">
                     <li>Carteirinhas: Uso Geral</li>
@@ -192,7 +202,6 @@
                     <li>Lista de Vagas</li>
                     <li>Protocolo para retirar Carteirinhas</li>
                 </ul>
-
                 <li class="menu-item" onclick="window.alternarMenu(this)"><span class="material-icons">sports_volleyball</span> Recreio nas Férias</li>
                 <ul class="submenu">
                     <li>Cadastrar</li>
@@ -202,7 +211,6 @@
                     <li>Listas de Impressão</li>
                     <li>Chamada Qualitativa</li>
                 </ul>
-
                 <li class="menu-item" onclick="window.alternarMenu(this)"><span class="material-icons">settings</span> Cadastros Base</li>
                 <ul class="submenu">
                     <li>Núcleos</li>
@@ -212,7 +220,6 @@
                     <li>Modalidades</li>
                 </ul>
             `;
-
             document.getElementById('area-cartoes').innerHTML = `
                 <div class="cards-grid">
                     <div class="card card-turno">
@@ -235,12 +242,8 @@
             `;
         };
 
-        // ==========================================
-        // 3. CONSTRUTOR DO MODO DRE
-        // ==========================================
         window.montarInterfaceDRE = function() {
             document.getElementById('painel-titulo-modulo').innerText = "VISÃO ESTRATÉGICA - DRE";
-            
             document.getElementById('menu-dinamico').innerHTML = `
                 <li class="menu-item"><span class="material-icons">dashboard</span> Painel DRE</li>
                 <li class="menu-item"><span class="material-icons">rule</span> RF - Regras</li>
@@ -251,7 +254,6 @@
                     <li>Relatório Idade/Turma</li>
                 </ul>
             `;
-
             document.getElementById('area-cartoes').innerHTML = `
                 <div class="actions-bar">
                     <button class="btn-analitico" style="background: #28a745;">EXPORTAR EXCEL</button>
@@ -272,36 +274,14 @@
                         <p class="numero">0</p>
                     </div>
                 </div>
-                
-                <h3 style="margin-top:20px; border-bottom: 1px solid #ccc; padding-bottom: 5px;">CEUs Conectados</h3>
-                <div class="cards-grid">
-                    <!-- CARTÃO CEU EXEMPLO -->
-                    <div class="card" style="text-align: left;">
-                        <h4 style="color: var(--google-blue); font-size: 12px; margin-bottom: 10px;">CEU Exemplo 01</h4>
-                        <p style="margin:2px 0;">Munícipes: <b>0</b></p>
-                        <p style="margin:2px 0;">Turmas Ativas: <b>0</b></p>
-                        <p style="margin:2px 0;">Matrículas: <b>0</b></p>
-                        <hr style="border: 0; border-top: 1px dashed #ccc; margin: 8px 0;">
-                        <p style="margin:2px 0; font-size: 9px; color: #666;">RECREIO NAS FÉRIAS:</p>
-                        <p style="margin:2px 0;">Total Inscritos: <b>0</b></p>
-                        <p style="margin:2px 0;">Inclusão: <b>0</b></p>
-                        <p style="margin:2px 0;">Dieta Especial: <b>0</b></p>
-                        <p style="margin:2px 0;">Acolhimento Inst.: <b>0</b></p>
-                    </div>
-                </div>
             `;
         };
 
-        // ==========================================
-        // 4. CONSTRUTOR DO MODO SME
-        // ==========================================
         window.montarInterfaceSME = function() {
             document.getElementById('painel-titulo-modulo').innerText = "VISÃO GLOBAL - SME";
-            
             document.getElementById('menu-dinamico').innerHTML = `
                 <li class="menu-item"><span class="material-icons">home</span> Início</li>
             `;
-
             document.getElementById('area-cartoes').innerHTML = `
                 <div style="text-align: center; padding: 50px;">
                     <span class="material-icons" style="font-size: 48px; color: #ccc;">construction</span>
@@ -312,7 +292,7 @@
         };
 
         // ==========================================
-        // FUNÇÕES AUXILIARES
+        // FUNÇÕES GERAIS E CLIQUES
         // ==========================================
         window.alternarMenu = function(elemento) {
             document.querySelectorAll('.menu-item').forEach(el => {
@@ -326,7 +306,7 @@
             window.location.href = "index_FB.html";
         };
 
-        // Dispara a inicialização assim que o script é lido
+        // Roda ao carregar a página
         inicializarDashboard();
     </script>
 </body>

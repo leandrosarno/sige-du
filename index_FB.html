@@ -167,13 +167,16 @@
                     return;
                 }
 
-                // Guardando as Chaves Estrangeiras no bolso do navegador
-                localStorage.setItem('sig_rf', dadosUsuario.rf_usuario); 
-                localStorage.setItem('sig_id_unidade', dadosUsuario.id_unidade);
-                localStorage.setItem('sig_nivel_acesso', dadosUsuario.id_nivel_acesso);
-                localStorage.setItem('sig_nome', dadosUsuario.nome_usuario);
-                localStorage.setItem('sig_email', dadosUsuario.email_usuario || "");
-                localStorage.setItem('sig_foto', dadosUsuario.url_foto || "");
+// MÁGICA 2: Guardando as Chaves Estrangeiras no bolso do navegador
+let perfis = dadosUsuario.id_nivel_acesso;
+if (!Array.isArray(perfis)) perfis = [perfis || "UNIDADE"]; // Força virar Array
+
+localStorage.setItem('sig_rf', dadosUsuario.rf_usuario);
+localStorage.setItem('sig_id_unidade', dadosUsuario.id_unidade);
+localStorage.setItem('sig_nivel_acesso', JSON.stringify(perfis)); // Salva o Array como texto
+localStorage.setItem('sig_nome', dadosUsuario.nome_usuario);
+localStorage.setItem('sig_email', dadosUsuario.email_usuario || "");
+localStorage.setItem('sig_foto', dadosUsuario.url_foto || "");
                 
                 // Redireciona para o Painel de Controle
                 window.location.href = "dashboard_FB.html";

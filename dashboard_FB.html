@@ -2,163 +2,60 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIG-EDU | Painel de Controle</title>
-    
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <title>Dashboard SIG-EDU</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    
     <style>
         :root {
             --google-blue: #1a73e8;
-            --bg-color: #eef0f3;
+            --bg-color: #f0f2f5;
+            --border-color: #dadce0;
             --sidebar-bg: #202124;
             --sidebar-hover: #3c4043;
             --text-light: #e8eaed;
-            --border-color: #dadce0;
         }
-
-        body {
-            margin: 0;
-            display: flex;
-            height: 100vh;
-            background-color: var(--bg-color);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            font-size: 10px;
-            color: #333;
-            overflow: hidden;
-        }
-
+        body { margin: 0; display: flex; height: 100vh; background-color: var(--bg-color); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 10px; color: #333; overflow: hidden; }
+        
         /* MENU LATERAL (SIDEBAR) */
-        .sidebar {
-            width: 220px;
-            background-color: var(--sidebar-bg);
-            color: var(--text-light);
-            display: flex;
-            flex-direction: column;
-            border-right: 1px solid #000;
-        }
-
-        .sidebar-header {
-            padding: 15px;
-            text-align: center;
-            border-bottom: 1px solid var(--sidebar-hover);
-            background-color: #171717;
-        }
-
-        .sidebar-header img {
-            width: 80%;
-            height: 40px;
-            object-fit: contain;
-            margin-bottom: 10px;
-        }
-
+        .sidebar { width: 220px; background-color: var(--sidebar-bg); color: var(--text-light); display: flex; flex-direction: column; border-right: 1px solid #000; }
+        .sidebar-header { padding: 15px; text-align: center; border-bottom: 1px solid var(--sidebar-hover); background-color: #171717; }
+        .sidebar-header img { width: 80%; height: 40px; object-fit: contain; margin-bottom: 10px; }
         .sidebar-header h3 { margin: 0; font-size: 11px; font-weight: bold; }
         .sidebar-header p { margin: 2px 0 0 0; font-size: 9px; color: #9aa0a6; }
-
-        .menu-lista {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            overflow-y: auto;
-            flex-grow: 1;
-        }
-
-        .menu-item {
-            padding: 8px 15px;
-            border-bottom: 1px solid var(--sidebar-hover);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: bold;
-        }
-        
+        .menu-lista { list-style: none; padding: 0; margin: 0; overflow-y: auto; flex-grow: 1; }
+        .menu-item { padding: 8px 15px; border-bottom: 1px solid var(--sidebar-hover); cursor: pointer; display: flex; align-items: center; gap: 10px; font-weight: bold; }
         .menu-item:hover { background-color: var(--sidebar-hover); border-left: 3px solid var(--google-blue); padding-left: 12px; }
         .menu-item .material-icons { font-size: 14px; }
-
-        .submenu {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            background-color: #1a1b1e;
-            display: none; /* Escondido por padrão */
-        }
-        
-        .menu-item.active + .submenu { display: block; } /* Mostra quando ativo */
-
-        .submenu li {
-            padding: 6px 15px 6px 40px;
-            border-bottom: 1px solid var(--sidebar-hover);
-            cursor: pointer;
-            color: #bdc1c6;
-        }
+        .submenu { list-style: none; padding: 0; margin: 0; background-color: #1a1b1e; display: none; }
+        .menu-item.active + .submenu { display: block; }
+        .submenu li { padding: 6px 15px 6px 40px; border-bottom: 1px solid var(--sidebar-hover); cursor: pointer; color: #bdc1c6; }
         .submenu li:hover { color: white; background-color: var(--sidebar-hover); }
         .menu-separador { border-top: 1px dashed #555; margin: 4px 10px; }
-
+        
         /* ÁREA PRINCIPAL */
-        .main-content {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto;
-        }
-
-        .topbar {
-            background-color: white;
-            height: 40px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 20px;
-        }
-
-        .btn-logout {
-            background-color: #dc3545; color: white; border: none; 
-            padding: 4px 10px; font-size: 10px; font-weight: bold; cursor: pointer;
-        }
-
+        .main-content { flex-grow: 1; display: flex; flex-direction: column; overflow-y: auto; }
+        .topbar { background-color: white; height: 40px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; }
+        .btn-logout { background-color: #dc3545; color: white; border: none; padding: 4px 10px; font-size: 10px; font-weight: bold; cursor: pointer; }
+        
         /* SISTEMA DE CARTÕES (GRID) */
         .dashboard-container { padding: 20px; }
-        
-        .cards-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .card {
-            background: white;
-            border: 1px solid var(--border-color);
-            border-top: 3px solid var(--google-blue);
-            padding: 15px;
-            text-align: center;
-        }
-        
+        .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .card { background: white; border: 1px solid var(--border-color); border-top: 3px solid var(--google-blue); padding: 15px; text-align: center; box-shadow: 1px 1px 5px rgba(0,0,0,0.05);}
         .card h4 { margin: 0 0 5px 0; font-size: 10px; color: #666; text-transform: uppercase; }
         .card .numero { font-size: 24px; font-weight: bold; color: #333; margin: 0; }
-        
         .card.card-destaque { border-top-color: #ff9800; background-color: #fff8e1; }
         .card.card-turno { border-top-color: #4caf50; }
-
-        .btn-analitico {
-            background-color: var(--google-blue); color: white; border: 1px solid #0d47a1;
-            padding: 6px 15px; font-size: 10px; font-weight: bold; cursor: pointer; display: block; width: 200px; margin: 0 auto;
-        }
+        .btn-analitico { background-color: var(--google-blue); color: white; border: 1px solid #0d47a1; padding: 6px 15px; font-size: 10px; font-weight: bold; cursor: pointer; display: inline-block; margin-right: 10px;}
+        .actions-bar { margin-bottom: 15px; display: flex; gap: 10px; }
     </style>
 </head>
 <body>
-
     <!-- BARRA LATERAL -->
     <aside class="sidebar">
         <div class="sidebar-header">
-            <img id="painel-logo" src="" alt="Logo">
+            <img id="painel-logo" src="https://via.placeholder.com/150x40?text=LOGO+SISTEMA" alt="Logo">
             <h3 id="painel-nome-ceu">Carregando...</h3>
             <p id="painel-nome-usuario">Usuário</p>
         </div>
-
         <ul class="menu-lista" id="menu-dinamico">
             <!-- O MENU SERÁ INJETADO AQUI PELO JAVASCRIPT DEPENDENDO DO PERFIL -->
         </ul>
@@ -167,10 +64,9 @@
     <!-- CONTEÚDO PRINCIPAL -->
     <main class="main-content">
         <header class="topbar">
-            <b id="painel-titulo-modulo">VISÃO GERAL - UNIDADE</b>
+            <b id="painel-titulo-modulo">VISÃO GERAL</b>
             <button class="btn-logout" onclick="sairDoSistema()">SAIR</button>
         </header>
-
         <div class="dashboard-container" id="area-cartoes">
             <!-- OS CARTÕES SERÃO INJETADOS AQUI PELO JAVASCRIPT -->
         </div>
@@ -181,26 +77,28 @@
         // 1. CARREGAMENTO INICIAL DAS MOCHILAS
         // ==========================================
         window.onload = function() {
-            // Se não tiver login na mochila, expulsa para a tela de login
-            if(!localStorage.getItem('ceu_rf_logado')) {
+            // Verifica a chave correta criada no index_FB.html
+            if(!localStorage.getItem('sig_rf')) {
                 window.location.href = "index_FB.html";
                 return;
             }
 
             // Preenche o cabeçalho
-            document.getElementById('painel-nome-ceu').innerText = localStorage.getItem('ceu_nome_especifico') || "UNIDADE NÃO IDENTIFICADA";
-            document.getElementById('painel-nome-usuario').innerText = localStorage.getItem('ceu_nome_usuario') || "Gestor";
+            document.getElementById('painel-nome-ceu').innerText = "UNIDADE: " + (localStorage.getItem('sig_id_unidade') || "NÃO IDENTIFICADA");
+            document.getElementById('painel-nome-usuario').innerText = localStorage.getItem('sig_nome') || "Gestor";
             
-            const logo = localStorage.getItem('ceu_logo_sistema');
+            const logo = localStorage.getItem('sig_foto');
             if(logo) document.getElementById('painel-logo').src = logo;
 
             // Roteamento de Interface (O que o usuário pode ver?)
-            const perfil = localStorage.getItem('ceu_perfil');
+            const perfil = localStorage.getItem('sig_nivel_acesso');
             
             if(perfil === 'DRE') {
                 montarInterfaceDRE();
+            } else if (perfil === 'SME') {
+                montarInterfaceSME();
             } else {
-                montarInterfaceUnidade();
+                montarInterfaceUnidade(); // Padrão: Modo CEU / UNIDADE
             }
         };
 
@@ -210,7 +108,7 @@
         function montarInterfaceUnidade() {
             document.getElementById('painel-titulo-modulo').innerText = "VISÃO GERAL - UNIDADE";
             
-            // Injetando a sua árvore de Menus no HTML
+            // Injetando a sua árvore de Menus no HTML (usando crases ` `)
             document.getElementById('menu-dinamico').innerHTML = `
                 <li class="menu-item" onclick="alternarMenu(this)"><span class="material-icons">home</span> Início</li>
                 
@@ -266,7 +164,7 @@
                 </ul>
             `;
 
-            // Injetando os seus Cartões da Unidade
+            // Injetando os seus Cartões da Unidade (usando crases ` `)
             document.getElementById('area-cartoes').innerHTML = `
                 <div class="cards-grid">
                     <div class="card card-turno">
@@ -283,7 +181,9 @@
                     <div class="card"><h4>Fila de Espera</h4><p class="numero">0</p></div>
                     <div class="card"><h4>Agenda da TV</h4><p class="numero">0</p></div>
                 </div>
-                <button class="btn-analitico">ACESSAR PAINEL ANALÍTICO DE VAGAS</button>
+                <div style="text-align: center;">
+                    <button class="btn-analitico">ACESSAR PAINEL ANALÍTICO DE VAGAS</button>
+                </div>
             `;
         }
 
@@ -293,16 +193,75 @@
         function montarInterfaceDRE() {
             document.getElementById('painel-titulo-modulo').innerText = "VISÃO ESTRATÉGICA - DRE";
             
-            // Aqui construiremos os Menus da DRE futuramente
+            // Menus solicitados para a DRE
             document.getElementById('menu-dinamico').innerHTML = `
                 <li class="menu-item"><span class="material-icons">dashboard</span> Painel DRE</li>
                 <li class="menu-item"><span class="material-icons">rule</span> RF - Regras</li>
                 <li class="menu-item"><span class="material-icons">directions_bus</span> RF - Passeios</li>
+                <li class="menu-item"><span class="material-icons">event</span> RF - Atrações e Eventos</li>
+                <li class="menu-item" onclick="alternarMenu(this)"><span class="material-icons">bar_chart</span> Relatórios DRE</li>
+                <ul class="submenu">
+                    <li>Relatório Idade/Turma</li>
+                </ul>
+            `;
+
+            // Cartões e Botões da DRE
+            document.getElementById('area-cartoes').innerHTML = `
+                <div class="actions-bar">
+                    <button class="btn-analitico" style="background: #28a745;">EXPORTAR EXCEL</button>
+                    <button class="btn-analitico" style="background: #6c757d;">IMPRIMIR / PDF</button>
+                    <button class="btn-analitico">ATUALIZAR DADOS</button>
+                </div>
+                <div class="cards-grid">
+                    <div class="card card-turno">
+                        <h4>Boas Vindas</h4>
+                        <p style="margin:0; font-size: 11px; font-weight:bold;">Turno da Manhã</p>
+                    </div>
+                    <div class="card card-destaque">
+                        <h4>Total de Matrículas da REDE</h4>
+                        <p class="numero">0</p>
+                    </div>
+                    <div class="card card-destaque">
+                        <h4>Total Inscritos Recreio Férias</h4>
+                        <p class="numero">0</p>
+                    </div>
+                </div>
+                
+                <h3 style="margin-top:20px; border-bottom: 1px solid #ccc; padding-bottom: 5px;">CEUs Conectados</h3>
+                <div class="cards-grid">
+                    <!-- EXEMPLO DE CARTÃO DE CEU CONECTADO (Repetir via JS depois lendo do Firebase) -->
+                    <div class="card" style="text-align: left;">
+                        <h4 style="color: var(--google-blue); font-size: 12px; margin-bottom: 10px;">CEU Exemplo 01</h4>
+                        <p style="margin:2px 0;">Munícipes: <b>0</b></p>
+                        <p style="margin:2px 0;">Turmas Ativas: <b>0</b></p>
+                        <p style="margin:2px 0;">Matrículas: <b>0</b></p>
+                        <hr style="border: 0; border-top: 1px dashed #ccc; margin: 8px 0;">
+                        <p style="margin:2px 0; font-size: 9px; color: #666;">RECREIO NAS FÉRIAS:</p>
+                        <p style="margin:2px 0;">Total Inscritos: <b>0</b></p>
+                        <p style="margin:2px 0;">Inclusão: <b>0</b></p>
+                        <p style="margin:2px 0;">Dieta Especial: <b>0</b></p>
+                        <p style="margin:2px 0;">Acolhimento Inst.: <b>0</b></p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ==========================================
+        // 4. CONSTRUTOR DO MODO SME
+        // ==========================================
+        function montarInterfaceSME() {
+            document.getElementById('painel-titulo-modulo').innerText = "VISÃO GLOBAL - SME";
+            
+            document.getElementById('menu-dinamico').innerHTML = `
+                <li class="menu-item"><span class="material-icons">home</span> Início</li>
             `;
 
             document.getElementById('area-cartoes').innerHTML = `
-                <h3 style="margin-top:0;">Visão Geral da Rede</h3>
-                <!-- Aqui entrarão os cartões sumarizados de todos os CEUs -->
+                <div style="text-align: center; padding: 50px;">
+                    <span class="material-icons" style="font-size: 48px; color: #ccc;">construction</span>
+                    <h3 style="color: #666;">Módulo SME em Desenvolvimento</h3>
+                    <p>Este módulo será trabalhado em breve.</p>
+                </div>
             `;
         }
 

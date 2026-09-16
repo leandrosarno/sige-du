@@ -20,7 +20,7 @@
 
         /* LARGURA DO MENU REDUZIDA PARA 220px */
         .sidebar {
-            width: 220px; background: #2c3e50; color: white;
+            width: 150px; background: #2c3e50; color: white;
             display: flex; flex-direction: column;
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
             height: 100vh; overflow-y: auto; overflow-x: hidden; white-space: nowrap;
@@ -180,9 +180,10 @@
             <a href="javascript:void(0)" onclick="window.abrirFormFilho('modalidades.html', this)"><span class="material-icons" style="font-size: 18px;">sports_soccer</span> Modalidades</a>
             
             <!-- BOTÃO GERENCIAR USUÁRIOS SEM CORES E SEM NEGRITO -->
-            <a href="javascript:void(0)" id="btnAdminUsuarios" style="display: none;" onclick="window.abrirFormFilho('gerenciar_usuarios.html', this)">
+            <a href="javascript:void(0)" onclick="window.abrirFormFilho('gerenciar_usuarios.html', this)"><span class="material-icons" style="font-size: 18px;">admin_panel_settings</span> Usuários</a>
+<!--            <a href="javascript:void(0)" id="btnAdminUsuarios" style="display: none;" onclick="window.abrirFormFilho('gerenciar_usuarios.html', this)">
                 <span class="material-icons" style="font-size: 18px;">admin_panel_settings</span> Gerenciar Usuários
-            </a>
+            </a> -->
         </div>
 
         <a href="javascript:void(0)" id="btnRegrasRF" style="display: none;" onclick="window.abrirFormFilho('CadastroRegrasRF.html', this)">

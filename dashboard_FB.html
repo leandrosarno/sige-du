@@ -18,7 +18,10 @@
         /* MENU LATERAL (SIDEBAR) */
         .sidebar { width: 220px; background-color: var(--sidebar-bg); color: var(--text-light); display: flex; flex-direction: column; border-right: 1px solid #000; }
         .sidebar-header { padding: 15px; text-align: center; border-bottom: 1px solid var(--sidebar-hover); background-color: #171717; }
-        .sidebar-header img { width: 80%; height: 40px; object-fit: contain; margin-bottom: 10px; }
+        
+        /* O Logo agora começa oculto para não mostrar imagem quebrada */
+        .sidebar-header img { width: 80%; max-height: 50px; object-fit: contain; margin-bottom: 10px; display: none; margin-left: auto; margin-right: auto; }
+        
         .sidebar-header h3 { margin: 0; font-size: 11px; font-weight: bold; }
         .sidebar-header p { margin: 2px 0 0 0; font-size: 9px; color: #9aa0a6; }
         .menu-lista { list-style: none; padding: 0; margin: 0; overflow-y: auto; flex-grow: 1; }
@@ -44,7 +47,8 @@
         .card .numero { font-size: 24px; font-weight: bold; color: #333; margin: 0; }
         .card.card-destaque { border-top-color: #ff9800; background-color: #fff8e1; }
         .card.card-turno { border-top-color: #4caf50; }
-        .btn-analitico { background-color: var(--google-blue); color: white; border: 1px solid #0d47a1; padding: 6px 15px; font-size: 10px; font-weight: bold; cursor: pointer; display: inline-block; margin-right: 10px;}
+        
+        .btn-analitico { background-color: var(--google-blue); color: white; border: 1px solid #0d47a1; padding: 6px 15px; font-size: 10px; font-weight: bold; cursor: pointer; display: inline-block; margin-right: 10px; }
         .actions-bar { margin-bottom: 15px; display: flex; gap: 10px; }
     </style>
 </head>
@@ -52,7 +56,8 @@
     <!-- BARRA LATERAL -->
     <aside class="sidebar">
         <div class="sidebar-header">
-            <img id="painel-logo" src="https://via.placeholder.com/150x40?text=LOGO+SISTEMA" alt="Logo">
+            <!-- ID Atualizado e vazio, aguardando o Firebase -->
+            <img id="painel-logo" src="" alt="Logo Unidade">
             <h3 id="painel-nome-ceu">Carregando...</h3>
             <p id="painel-nome-usuario">Usuário</p>
         </div>
@@ -65,61 +70,105 @@
     <main class="main-content">
         <header class="topbar">
             <b id="painel-titulo-modulo">VISÃO GERAL</b>
-            <button class="btn-logout" onclick="sairDoSistema()">SAIR</button>
+            <button class="btn-logout" onclick="window.sairDoSistema()">SAIR</button>
         </header>
         <div class="dashboard-container" id="area-cartoes">
             <!-- OS CARTÕES SERÃO INJETADOS AQUI PELO JAVASCRIPT -->
         </div>
     </main>
 
-    <script>
+    <!-- SCRIPT COMO MÓDULO PARA LER O FIREBASE -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+
+        // As mesmas credenciais do login
+        const firebaseConfig = {
+            apiKey: "AIzaSyCpCXxJbD8dPXkT7mcoz4qK8Wjt7WTRwFA",
+            authDomain: "sig-edu.firebaseapp.com",
+            projectId: "sig-edu",
+            storageBucket: "sig-edu.firebasestorage.app",
+            messagingSenderId: "233239725278",
+            appId: "1:233239725278:web:809b9c42feacd99175ee4f",
+            measurementId: "G-E5LLYGW7DN"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
         // ==========================================
-        // 1. CARREGAMENTO INICIAL DAS MOCHILAS
+        // 1. FUNÇÃO PRINCIPAL AO CARREGAR
         // ==========================================
-        window.onload = function() {
+        async function inicializarDashboard() {
             // Verifica a chave correta criada no index_FB.html
             if(!localStorage.getItem('sig_rf')) {
                 window.location.href = "index_FB.html";
                 return;
             }
 
-            // Preenche o cabeçalho
-            document.getElementById('painel-nome-ceu').innerText = "UNIDADE: " + (localStorage.getItem('sig_id_unidade') || "NÃO IDENTIFICADA");
+            const idUnidadeSalva = localStorage.getItem('sig_id_unidade');
             document.getElementById('painel-nome-usuario').innerText = localStorage.getItem('sig_nome') || "Gestor";
-            
-            const logo = localStorage.getItem('sig_foto');
-            if(logo) document.getElementById('painel-logo').src = logo;
 
+            // Buscando as configurações exclusivas da Unidade no Firebase
+            try {
+                const unidadesRef = collection(db, "unidades");
+                // Pesquisa a unidade do usuário logado
+                const q = query(unidadesRef, where("id_unidade", "==", idUnidadeSalva));
+                const unidadeSnapshot = await getDocs(q);
+
+                if (!unidadeSnapshot.empty) {
+                    const dadosUnidade = unidadeSnapshot.docs[0].data();
+                    
+                    // Substitui o texto pelo nome_unidade do banco
+                    if (dadosUnidade.nome_unidade) {
+                        document.getElementById('painel-nome-ceu').innerText = dadosUnidade.nome_unidade;
+                    } else {
+                        document.getElementById('painel-nome-ceu').innerText = "UNIDADE " + idUnidadeSalva;
+                    }
+
+                    // Se tiver logo, mostra na tela
+                    if (dadosUnidade.url_logo) {
+                        const logoElement = document.getElementById('painel-logo');
+                        logoElement.src = dadosUnidade.url_logo;
+                        logoElement.style.display = 'block'; 
+                    }
+                } else {
+                    document.getElementById('painel-nome-ceu').innerText = "UNIDADE " + idUnidadeSalva;
+                }
+            } catch (erro) {
+                console.error("Erro ao buscar a coleção unidades:", erro);
+                document.getElementById('painel-nome-ceu').innerText = "UNIDADE " + idUnidadeSalva;
+            }
+            
             // Roteamento de Interface (O que o usuário pode ver?)
             const perfil = localStorage.getItem('sig_nivel_acesso');
-            
             if(perfil === 'DRE') {
-                montarInterfaceDRE();
+                window.montarInterfaceDRE();
             } else if (perfil === 'SME') {
-                montarInterfaceSME();
+                window.montarInterfaceSME();
             } else {
-                montarInterfaceUnidade(); // Padrão: Modo CEU / UNIDADE
+                window.montarInterfaceUnidade(); // Padrão: Modo CEU / UNIDADE
             }
-        };
+        }
 
         // ==========================================
         // 2. CONSTRUTOR DO MODO UNIDADE (CEU)
         // ==========================================
-        function montarInterfaceUnidade() {
+        window.montarInterfaceUnidade = function() {
             document.getElementById('painel-titulo-modulo').innerText = "VISÃO GERAL - UNIDADE";
             
-            // Injetando a sua árvore de Menus no HTML (usando crases ` `)
+            // Árvore de Menus usando crases
             document.getElementById('menu-dinamico').innerHTML = `
-                <li class="menu-item" onclick="alternarMenu(this)"><span class="material-icons">home</span> Início</li>
+                <li class="menu-item" onclick="window.alternarMenu(this)"><span class="material-icons">home</span> Início</li>
                 
-                <li class="menu-item" onclick="alternarMenu(this)"><span class="material-icons">people</span> Cadastros</li>
+                <li class="menu-item" onclick="window.alternarMenu(this)"><span class="material-icons">people</span> Cadastros</li>
                 <ul class="submenu">
                     <li>Munícipes</li>
                     <li>Incluir Novo munícipe</li>
                     <li>Edição Rápida</li>
                 </ul>
 
-                <li class="menu-item" onclick="alternarMenu(this)"><span class="material-icons">school</span> Turmas e Matrículas</li>
+                <li class="menu-item" onclick="window.alternarMenu(this)"><span class="material-icons">school</span> Turmas e Matrículas</li>
                 <ul class="submenu">
                     <li>Turmas</li>
                     <li>Fazer Matrículas</li>
@@ -131,7 +180,7 @@
                     <li>Configurar Lista de Espera</li>
                 </ul>
 
-                <li class="menu-item" onclick="alternarMenu(this)"><span class="material-icons">print</span> Impressão/Expedição</li>
+                <li class="menu-item" onclick="window.alternarMenu(this)"><span class="material-icons">print</span> Impressão/Expedição</li>
                 <ul class="submenu">
                     <li>Carteirinhas: Uso Geral</li>
                     <li>Carteirinhas: Projeto Academia Livre</li>
@@ -144,7 +193,7 @@
                     <li>Protocolo para retirar Carteirinhas</li>
                 </ul>
 
-                <li class="menu-item" onclick="alternarMenu(this)"><span class="material-icons">sports_volleyball</span> Recreio nas Férias</li>
+                <li class="menu-item" onclick="window.alternarMenu(this)"><span class="material-icons">sports_volleyball</span> Recreio nas Férias</li>
                 <ul class="submenu">
                     <li>Cadastrar</li>
                     <li>Edição Rápida</li>
@@ -154,7 +203,7 @@
                     <li>Chamada Qualitativa</li>
                 </ul>
 
-                <li class="menu-item" onclick="alternarMenu(this)"><span class="material-icons">settings</span> Cadastros Base</li>
+                <li class="menu-item" onclick="window.alternarMenu(this)"><span class="material-icons">settings</span> Cadastros Base</li>
                 <ul class="submenu">
                     <li>Núcleos</li>
                     <li>Espaços</li>
@@ -164,7 +213,6 @@
                 </ul>
             `;
 
-            // Injetando os seus Cartões da Unidade (usando crases ` `)
             document.getElementById('area-cartoes').innerHTML = `
                 <div class="cards-grid">
                     <div class="card card-turno">
@@ -185,27 +233,25 @@
                     <button class="btn-analitico">ACESSAR PAINEL ANALÍTICO DE VAGAS</button>
                 </div>
             `;
-        }
+        };
 
         // ==========================================
         // 3. CONSTRUTOR DO MODO DRE
         // ==========================================
-        function montarInterfaceDRE() {
+        window.montarInterfaceDRE = function() {
             document.getElementById('painel-titulo-modulo').innerText = "VISÃO ESTRATÉGICA - DRE";
             
-            // Menus solicitados para a DRE
             document.getElementById('menu-dinamico').innerHTML = `
                 <li class="menu-item"><span class="material-icons">dashboard</span> Painel DRE</li>
                 <li class="menu-item"><span class="material-icons">rule</span> RF - Regras</li>
                 <li class="menu-item"><span class="material-icons">directions_bus</span> RF - Passeios</li>
                 <li class="menu-item"><span class="material-icons">event</span> RF - Atrações e Eventos</li>
-                <li class="menu-item" onclick="alternarMenu(this)"><span class="material-icons">bar_chart</span> Relatórios DRE</li>
+                <li class="menu-item" onclick="window.alternarMenu(this)"><span class="material-icons">bar_chart</span> Relatórios DRE</li>
                 <ul class="submenu">
                     <li>Relatório Idade/Turma</li>
                 </ul>
             `;
 
-            // Cartões e Botões da DRE
             document.getElementById('area-cartoes').innerHTML = `
                 <div class="actions-bar">
                     <button class="btn-analitico" style="background: #28a745;">EXPORTAR EXCEL</button>
@@ -229,7 +275,7 @@
                 
                 <h3 style="margin-top:20px; border-bottom: 1px solid #ccc; padding-bottom: 5px;">CEUs Conectados</h3>
                 <div class="cards-grid">
-                    <!-- EXEMPLO DE CARTÃO DE CEU CONECTADO (Repetir via JS depois lendo do Firebase) -->
+                    <!-- CARTÃO CEU EXEMPLO -->
                     <div class="card" style="text-align: left;">
                         <h4 style="color: var(--google-blue); font-size: 12px; margin-bottom: 10px;">CEU Exemplo 01</h4>
                         <p style="margin:2px 0;">Munícipes: <b>0</b></p>
@@ -244,12 +290,12 @@
                     </div>
                 </div>
             `;
-        }
+        };
 
         // ==========================================
         // 4. CONSTRUTOR DO MODO SME
         // ==========================================
-        function montarInterfaceSME() {
+        window.montarInterfaceSME = function() {
             document.getElementById('painel-titulo-modulo').innerText = "VISÃO GLOBAL - SME";
             
             document.getElementById('menu-dinamico').innerHTML = `
@@ -263,23 +309,25 @@
                     <p>Este módulo será trabalhado em breve.</p>
                 </div>
             `;
-        }
+        };
 
         // ==========================================
         // FUNÇÕES AUXILIARES
         // ==========================================
-        function alternarMenu(elemento) {
-            // Fecha todos os outros antes de abrir o clicado
+        window.alternarMenu = function(elemento) {
             document.querySelectorAll('.menu-item').forEach(el => {
                 if(el !== elemento) el.classList.remove('active');
             });
             elemento.classList.toggle('active');
-        }
+        };
 
-        function sairDoSistema() {
+        window.sairDoSistema = function() {
             localStorage.clear();
             window.location.href = "index_FB.html";
-        }
+        };
+
+        // Dispara a inicialização assim que o script é lido
+        inicializarDashboard();
     </script>
 </body>
 </html>

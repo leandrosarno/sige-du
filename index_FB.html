@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>SIG-EDU Central - Login</title>
+    <title>Login - Sistema</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
@@ -14,8 +14,12 @@
         body { background-color: var(--bg-color); display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 10px; color: #333; }
         .login-box { background: #fff; width: 280px; padding: 20px; border: 1px solid var(--border-color); border-top: 4px solid var(--google-blue); box-shadow: 2px 2px 10px rgba(0,0,0,0.15); border-radius: 0; }
         .login-header { text-align: center; border-bottom: 1px solid #eee; margin-bottom: 15px; padding-bottom: 10px; }
+        
+        /* Ajuste para o logo se encaixar bem */
+        #logoSistema { max-width: 120px; max-height: 80px; object-fit: contain; margin-bottom: 10px; display: none; margin-left: auto; margin-right: auto; }
+        
         .login-header span { font-size: 32px; color: var(--google-blue); }
-        .login-header h3 { font-weight: bold; margin: 5px 0 2px 0; font-size: 11px; }
+        .login-header h3 { font-weight: bold; margin: 5px 0 2px 0; font-size: 13px; }
         .login-header p { margin: 0; color: #666; font-size: 9px; }
         .form-group { margin-bottom: 10px; }
         .form-label { display: block; font-weight: bold; margin-bottom: 3px; font-size: 10px; }
@@ -25,6 +29,7 @@
         .btn-login:hover { background-color: #1557b0; }
         .link-senha { display: block; text-align: center; margin-top: 12px; color: var(--google-blue); text-decoration: underline; cursor: pointer; font-size: 9px; }
         .link-senha:hover { color: #0d47a1; }
+        
         /* SWEETALERT DESIGN CORPORATIVO */
         div:where(.swal2-container) div:where(.swal2-popup) { width: 280px !important; padding: 20px !important; border-radius: 0 !important; border: 1px solid var(--border-color) !important; border-top: 4px solid var(--google-blue) !important; box-shadow: 2px 2px 10px rgba(0,0,0,0.15) !important; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important; }
         div:where(.swal2-container) h2:where(.swal2-title) { font-size: 11px !important; font-weight: bold !important; color: #333 !important; margin: 0 0 5px 0 !important; }
@@ -37,8 +42,10 @@
 <body>
     <div class="login-box">
         <div class="login-header">
-            <span class="material-icons">admin_panel_settings</span>
-            <h3>SIG-EDU Central</h3>
+            <!-- Novos IDs para injetar o Logo e o Nome do Sistema -->
+            <img id="logoSistema" src="" alt="Logo do Sistema">
+            <span id="iconePadrao" class="material-icons">admin_panel_settings</span>
+            <h3 id="tituloSistema">Carregando...</h3>
             <p>Acesso Restrito ao Sistema</p>
         </div>
         <form id="formLogin" onsubmit="event.preventDefault(); window.fazerLogin();">
@@ -78,6 +85,40 @@
 
         // Limpa resíduos de acessos anteriores
         localStorage.clear();
+
+        // MÁGICA 1: Função para buscar as configurações gerais do sistema
+        async function carregarConfiguracoes() {
+            try {
+                const configRef = collection(db, "configuracoes");
+                const configSnapshot = await getDocs(configRef);
+                
+                if (!configSnapshot.empty) {
+                    // Pega o primeiro documento encontrado na coleção
+                    const dadosConfig = configSnapshot.docs[0].data();
+                    
+                    if (dadosConfig.nomeSistema) {
+                        document.getElementById('tituloSistema').innerText = dadosConfig.nomeSistema;
+                        document.title = "Login - " + dadosConfig.nomeSistema;
+                    }
+                    
+                    if (dadosConfig.logoUrl) {
+                        const imgLogo = document.getElementById('logoSistema');
+                        imgLogo.src = dadosConfig.logoUrl;
+                        imgLogo.style.display = 'block';
+                        // Esconde o ícone padrão de cadeado/escudo se tivermos um logo
+                        document.getElementById('iconePadrao').style.display = 'none'; 
+                    }
+                } else {
+                    document.getElementById('tituloSistema').innerText = "SIG-EDU Central";
+                }
+            } catch (erro) {
+                console.error("Erro ao carregar configurações do Firebase:", erro);
+                document.getElementById('tituloSistema').innerText = "SIG-EDU Central";
+            }
+        }
+
+        // Executa a busca de configurações assim que o script é lido
+        carregarConfiguracoes();
 
         window.fazerLogin = async function() {
             const unidade = document.getElementById('id_unidade').value.trim();
@@ -129,7 +170,7 @@
                 // Guardando as Chaves Estrangeiras no bolso do navegador
                 localStorage.setItem('sig_rf', dadosUsuario.rf_usuario); 
                 localStorage.setItem('sig_id_unidade', dadosUsuario.id_unidade);
-                localStorage.setItem('sig_nivel_acesso', dadosUsuario.id_nivel_acesso); // 'UNIDADE', 'DRE', ou 'SME'
+                localStorage.setItem('sig_nivel_acesso', dadosUsuario.id_nivel_acesso);
                 localStorage.setItem('sig_nome', dadosUsuario.nome_usuario);
                 localStorage.setItem('sig_email', dadosUsuario.email_usuario || "");
                 localStorage.setItem('sig_foto', dadosUsuario.url_foto || "");

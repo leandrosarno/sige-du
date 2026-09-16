@@ -36,7 +36,7 @@
         .sidebar a {
             color: #ecf0f1; text-decoration: none; padding: 15px 20px;
             display: flex; align-items: center; gap: 12px;
-            border-left: 4px solid transparent; transition: all 0.2s;
+            border-left: 1px solid transparent; transition: all 0.2s;
             font-size: 10px; 
             font-weight: normal !important; 
         }
@@ -52,7 +52,6 @@
             font-weight: normal !important;
         }
         
-        /* AJUSTE DA LARGURA DA ÁREA PRINCIPAL */
         .main-content {
             flex-grow: 1; display: flex; flex-direction: column;
             width: calc(100% - 220px);
@@ -179,11 +178,9 @@
             <a href="javascript:void(0)" onclick="window.abrirFormFilho('tipo_responsavel.html', this)"><span class="material-icons" style="font-size: 18px;">badge</span> Tipo Resp.</a>
             <a href="javascript:void(0)" onclick="window.abrirFormFilho('modalidades.html', this)"><span class="material-icons" style="font-size: 18px;">sports_soccer</span> Modalidades</a>
             
-            <!-- BOTÃO GERENCIAR USUÁRIOS SEM CORES E SEM NEGRITO -->
-            <a href="javascript:void(0)" onclick="window.abrirFormFilho('gerenciar_usuarios.html', this)"><span class="material-icons" style="font-size: 18px;">admin_panel_settings</span> Usuários</a>
-<!--            <a href="javascript:void(0)" id="btnAdminUsuarios" style="display: none;" onclick="window.abrirFormFilho('gerenciar_usuarios.html', this)">
+            <a href="javascript:void(0)" id="btnAdminUsuarios" style="display: none;" onclick="window.abrirFormFilho('gerenciar_usuarios.html', this)">
                 <span class="material-icons" style="font-size: 18px;">admin_panel_settings</span> Gerenciar Usuários
-            </a> -->
+            </a>
         </div>
 
         <a href="javascript:void(0)" id="btnRegrasRF" style="display: none;" onclick="window.abrirFormFilho('CadastroRegrasRF.html', this)">
@@ -203,7 +200,6 @@
         </a>
         
         <div style="margin-top: auto;"></div>
-        <!-- APENAS ESSE BOTÃO CONTINUA VERMELHO -->
         <a href="#" onclick="window.fazerLogout()" style="background: #c0392b;">
             <span class="material-icons">logout</span> Sair
         </a>
@@ -302,7 +298,7 @@
         };
 
         window.atualizarContadoresImpressao = function() {
-            const idUnidade = localStorage.getItem('sig_id_unidade');
+            let idUnidade = localStorage.getItem('sig_id_unidade');
             if(!idUnidade || typeof API_URL === 'undefined') return;
 
             const pacote = {
@@ -466,145 +462,153 @@
         // INICIALIZAÇÃO FIREBASE E CARREGAMENTO
         // ==========================================
         async function inicializarDashboard() {
-            const rfLogado = localStorage.getItem('sig_rf');
-            const idUnidade = localStorage.getItem('sig_id_unidade');
-            const nomeUsuario = localStorage.getItem('sig_nome');
-            const fotoUser = localStorage.getItem('sig_foto');
-
-            if (!rfLogado) {
-                window.location.href = "index_FB.html";
-                return;
-            }
-
-            // O TRADUTOR DE ARRAYS E TEXTOS PARA O FIREBASE
-            let perfisUsuario = ["UNIDADE"];
             try {
-                const cru = localStorage.getItem('sig_nivel_acesso') || "UNIDADE";
-                if (cru.startsWith('[')) {
-                    let lido = JSON.parse(cru);
-                    if (lido.length === 1 && lido[0].includes(',')) {
-                        perfisUsuario = lido[0].split(',').map(p => p.trim().toUpperCase());
+                const rfLogado = localStorage.getItem('sig_rf');
+                let idUnidade = localStorage.getItem('sig_id_unidade');
+                const nomeUsuario = localStorage.getItem('sig_nome');
+                const fotoUser = localStorage.getItem('sig_foto');
+
+                if (!rfLogado) {
+                    window.location.href = "index_FB.html";
+                    return;
+                }
+
+                // O TRADUTOR DE ARRAYS E TEXTOS PARA O FIREBASE
+                let perfisUsuario = ["UNIDADE"];
+                try {
+                    const cru = localStorage.getItem('sig_nivel_acesso') || "UNIDADE";
+                    if (cru.startsWith('[')) {
+                        let lido = JSON.parse(cru);
+                        if (lido.length === 1 && lido[0].includes(',')) {
+                            perfisUsuario = lido[0].split(',').map(p => p.trim().toUpperCase());
+                        } else {
+                            perfisUsuario = lido.map(p => p.trim().toUpperCase());
+                        }
                     } else {
-                        perfisUsuario = lido.map(p => p.trim().toUpperCase());
+                        perfisUsuario = cru.split(',').map(p => p.trim().toUpperCase());
                     }
-                } else {
-                    perfisUsuario = cru.split(',').map(p => p.trim().toUpperCase());
-                }
-            } catch (e) {
-                perfisUsuario = ["UNIDADE"];
-            }
-
-            const isAdmin = perfisUsuario.includes("ADMIN");
-            const isDRE = perfisUsuario.includes("DRE");
-            const isSME = perfisUsuario.includes("SME");
-            const isProfessor = perfisUsuario.includes("PROFESSOR");
-            const isUnidade = perfisUsuario.includes("UNIDADE");
-
-            // 1. Libera o botão de Gestão de Usuários apenas se for ADMIN
-            if (isAdmin) {
-                document.getElementById('btnAdminUsuarios').style.display = 'flex';
-            }
-
-            // 2. Preenchendo Informações Básicas
-            document.getElementById('lbl-rf').innerText = "RF: " + rfLogado;
-            document.getElementById('lbl-nome-usuario').innerText = nomeUsuario || "Funcionário";
-
-            if (fotoUser && fotoUser !== "undefined" && fotoUser.trim() !== "") {
-                document.getElementById('icone-avatar-padrao').style.display = 'none';
-                const imgAvatar = document.getElementById('img-avatar-usuario');
-                imgAvatar.src = fotoUser;
-                imgAvatar.style.display = 'block';
-            }
-
-            // 3. BUSCA DO NOME DA UNIDADE E LOGO NO FIREBASE
-            try {
-                let dadosUnidade = null;
-                const docRef = doc(db, "unidades", idUnidade);
-                const docSnap = await getDoc(docRef);
-
-                if (docSnap.exists()) {
-                    dadosUnidade = docSnap.data();
-                } else {
-                    const unidadesRef = collection(db, "unidades");
-                    let q = query(unidadesRef, where("id_unidade", "==", idUnidade));
-                    let snap = await getDocs(q);
-                    
-                    if (snap.empty) {
-                        q = query(unidadesRef, where("id_unidade", "==", Number(idUnidade)));
-                        snap = await getDocs(q);
-                    }
-                    if (!snap.empty) dadosUnidade = snap.docs[0].data();
+                } catch (e) {
+                    perfisUsuario = ["UNIDADE"];
                 }
 
-                if (dadosUnidade) {
-                    document.getElementById('lbl-ceu').innerText = dadosUnidade.nome_unidade || (idUnidade + " - UNIDADE");
+                const isAdmin = perfisUsuario.includes("ADMIN");
+                const isDRE = perfisUsuario.includes("DRE");
+                const isSME = perfisUsuario.includes("SME");
+                const isProfessor = perfisUsuario.includes("PROFESSOR");
+                const isUnidade = perfisUsuario.includes("UNIDADE");
+
+                // 1. Libera o botão de Gestão de Usuários apenas se for ADMIN
+                if (isAdmin) {
+                    document.getElementById('btnAdminUsuarios').style.display = 'flex';
+                }
+
+                // 2. Preenchendo Informações Básicas
+                document.getElementById('lbl-rf').innerText = "RF: " + rfLogado;
+                document.getElementById('lbl-nome-usuario').innerText = nomeUsuario || "Funcionário";
+
+                if (fotoUser && fotoUser !== "undefined" && fotoUser.trim() !== "") {
+                    document.getElementById('icone-avatar-padrao').style.display = 'none';
+                    const imgAvatar = document.getElementById('img-avatar-usuario');
+                    imgAvatar.src = fotoUser;
+                    imgAvatar.style.display = 'block';
+                }
+
+                // 3. BUSCA DO NOME DA UNIDADE E LOGO NO FIREBASE
+                try {
+                    if (!idUnidade) { idUnidade = "000000"; } // Trava de segurança
                     
-                    if (dadosUnidade.url_logo) {
-                        const imgDash = document.getElementById('dash-img-logo');
-                        const iconePadrao = document.getElementById('dash-icone-padrao');
-                        iconePadrao.style.display = 'none';
-                        imgDash.src = dadosUnidade.url_logo;
-                        imgDash.style.display = 'block';
+                    let dadosUnidade = null;
+                    const docRef = doc(db, "unidades", idUnidade);
+                    const docSnap = await getDoc(docRef);
+
+                    if (docSnap.exists()) {
+                        dadosUnidade = docSnap.data();
+                    } else {
+                        const unidadesRef = collection(db, "unidades");
+                        let q = query(unidadesRef, where("id_unidade", "==", idUnidade));
+                        let snap = await getDocs(q);
+                        
+                        if (snap.empty) {
+                            q = query(unidadesRef, where("id_unidade", "==", Number(idUnidade)));
+                            snap = await getDocs(q);
+                        }
+                        if (!snap.empty) dadosUnidade = snap.docs[0].data();
                     }
-                } else {
+
+                    if (dadosUnidade) {
+                        document.getElementById('lbl-ceu').innerText = dadosUnidade.nome_unidade || (idUnidade + " - UNIDADE");
+                        
+                        if (dadosUnidade.url_logo) {
+                            const imgDash = document.getElementById('dash-img-logo');
+                            const iconePadrao = document.getElementById('dash-icone-padrao');
+                            iconePadrao.style.display = 'none';
+                            imgDash.src = dadosUnidade.url_logo;
+                            imgDash.style.display = 'block';
+                        }
+                    } else {
+                        document.getElementById('lbl-ceu').innerText = "UNIDADE: " + idUnidade;
+                    }
+                } catch (erro) {
+                    console.error("Erro ao buscar a unidade no Firebase:", erro);
                     document.getElementById('lbl-ceu').innerText = "UNIDADE: " + idUnidade;
                 }
-            } catch (erro) {
-                console.error("Erro ao buscar a unidade no Firebase:", erro);
-                document.getElementById('lbl-ceu').innerText = "UNIDADE: " + idUnidade;
+
+                // 4. CONTROLE DE VISIBILIDADE DE MENUS
+                if (isDRE || isSME) {
+                    const btnRF = document.getElementById('btnRegrasRF');
+                    if (btnRF) btnRF.style.display = 'flex';
+                    
+                    const btnPasseios = document.getElementById('btnPasseiosDRE');
+                    if (btnPasseios) btnPasseios.style.display = 'flex';
+
+                    const btnRelatorio = document.getElementById('btnRelatorioDRE');
+                    if (btnRelatorio) btnRelatorio.style.display = 'flex';
+                    
+                    const btnDemografico = document.getElementById('btnDemograficoDRE');
+                    if (btnDemografico) btnDemografico.style.display = 'flex';
+
+                    const btnAtracoes = document.getElementById('btnAtracoesDRE');
+                    if(btnAtracoes) btnAtracoes.style.display = 'flex';
+                }
+                
+                if (isProfessor && !isUnidade && !isAdmin && !isDRE && !isSME) {
+                    const sidebar = document.querySelector('.sidebar');
+                    if (sidebar) sidebar.style.display = 'none';
+                    
+                    const topbar = document.querySelector('.topbar');
+                    if (topbar) topbar.style.display = 'none';
+                    
+                    const mainContent = document.querySelector('.main-content');
+                    if (mainContent) mainContent.style.width = '100%';
+                    
+                    document.body.style.backgroundColor = '#f0f2f5';
+                    document.getElementById('frame-filho').src = "ChamadaOnline.html";
+
+                } else if (!isUnidade && !isAdmin && (isDRE || isSME)) {
+                    const itensParaOcultar = [
+                        'link-inicio', 'link-alunos', 'link-turmas', 'submenuTurmas',
+                        'link-cadastros', 'submenuCadastros', 'link-impressao', 'submenuImpressao',
+                        'link-recreio', 'submenuRecreio'
+                    ];
+                    itensParaOcultar.forEach(id => {
+                        const elemento = document.getElementById(id);
+                        if (elemento) elemento.style.display = 'none';
+                    });
+                    document.getElementById('frame-filho').src = "PainelDRE.html";
+
+                } else {
+                    document.getElementById('frame-filho').src = "inicio.html"; 
+                }
+
+                setTimeout(window.atualizarContadoresImpressao, 1500); 
+
+            } catch (falhaFatal) {
+                console.error("Falha Fatal na inicialização:", falhaFatal);
+                document.getElementById('lbl-ceu').innerText = "ERRO DE CONEXÃO";
             }
-
-            // 4. CONTROLE DE VISIBILIDADE DE MENUS
-            
-            if (isDRE || isSME) {
-                const btnRF = document.getElementById('btnRegrasRF');
-                if (btnRF) btnRF.style.display = 'flex';
-                
-                const btnPasseios = document.getElementById('btnPasseiosDRE');
-                if (btnPasseios) btnPasseios.style.display = 'flex';
-
-                const btnRelatorio = document.getElementById('btnRelatorioDRE');
-                if (btnRelatorio) btnRelatorio.style.display = 'flex';
-                
-                const btnDemografico = document.getElementById('btnDemograficoDRE');
-                if (btnDemografico) btnDemografico.style.display = 'flex';
-
-                const btnAtracoes = document.getElementById('btnAtracoesDRE');
-                if(btnAtracoes) btnAtracoes.style.display = 'flex';
-            }
-            
-            if (isProfessor && !isUnidade && !isAdmin && !isDRE && !isSME) {
-                const sidebar = document.querySelector('.sidebar');
-                if (sidebar) sidebar.style.display = 'none';
-                
-                const topbar = document.querySelector('.topbar');
-                if (topbar) topbar.style.display = 'none';
-                
-                const mainContent = document.querySelector('.main-content');
-                if (mainContent) mainContent.style.width = '100%';
-                
-                document.body.style.backgroundColor = '#f0f2f5';
-                document.getElementById('frame-filho').src = "ChamadaOnline.html";
-
-            } else if (!isUnidade && !isAdmin && (isDRE || isSME)) {
-                const itensParaOcultar = [
-                    'link-inicio', 'link-alunos', 'link-turmas', 'submenuTurmas',
-                    'link-cadastros', 'submenuCadastros', 'link-impressao', 'submenuImpressao',
-                    'link-recreio', 'submenuRecreio'
-                ];
-                itensParaOcultar.forEach(id => {
-                    const elemento = document.getElementById(id);
-                    if (elemento) elemento.style.display = 'none';
-                });
-                document.getElementById('frame-filho').src = "PainelDRE.html";
-
-            } else {
-                document.getElementById('frame-filho').src = "inicio.html"; 
-            }
-
-            setTimeout(window.atualizarContadoresImpressao, 1500); 
         }
 
+        // Roda ao carregar a página
         inicializarDashboard();
     </script>
 </body>

@@ -15,7 +15,6 @@
         .btn-action { width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; margin: 0 3px; }
         .badge-perfil { font-size: 11px; padding: 5px 10px; font-weight: 600; border-radius: 6px; }
         
-        /* Cores dos Badges por Perfil */
         .bg-admin { background-color: #dc3545; color: white; }
         .bg-dre { background-color: #6f42c1; color: white; }
         .bg-sme { background-color: #fd7e14; color: white; }
@@ -25,13 +24,12 @@
 </head>
 <body>
 
-    <!-- A tela começa oculta e só aparece se o usuário for ADMIN -->
     <div class="container-fluid" id="tela-conteudo" style="display: none;">
         <div class="card card-custom">
             <div class="card-header-custom">
                 <h5 class="mb-0"><i class="fas fa-users-cog me-2"></i> Gestão de Usuários</h5>
                 <button class="btn btn-light btn-sm fw-bold text-primary" onclick="window.abrirModalUsuario()">
-                    <i class="fas fa-plus me-1"></i> Novo Usuário
+                    <i class="fas fa-plus me-1"></i> Novo Vínculo
                 </button>
             </div>
             <div class="card-body p-0">
@@ -79,9 +77,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // ==========================================
-        // 1. TRAVA DE SEGURANÇA (APENAS ADMIN)
-        // ==========================================
+        // 1. TRAVA DE SEGURANÇA
         window.onload = function() {
             let perfisAtivos = [];
             try {
@@ -95,18 +91,14 @@
                 Swal.fire({
                     icon: 'error', title: 'Acesso Negado', text: 'Permissão exclusiva para Administradores.',
                     confirmButtonColor: '#0d6efd', allowOutsideClick: false
-                }).then(() => { 
-                    window.location.href = "inicio.html"; 
-                });
+                }).then(() => { window.location.href = "inicio.html"; });
             } else {
                 document.getElementById('tela-conteudo').style.display = 'block';
                 carregarUsuarios();
             }
         };
 
-        // ==========================================
         // 2. LER USUÁRIOS
-        // ==========================================
         async function carregarUsuarios() {
             try {
                 const querySnapshot = await getDocs(collection(db, "usuarios"));
@@ -120,9 +112,9 @@
 
                 querySnapshot.forEach((documento) => {
                     const u = documento.data();
+                    const docId = documento.id; // Pegando o ID do Firebase (que agora é a chave composta)
                     let perfis = Array.isArray(u.id_nivel_acesso) ? u.id_nivel_acesso : [u.id_nivel_acesso || "UNIDADE"];
                     
-                    // Cria as etiquetas (badges) dinâmicas para cada perfil
                     const badgesHtml = perfis.map(p => {
                         let cor = 'bg-primary';
                         if(p === 'ADMIN') cor = 'bg-danger';
@@ -132,16 +124,21 @@
                         return `<span class="badge badge-perfil ${cor} me-1">${p}</span>`;
                     }).join('');
 
+                    // Destaca visualmente se for o suporte global
+                    const unidadeDisplay = u.id_unidade === '000000' 
+                        ? '<span class="text-danger fw-bold"><i class="fas fa-globe"></i> GLOBAL (000000)</span>' 
+                        : u.id_unidade;
+
                     const row = `
                         <tr>
                             <td class="ps-4 fw-bold text-secondary">${u.rf_usuario}</td>
                             <td class="fw-bold">${u.nome_usuario}</td>
-                            <td>${u.id_unidade}</td>
+                            <td>${unidadeDisplay}</td>
                             <td>${badgesHtml}</td>
                             <td class="text-muted">${u.email_usuario || '-'}</td>
                             <td class="text-center pe-4">
-                                <button class="btn btn-outline-primary btn-action" onclick="window.editarUsuario('${u.rf_usuario}')"><i class="fas fa-edit"></i></button>
-                                <button class="btn btn-outline-danger btn-action" onclick="window.excluirUsuario('${u.rf_usuario}')"><i class="fas fa-trash-alt"></i></button>
+                                <button class="btn btn-outline-primary btn-action" onclick="window.editarUsuario('${docId}')"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-outline-danger btn-action" onclick="window.excluirUsuario('${docId}')"><i class="fas fa-trash-alt"></i></button>
                             </td>
                         </tr>
                     `;
@@ -153,21 +150,17 @@
             }
         }
 
-        // ==========================================
-        // 3. ADICIONAR E EDITAR (COM CHECKBOXES)
-        // ==========================================
-        window.abrirModalUsuario = async function(rfEdicao = null) {
+        // 3. ADICIONAR E EDITAR
+        window.abrirModalUsuario = async function(docIdEdicao = null) {
             let user = { rf_usuario: '', nome_usuario: '', email_usuario: '', senha_usuario: '', id_unidade: '', id_nivel_acesso: ['UNIDADE'], url_foto: '' };
-            let titulo = "Novo Usuário";
-            let rfReadOnly = "";
+            let titulo = "Novo Vínculo de Usuário";
 
-            if (rfEdicao) {
-                titulo = "Editar Usuário";
-                rfReadOnly = "readonly disabled style='background-color: #e9ecef;'";
+            if (docIdEdicao) {
+                titulo = "Editar Vínculo";
                 Swal.fire({ title: 'Buscando dados...', didOpen: () => { Swal.showLoading() } });
                 
                 try {
-                    const docSnap = await getDoc(doc(db, "usuarios", rfEdicao));
+                    const docSnap = await getDoc(doc(db, "usuarios", docIdEdicao));
                     if (docSnap.exists()) {
                         user = docSnap.data();
                         if (!Array.isArray(user.id_nivel_acesso)) user.id_nivel_acesso = [user.id_nivel_acesso || "UNIDADE"];
@@ -182,13 +175,13 @@
             const isChecked = (perfil) => user.id_nivel_acesso.includes(perfil) ? 'checked' : '';
 
             Swal.fire({
-                title: `<i class="fas ${rfEdicao ? 'fa-user-edit' : 'fa-user-plus'} text-primary"></i> ${titulo}`,
+                title: `<i class="fas ${docIdEdicao ? 'fa-user-edit' : 'fa-user-plus'} text-primary"></i> ${titulo}`,
                 html: `
                     <div class="text-start" style="font-size: 13px;">
                         <div class="row g-2 mb-2">
                             <div class="col-4">
                                 <label class="fw-bold mb-1 text-muted">RF (Login)</label>
-                                <input type="text" id="swal-rf" class="form-control form-control-sm" value="${user.rf_usuario}" ${rfReadOnly} oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                                <input type="text" id="swal-rf" class="form-control form-control-sm" value="${user.rf_usuario}" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                             </div>
                             <div class="col-8">
                                 <label class="fw-bold mb-1 text-muted">Nome Completo</label>
@@ -203,17 +196,18 @@
                             <div class="col-4">
                                 <label class="fw-bold mb-1 text-muted">Unidade (EOL)</label>
                                 <input type="text" id="swal-unidade" class="form-control form-control-sm" value="${user.id_unidade}" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                                <div class="form-text text-danger" style="font-size: 10px; margin-top:2px;"><b>Dica:</b> 000000 para TI/Global</div>
                             </div>
                         </div>
                         <div class="row g-2 mb-3">
                             <div class="col-12">
-                                <label class="fw-bold mb-1 text-muted">Senha de Acesso</label>
+                                <label class="fw-bold mb-1 text-muted">Senha de Acesso para esta Unidade</label>
                                 <input type="password" id="swal-senha" class="form-control form-control-sm" value="${user.senha_usuario}">
                             </div>
                         </div>
                         <div class="row g-2">
                             <div class="col-12">
-                                <label class="fw-bold mb-2 text-muted">Perfis de Acesso (Marque os aplicáveis):</label>
+                                <label class="fw-bold mb-2 text-muted">Perfis de Acesso neste Vínculo:</label>
                                 <div class="d-flex flex-wrap gap-3">
                                     <div class="form-check"><input class="form-check-input chk-perfil" type="checkbox" value="UNIDADE" id="p-uni" ${isChecked('UNIDADE')}><label class="form-check-label fw-bold" for="p-uni">UNIDADE</label></div>
                                     <div class="form-check"><input class="form-check-input chk-perfil" type="checkbox" value="PROFESSOR" id="p-prof" ${isChecked('PROFESSOR')}><label class="form-check-label fw-bold text-success" for="p-prof">PROFESSOR</label></div>
@@ -234,7 +228,6 @@
                     const unidade = document.getElementById('swal-unidade').value.trim();
                     const senha = document.getElementById('swal-senha').value.trim();
                     
-                    // Coleta todos os perfis marcados
                     const perfisMarcados = Array.from(document.querySelectorAll('.chk-perfil:checked')).map(cb => cb.value);
 
                     if (!rf || !nome || !unidade || !senha || perfisMarcados.length === 0) {
@@ -248,7 +241,10 @@
                     Swal.fire({ title: 'Salvando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
                     const val = result.value;
                     try {
-                        await setDoc(doc(db, "usuarios", val.rf), {
+                        // CHAVE COMPOSTA PARA EVITAR SUBSTITUIÇÃO DE VÍNCULOS
+                        const novoDocId = `${val.rf}_${val.unidade}`;
+
+                        await setDoc(doc(db, "usuarios", novoDocId), {
                             rf_usuario: val.rf, 
                             nome_usuario: val.nome, 
                             email_usuario: val.email,
@@ -257,7 +253,13 @@
                             id_nivel_acesso: val.perfis, 
                             url_foto: val.url_foto
                         });
-                        Swal.fire('Sucesso!', 'Usuário salvo com sucesso.', 'success');
+
+                        // Se você editou e alterou o RF ou a Unidade, apaga o registro velho pra não duplicar!
+                        if (docIdEdicao && docIdEdicao !== novoDocId) {
+                            await deleteDoc(doc(db, "usuarios", docIdEdicao));
+                        }
+
+                        Swal.fire('Sucesso!', 'Vínculo do usuário salvo.', 'success');
                         carregarUsuarios();
                     } catch (error) {
                         console.error(error);
@@ -267,20 +269,23 @@
             });
         };
 
-        window.editarUsuario = function(rf) { window.abrirModalUsuario(rf); };
+        window.editarUsuario = function(docId) { window.abrirModalUsuario(docId); };
 
-        // ==========================================
         // 4. EXCLUIR USUÁRIO
-        // ==========================================
-        window.excluirUsuario = function(rf) {
-            if (rf === localStorage.getItem('sig_rf')) {
-                Swal.fire('Atenção', 'Você não pode excluir o seu próprio usuário logado!', 'warning'); 
+        window.excluirUsuario = function(docId) {
+            const rfLogado = localStorage.getItem('sig_rf');
+            const unLogada = localStorage.getItem('sig_id_unidade');
+            const minhaChaveLogada = `${rfLogado}_${unLogada}`;
+
+            // Trava para o cara não apagar o próprio login atual ou seu registro antigo
+            if (docId === minhaChaveLogada || docId === rfLogado) {
+                Swal.fire('Atenção', 'Você não pode excluir o seu próprio usuário que está logado no momento!', 'warning'); 
                 return;
             }
             
             Swal.fire({
                 title: 'Tem certeza?', 
-                text: `Deseja excluir o usuário RF ${rf}? Essa ação não pode ser desfeita.`, 
+                text: `Deseja excluir este vínculo do sistema? Essa ação não pode ser desfeita.`, 
                 icon: 'warning',
                 showCancelButton: true, 
                 confirmButtonColor: '#dc3545', 
@@ -291,12 +296,12 @@
                 if (result.isConfirmed) {
                     Swal.fire({ title: 'Excluindo...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
                     try {
-                        await deleteDoc(doc(db, "usuarios", rf));
-                        Swal.fire('Excluído!', 'O usuário foi removido.', 'success');
+                        await deleteDoc(doc(db, "usuarios", docId));
+                        Swal.fire('Excluído!', 'O vínculo foi removido.', 'success');
                         carregarUsuarios();
                     } catch (error) {
                         console.error("Erro ao excluir:", error);
-                        Swal.fire('Erro', 'Falha ao excluir o usuário.', 'error');
+                        Swal.fire('Erro', 'Falha ao excluir o vínculo.', 'error');
                     }
                 }
             });

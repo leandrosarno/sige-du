@@ -13,66 +13,154 @@
             --sidebar-hover: #3c4043;
             --text-light: #e8eaed;
         }
-        body { margin: 0; display: flex; height: 100vh; background-color: var(--bg-color); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 10px; color: #333; overflow: hidden; }
-        
-        /* MENU LATERAL (SIDEBAR) */
-        .sidebar { width: 220px; background-color: var(--sidebar-bg); color: var(--text-light); display: flex; flex-direction: column; border-right: 1px solid #000; }
-        .sidebar-header { padding: 15px; text-align: center; border-bottom: 1px solid var(--sidebar-hover); background-color: #171717; }
-        
+        body { 
+            margin: 0; 
+            display: flex; 
+            height: 100vh; 
+            background-color: var(--bg-color); 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            font-size: 10px; 
+            color: #333; 
+            overflow: hidden; 
+        }
+
+        /* MENU LATERAL (SIDEBAR) */ 
+        .sidebar { 
+            width: 220px; 
+            background-color: var(--sidebar-bg); 
+            color: var(--text-light); 
+            display: flex; 
+            flex-direction: column; 
+            border-right: 1px solid #000; 
+        }
+        .sidebar-header { 
+            padding: 15px; 
+            text-align: center; 
+            border-bottom: 1px solid var(--sidebar-hover); 
+            background-color: #171717; 
+        }
         /* O Logo começa oculto para evitar o ícone de imagem quebrada */
-        .sidebar-header img { width: 80%; max-height: 50px; object-fit: contain; margin-bottom: 10px; display: none; margin-left: auto; margin-right: auto; }
-        
-        .sidebar-header h3 { margin: 0; font-size: 11px; font-weight: bold; }
+        .sidebar-header img { 
+            width: 80%; 
+            max-height: 50px; 
+            object-fit: contain; 
+            margin-bottom: 10px; 
+            display: none; 
+            margin-left: auto; 
+            margin-right: auto;
+        }
+        .sidebar-header h3 { margin: 0; font-size: 11px; font-weight: bold; } 
         .sidebar-header p { margin: 2px 0 0 0; font-size: 9px; color: #9aa0a6; }
-        .menu-lista { list-style: none; padding: 0; margin: 0; overflow-y: auto; flex-grow: 1; }
-        .menu-item { padding: 8px 15px; border-bottom: 1px solid var(--sidebar-hover); cursor: pointer; display: flex; align-items: center; gap: 10px; font-weight: bold; }
-        .menu-item:hover { background-color: var(--sidebar-hover); border-left: 3px solid var(--google-blue); padding-left: 12px; }
+
+        .menu-lista { 
+            list-style: none; 
+            padding: 0; 
+            margin: 0; 
+            overflow-y: auto; 
+            flex-grow: 1; 
+        }
+        .menu-item { 
+            padding: 8px 15px; 
+            border-bottom: 1px solid var(--sidebar-hover); 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            font-weight: bold; 
+        } 
+        .menu-item:hover { background-color: var(--sidebar-hover); border-left: 3px solid var(--google-blue); padding-left: 12px; } 
         .menu-item .material-icons { font-size: 14px; }
-        .submenu { list-style: none; padding: 0; margin: 0; background-color: #1a1b1e; display: none; }
+
+        .submenu { 
+            list-style: none; 
+            padding: 0; 
+            margin: 0; 
+            background-color: #1a1b1e; 
+            display: none; 
+        } 
         .menu-item.active + .submenu { display: block; }
-        .submenu li { padding: 6px 15px 6px 40px; border-bottom: 1px solid var(--sidebar-hover); cursor: pointer; color: #bdc1c6; }
-        .submenu li:hover { color: white; background-color: var(--sidebar-hover); }
+        .submenu li { 
+            padding: 6px 15px 6px 40px; 
+            border-bottom: 1px solid var(--sidebar-hover); 
+            cursor: pointer; 
+            color: #bdc1c6; 
+        } 
+        .submenu li:hover { color: white; background-color: var(--sidebar-hover); } 
         .menu-separador { border-top: 1px dashed #555; margin: 4px 10px; }
-        
-        /* ÁREA PRINCIPAL */
-        .main-content { flex-grow: 1; display: flex; flex-direction: column; overflow-y: auto; }
-        .topbar { background-color: white; height: 40px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; }
-        .btn-logout { background-color: #dc3545; color: white; border: none; padding: 4px 10px; font-size: 10px; font-weight: bold; cursor: pointer; }
-        
-        /* SISTEMA DE CARTÕES (GRID) */
-        .dashboard-container { padding: 20px; }
-        .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px; }
-        .card { background: white; border: 1px solid var(--border-color); border-top: 3px solid var(--google-blue); padding: 15px; text-align: center; box-shadow: 1px 1px 5px rgba(0,0,0,0.05);}
-        .card h4 { margin: 0 0 5px 0; font-size: 10px; color: #666; text-transform: uppercase; }
-        .card .numero { font-size: 24px; font-weight: bold; color: #333; margin: 0; }
-        .card.card-destaque { border-top-color: #ff9800; background-color: #fff8e1; }
+
+        /* ÁREA PRINCIPAL */ 
+        .main-content { 
+            flex-grow: 1; 
+            display: flex; 
+            flex-direction: column; 
+            overflow-y: auto; 
+        }
+        .topbar { 
+            background-color: white; 
+            height: 40px; 
+            border-bottom: 1px solid var(--border-color); 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            padding: 0 20px; 
+        }
+        .btn-logout { 
+            background-color: #dc3545; color: white; border: none;  
+            padding: 4px 10px; font-size: 10px; font-weight: bold; cursor: pointer; 
+        }
+
+        /* SISTEMA DE CARTÕES (GRID) */ 
+        .dashboard-container { padding: 20px; } 
+        .cards-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); 
+            gap: 15px; 
+            margin-bottom: 20px; 
+        }
+        .card { 
+            background: white; 
+            border: 1px solid var(--border-color); 
+            border-top: 3px solid var(--google-blue); 
+            padding: 15px; 
+            text-align: center; 
+        } 
+        .card h4 { margin: 0 0 5px 0; font-size: 10px; color: #666; text-transform: uppercase; } 
+        .card .numero { font-size: 24px; font-weight: bold; color: #333; margin: 0; } 
+        .card.card-destaque { border-top-color: #ff9800; background-color: #fff8e1; } 
         .card.card-turno { border-top-color: #4caf50; }
-        
-        .btn-analitico { background-color: var(--google-blue); color: white; border: 1px solid #0d47a1; padding: 6px 15px; font-size: 10px; font-weight: bold; cursor: pointer; display: inline-block; margin-right: 10px; }
-        .actions-bar { margin-bottom: 15px; display: flex; gap: 10px; }
+
+        .btn-analitico { 
+            background-color: var(--google-blue); color: white; border: 1px solid #0d47a1; 
+            padding: 6px 15px; font-size: 10px; font-weight: bold; cursor: pointer; display: block; width: 200px; margin: 0 auto; 
+        } 
     </style>
 </head>
 <body>
+    <!-- BARRA LATERAL -->
     <aside class="sidebar">
         <div class="sidebar-header">
-            <!-- ID "painel-logo" para receber o url_logo e "painel-nome-ceu" para receber o nome_unidade -->
-            <img id="painel-logo" src="" alt="Logo Unidade">
-            <h3 id="painel-nome-ceu">Buscando unidade...</h3>
+            <!-- As informações do Firebase preencherão os IDs abaixo -->
+            <img id="painel-logo" src="" alt="Logo">
+            <h3 id="painel-nome-ceu">Buscando Unidade...</h3>
             <p id="painel-nome-usuario">Usuário</p>
         </div>
         <ul class="menu-lista" id="menu-dinamico">
+            <!-- O MENU SERÁ INJETADO AQUI PELO JAVASCRIPT DEPENDENDO DO PERFIL -->
         </ul>
     </aside>
 
+    <!-- CONTEÚDO PRINCIPAL -->
     <main class="main-content">
         <header class="topbar">
             <b id="painel-titulo-modulo">VISÃO GERAL</b>
             <button class="btn-logout" onclick="window.sairDoSistema()">SAIR</button>
         </header>
         <div class="dashboard-container" id="area-cartoes">
+            <!-- OS CARTÕES SERÃO INJETADOS AQUI PELO JAVASCRIPT -->
         </div>
     </main>
 
+    <!-- MOTOR FIREBASE INTEGRADO AO SEU LAYOUT -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
         import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
@@ -91,23 +179,25 @@
         const db = getFirestore(app);
 
         async function inicializarDashboard() {
+            // Verifica a chave do login (harmonizado com o index_FB.html)
             const idUnidadeSalva = localStorage.getItem('sig_id_unidade');
             if(!idUnidadeSalva) {
                 window.location.href = "index_FB.html";
                 return;
             }
 
+            // Preenche o nome do usuário logado
             document.getElementById('painel-nome-usuario').innerText = localStorage.getItem('sig_nome') || "Gestor";
 
-            // BUSCA DIRETA DOS CAMPOS NOME E LOGO
+            // BUSCA DIRETA DOS CAMPOS NOME_UNIDADE E URL_LOGO NA COLEÇÃO "UNIDADES"
             try {
                 const unidadesRef = collection(db, "unidades");
                 
-                // Primeira tentativa: id_unidade salvo como Texto no Firebase
+                // Pesquisa a unidade do usuário logado
                 let q = query(unidadesRef, where("id_unidade", "==", idUnidadeSalva));
                 let snap = await getDocs(q);
 
-                // Segunda tentativa: id_unidade salvo como Número no Firebase
+                // Trava de segurança: Se o id_unidade foi salvo como Número no Firebase
                 if (snap.empty) {
                     q = query(unidadesRef, where("id_unidade", "==", Number(idUnidadeSalva)));
                     snap = await getDocs(q);
@@ -116,42 +206,47 @@
                 if (!snap.empty) {
                     const dadosUnidade = snap.docs[0].data();
                     
-                    // Injeta o campo nome_unidade
+                    // Injeta o campo nome_unidade no HTML
                     if (dadosUnidade.nome_unidade) {
                         document.getElementById('painel-nome-ceu').innerText = dadosUnidade.nome_unidade;
                     } else {
                         document.getElementById('painel-nome-ceu').innerText = "UNIDADE " + idUnidadeSalva;
                     }
 
-                    // Injeta o campo url_logo
+                    // Injeta o campo url_logo na Imagem
                     if (dadosUnidade.url_logo) {
                         const logoElement = document.getElementById('painel-logo');
                         logoElement.src = dadosUnidade.url_logo;
                         logoElement.style.display = 'block'; 
                     }
                 } else {
-                    console.log("Atenção: Unidade não encontrada no Firebase.");
                     document.getElementById('painel-nome-ceu').innerText = "UNIDADE " + idUnidadeSalva;
                 }
             } catch (erro) {
                 console.error("Erro na leitura do Firebase:", erro);
                 document.getElementById('painel-nome-ceu').innerText = "UNIDADE " + idUnidadeSalva;
             }
-            
-            // Injeta o menu dependendo do nível de acesso
+
+            // Roteamento de Interface (O que o usuário pode ver?)
             const perfil = localStorage.getItem('sig_nivel_acesso');
             if(perfil === 'DRE') {
                 window.montarInterfaceDRE();
             } else if (perfil === 'SME') {
-                window.montarInterfaceSME();
+                // Modo SME (em desenvolvimento)
+                document.getElementById('painel-titulo-modulo').innerText = "VISÃO GLOBAL - SME";
+                document.getElementById('area-cartoes').innerHTML = `<h3 style="text-align:center; padding:20px;">Módulo SME em Desenvolvimento</h3>`;
             } else {
-                window.montarInterfaceUnidade(); 
+                window.montarInterfaceUnidade();
             }
         }
 
-        // AS MESMAS ESTRUTURAS DE MENU QUE VOCÊ SOLICITOU
+        // ==========================================
+        // 2. CONSTRUTOR DO MODO UNIDADE (CEU)
+        // ==========================================
         window.montarInterfaceUnidade = function() {
             document.getElementById('painel-titulo-modulo').innerText = "VISÃO GERAL - UNIDADE";
+            
+            // Injetando sua árvore original, corrigida com crases (`)
             document.getElementById('menu-dinamico').innerHTML = `
                 <li class="menu-item" onclick="window.alternarMenu(this)"><span class="material-icons">home</span> Início</li>
                 <li class="menu-item" onclick="window.alternarMenu(this)"><span class="material-icons">people</span> Cadastros</li>
@@ -201,6 +296,8 @@
                     <li>Modalidades</li>
                 </ul>
             `;
+            
+            // Injetando os seus Cartões
             document.getElementById('area-cartoes').innerHTML = `
                 <div class="cards-grid">
                     <div class="card card-turno">
@@ -217,61 +314,32 @@
                     <div class="card"><h4>Fila de Espera</h4><p class="numero">0</p></div>
                     <div class="card"><h4>Agenda da TV</h4><p class="numero">0</p></div>
                 </div>
-                <div style="text-align: center;">
-                    <button class="btn-analitico">ACESSAR PAINEL ANALÍTICO DE VAGAS</button>
-                </div>
+                <button class="btn-analitico">ACESSAR PAINEL ANALÍTICO DE VAGAS</button>
             `;
         };
 
+        // ==========================================
+        // 3. CONSTRUTOR DO MODO DRE
+        // ==========================================
         window.montarInterfaceDRE = function() {
             document.getElementById('painel-titulo-modulo').innerText = "VISÃO ESTRATÉGICA - DRE";
+            
+            // Menus da DRE
             document.getElementById('menu-dinamico').innerHTML = `
                 <li class="menu-item"><span class="material-icons">dashboard</span> Painel DRE</li>
                 <li class="menu-item"><span class="material-icons">rule</span> RF - Regras</li>
                 <li class="menu-item"><span class="material-icons">directions_bus</span> RF - Passeios</li>
-                <li class="menu-item"><span class="material-icons">event</span> RF - Atrações e Eventos</li>
-                <li class="menu-item" onclick="window.alternarMenu(this)"><span class="material-icons">bar_chart</span> Relatórios DRE</li>
-                <ul class="submenu">
-                    <li>Relatório Idade/Turma</li>
-                </ul>
             `;
+
             document.getElementById('area-cartoes').innerHTML = `
-                <div class="actions-bar">
-                    <button class="btn-analitico" style="background: #28a745;">EXPORTAR EXCEL</button>
-                    <button class="btn-analitico" style="background: #6c757d;">IMPRIMIR / PDF</button>
-                    <button class="btn-analitico">ATUALIZAR DADOS</button>
-                </div>
-                <div class="cards-grid">
-                    <div class="card card-turno">
-                        <h4>Boas Vindas</h4>
-                        <p style="margin:0; font-size: 11px; font-weight:bold;">Turno da Manhã</p>
-                    </div>
-                    <div class="card card-destaque">
-                        <h4>Total de Matrículas da REDE</h4>
-                        <p class="numero">0</p>
-                    </div>
-                    <div class="card card-destaque">
-                        <h4>Total Inscritos Recreio Férias</h4>
-                        <p class="numero">0</p>
-                    </div>
-                </div>
+                <h3 style="margin-top:0;">Visão Geral da Rede</h3>
+                <!-- Aqui entrarão os cartões sumarizados de todos os CEUs -->
             `;
         };
 
-        window.montarInterfaceSME = function() {
-            document.getElementById('painel-titulo-modulo').innerText = "VISÃO GLOBAL - SME";
-            document.getElementById('menu-dinamico').innerHTML = `
-                <li class="menu-item"><span class="material-icons">home</span> Início</li>
-            `;
-            document.getElementById('area-cartoes').innerHTML = `
-                <div style="text-align: center; padding: 50px;">
-                    <span class="material-icons" style="font-size: 48px; color: #ccc;">construction</span>
-                    <h3 style="color: #666;">Módulo SME em Desenvolvimento</h3>
-                    <p>Este módulo será trabalhado em breve.</p>
-                </div>
-            `;
-        };
-
+        // ==========================================
+        // FUNÇÕES AUXILIARES
+        // ==========================================
         window.alternarMenu = function(elemento) {
             document.querySelectorAll('.menu-item').forEach(el => {
                 if(el !== elemento) el.classList.remove('active');
@@ -284,7 +352,7 @@
             window.location.href = "index_FB.html";
         };
 
-        // Dispara tudo assim que o navegador lê o arquivo
+        // Roda a inicialização ao carregar a página
         inicializarDashboard();
     </script>
 </body>

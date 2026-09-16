@@ -522,49 +522,54 @@
                 document.getElementById('lbl-ceu').innerText = "UNIDADE: " + idUnidade;
             }
 
-            // 4. CONTROLE DE VISIBILIDADE POR PERFIL
-            if (perfilUsuario === "DRE" || perfilUsuario === "SME") {
-                const btnRF = document.getElementById('btnRegrasRF');
-                if (btnRF) btnRF.style.display = 'flex';
-                
-                const btnPasseios = document.getElementById('btnPasseiosDRE');
-                if (btnPasseios) btnPasseios.style.display = 'flex';
+// 4. CONTROLE DE VISIBILIDADE POR PERFIL (MÚLTIPLOS ACESSOS)
+if (isAdmin || perfisUsuario.includes("DRE") || perfisUsuario.includes("SME")) {
+    const btnRF = document.getElementById('btnRegrasRF');
+    if (btnRF) btnRF.style.display = 'flex';
+    
+    const btnPasseios = document.getElementById('btnPasseiosDRE');
+    if (btnPasseios) btnPasseios.style.display = 'flex';
 
-                const btnRelatorio = document.getElementById('btnRelatorioDRE');
-                if (btnRelatorio) btnRelatorio.style.display = 'flex';
-                
-                const btnDemografico = document.getElementById('btnDemograficoDRE');
-                if (btnDemografico) btnDemografico.style.display = 'flex';
+    const btnRelatorio = document.getElementById('btnRelatorioDRE');
+    if (btnRelatorio) btnRelatorio.style.display = 'flex';
+    
+    const btnDemografico = document.getElementById('btnDemograficoDRE');
+    if (btnDemografico) btnDemografico.style.display = 'flex';
 
-                const btnAtracoes = document.getElementById('btnAtracoesDRE');
-                if(btnAtracoes) btnAtracoes.style.display = 'flex';
-                
-                const itensParaOcultar = [
-                    'link-inicio', 'link-alunos', 'link-turmas', 'submenuTurmas',
-                    'link-cadastros', 'submenuCadastros', 'link-impressao', 'submenuImpressao',
-                    'link-recreio', 'submenuRecreio'
-                ];
-                itensParaOcultar.forEach(id => {
-                    const elemento = document.getElementById(id);
-                    if (elemento) elemento.style.display = 'none';
-                });
+    const btnAtracoes = document.getElementById('btnAtracoesDRE');
+    if(btnAtracoes) btnAtracoes.style.display = 'flex';
+    
+    // Se NÃO for ADMIN, ocultamos os menus da Unidade para a DRE/SME
+    if (!isAdmin) {
+        const itensParaOcultar = [
+            'link-inicio', 'link-alunos', 'link-turmas', 'submenuTurmas',
+            'link-cadastros', 'submenuCadastros', 'link-impressao', 'submenuImpressao',
+            'link-recreio', 'submenuRecreio'
+        ];
+        itensParaOcultar.forEach(id => {
+            const elemento = document.getElementById(id);
+            if (elemento) elemento.style.display = 'none';
+        });
+        document.getElementById('frame-filho').src = "PainelDRE.html";
+    } else {
+        // ADMIN vê tudo! Pode definir a tela inicial padrão do Admin aqui:
+        document.getElementById('frame-filho').src = "inicio.html"; 
+    }
 
-                // Se for DRE ou SME, define um iframe inicial próprio
-                document.getElementById('frame-filho').src = "PainelDRE.html";
-
-            } else if (perfilUsuario === "PROFESSOR") {
-                const sidebar = document.querySelector('.sidebar');
-                if (sidebar) sidebar.style.display = 'none';
-                
-                const topbar = document.querySelector('.topbar');
-                if (topbar) topbar.style.display = 'none';
-                
-                const mainContent = document.querySelector('.main-content');
-                if (mainContent) mainContent.style.width = '100%';
-                
-                document.body.style.backgroundColor = '#f0f2f5';
-                document.getElementById('frame-filho').src = "ChamadaOnline.html";
-            }
+} else if (perfisUsuario.includes("PROFESSOR") && !perfisUsuario.includes("UNIDADE")) {
+    // Se for APENAS Professor (não tem papel de Unidade/Secretaria)
+    const sidebar = document.querySelector('.sidebar');
+    if (sidebar) sidebar.style.display = 'none';
+    
+    const topbar = document.querySelector('.topbar');
+    if (topbar) topbar.style.display = 'none';
+    
+    const mainContent = document.querySelector('.main-content');
+    if (mainContent) mainContent.style.width = '100%';
+    
+    document.body.style.backgroundColor = '#f0f2f5';
+    document.getElementById('frame-filho').src = "ChamadaOnline.html";
+}
 
             // Inicializa as contagens (Mantive a sua função original se o script do GAS continuar ativo)
             setTimeout(window.atualizarContadoresImpressao, 1500); 

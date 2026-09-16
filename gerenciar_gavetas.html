@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciar Gavetas (Menus)</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body { background-color: #f4f7f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; }
+        .card-custom { border: none; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); background: #fff; }
+        .card-header-custom { background: #2c3e50; color: white; border-radius: 10px 10px 0 0 !important; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .table-hover tbody tr:hover { background-color: #f8f9fa; transition: 0.2s; }
+        .btn-action { width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; margin: 0 3px; }
+        .badge-perfil { font-size: 11px; padding: 5px 10px; font-weight: 600; border-radius: 6px; margin-bottom: 2px; display: inline-block; }
+        
+        .bg-admin { background-color: #dc3545; color: white; }
+        .bg-dre { background-color: #6f42c1; color: white; }
+        .bg-sme { background-color: #fd7e14; color: white; }
+        .bg-unidade { background-color: #0d6efd; color: white; }
+        .bg-professor { background-color: #198754; color: white; }
+    </style>
+</head>
+<body>
+
+    <div class="container-fluid" id="tela-conteudo" style="display: none;">
+        <div class="card card-custom">
+            <div class="card-header-custom">
+                <h5 class="mb-0"><i class="fas fa-folder-tree me-2"></i> Estrutura do Menu: Gavetas Principais</h5>
+                <button class="btn btn-light btn-sm fw-bold" style="color: #2c3e50;" onclick="window.abrirModalGaveta()">
+                    <i class="fas fa-plus me-1"></i> Nova Gaveta
+                </button>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-4 text-center" style="width: 80px;">Ordem</th>
+                                <th>Ícone</th>
+                                <th>ID da Gaveta</th>
+                                <th>Nome de Exibição</th>
+                                <th>Visível Para</th>
+                                <th class="text-center pe-4">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela-gavetas">
+                            <tr>
+                                <td colspan="6" class="text-center py-4 text-muted">
+                                    <div class="spinner-border text-primary spinner-border-sm me-2" role="status"></div>
+                                    Carregando estrutura...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT FIREBASE E LÓGICA -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+        import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCpCXxJbD8dPXkT7mcoz4qK8Wjt7WTRwFA",
+            authDomain: "sig-edu.firebaseapp.com",
+            projectId: "sig-edu",
+            storageBucket: "sig-edu.firebasestorage.app",
+            messagingSenderId: "233239725278",
+            appId: "1:233239725278:web:809b9c42feacd99175ee4f",
+            measurementId: "G-E5LLYGW7DN"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // 1. TRAVA DE SEGURANÇA (APENAS ADMIN)
+        window.onload = function() {
+            let perfisAtivos = [];
+            try {
+                perfisAtivos = JSON.parse(localStorage.getItem('sig_nivel_acesso') || '[]');
+                if (!Array.isArray(perfisAtivos)) perfisAtivos = [perfisAtivos];
+            } catch(e) {
+                perfisAtivos = [];
+            }
+
+            if (!perfisAtivos.includes('ADMIN')) {
+                Swal.fire({
+                    icon: 'error', title: 'Acesso Negado', text: 'Você não tem permissão para alterar a estrutura do sistema.',
+                    confirmButtonColor: '#0d6efd', allowOutsideClick: false
+                }).then(() => { window.location.href = "inicio.html"; });
+            } else {
+                document.getElementById('tela-conteudo').style.display = 'block';
+                carregarGavetas();
+            }
+        };
+
+        // 2. LER GAVETAS (READ E ORDENAR)
+        async function carregarGavetas() {
+            try {
+                const querySnapshot = await getDocs(collection(db, "gavetas"));
+                const tabela = document.getElementById('tabela-gavetas');
+                tabela.innerHTML = '';
+
+                if(querySnapshot.empty) {
+                    tabela.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">Nenhuma gaveta cadastrada. O menu ficará vazio.</td></tr>`;
+                    return;
+                }
+
+                // Colocando os documentos num array para podermos ordenar pela "ordem"
+                let listaGavetas = [];
+                querySnapshot.forEach((doc) => listaGavetas.push(doc.data()));
+
+                // Ordena do menor número para o maior
+                listaGavetas.sort((a, b) => Number(a.ordem) - Number(b.ordem));
+
+                listaGavetas.forEach((g) => {
+                    let perfis = Array.isArray(g.perfis_permitidos) ? g.perfis_permitidos : [];
+                    
+                    const badgesHtml = perfis.map(p => {
+                        let cor = 'bg-primary';
+                        if(p === 'ADMIN') cor = 'bg-admin';
+                        if(p === 'DRE') cor = 'bg-dre'; 
+                        if(p === 'SME') cor = 'bg-sme';
+                        if(p === 'PROFESSOR') cor = 'bg-professor';
+                        if(p === 'UNIDADE') cor = 'bg-unidade';
+                        return `<span class="badge badge-perfil ${cor}">${p}</span>`;
+                    }).join(' ');
+
+                    const row = `
+                        <tr>
+                            <td class="ps-4 text-center fw-bold text-muted">${g.ordem}</td>
+                            <td><span class="material-icons text-primary align-middle" style="font-size: 20px;">${g.icone_gaveta}</span></td>
+                            <td class="fw-bold text-secondary">${g.id_gaveta}</td>
+                            <td class="fw-bold">${g.nome_gaveta}</td>
+                            <td>${badgesHtml}</td>
+                            <td class="text-center pe-4">
+                                <button class="btn btn-outline-primary btn-action" onclick="window.editarGaveta('${g.id_gaveta}')" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-outline-danger btn-action" onclick="window.excluirGaveta('${g.id_gaveta}')" title="Excluir">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                    tabela.insertAdjacentHTML('beforeend', row);
+                });
+            } catch (erro) {
+                console.error("Erro na tabela de gavetas:", erro);
+                Swal.fire('Erro', 'Falha ao buscar estrutura no Firebase.', 'error');
+            }
+        }
+
+        // 3. ADICIONAR E EDITAR GAVETA
+        window.abrirModalGaveta = async function(idEdicao = null) {
+            let gaveta = { id_gaveta: '', nome_gaveta: '', icone_gaveta: '', ordem: '', perfis_permitidos: ['UNIDADE', 'ADMIN'] };
+            let titulo = "Nova Gaveta do Menu";
+            let idReadOnly = "";
+
+            if (idEdicao) {
+                titulo = "Editar Gaveta";
+                idReadOnly = "readonly disabled style='background-color: #e9ecef;'";
+                Swal.fire({ title: 'Buscando estrutura...', didOpen: () => { Swal.showLoading() } });
+                
+                try {
+                    const docSnap = await getDoc(doc(db, "gavetas", idEdicao));
+                    if (docSnap.exists()) {
+                        gaveta = docSnap.data();
+                        if (!Array.isArray(gaveta.perfis_permitidos)) gaveta.perfis_permitidos = [];
+                        Swal.close();
+                    }
+                } catch (e) {
+                    Swal.fire('Erro', 'Falha ao buscar dados da gaveta.', 'error');
+                    return;
+                }
+            }
+
+            const isChecked = (perfil) => gaveta.perfis_permitidos.includes(perfil) ? 'checked' : '';
+
+            Swal.fire({
+                title: `<i class="fas ${idEdicao ? 'fa-edit' : 'fa-folder-plus'} text-primary"></i> ${titulo}`,
+                html: `
+                    <div class="text-start" style="font-size: 13px;">
+                        <div class="row g-2 mb-2">
+                            <div class="col-8">
+                                <label class="fw-bold mb-1 text-muted">ID da Gaveta (Código interno)</label>
+                                <input type="text" id="swal-id-gaveta" class="form-control form-control-sm" value="${gaveta.id_gaveta}" ${idReadOnly} placeholder="Ex: menu_cadastros" oninput="this.value = this.value.toLowerCase().replace(/[^a-z0-9_]/g, '')">
+                            </div>
+                            <div class="col-4">
+                                <label class="fw-bold mb-1 text-muted">Ordem na Tela</label>
+                                <input type="number" id="swal-ordem" class="form-control form-control-sm" value="${gaveta.ordem}" placeholder="Ex: 1">
+                            </div>
+                        </div>
+                        <div class="row g-2 mb-3">
+                            <div class="col-8">
+                                <label class="fw-bold mb-1 text-muted">Nome de Exibição (O que o usuário lê)</label>
+                                <input type="text" id="swal-nome-gaveta" class="form-control form-control-sm" value="${gaveta.nome_gaveta}" placeholder="Ex: Cadastros Base">
+                            </div>
+                            <div class="col-4">
+                                <label class="fw-bold mb-1 text-muted">Ícone</label>
+                                <input type="text" id="swal-icone" class="form-control form-control-sm" value="${gaveta.icone_gaveta}" placeholder="Ex: settings">
+                                <div class="form-text text-primary" style="font-size: 9px;"><a href="https://fonts.google.com/icons?selected=Material+Icons" target="_blank">Ver catálogo de Ícones</a></div>
+                            </div>
+                        </div>
+                        <div class="row g-2">
+                            <div class="col-12">
+                                <label class="fw-bold mb-2 text-muted">Quem pode ver essa gaveta?</label>
+                                <div class="d-flex flex-wrap gap-3 p-2 border rounded bg-light">
+                                    <div class="form-check"><input class="form-check-input chk-perfil-gaveta" type="checkbox" value="UNIDADE" id="pg-uni" ${isChecked('UNIDADE')}><label class="form-check-label fw-bold text-primary" for="pg-uni">UNIDADE</label></div>
+                                    <div class="form-check"><input class="form-check-input chk-perfil-gaveta" type="checkbox" value="PROFESSOR" id="pg-prof" ${isChecked('PROFESSOR')}><label class="form-check-label fw-bold text-success" for="pg-prof">PROFESSOR</label></div>
+                                    <div class="form-check"><input class="form-check-input chk-perfil-gaveta" type="checkbox" value="DRE" id="pg-dre" ${isChecked('DRE')}><label class="form-check-label fw-bold" style="color: #6f42c1;" for="pg-dre">DRE</label></div>
+                                    <div class="form-check"><input class="form-check-input chk-perfil-gaveta" type="checkbox" value="SME" id="pg-sme" ${isChecked('SME')}><label class="form-check-label fw-bold text-warning" for="pg-sme">SME</label></div>
+                                    <div class="form-check"><input class="form-check-input chk-perfil-gaveta" type="checkbox" value="ADMIN" id="pg-admin" ${isChecked('ADMIN')}><label class="form-check-label fw-bold text-danger" for="pg-admin">ADMIN</label></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                width: '600px', showCancelButton: true, confirmButtonText: '<i class="fas fa-save me-1"></i> Salvar Estrutura',
+                cancelButtonText: 'Cancelar', confirmButtonColor: '#2c3e50', focusConfirm: false,
+                preConfirm: () => {
+                    const id_gaveta = document.getElementById('swal-id-gaveta').value.trim();
+                    const ordem = document.getElementById('swal-ordem').value.trim();
+                    const nome_gaveta = document.getElementById('swal-nome-gaveta').value.trim();
+                    const icone_gaveta = document.getElementById('swal-icone').value.trim();
+                    
+                    const perfisMarcados = Array.from(document.querySelectorAll('.chk-perfil-gaveta:checked')).map(cb => cb.value);
+
+                    if (!id_gaveta || !nome_gaveta || !icone_gaveta || !ordem || perfisMarcados.length === 0) {
+                        Swal.showValidationMessage('Preencha todos os campos e selecione pelo menos um perfil!');
+                        return false;
+                    }
+                    return { id_gaveta, ordem: Number(ordem), nome_gaveta, icone_gaveta, perfis_permitidos: perfisMarcados };
+                }
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({ title: 'Salvando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
+                    const val = result.value;
+                    try {
+                        await setDoc(doc(db, "gavetas", val.id_gaveta), {
+                            id_gaveta: val.id_gaveta, 
+                            ordem: val.ordem, 
+                            nome_gaveta: val.nome_gaveta,
+                            icone_gaveta: val.icone_gaveta, 
+                            perfis_permitidos: val.perfis_permitidos
+                        });
+                        Swal.fire('Sucesso!', 'A gaveta foi salva.', 'success');
+                        carregarGavetas();
+                    } catch (error) {
+                        console.error(error);
+                        Swal.fire('Erro', 'Falha ao salvar no banco de dados.', 'error');
+                    }
+                }
+            });
+        };
+
+        window.editarGaveta = function(idGaveta) { window.abrirModalGaveta(idGaveta); };
+
+        // 4. EXCLUIR GAVETA
+        window.excluirGaveta = function(idGaveta) {
+            Swal.fire({
+                title: 'Tem certeza?', 
+                text: `Deseja excluir a gaveta "${idGaveta}"? ATENÇÃO: Isso pode esconder os botões que estão dentro dela!`, 
+                icon: 'warning',
+                showCancelButton: true, 
+                confirmButtonColor: '#dc3545', 
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sim, Excluir',
+                cancelButtonText: 'Cancelar'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({ title: 'Excluindo...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
+                    try {
+                        await deleteDoc(doc(db, "gavetas", idGaveta));
+                        Swal.fire('Excluído!', 'Gaveta removida da estrutura.', 'success');
+                        carregarGavetas();
+                    } catch (error) {
+                        Swal.fire('Erro', 'Falha ao excluir a gaveta.', 'error');
+                    }
+                }
+            });
+        };
+    </script>
+</body>
+</html>

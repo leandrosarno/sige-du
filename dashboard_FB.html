@@ -19,7 +19,7 @@
         .sidebar { width: 220px; background-color: var(--sidebar-bg); color: var(--text-light); display: flex; flex-direction: column; border-right: 1px solid #000; }
         .sidebar-header { padding: 15px; text-align: center; border-bottom: 1px solid var(--sidebar-hover); background-color: #171717; }
         
-        /* O Logo agora começa oculto para não mostrar imagem quebrada */
+        /* O Logo começa oculto para evitar o ícone de imagem quebrada */
         .sidebar-header img { width: 80%; max-height: 50px; object-fit: contain; margin-bottom: 10px; display: none; margin-left: auto; margin-right: auto; }
         
         .sidebar-header h3 { margin: 0; font-size: 11px; font-weight: bold; }
@@ -53,33 +53,29 @@
     </style>
 </head>
 <body>
-    <!-- BARRA LATERAL -->
     <aside class="sidebar">
         <div class="sidebar-header">
+            <!-- ID "painel-logo" para receber o url_logo e "painel-nome-ceu" para receber o nome_unidade -->
             <img id="painel-logo" src="" alt="Logo Unidade">
-            <h3 id="painel-nome-ceu">Carregando...</h3>
+            <h3 id="painel-nome-ceu">Buscando unidade...</h3>
             <p id="painel-nome-usuario">Usuário</p>
         </div>
         <ul class="menu-lista" id="menu-dinamico">
-            <!-- O MENU SERÁ INJETADO AQUI PELO JAVASCRIPT -->
         </ul>
     </aside>
 
-    <!-- CONTEÚDO PRINCIPAL -->
     <main class="main-content">
         <header class="topbar">
             <b id="painel-titulo-modulo">VISÃO GERAL</b>
             <button class="btn-logout" onclick="window.sairDoSistema()">SAIR</button>
         </header>
         <div class="dashboard-container" id="area-cartoes">
-            <!-- OS CARTÕES SERÃO INJETADOS AQUI PELO JAVASCRIPT -->
         </div>
     </main>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
-        // Importamos também o doc e getDoc para caso você tenha salvo o código como ID do documento
-        import { getFirestore, collection, getDocs, query, where, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCpCXxJbD8dPXkT7mcoz4qK8Wjt7WTRwFA",
@@ -94,68 +90,55 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // ==========================================
-        // 1. CARREGAMENTO DOS DADOS DO CEU LOGADO
-        // ==========================================
         async function inicializarDashboard() {
-            if(!localStorage.getItem('sig_rf')) {
+            const idUnidadeSalva = localStorage.getItem('sig_id_unidade');
+            if(!idUnidadeSalva) {
                 window.location.href = "index_FB.html";
                 return;
             }
 
-            const idUnidadeSalva = localStorage.getItem('sig_id_unidade');
             document.getElementById('painel-nome-usuario').innerText = localStorage.getItem('sig_nome') || "Gestor";
 
+            // BUSCA DIRETA DOS CAMPOS NOME E LOGO
             try {
-                let dadosUnidade = null;
+                const unidadesRef = collection(db, "unidades");
+                
+                // Primeira tentativa: id_unidade salvo como Texto no Firebase
+                let q = query(unidadesRef, where("id_unidade", "==", idUnidadeSalva));
+                let snap = await getDocs(q);
 
-                // TENTATIVA 1: Busca direto pelo ID do Documento (caso a unidade seja o nome do doc no Firebase)
-                const docRef = doc(db, "unidades", idUnidadeSalva);
-                const docSnap = await getDoc(docRef);
-
-                if (docSnap.exists()) {
-                    dadosUnidade = docSnap.data();
-                } else {
-                    // TENTATIVA 2: Busca usando "where" como TEXTO
-                    const unidadesRef = collection(db, "unidades");
-                    const qTexto = query(unidadesRef, where("id_unidade", "==", idUnidadeSalva));
-                    const snapTexto = await getDocs(qTexto);
-                    
-                    if (!snapTexto.empty) {
-                        dadosUnidade = snapTexto.docs[0].data();
-                    } else {
-                        // TENTATIVA 3: Busca usando "where" como NÚMERO
-                        const qNumero = query(unidadesRef, where("id_unidade", "==", Number(idUnidadeSalva)));
-                        const snapNumero = await getDocs(qNumero);
-                        if (!snapNumero.empty) {
-                            dadosUnidade = snapNumero.docs[0].data();
-                        }
-                    }
+                // Segunda tentativa: id_unidade salvo como Número no Firebase
+                if (snap.empty) {
+                    q = query(unidadesRef, where("id_unidade", "==", Number(idUnidadeSalva)));
+                    snap = await getDocs(q);
                 }
 
-                // Se encontrou dados na coleção 'unidades', aplica na tela!
-                if (dadosUnidade) {
+                if (!snap.empty) {
+                    const dadosUnidade = snap.docs[0].data();
+                    
+                    // Injeta o campo nome_unidade
                     if (dadosUnidade.nome_unidade) {
                         document.getElementById('painel-nome-ceu').innerText = dadosUnidade.nome_unidade;
                     } else {
                         document.getElementById('painel-nome-ceu').innerText = "UNIDADE " + idUnidadeSalva;
                     }
 
+                    // Injeta o campo url_logo
                     if (dadosUnidade.url_logo) {
                         const logoElement = document.getElementById('painel-logo');
                         logoElement.src = dadosUnidade.url_logo;
-                        logoElement.style.display = 'block'; // Mostra a imagem lindona
+                        logoElement.style.display = 'block'; 
                     }
                 } else {
+                    console.log("Atenção: Unidade não encontrada no Firebase.");
                     document.getElementById('painel-nome-ceu').innerText = "UNIDADE " + idUnidadeSalva;
                 }
-
             } catch (erro) {
-                console.error("Erro ao buscar a coleção unidades:", erro);
+                console.error("Erro na leitura do Firebase:", erro);
                 document.getElementById('painel-nome-ceu').innerText = "UNIDADE " + idUnidadeSalva;
             }
             
-            // Verifica o nível e injeta HTML
+            // Injeta o menu dependendo do nível de acesso
             const perfil = localStorage.getItem('sig_nivel_acesso');
             if(perfil === 'DRE') {
                 window.montarInterfaceDRE();
@@ -166,9 +149,7 @@
             }
         }
 
-        // ==========================================
-        // 2. CONSTRUTORES DE TELA E MENUS
-        // ==========================================
+        // AS MESMAS ESTRUTURAS DE MENU QUE VOCÊ SOLICITOU
         window.montarInterfaceUnidade = function() {
             document.getElementById('painel-titulo-modulo').innerText = "VISÃO GERAL - UNIDADE";
             document.getElementById('menu-dinamico').innerHTML = `
@@ -291,9 +272,6 @@
             `;
         };
 
-        // ==========================================
-        // FUNÇÕES GERAIS E CLIQUES
-        // ==========================================
         window.alternarMenu = function(elemento) {
             document.querySelectorAll('.menu-item').forEach(el => {
                 if(el !== elemento) el.classList.remove('active');
@@ -306,7 +284,7 @@
             window.location.href = "index_FB.html";
         };
 
-        // Roda ao carregar a página
+        // Dispara tudo assim que o navegador lê o arquivo
         inicializarDashboard();
     </script>
 </body>

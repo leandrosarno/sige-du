@@ -2,168 +2,241 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard SIG-EDU</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <title>Painel Principal - Sistema CEU</title> 
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="config.js"></script>
+    
     <style>
-        :root {
-            --google-blue: #1a73e8;
-            --bg-color: #f0f2f5;
-            --border-color: #dadce0;
-            --sidebar-bg: #202124;
-            --sidebar-hover: #3c4043;
-            --text-light: #e8eaed;
-        }
-        body { 
-            margin: 0; 
-            display: flex; 
-            height: 100vh; 
-            background-color: var(--bg-color); 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            font-size: 10px; 
-            color: #333; 
-            overflow: hidden; 
+        body {
+            margin: 0; padding: 0; display: flex; height: 100vh;
+            overflow: hidden; background-color: #f4f7f6;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        /* MENU LATERAL (SIDEBAR) */ 
-        .sidebar { 
-            width: 220px; 
-            background-color: var(--sidebar-bg); 
-            color: var(--text-light); 
-            display: flex; 
-            flex-direction: column; 
-            border-right: 1px solid #000; 
-        }
-        .sidebar-header { 
-            padding: 15px; 
-            text-align: center; 
-            border-bottom: 1px solid var(--sidebar-hover); 
-            background-color: #171717; 
-        }
-        /* O Logo começa oculto para evitar o ícone de imagem quebrada */
-        .sidebar-header img { 
-            width: 80%; 
-            max-height: 50px; 
-            object-fit: contain; 
-            margin-bottom: 10px; 
-            display: none; 
-            margin-left: auto; 
-            margin-right: auto;
-        }
-        .sidebar-header h3 { margin: 0; font-size: 11px; font-weight: bold; } 
-        .sidebar-header p { margin: 2px 0 0 0; font-size: 9px; color: #9aa0a6; }
-
-        .menu-lista { 
-            list-style: none; 
-            padding: 0; 
-            margin: 0; 
-            overflow-y: auto; 
-            flex-grow: 1; 
-        }
-        .menu-item { 
-            padding: 8px 15px; 
-            border-bottom: 1px solid var(--sidebar-hover); 
-            cursor: pointer; 
-            display: flex; 
-            align-items: center; 
-            gap: 10px; 
-            font-weight: bold; 
-        } 
-        .menu-item:hover { background-color: var(--sidebar-hover); border-left: 3px solid var(--google-blue); padding-left: 12px; } 
-        .menu-item .material-icons { font-size: 14px; }
-
-        .submenu { 
-            list-style: none; 
-            padding: 0; 
-            margin: 0; 
-            background-color: #1a1b1e; 
-            display: none; 
-        } 
-        .menu-item.active + .submenu { display: block; }
-        .submenu li { 
-            padding: 6px 15px 6px 40px; 
-            border-bottom: 1px solid var(--sidebar-hover); 
-            cursor: pointer; 
-            color: #bdc1c6; 
-        } 
-        .submenu li:hover { color: white; background-color: var(--sidebar-hover); } 
-        .menu-separador { border-top: 1px dashed #555; margin: 4px 10px; }
-
-        /* ÁREA PRINCIPAL */ 
-        .main-content { 
-            flex-grow: 1; 
-            display: flex; 
-            flex-direction: column; 
-            overflow-y: auto; 
-        }
-        .topbar { 
-            background-color: white; 
-            height: 40px; 
-            border-bottom: 1px solid var(--border-color); 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between; 
-            padding: 0 20px; 
-        }
-        .btn-logout { 
-            background-color: #dc3545; color: white; border: none;  
-            padding: 4px 10px; font-size: 10px; font-weight: bold; cursor: pointer; 
+        .sidebar {
+            width: 260px; background: #2c3e50; color: white;
+            display: flex; flex-direction: column;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            height: 100vh; overflow-y: auto; overflow-x: hidden; white-space: nowrap;
+            z-index: 1000;
         }
 
-        /* SISTEMA DE CARTÕES (GRID) */ 
-        .dashboard-container { padding: 20px; } 
-        .cards-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); 
-            gap: 15px; 
-            margin-bottom: 20px; 
+        .sidebar-header {
+            padding: 20px; text-align: center; background: #1a252f;
+            border-bottom: 1px solid #34495e; transition: all 0.3s;
         }
-        .card { 
-            background: white; 
-            border: 1px solid var(--border-color); 
-            border-top: 3px solid var(--google-blue); 
-            padding: 15px; 
-            text-align: center; 
-        } 
-        .card h4 { margin: 0 0 5px 0; font-size: 10px; color: #666; text-transform: uppercase; } 
-        .card .numero { font-size: 24px; font-weight: bold; color: #333; margin: 0; } 
-        .card.card-destaque { border-top-color: #ff9800; background-color: #fff8e1; } 
-        .card.card-turno { border-top-color: #4caf50; }
 
-        .btn-analitico { 
-            background-color: var(--google-blue); color: white; border: 1px solid #0d47a1; 
-            padding: 6px 15px; font-size: 10px; font-weight: bold; cursor: pointer; display: block; width: 200px; margin: 0 auto; 
-        } 
+        .sidebar a {
+            color: #ecf0f1; text-decoration: none; padding: 15px 20px;
+            display: flex; align-items: center; gap: 12px;
+            border-left: 4px solid transparent; transition: all 0.2s;
+        }
+
+        .sidebar a:hover, .sidebar a.ativo {
+            background: #34495e; border-left: 4px solid #0d6efd; color: white;
+        }
+
+        .sidebar .submenu { background: #233140; }
+        .sidebar .submenu a { padding-left: 40px; padding-top: 12px; padding-bottom: 12px; font-size: 14.5px; }
+        
+        .main-content {
+            flex-grow: 1; display: flex; flex-direction: column;
+            width: calc(100% - 260px);
+            transition: width 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        .topbar {
+            height: 60px; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 20px; z-index: 10;
+        }
+
+        #frame-filho { flex-grow: 1; border: none; width: 100%; height: 100%; background-color: #f4f7f6; }
+
+        /* Barra de rolagem elegante */
+        .sidebar::-webkit-scrollbar { width: 6px; }
+        .sidebar::-webkit-scrollbar-track { background: #1a252f; }
+        .sidebar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .sidebar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* COMPUTADOR: Menu encolhido corrigido */
+        .sidebar.recolhido { width: 70px !important; overflow-x: hidden; }
+        .main-content.expandido { width: calc(100% - 70px); margin-left: 0; }
+        
+        .sidebar.recolhido .sidebar-header { padding: 20px 0; display: flex; justify-content: center; }
+        .sidebar.recolhido a { padding: 15px 0 !important; justify-content: center !important; align-items: center !important; font-size: 0 !important; }
+        
+        .sidebar.recolhido a[style*="display: none"], .sidebar.recolhido a.d-none { display: none !important; }
+        
+        .sidebar.recolhido a .material-icons { color: #ecf0f1; margin: 0 !important; font-size: 24px !important; }
+        .sidebar.recolhido a:hover .material-icons, .sidebar.recolhido a.ativo .material-icons { color: white; }
+        
+        .sidebar.recolhido a > div, .sidebar.recolhido a > span:not(.material-icons),
+        .sidebar.recolhido .badge, .sidebar.recolhido .sidebar-header img,
+        .sidebar.recolhido a[data-bs-toggle="collapse"] .material-icons:last-child,
+        .sidebar.recolhido .submenu { display: none !important; }
+        
+        /* MÁGICA PARA CELULARES */
+        .mobile-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.5); z-index: 999;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { position: fixed; left: -260px; box-shadow: 2px 0 10px rgba(0,0,0,0.2); }
+            .sidebar.mobile-open { left: 0; }
+            .main-content { width: 100% !important; }
+            .topbar { padding: 0 10px; }
+        }
     </style>
 </head>
 <body>
-    <!-- BARRA LATERAL -->
-    <aside class="sidebar">
+
+    <div id="mobile-overlay" class="mobile-overlay" onclick="window.alternarMenuLateral()"></div>
+
+    <div class="sidebar">
         <div class="sidebar-header">
-            <!-- As informações do Firebase preencherão os IDs abaixo -->
-            <img id="painel-logo" src="" alt="Logo">
-            <h3 id="painel-nome-ceu">Buscando Unidade...</h3>
-            <p id="painel-nome-usuario">Usuário</p>
+            <span class="material-icons" id="dash-icone-padrao" style="font-size: 40px;">account_balance</span>
+            <img id="dash-img-logo" src="" alt="Logo" style="display: none; width: 100%; max-height: 120px; object-fit: contain; margin: 0 auto;">
         </div>
-        <ul class="menu-lista" id="menu-dinamico">
-            <!-- O MENU SERÁ INJETADO AQUI PELO JAVASCRIPT DEPENDENDO DO PERFIL -->
-        </ul>
-    </aside>
 
-    <!-- CONTEÚDO PRINCIPAL -->
-    <main class="main-content">
-        <header class="topbar">
-            <b id="painel-titulo-modulo">VISÃO GERAL</b>
-            <button class="btn-logout" onclick="window.sairDoSistema()">SAIR</button>
-        </header>
-        <div class="dashboard-container" id="area-cartoes">
-            <!-- OS CARTÕES SERÃO INJETADOS AQUI PELO JAVASCRIPT -->
+        <a href="javascript:void(0)" class="ativo" id="link-inicio" onclick="window.abrirFormFilho('inicio.html', this)">
+            <span class="material-icons">home</span> Início
+        </a>
+
+        <a href="javascript:void(0)" id="link-alunos" onclick="window.abrirFormFilho('alunos.html', this)">
+            <span class="material-icons">people</span> Munícipes
+        </a>
+
+        <!-- 🏫 GAVETA: TURMAS E MATRÍCULAS -->
+        <a href="#submenuTurmas" id="link-turmas" data-bs-toggle="collapse" style="justify-content: space-between;" onclick="window.removerAtivo(this)">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <span class="material-icons">school</span> Turmas e Matrículas
+            </div>
+            <span class="material-icons" style="font-size: 18px;">expand_more</span>
+        </a>
+        <div class="collapse submenu" id="submenuTurmas">
+            <a href="javascript:void(0)" onclick="window.abrirFormFilho('ChamadaOnline.html', this)"><span class="material-icons" style="font-size: 18px;">fact_check</span> Chamada On-line</a>
+            <a href="javascript:void(0)" onclick="window.abrirFormFilho('ConfiguracoesCeu.html', this)"><span class="material-icons" style="font-size: 18px;">fact_check</span> Config. Lista de Espera</a>
+            <a href="javascript:void(0)" onclick="window.abrirFormFilho('turmas.html', this)"><span class="material-icons" style="font-size: 18px;">class</span> Turmas</a>
+            <a href="javascript:void(0)" onclick="window.abrirFormFilho('FormMatricula.html', this)"><span class="material-icons" style="font-size: 18px;">how_to_reg</span> Fazer Matrículas</a>
+            <a href="javascript:void(0)" onclick="window.abrirFormFilho('GerenciadorMatriculas.html', this)"><span class="material-icons" style="font-size: 18px;">manage_accounts</span> Gerenciar Matrículas</a>
+            <a href="javascript:void(0)" onclick="window.abrirFormFilho('FormLiberacao.html', this)"><span class="material-icons" style="font-size: 18px;">manage_accounts</span> Liberar Chamada On-line</a>
         </div>
-    </main>
+        
+        <!-- 🖨️ GAVETA: IMPRESSÃO E EXPEDIÇÃO -->
+        <a href="#submenuImpressao" id="link-impressao" data-bs-toggle="collapse" style="justify-content: space-between;" onclick="window.removerAtivo(this)">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <span class="material-icons">print</span> Impressão / Expedição
+            </div>
+            <span class="material-icons" style="font-size: 18px;">expand_more</span>
+        </a>
+        <div class="collapse submenu" id="submenuImpressao">
+            <a href="javascript:void(0)" onclick="window.abrirFormFilho('ImprimirCarteirinhas.html', this)">🪪 Uso Geral <span class="badge bg-danger rounded-pill ms-auto" id="badge-uso-geral">0</span></a>
+            <a href="javascript:void(0)" onclick="window.abrirFormFilho('TelaImpressaoAcademia.html', this)">🏋️ Academia <span class="badge bg-danger rounded-pill ms-auto" id="badge-academia">0</span></a>
+            <a href="javascript:void(0)" onclick="window.abrirFormFilho('TelaImpressaoRaia.html', this)">🏊‍♂️ Raia Livre <span class="badge bg-danger rounded-pill ms-auto" id="badge-raia">0</span></a>
+            <a href="javascript:void(0)" onclick="window.abrirFormFilho('FormChamada.html', this)">📋 Listas de Chamada (física)</a>
+            <a href="javascript:void(0)" onclick="window.abrirFormFilho('ImprimirChamadaOnline.html', this)">📋 Listas de Chamada (on-line)</a>            
+            <a href="javascript:void(0)" onclick="window.abrirFormFilho('ListaVagas.html', this)">📄 Listas de Vagas</a>
+            <a href="javascript:void(0)" onclick="window.abrirFormFilho('protocolo_retirada_carteirinha.html', this)">📄 Prot. Ret. Carteirinha</a>            
+        </div>
+        
+        <!-- 🎉 GAVETA: RECREIO NAS FÉRIAS -->
+        <a href="#submenuRecreio" id="link-recreio" data-bs-toggle="collapse" style="justify-content: space-between;" onclick="window.removerAtivo(this)">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <span class="material-icons" style="color: #ffffff;">celebration</span> Recreio nas Férias 
+            </div>
+            <span class="material-icons" style="font-size: 18px;">expand_more</span>
+        </a>
+        <div class="collapse submenu" id="submenuRecreio">
+            <a href="javascript:void(0)" onclick="window.abrirFormFilho('TelaCadastroRecreio.html', this)"><span class="material-icons" style="font-size: 18px;">person_add</span> Cadastrar</a>
+            <a href="javascript:void(0)" onclick="window.abrirFormFilho('TabelaCriancasRF.html', this)"><span class="material-icons" style="font-size: 18px;">table_view</span> Edição Rápida </a>
+            <a href="javascript:void(0)" onclick="window.abrirFormFilho('funcao_bloqueada.html', this)"><span class="material-icons" style="font-size: 18px;">manage_search</span> Consultar / Editar</a>
+            <a href="javascript:void(0)" onclick="window.abrirFormFilho('TelaImprimirCrachasRF.html', this)"><span class="material-icons" style="font-size: 18px;">badge</span> Crachás de Acesso</a>
+            <a href="javascript:void(0)" onclick="window.abrirFormFilho('GraficosRF.html', this)"><span class="material-icons" style="font-size: 18px;">bar_chart</span> Painel de Gráficos</a>
+            <a href="javascript:void(0)" onclick="window.abrirFormFilho('TelaListaChamadaRF.html?v=2', this)"><span class="material-icons" style="font-size: 18px;">checklist</span> Listas de Impressão</a>
+            <a href="javascript:void(0)" onclick="window.abrirFormFilho('TelaChamadaQualitativaRF.html?v=2', this)"><span class="material-icons" style="font-size: 18px;">checklist</span> Chamada Qualitativa</a>
+        </div>
 
-    <!-- MOTOR FIREBASE INTEGRADO AO SEU LAYOUT -->
+        <!-- BOTÕES EXCLUSIVOS DRE -->
+        <a href="javascript:void(0)" id="btnRegrasRF" style="display: none;" onclick="window.abrirFormFilho('CadastroRegrasRF.html', this)">
+            <span class="material-icons">wb_sunny</span> RF - Regras
+        </a>
+        <a href="javascript:void(0)" id="btnPasseiosDRE" style="display: none;" onclick="window.abrirFormFilho('dre_passeios.html', this)">
+            <span class="material-icons">directions_bus</span> RF - Passeios
+        </a>
+        <a href="javascript:void(0)" id="btnRelatorioDRE" style="display: none;" onclick="window.abrirFormFilho('RelatorioFrequenciaDRE.html', this)">
+            <span class="material-icons">analytics</span> Relatório DRE
+        </a>
+        <a href="javascript:void(0)" id="btnDemograficoDRE" style="display: none;" onclick="window.abrirFormFilho('RelatorioIdadeTurmaDRE.html', this)">
+            <span class="material-icons">pie_chart</span> Relatório Idade/Turma
+        </a>
+        <a href="javascript:void(0)" id="btnAtracoesDRE" style="display: none;" onclick="window.abrirFormFilho('dre_atracoes.html', this)">
+            <span class="material-icons">theater_comedy</span> Atrações e Eventos
+        </a>
+
+        <!-- ⚙️ GAVETA: CADASTROS BASE -->
+        <a href="#submenuCadastros" id="link-cadastros" data-bs-toggle="collapse" style="justify-content: space-between;" onclick="window.removerAtivo(this)">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <span class="material-icons">settings</span> Cadastros Base
+            </div>
+            <span class="material-icons" style="font-size: 18px;">expand_more</span>
+        </a>
+        <div class="collapse submenu" id="submenuCadastros">
+            <a href="javascript:void(0)" onclick="window.abrirFormFilho('nucleos.html', this)"><span class="material-icons" style="font-size: 18px;">domain</span> Núcleos</a>
+            <a href="javascript:void(0)" onclick="window.abrirFormFilho('espacos.html', this)"><span class="material-icons" style="font-size: 18px;">place</span> Espaços</a>
+            <a href="javascript:void(0)" onclick="window.abrirFormFilho('professores.html', this)"><span class="material-icons" style="font-size: 18px;">school</span> Professores</a>
+            <a href="javascript:void(0)" onclick="window.abrirFormFilho('tipo_responsavel.html', this)"><span class="material-icons" style="font-size: 18px;">badge</span> Tipo Resp.</a>
+            <a href="javascript:void(0)" onclick="window.abrirFormFilho('modalidades.html', this)"><span class="material-icons" style="font-size: 18px;">sports_soccer</span> Modalidades</a>
+        </div>
+        
+        <div style="margin-top: auto;"></div>
+        <a href="#" onclick="window.fazerLogout()" style="background: #c0392b;">
+            <span class="material-icons">logout</span> Sair
+        </a>
+    </div>
+
+    <div class="main-content">
+        <div class="topbar">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <button id="btnToggleMenu" class="btn btn-outline-secondary border-0 p-1" onclick="window.alternarMenuLateral()" title="Recolher/Expandir Menu">
+                    <i class="fas fa-bars fs-4" style="color: #2c3e50;"></i>
+                </button>
+                <div style="font-size: 14px;">
+                    <span class="text-muted d-none d-sm-inline">Unidade: </span>
+                    <strong id="lbl-ceu">Carregando....</strong>
+                </div>
+            </div>
+            
+            <div class="text-end">
+                <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px;">
+                    <img id="img-avatar-usuario" src="" alt="Avatar" style="display: none; width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid #0d6efd;">
+                    <span class="material-icons" id="icone-avatar-padrao" style="font-size: 30px; color: #0d6efd;">account_circle</span>
+                    
+                    <a href="#" onclick="window.abrirTrocaSenhaLogado(); return false;" id="lbl-rf" style="font-weight: bold; color: #0d6efd; text-decoration: underline; font-size: 14px;" title="Clique para alterar a sua senha">
+                        RF: Carregando...
+                    </a>
+                </div>
+                <div id="lbl-nome-usuario" style="font-size: 11px; color: #6c757d; font-weight: 600; margin-top: 2px;">
+                    Funcionário
+                </div>
+            </div>
+        </div>
+
+        <iframe id="frame-filho" src="inicio.html"></iframe>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- MOTOR FIREBASE INTEGRADO -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
-        import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, query, where, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCpCXxJbD8dPXkT7mcoz4qK8Wjt7WTRwFA",
@@ -178,181 +251,326 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        // ==========================================
+        // FUNÇÕES GLOBAIS DE UI 
+        // ==========================================
+        window.abrirFormFilho = function(nomeDaTelaHTML, elementoClicado) {
+            document.getElementById('frame-filho').src = nomeDaTelaHTML;
+            const links = document.querySelectorAll('.sidebar a');
+            links.forEach(l => l.classList.remove('ativo'));
+            if (elementoClicado) elementoClicado.classList.add('ativo');
+
+            if (window.innerWidth <= 768) {
+                window.alternarMenuLateral();
+            }
+        };
+
+        window.removerAtivo = function(elemento) {
+            elemento.classList.remove('ativo');
+        };
+
+        window.alternarMenuLateral = function() {
+            const sidebar = document.querySelector('.sidebar');
+            const mainContent = document.querySelector('.main-content');
+            const overlay = document.getElementById('mobile-overlay');
+            
+            if (window.innerWidth <= 768) {
+                sidebar.classList.toggle('mobile-open');
+                if (overlay.style.display === 'block') {
+                    overlay.style.display = 'none';
+                } else {
+                    overlay.style.display = 'block';
+                }
+            } else {
+                if (sidebar) sidebar.classList.toggle('recolhido');
+                if (mainContent) mainContent.classList.toggle('expandido');
+            }
+        };
+
+        window.fazerLogout = function() {
+            localStorage.clear();
+            sessionStorage.clear();
+            window.location.href = "index_FB.html"; // Voltar para o novo login
+        };
+
+        window.atualizarContadoresImpressao = function() {
+            const idUnidade = localStorage.getItem('sig_id_unidade');
+            if(!idUnidade || typeof API_URL === 'undefined') return;
+
+            const pacote = {
+                acao: "contarPendenciasImpressao",
+                dados: { idPlanilha: idUnidade } 
+            };
+
+            fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify(pacote)
+            })
+            .then(res => res.json())
+            .then(retorno => {
+                if(retorno.status === "sucesso") {
+                    const badgeComum = document.getElementById('badge-uso-geral');
+                    const badgeAcademia = document.getElementById('badge-academia');
+                    const badgeRaia = document.getElementById('badge-raia');
+                    
+                    const atualizarBolinha = (elemento, valor) => {
+                        if(elemento) {
+                            elemento.innerText = valor;
+                            elemento.className = valor > 0 ? "badge bg-danger rounded-pill ms-auto" : "badge bg-secondary rounded-pill ms-auto";
+                        }
+                    };
+
+                    atualizarBolinha(badgeComum, retorno.comum);
+                    atualizarBolinha(badgeAcademia, retorno.academia);
+                    atualizarBolinha(badgeRaia, retorno.raia);
+                }
+            })
+            .catch(err => console.log("Falha ao buscar contadores (GAS):", err));
+        };
+
+        window.previewAvatar = function(event) {
+            const file = event.target.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = function(e) { document.getElementById('swal-preview-foto').src = e.target.result; }
+                reader.readAsDataURL(file);
+            }
+        };
+
+        window.abrirTrocaSenhaLogado = function() {
+            // Adaptado para usar as novas chaves
+            const rf = localStorage.getItem('sig_rf');
+            const ceu = localStorage.getItem('sig_id_unidade');
+            const fotoAtual = localStorage.getItem('sig_foto') || '';
+
+            const avatarSrc = (fotoAtual && fotoAtual !== "undefined" && fotoAtual.trim() !== "") 
+                ? fotoAtual 
+                : 'https://via.placeholder.com/120/0d6efd/ffffff?text=FOTO';
+
+            Swal.fire({
+                title: '👤 Meu Perfil',
+                html: `
+                    <div style="text-align: left; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+                        <div style="text-align: center; margin-bottom: 25px; margin-top: 10px;">
+                            <div style="position: relative; display: inline-block;">
+                                <img id="swal-preview-foto" src="${avatarSrc}" style="width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 4px solid #f4f7f6; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
+                                <label for="swal-foto" style="position: absolute; bottom: 0; right: 0; background: #0d6efd; color: white; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: 0.3s;">
+                                    <span class="material-icons" style="font-size: 20px;">camera_alt</span>
+                                </label>
+                                <input type="file" id="swal-foto" style="display: none;" accept="image/*" onchange="window.previewAvatar(event)">
+                            </div>
+                            <div style="margin-top: 10px; font-size: 13px; color: #6c757d; font-weight: 500;">Clique na câmera para enviar sua foto</div>
+                        </div>
+                        <hr style="border-color: #dee2e6; margin: 20px 0;">
+                        <h6 style="color: #0d6efd; font-weight: bold; margin-bottom: 15px;"><span class="material-icons" style="font-size: 18px; vertical-align: text-bottom;">lock_reset</span> Alterar Senha (Opcional)</h6>
+                        
+                        <div class="mb-3">
+                            <label class="form-label text-muted" style="font-size: 13px; font-weight: 600; margin-bottom: 4px;">Senha Atual</label>
+                            <input type="password" id="swal-senha-atual" class="form-control form-control-lg" style="border-radius: 8px; font-size: 14px;" placeholder="Digite para alterar a senha">
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <label class="form-label text-muted" style="font-size: 13px; font-weight: 600; margin-bottom: 4px;">Nova Senha</label>
+                                <input type="password" id="swal-nova-senha" class="form-control form-control-lg" style="border-radius: 8px; font-size: 14px;" placeholder="Mín. 8 caract.">
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label class="form-label text-muted" style="font-size: 13px; font-weight: 600; margin-bottom: 4px;">Confirmar</label>
+                                <input type="password" id="swal-conf-senha" class="form-control form-control-lg" style="border-radius: 8px; font-size: 14px;" placeholder="Repita a senha">
+                            </div>
+                        </div>
+                        
+                        <div style="font-size:12px; background: #f8f9fa; padding: 12px; border-radius: 8px; color: #6c757d; border: 1px solid #e9ecef;">
+                            <strong>Regras para nova senha:</strong> Entre 8 e 12 caracteres. Obrigatório ter Maiúscula, minúscula, Número e Símbolo (!@#$).
+                        </div>
+                    </div>
+                `,
+                confirmButtonText: '<span class="material-icons" style="vertical-align: middle; font-size: 18px; margin-right: 5px;">save</span> Salvar Perfil',
+                confirmButtonColor: '#0d6efd',
+                showCancelButton: true,
+                cancelButtonText: 'Cancelar',
+                width: '450px',
+                focusConfirm: false,
+                preConfirm: async () => {
+                    const sAtual = document.getElementById('swal-senha-atual').value.trim();
+                    const s1 = document.getElementById('swal-nova-senha').value.trim();
+                    const s2 = document.getElementById('swal-conf-senha').value.trim();
+                    const fileInput = document.getElementById('swal-foto');
+
+                    if (sAtual || s1 || s2) {
+                        if (!sAtual || !s1 || !s2) { Swal.showValidationMessage('⚠️ Preencha a Atual, a Nova e a Confirmação!'); return false; }
+                        if (s1 !== s2) { Swal.showValidationMessage('⚠️ As novas senhas não conferem!'); return false; }
+                        if (!/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,12}$/.test(s1)) {
+                            Swal.showValidationMessage('⚠️ A nova senha não atende aos requisitos de segurança!'); return false;
+                        }
+                    }
+
+                    if (!sAtual && !s1 && !s2 && fileInput.files.length === 0) {
+                        Swal.showValidationMessage('⚠️ Você não fez nenhuma alteração!'); return false;
+                    }
+
+                    let fotoBase64 = null;
+                    let nomeArquivo = null;
+
+                    if (fileInput.files.length > 0) {
+                        const file = fileInput.files[0];
+                        nomeArquivo = file.name;
+                        
+                        fotoBase64 = await new Promise((resolve, reject) => {
+                            const reader = new FileReader();
+                            reader.onload = e => resolve(e.target.result);
+                            reader.onerror = e => reject(e);
+                            reader.readAsDataURL(file);
+                        });
+                    }
+                    return { senhaAtual: sAtual, novaSenha: s1, fotoBase64: fotoBase64, nomeArquivo: nomeArquivo };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({ title: 'A regravar o seu perfil...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+
+                    const pacote = {
+                        acao: "alterarSenhaLogado",
+                        dados: {
+                            rf: rf, ceu: ceu, senhaAtual: result.value.senhaAtual, novaSenha: result.value.novaSenha,
+                            fotoBase64: result.value.fotoBase64, nomeArquivo: result.value.nomeArquivo
+                        }
+                    };
+
+                    fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) })
+                    .then(res => res.json())
+                    .then(retorno => {
+                        if (retorno.status === "sucesso") {
+                            if (retorno.novaFoto && retorno.novaFoto !== "") {
+                                localStorage.setItem('sig_foto', retorno.novaFoto);
+                                document.getElementById('icone-avatar-padrao').style.display = 'none';
+                                const imgAvatar = document.getElementById('img-avatar-usuario');
+                                imgAvatar.src = retorno.novaFoto;
+                                imgAvatar.style.display = 'block';
+                            }
+                            Swal.fire('Elegante!', retorno.mensagem, 'success');
+                        } else { Swal.fire('Atenção', retorno.mensagem, 'warning'); }
+                    })
+                    .catch(err => { Swal.fire('Erro', 'Falha ao conectar com o servidor.', 'error'); });
+                }
+            });
+        };
+
+        // ==========================================
+        // INICIALIZAÇÃO FIREBASE E CARREGAMENTO
+        // ==========================================
         async function inicializarDashboard() {
-            // Verifica a chave do login (harmonizado com o index_FB.html)
-            const idUnidadeSalva = localStorage.getItem('sig_id_unidade');
-            if(!idUnidadeSalva) {
+            // 1. Verifica se há usuário logado usando as chaves oficiais
+            const rfLogado = localStorage.getItem('sig_rf');
+            const idUnidade = localStorage.getItem('sig_id_unidade');
+            const perfilUsuario = localStorage.getItem('sig_nivel_acesso') || "UNIDADE";
+            const nomeUsuario = localStorage.getItem('sig_nome');
+            const fotoUser = localStorage.getItem('sig_foto');
+
+            if (!rfLogado) {
                 window.location.href = "index_FB.html";
                 return;
             }
 
-            // Preenche o nome do usuário logado
-            document.getElementById('painel-nome-usuario').innerText = localStorage.getItem('sig_nome') || "Gestor";
+            // 2. Preenchendo Informações Básicas
+            document.getElementById('lbl-rf').innerText = "RF: " + rfLogado;
+            document.getElementById('lbl-nome-usuario').innerText = nomeUsuario || "Funcionário";
 
-            // BUSCA DIRETA DOS CAMPOS NOME_UNIDADE E URL_LOGO NA COLEÇÃO "UNIDADES"
+            if (fotoUser && fotoUser !== "undefined" && fotoUser.trim() !== "") {
+                document.getElementById('icone-avatar-padrao').style.display = 'none';
+                const imgAvatar = document.getElementById('img-avatar-usuario');
+                imgAvatar.src = fotoUser;
+                imgAvatar.style.display = 'block';
+            }
+
+            // 3. BUSCA DO NOME DA UNIDADE E LOGO NO FIREBASE
             try {
-                const unidadesRef = collection(db, "unidades");
-                
-                // Pesquisa a unidade do usuário logado
-                let q = query(unidadesRef, where("id_unidade", "==", idUnidadeSalva));
-                let snap = await getDocs(q);
+                let dadosUnidade = null;
+                const docRef = doc(db, "unidades", idUnidade);
+                const docSnap = await getDoc(docRef);
 
-                // Trava de segurança: Se o id_unidade foi salvo como Número no Firebase
-                if (snap.empty) {
-                    q = query(unidadesRef, where("id_unidade", "==", Number(idUnidadeSalva)));
-                    snap = await getDocs(q);
+                if (docSnap.exists()) {
+                    dadosUnidade = docSnap.data();
+                } else {
+                    const unidadesRef = collection(db, "unidades");
+                    let q = query(unidadesRef, where("id_unidade", "==", idUnidade));
+                    let snap = await getDocs(q);
+                    
+                    if (snap.empty) {
+                        q = query(unidadesRef, where("id_unidade", "==", Number(idUnidade)));
+                        snap = await getDocs(q);
+                    }
+                    if (!snap.empty) dadosUnidade = snap.docs[0].data();
                 }
 
-                if (!snap.empty) {
-                    const dadosUnidade = snap.docs[0].data();
+                // Injeta Nome e Logo se encontrar
+                if (dadosUnidade) {
+                    document.getElementById('lbl-ceu').innerText = dadosUnidade.nome_unidade || (idUnidade + " - UNIDADE");
                     
-                    // Injeta o campo nome_unidade no HTML
-                    if (dadosUnidade.nome_unidade) {
-                        document.getElementById('painel-nome-ceu').innerText = dadosUnidade.nome_unidade;
-                    } else {
-                        document.getElementById('painel-nome-ceu').innerText = "UNIDADE " + idUnidadeSalva;
-                    }
-
-                    // Injeta o campo url_logo na Imagem
                     if (dadosUnidade.url_logo) {
-                        const logoElement = document.getElementById('painel-logo');
-                        logoElement.src = dadosUnidade.url_logo;
-                        logoElement.style.display = 'block'; 
+                        const imgDash = document.getElementById('dash-img-logo');
+                        const iconePadrao = document.getElementById('dash-icone-padrao');
+                        iconePadrao.style.display = 'none';
+                        imgDash.src = dadosUnidade.url_logo;
+                        imgDash.style.display = 'block';
                     }
                 } else {
-                    document.getElementById('painel-nome-ceu').innerText = "UNIDADE " + idUnidadeSalva;
+                    document.getElementById('lbl-ceu').innerText = "UNIDADE: " + idUnidade;
                 }
             } catch (erro) {
-                console.error("Erro na leitura do Firebase:", erro);
-                document.getElementById('painel-nome-ceu').innerText = "UNIDADE " + idUnidadeSalva;
+                console.error("Erro ao buscar a unidade no Firebase:", erro);
+                document.getElementById('lbl-ceu').innerText = "UNIDADE: " + idUnidade;
             }
 
-            // Roteamento de Interface (O que o usuário pode ver?)
-            const perfil = localStorage.getItem('sig_nivel_acesso');
-            if(perfil === 'DRE') {
-                window.montarInterfaceDRE();
-            } else if (perfil === 'SME') {
-                // Modo SME (em desenvolvimento)
-                document.getElementById('painel-titulo-modulo').innerText = "VISÃO GLOBAL - SME";
-                document.getElementById('area-cartoes').innerHTML = `<h3 style="text-align:center; padding:20px;">Módulo SME em Desenvolvimento</h3>`;
-            } else {
-                window.montarInterfaceUnidade();
+            // 4. CONTROLE DE VISIBILIDADE POR PERFIL
+            if (perfilUsuario === "DRE" || perfilUsuario === "SME") {
+                const btnRF = document.getElementById('btnRegrasRF');
+                if (btnRF) btnRF.style.display = 'flex';
+                
+                const btnPasseios = document.getElementById('btnPasseiosDRE');
+                if (btnPasseios) btnPasseios.style.display = 'flex';
+
+                const btnRelatorio = document.getElementById('btnRelatorioDRE');
+                if (btnRelatorio) btnRelatorio.style.display = 'flex';
+                
+                const btnDemografico = document.getElementById('btnDemograficoDRE');
+                if (btnDemografico) btnDemografico.style.display = 'flex';
+
+                const btnAtracoes = document.getElementById('btnAtracoesDRE');
+                if(btnAtracoes) btnAtracoes.style.display = 'flex';
+                
+                const itensParaOcultar = [
+                    'link-inicio', 'link-alunos', 'link-turmas', 'submenuTurmas',
+                    'link-cadastros', 'submenuCadastros', 'link-impressao', 'submenuImpressao',
+                    'link-recreio', 'submenuRecreio'
+                ];
+                itensParaOcultar.forEach(id => {
+                    const elemento = document.getElementById(id);
+                    if (elemento) elemento.style.display = 'none';
+                });
+
+                // Se for DRE ou SME, define um iframe inicial próprio
+                document.getElementById('frame-filho').src = "PainelDRE.html";
+
+            } else if (perfilUsuario === "PROFESSOR") {
+                const sidebar = document.querySelector('.sidebar');
+                if (sidebar) sidebar.style.display = 'none';
+                
+                const topbar = document.querySelector('.topbar');
+                if (topbar) topbar.style.display = 'none';
+                
+                const mainContent = document.querySelector('.main-content');
+                if (mainContent) mainContent.style.width = '100%';
+                
+                document.body.style.backgroundColor = '#f0f2f5';
+                document.getElementById('frame-filho').src = "ChamadaOnline.html";
             }
+
+            // Inicializa as contagens (Mantive a sua função original se o script do GAS continuar ativo)
+            setTimeout(window.atualizarContadoresImpressao, 1500); 
         }
 
-        // ==========================================
-        // 2. CONSTRUTOR DO MODO UNIDADE (CEU)
-        // ==========================================
-        window.montarInterfaceUnidade = function() {
-            document.getElementById('painel-titulo-modulo').innerText = "VISÃO GERAL - UNIDADE";
-            
-            // Injetando sua árvore original, corrigida com crases (`)
-            document.getElementById('menu-dinamico').innerHTML = `
-                <li class="menu-item" onclick="window.alternarMenu(this)"><span class="material-icons">home</span> Início</li>
-                <li class="menu-item" onclick="window.alternarMenu(this)"><span class="material-icons">people</span> Cadastros</li>
-                <ul class="submenu">
-                    <li>Munícipes</li>
-                    <li>Incluir Novo munícipe</li>
-                    <li>Edição Rápida</li>
-                </ul>
-                <li class="menu-item" onclick="window.alternarMenu(this)"><span class="material-icons">school</span> Turmas e Matrículas</li>
-                <ul class="submenu">
-                    <li>Turmas</li>
-                    <li>Fazer Matrículas</li>
-                    <li>Gerenciar Matrículas</li>
-                    <div class="menu-separador"></div>
-                    <li>Chamada On-line</li>
-                    <li>Liberar Chamada On-line</li>
-                    <div class="menu-separador"></div>
-                    <li>Configurar Lista de Espera</li>
-                </ul>
-                <li class="menu-item" onclick="window.alternarMenu(this)"><span class="material-icons">print</span> Impressão/Expedição</li>
-                <ul class="submenu">
-                    <li>Carteirinhas: Uso Geral</li>
-                    <li>Carteirinhas: Projeto Academia Livre</li>
-                    <li>Carteirinhas: Projeto Raia Livre</li>
-                    <div class="menu-separador"></div>
-                    <li>Listas de Chamada: Física</li>
-                    <li>Listas de Chamada: On-line</li>
-                    <div class="menu-separador"></div>
-                    <li>Lista de Vagas</li>
-                    <li>Protocolo para retirar Carteirinhas</li>
-                </ul>
-                <li class="menu-item" onclick="window.alternarMenu(this)"><span class="material-icons">sports_volleyball</span> Recreio nas Férias</li>
-                <ul class="submenu">
-                    <li>Cadastrar</li>
-                    <li>Edição Rápida</li>
-                    <li>Crachás de Acesso</li>
-                    <li>Painel de Gráficos</li>
-                    <li>Listas de Impressão</li>
-                    <li>Chamada Qualitativa</li>
-                </ul>
-                <li class="menu-item" onclick="window.alternarMenu(this)"><span class="material-icons">settings</span> Cadastros Base</li>
-                <ul class="submenu">
-                    <li>Núcleos</li>
-                    <li>Espaços</li>
-                    <li>Professores</li>
-                    <li>Tipo Responsável</li>
-                    <li>Modalidades</li>
-                </ul>
-            `;
-            
-            // Injetando os seus Cartões
-            document.getElementById('area-cartoes').innerHTML = `
-                <div class="cards-grid">
-                    <div class="card card-turno">
-                        <h4>Boas Vindas</h4>
-                        <p style="margin:0; font-size: 11px; font-weight:bold;">Turno da Manhã</p>
-                    </div>
-                    <div class="card card-destaque">
-                        <h4>Resumo da Unidade</h4>
-                        <p style="margin:0; font-size: 11px; color:#ff9800; font-weight:bold;">Operacional</p>
-                    </div>
-                    <div class="card"><h4>Munícipes Cadastrados</h4><p class="numero">0</p></div>
-                    <div class="card"><h4>Turmas Ativas</h4><p class="numero">0</p></div>
-                    <div class="card"><h4>Matrículas Realizadas</h4><p class="numero">0</p></div>
-                    <div class="card"><h4>Fila de Espera</h4><p class="numero">0</p></div>
-                    <div class="card"><h4>Agenda da TV</h4><p class="numero">0</p></div>
-                </div>
-                <button class="btn-analitico">ACESSAR PAINEL ANALÍTICO DE VAGAS</button>
-            `;
-        };
-
-        // ==========================================
-        // 3. CONSTRUTOR DO MODO DRE
-        // ==========================================
-        window.montarInterfaceDRE = function() {
-            document.getElementById('painel-titulo-modulo').innerText = "VISÃO ESTRATÉGICA - DRE";
-            
-            // Menus da DRE
-            document.getElementById('menu-dinamico').innerHTML = `
-                <li class="menu-item"><span class="material-icons">dashboard</span> Painel DRE</li>
-                <li class="menu-item"><span class="material-icons">rule</span> RF - Regras</li>
-                <li class="menu-item"><span class="material-icons">directions_bus</span> RF - Passeios</li>
-            `;
-
-            document.getElementById('area-cartoes').innerHTML = `
-                <h3 style="margin-top:0;">Visão Geral da Rede</h3>
-                <!-- Aqui entrarão os cartões sumarizados de todos os CEUs -->
-            `;
-        };
-
-        // ==========================================
-        // FUNÇÕES AUXILIARES
-        // ==========================================
-        window.alternarMenu = function(elemento) {
-            document.querySelectorAll('.menu-item').forEach(el => {
-                if(el !== elemento) el.classList.remove('active');
-            });
-            elemento.classList.toggle('active');
-        };
-
-        window.sairDoSistema = function() {
-            localStorage.clear();
-            window.location.href = "index_FB.html";
-        };
-
-        // Roda a inicialização ao carregar a página
+        // Roda ao carregar a página
         inicializarDashboard();
     </script>
 </body>

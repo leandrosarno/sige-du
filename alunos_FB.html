@@ -78,7 +78,7 @@
                     <tr>
                         <td colspan="6" class="text-center py-5 text-muted">
                             <div class="spinner-border text-primary mb-3" role="status"></div>
-                            <br>Processando ordenação rigorosa por ID do Aluno...
+                            <br>Conectando ao banco de dados e baixando registros...
                         </td>
                     </tr>
                 </tbody>
@@ -86,38 +86,43 @@
         </div>
     </div>
 
-    <!-- MOTOR FIREBASE COM ARQUITETURA BLINDADA -->
+    <!-- MOTOR FIREBASE COM CONFIGURAÇÃO INTERNA (Estável) -->
     <script type="module">
-        import { db } from './firebase_config.js';
-        import { collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCpCXxJbD8dPXkT7mcoz4qK8Wjt7WTRwFA",
+            authDomain: "sig-edu.firebaseapp.com",
+            projectId: "sig-edu",
+            storageBucket: "sig-edu.firebasestorage.app",
+            messagingSenderId: "233239725278",
+            appId: "1:233239725278:web:809b9c42feacd99175ee4f",
+            measurementId: "G-E5LLYGW7DN"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
 
         let alunosGlobais = [];
         let timerBusca = null;
-        const LIMITE_TELA = 30; 
+        const LIMITE_TELA = 30; // Exibe apenas 30 registros na tela
 
-        // 🛡️ MOTOR DE EXTRAÇÃO SEGURO
-        function extrairDadoSeguro(documento, chavesAlvo) {
-            if (!documento || typeof documento !== 'object') return '';
-            let melhorValor = '';
+        // O LEITOR BLINDADO (Versão estável e validada)
+        function getValorSeguro(obj, possiveisChaves) {
+            if (!obj) return '';
+            const chavesDoObjeto = Object.keys(obj);
             
-            for (let chaveOriginal in documento) {
-                if (Object.prototype.hasOwnProperty.call(documento, chaveOriginal)) {
-                    let chaveNormalizada = chaveOriginal.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9_]/g, "");
-                    
-                    if (chavesAlvo.includes(chaveNormalizada)) {
-                        let valorCru = documento[chaveOriginal];
-                        if (valorCru !== null && valorCru !== undefined) {
-                            let valorTexto = String(valorCru).trim();
-                            if (valorTexto !== '') {
-                                return valorCru;
-                            } else {
-                                melhorValor = valorCru;
-                            }
-                        }
+            for (let chave of chavesDoObjeto) {
+                let chaveLimpa = chave.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9_]/g, "");
+                if (possiveisChaves.some(pc => pc.replace(/[^a-z0-9_]/g, "") === chaveLimpa)) {
+                    // Garante que não retorne valores em branco se a chave existir vazia
+                    if (obj[chave] !== null && obj[chave] !== undefined && String(obj[chave]).trim() !== '') {
+                        return obj[chave];
                     }
                 }
             }
-            return melhorValor;
+            return '';
         }
 
         window.onload = async function() {
@@ -127,16 +132,8 @@
         async function carregarAlunosDoFirebase() {
             const idUnidade = localStorage.getItem('sig_id_unidade');
             
-            // 🛑 TRAVA ANTI-TRAVAMENTO: Se não estiver logado, avisa na tela e para o script
             if(!idUnidade) {
-                document.getElementById('corpo-tabela').innerHTML = `
-                    <tr>
-                        <td colspan="6" class="text-center text-danger py-5 fw-bold">
-                            <i class="fas fa-user-lock fs-1 mb-3"></i><br>
-                            Sessão Expirada ou Não Autenticada.<br>Por favor, faça o login novamente a partir do painel principal.
-                        </td>
-                    </tr>`;
-                Swal.fire('Acesso Negado', 'Sua sessão é anônima ou expirou. Você precisa logar na sua Unidade.', 'error');
+                document.getElementById('corpo-tabela').innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4 fw-bold">Sessão Expirada. Faça o login novamente no painel.</td></tr>`;
                 return;
             }
 
@@ -151,29 +148,25 @@
                     alunosGlobais.push(dado);
                 });
 
+                // ORDENAÇÃO POR ID_ALUNO (Maior para o Menor)
                 alunosGlobais.sort((a, b) => {
-                    let prontA_raw = extrairDadoSeguro(a, ['id_aluno', 'num_prontuario', 'prontuario']);
-                    let prontB_raw = extrairDadoSeguro(b, ['id_aluno', 'num_prontuario', 'prontuario']);
+                    let idA_raw = getValorSeguro(a, ['id_aluno', 'num_prontuario']);
+                    let idB_raw = getValorSeguro(b, ['id_aluno', 'num_prontuario']);
 
-                    let prontA = parseInt(String(prontA_raw).replace(/\D/g, ''), 10) || 0;
-                    let prontB = parseInt(String(prontB_raw).replace(/\D/g, ''), 10) || 0;
-                    
-                    if (prontB !== prontA) {
-                        return prontB - prontA; 
-                    } else {
-                        return (b.idFirebase || "").localeCompare(a.idFirebase || "");
-                    }
+                    let idA = parseInt(String(idA_raw).replace(/\D/g, ''), 10) || 0;
+                    let idB = parseInt(String(idB_raw).replace(/\D/g, ''), 10) || 0;
+
+                    return idB - idA;
                 });
 
                 renderizarTabela(alunosGlobais.slice(0, LIMITE_TELA), "");
 
             } catch (err) {
                 console.error("Erro ao buscar no Firebase:", err);
-                
                 if (err.message.includes('Quota')) {
                     document.getElementById('corpo-tabela').innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4 fw-bold"><i class="fas fa-ban fs-2 mb-2"></i><br>Limite de leituras atingido no Firebase.<br>Aguarde a cota diária zerar.</td></tr>`;
                 } else {
-                    document.getElementById('corpo-tabela').innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4 fw-bold"><i class="fas fa-exclamation-triangle"></i> Falha ao processar a conexão segura.<br>Certifique-se de estar rodando pelo Live Server.</td></tr>`;
+                    document.getElementById('corpo-tabela').innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4 fw-bold"><i class="fas fa-exclamation-triangle"></i> Falha ao carregar a base de dados.</td></tr>`;
                 }
             }
         }
@@ -183,7 +176,7 @@
             
             const tbody = document.getElementById('corpo-tabela');
             if(termo.length > 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-5 text-muted"><div class="spinner-border text-primary mb-3" role="status"></div><br>Processando busca blindada: <b>${termo}</b>...</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-5 text-muted"><div class="spinner-border text-primary mb-3" role="status"></div><br>Buscando <b>${termo}</b>...</td></tr>`;
             }
 
             timerBusca = setTimeout(() => {
@@ -195,10 +188,10 @@
                 }
 
                 const resultados = alunosGlobais.filter(al => {
-                    const nome = extrairDadoSeguro(al, ['nome_completo', 'nome', 'aluno']).toUpperCase();
-                    const eol = extrairDadoSeguro(al, ['id_eol', 'eol']).toUpperCase();
-                    const pront = String(extrairDadoSeguro(al, ['id_aluno', 'num_prontuario', 'prontuario'])).toUpperCase();
-                    const cin = extrairDadoSeguro(al, ['cin', 'cpf', 'rg']).toUpperCase();
+                    const nome = getValorSeguro(al, ['nome_completo', 'nome', 'aluno']).toUpperCase();
+                    const eol = getValorSeguro(al, ['id_eol', 'eol']).toUpperCase();
+                    const pront = String(getValorSeguro(al, ['id_aluno', 'num_prontuario'])).toUpperCase();
+                    const cin = getValorSeguro(al, ['cin', 'cpf', 'rg']).toUpperCase();
 
                     return nome.includes(termo) || eol.includes(termo) || pront.includes(termo) || cin.includes(termo);
                 });
@@ -218,7 +211,7 @@
             }
             
             if(lista.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-5 text-muted"><span class="material-icons fs-1 mb-2">person_off</span><br>Nenhum aluno encontrado.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-5 text-muted"><span class="material-icons fs-1 mb-2">person_off</span><br>Nenhum aluno encontrado para esta busca.</td></tr>`;
                 return;
             }
 
@@ -226,12 +219,12 @@
             const semFotoPlaceholder = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='%2394a3b8'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E";
 
             lista.forEach(al => {
-                const prontuario = extrairDadoSeguro(al, ['id_aluno', 'num_prontuario', 'prontuario']) || '-';
-                const eol = extrairDadoSeguro(al, ['id_eol', 'eol']) || '-';
-                const nome = extrairDadoSeguro(al, ['nome_completo', 'nome', 'aluno']) || '-';
-                const cpf = extrairDadoSeguro(al, ['cin', 'cpf', 'rg']) || '-';
+                const prontuario = getValorSeguro(al, ['id_aluno', 'num_prontuario']) || '-';
+                const eol = getValorSeguro(al, ['id_eol', 'eol']) || '-';
+                const nome = getValorSeguro(al, ['nome_completo', 'nome', 'aluno']) || '-';
+                const cpf = getValorSeguro(al, ['cin', 'cpf', 'rg']) || '-';
                 
-                let linkCru = extrairDadoSeguro(al, ['link_foto', 'foto', 'url_foto']);
+                let linkCru = getValorSeguro(al, ['link_foto', 'foto', 'url_foto']);
                 let urlFoto = semFotoPlaceholder;
 
                 if (linkCru && linkCru.includes('http')) {

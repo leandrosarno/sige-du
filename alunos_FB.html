@@ -109,6 +109,23 @@
         let alunosGlobais = [];
         let timerBusca = null;
 
+        // ========================================================
+        // O LEITOR BLINDADO (Ignora maiúsculas, minúsculas e acentos)
+        // ========================================================
+        function getValorSeguro(obj, possiveisChaves) {
+            if (!obj) return '';
+            const chavesDoObjeto = Object.keys(obj);
+            
+            for (let chave of chavesDoObjeto) {
+                // Tira acentos e deixa minúsculo para comparar
+                let chaveLimpa = chave.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+                if (possiveisChaves.includes(chaveLimpa)) {
+                    return obj[chave];
+                }
+            }
+            return '';
+        }
+
         window.onload = async function() {
             await carregarAlunosDoFirebase();
         };
@@ -132,9 +149,10 @@
                     alunosGlobais.push(dado);
                 });
 
+                // Ordena alfabeticamente tentando achar o nome de qualquer jeito
                 alunosGlobais.sort((a, b) => {
-                    let nomeA = (a.nome || a.nome_completo || "").toUpperCase();
-                    let nomeB = (b.nome || b.nome_completo || "").toUpperCase();
+                    let nomeA = getValorSeguro(a, ['nome', 'nome_completo', 'nome_municipe', 'aluno']).toUpperCase();
+                    let nomeB = getValorSeguro(b, ['nome', 'nome_completo', 'nome_municipe', 'aluno']).toUpperCase();
                     return nomeA.localeCompare(nomeB);
                 });
 
@@ -162,13 +180,11 @@
                     return;
                 }
 
+                // O NOVO MOTOR DE BUSCA (Procura em TODOS os campos do documento ao mesmo tempo)
                 const resultados = alunosGlobais.filter(al => {
-                    const nome = (al.nome || al.nome_completo || "").toUpperCase();
-                    const eol = (al.eol || al.id_municipe || "").toUpperCase();
-                    const pront = (al.prontuario || "").toUpperCase();
-                    const cpf = (al.cpf || "").toUpperCase();
-
-                    return nome.includes(termo) || eol.includes(termo) || pront.includes(termo) || cpf.includes(termo);
+                    return Object.values(al).some(valor => 
+                        String(valor).toUpperCase().includes(termo)
+                    );
                 });
 
                 renderizarTabela(resultados.slice(0, 100), termo, resultados.length);
@@ -179,7 +195,7 @@
             const tbody = document.getElementById('corpo-tabela');
             
             if(termoBusca === "") {
-                document.getElementById('contador-alunos').innerHTML = `Mostrando os primeiros <b>${lista.length}</b> de <b>${alunosGlobais.length}</b> cadastrados. <br>Use a busca para encontrar nomes específicos.`;
+                document.getElementById('contador-alunos').innerHTML = `Mostrando os primeiros <b>${lista.length}</b> de <b>${alunosGlobais.length}</b> cadastrados. <br>Use a busca para encontrar registros específicos.`;
             } else {
                 let txtTotal = totalEncontrado > 100 ? `100 de ${totalEncontrado}` : totalEncontrado;
                 document.getElementById('contador-alunos').innerText = `${txtTotal} aluno(s) encontrado(s) para "${termoBusca}"`;
@@ -194,19 +210,24 @@
             const semFotoPlaceholder = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='%2394a3b8'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E";
 
             lista.forEach(al => {
-                const urlFoto = (al.link_foto && al.link_foto.includes('http')) ? al.link_foto : semFotoPlaceholder;
-                const eol = al.eol || al.id_municipe || '-';
-                const nome = al.nome || al.nome_completo || '-';
+                // USANDO A NOVA INTELIGÊNCIA PARA PUXAR OS DADOS
+                const prontuario = getValorSeguro(al, ['prontuario', 'prontuario/id', 'id']) || '-';
+                const eol = getValorSeguro(al, ['eol', 'id_municipe', 'cod_eol', 'codigo_eol']) || '-';
+                const nome = getValorSeguro(al, ['nome', 'nome_completo', 'nome_municipe', 'aluno']) || '-';
+                const cpf = getValorSeguro(al, ['cpf', 'cin', 'rg', 'cin/cpf']) || '-';
+                
+                let urlFotoRaw = getValorSeguro(al, ['link_foto', 'foto', 'url_foto']);
+                const urlFoto = (urlFotoRaw && urlFotoRaw.includes('http')) ? urlFotoRaw : semFotoPlaceholder;
                 
                 html += `
                 <tr>
                     <td class="text-center">
                         <img src="${urlFoto}" class="foto-miniatura" loading="lazy" onerror="this.onerror=null; this.src='${semFotoPlaceholder}';">
                     </td>
-                    <td class="fw-bold text-primary">${al.prontuario || '-'}</td>
+                    <td class="fw-bold text-primary">${prontuario}</td>
                     <td class="fw-bold">${eol}</td>
                     <td class="fw-bold">${nome}</td>
-                    <td class="text-muted">${al.cpf || '-'}</td>
+                    <td class="text-muted">${cpf}</td>
                     <td class="text-center">
                         <button class="btn-acao" onclick="editarAluno('${al.idFirebase}')">
                             <span class="material-icons align-middle fs-6">edit</span> EDITAR
@@ -220,7 +241,6 @@
 
         window.abrirNovoCadastro = function() {
             if (window.parent && window.parent.abrirFormFilho) {
-                // CHAMA O NOVO TELA_ALUNOS_FB
                 window.parent.abrirFormFilho('tela_alunos_FB.html', window.parent.document.querySelector('.sidebar a.ativo'));
             } else {
                 window.location.href = 'tela_alunos_FB.html';
@@ -229,7 +249,6 @@
 
         window.editarAluno = function(idFirebase) {
             if (window.parent && window.parent.abrirFormFilho) {
-                // CHAMA O NOVO TELA_ALUNOS_FB PASSANDO O ID
                 window.parent.abrirFormFilho(`tela_alunos_FB.html?id=${idFirebase}`, window.parent.document.querySelector('.sidebar a.ativo'));
             } else {
                 window.location.href = `tela_alunos_FB.html?id=${idFirebase}`;

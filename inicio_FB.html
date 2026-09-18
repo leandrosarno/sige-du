@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Início - Sistema CEU</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f4f7f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; }
+        
+        /* Estilos do Cartão de Boas Vindas Dinâmico */
+        .welcome-card {
+            border: none;
+            border-radius: 15px;
+            color: white;
+            padding: 30px 40px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+            transition: background 0.5s ease;
+        }
+        
+        /* Paletas de Cores por Turno */
+        .bg-manha { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .bg-tarde { background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); }
+        .bg-noite { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+
+        /* Estilos dos Cartões Menores */
+        .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+        .stat-card {
+            background: white; border: none; border-radius: 10px;
+            padding: 20px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border-bottom: 4px solid #0d6efd;
+        }
+        .stat-card h6 { color: #6c757d; font-size: 11px; text-transform: uppercase; font-weight: bold; margin-bottom: 10px; }
+        .stat-card h3 { color: #2c3e50; font-size: 28px; font-weight: bold; margin: 0; }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- Cartão de Boas Vindas -->
+        <div id="cartao-boas-vindas" class="welcome-card bg-manha">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 id="saudacao-usuario" class="fw-bold mb-2">CARREGANDO...</h2>
+                    <p id="data-atual" class="mb-0" style="font-size: 16px; opacity: 0.9;"></p>
+                </div>
+                <i id="icone-tempo" class="fas fa-sun" style="font-size: 48px; opacity: 0.8;"></i>
+            </div>
+        </div>
+
+        <!-- Cartões de Resumo Operacional -->
+        <div class="cards-grid">
+            <div class="stat-card" style="border-bottom-color: #0d6efd;">
+                <h6>Munícipes Cadastrados</h6>
+                <h3>0</h3>
+            </div>
+            <div class="stat-card" style="border-bottom-color: #198754;">
+                <h6>Turmas Ativas</h6>
+                <h3>0</h3>
+            </div>
+            <div class="stat-card" style="border-bottom-color: #ffc107;">
+                <h6>Matrículas Realizadas</h6>
+                <h3>0</h3>
+            </div>
+            <div class="stat-card" style="border-bottom-color: #dc3545;">
+                <h6>Fila de Espera</h6>
+                <h3>0</h3>
+            </div>
+            <div class="stat-card" style="border-bottom-color: #6f42c1;">
+                <h6>Agenda da TV</h6>
+                <h3>0</h3>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.onload = function() {
+            // 1. Pega o nome do usuário pelas novas chaves do Firebase
+            const nomeCompleto = localStorage.getItem('sig_nome');
+            const primeiroNome = nomeCompleto ? nomeCompleto.split(' ')[0].toUpperCase() : "GESTOR";
+
+            // 2. Lógica de Tempo e Cores
+            const data = new Date();
+            const hora = data.getHours();
+
+            const cartao = document.getElementById('cartao-boas-vindas');
+            const saudacao = document.getElementById('saudacao-usuario');
+            const icone = document.getElementById('icone-tempo');
+            const dataTexto = document.getElementById('data-atual');
+
+            if (hora >= 5 && hora < 12) {
+                saudacao.innerText = "BOM DIA, " + primeiroNome + "!";
+                cartao.className = "welcome-card bg-manha";
+                icone.className = "fas fa-sun";
+            } else if (hora >= 12 && hora < 18) {
+                saudacao.innerText = "BOA TARDE, " + primeiroNome + "!";
+                cartao.className = "welcome-card bg-tarde";
+                icone.className = "fas fa-cloud-sun";
+            } else {
+                saudacao.innerText = "BOA NOITE, " + primeiroNome + "!";
+                cartao.className = "welcome-card bg-noite";
+                icone.className = "fas fa-moon";
+            }
+
+            // 3. Renderiza a data de hoje por extenso
+            const opcoesData = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            let dataFormatada = data.toLocaleDateString('pt-BR', opcoesData);
+            // Capitaliza a primeira letra (Ex: "Sexta-feira, 18 de setembro...")
+            dataFormatada = dataFormatada.charAt(0).toUpperCase() + dataFormatada.slice(1);
+            dataTexto.innerText = dataFormatada;
+        };
+    </script>
+</body>
+</html>

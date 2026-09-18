@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
-    <title>Painel Principal</title> 
+    <title>Painel Principal - Sistema CEU</title> 
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Referência ao config.js do Google Sheets foi removida -->
     
     <style>
         body {
@@ -141,6 +142,7 @@
                         RF: Carregando...
                     </a>
                 </div>
+                <!-- O nome simples do usuário restaurado na Topbar -->
                 <div id="lbl-nome-usuario" style="font-size: 11px; color: #6c757d; font-weight: 600; margin-top: 2px;">
                     Funcionário
                 </div>
@@ -152,10 +154,23 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- MOTOR FIREBASE INTEGRADO (Centralizado) -->
+    <!-- MOTOR FIREBASE INTEGRADO -->
     <script type="module">
-        import { db } from './firebase_config.js';
-        import { collection, getDocs, query, where, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, where, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCpCXxJbD8dPXkT7mcoz4qK8Wjt7WTRwFA",
+            authDomain: "sig-edu.firebaseapp.com",
+            projectId: "sig-edu",
+            storageBucket: "sig-edu.firebasestorage.app",
+            messagingSenderId: "233239725278",
+            appId: "1:233239725278:web:809b9c42feacd99175ee4f",
+            measurementId: "G-E5LLYGW7DN"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
 
         // ==========================================
         // FUNÇÕES GLOBAIS DE UI 
@@ -299,6 +314,7 @@
                         const docSnap = await getDoc(docRef);
 
                         if (!docSnap.exists()) {
+                            // Fallback caso seja o cadastro muito antigo
                             const q = query(collection(db, "usuarios"), where("rf_usuario", "==", rf), where("id_unidade", "==", ceu));
                             const snap = await getDocs(q);
                             if(snap.empty) {
@@ -357,15 +373,11 @@
         };
 
         // ==========================================
-        // O MOTOR DO MENU DINÂMICO BLINDADO
+        // O MOTOR DO MENU DINÂMICO
         // ==========================================
         async function carregarMenuDinamico(perfisUsuario) {
             try {
                 const temPermissao = (perfisPermitidos) => {
-                    // 🌟 CHAVE MESTRA: Se o usuário for ADMIN, ele ignora tudo e enxerga 100% dos botões.
-                    if (perfisUsuario.includes('ADMIN')) return true;
-                    
-                    // Lógica para usuários mortais:
                     if (!perfisPermitidos || !Array.isArray(perfisPermitidos)) return false;
                     return perfisUsuario.some(p => perfisPermitidos.includes(p));
                 };
@@ -470,6 +482,7 @@
                 // PREENCHE DADOS DO USUÁRIO NA BARRA SUPERIOR
                 document.getElementById('lbl-rf').innerText = "RF: " + rfLogado;
                 
+                // Manteve-se o "Funcionário" ou o primeiro nome limpo
                 document.getElementById('lbl-nome-usuario').innerText = nomeUsuario ? nomeUsuario.split(' ')[0] : "Funcionário";
 
                 if (fotoUser && fotoUser !== "undefined" && fotoUser.trim() !== "") {

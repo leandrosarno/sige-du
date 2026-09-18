@@ -25,55 +25,59 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
         }
         
+        /* --------------------------------------------------- */
+        /* CARTÃO DE LOGIN: HORIZONTAL E BEM PEQUENO/COMPACTO  */
+        /* --------------------------------------------------- */
         .login-wrapper {
             display: flex;
             flex-direction: row;
             background: white;
-            border-radius: 16px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
             width: 100%;
-            max-width: 750px;
+            max-width: 520px; /* Reduzido drasticamente */
+            min-height: 280px;
             overflow: hidden;
-            border-top: 5px solid #ff9800; /* Identificador de Homologação */
+            border-top: 4px solid #ff9800; /* Identificador de Homologação */
         }
 
         /* LADO ESQUERDO: LOGO E MARCA */
         .login-left {
-            flex: 1;
+            flex: 0.8;
             background: linear-gradient(135deg, #f8fafc, #e2e8f0);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 40px 20px;
+            padding: 20px 15px;
             text-align: center;
-            border-right: 1px solid #cbd5e1;
+            border-right: 1px solid #e2e8f0;
         }
-        .login-left span.icone-padrao { font-size: 80px; color: var(--cor-primaria); margin-bottom: 10px; }
-        .login-left h3 { font-weight: 800; color: #1e293b; margin-top: 15px; margin-bottom: 5px; font-size: 24px; }
-        .login-left p { color: #64748b; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin: 0; }
+        .login-left span.icone-padrao { font-size: 60px; color: var(--cor-primaria); margin-bottom: 5px; }
+        .login-left h3 { font-weight: 800; color: #1e293b; margin-top: 10px; margin-bottom: 2px; font-size: 18px; }
+        .login-left p { color: #64748b; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin: 0; }
 
         /* LADO DIREITO: FORMULÁRIO */
         .login-right {
             flex: 1.2;
-            padding: 40px;
+            padding: 25px 20px;
             display: flex;
             flex-direction: column;
             justify-content: center;
         }
         
-        .form-label { font-weight: 700; color: #4a5568; font-size: 13px; text-transform: uppercase; margin-bottom: 5px; }
-        .form-control { padding: 12px 15px; border-radius: 8px; background-color: #f8fafc; border: 1px solid #cbd5e1; font-weight: 600; color: #1e293b; margin-bottom: 20px; transition: all 0.2s; text-align: center;}
-        .form-control:focus { background-color: #ffffff; border-color: var(--cor-primaria); box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.1); }
+        .form-label { font-weight: 700; color: #4a5568; font-size: 11px; text-transform: uppercase; margin-bottom: 3px; }
+        .form-control { padding: 8px 12px; border-radius: 6px; background-color: #f8fafc; border: 1px solid #cbd5e1; font-weight: 600; font-size: 13px; color: #1e293b; margin-bottom: 12px; transition: all 0.2s; text-align: center;}
+        .form-control:focus { background-color: #ffffff; border-color: var(--cor-primaria); box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1); }
         
-        .btn-login { background-color: var(--cor-primaria); border: none; width: 100%; padding: 14px; font-weight: 800; font-size: 15px; border-radius: 8px; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s; margin-top: 10px; }
-        .btn-login:hover { background-color: #0b5ed7; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(13, 110, 253, 0.3); }
+        .btn-login { background-color: var(--cor-primaria); color: white; border: none; width: 100%; padding: 10px; font-weight: 800; font-size: 13px; border-radius: 6px; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s; margin-top: 5px; }
+        .btn-login:hover { background-color: #0b5ed7; transform: translateY(-1px); box-shadow: 0 4px 10px rgba(13, 110, 253, 0.2); }
 
-        /* Responsividade para telas pequenas */
-        @media (max-width: 768px) {
-            .login-wrapper { flex-direction: column; max-width: 400px; margin: 20px; }
-            .login-left { border-right: none; border-bottom: 1px solid #cbd5e1; padding: 30px 20px; }
-            .login-right { padding: 30px 25px; }
+        /* Responsividade para celulares */
+        @media (max-width: 550px) {
+            .login-wrapper { flex-direction: column; max-width: 320px; margin: 20px; }
+            .login-left { border-right: none; border-bottom: 1px solid #e2e8f0; padding: 20px; }
+            .login-right { padding: 20px; }
         }
     </style>
 </head>
@@ -84,8 +88,8 @@
         <!-- COLUNA ESQUERDA (MARCA) -->
         <div class="login-left" id="box-logo">
             <span class="material-icons icone-padrao" id="icone-padrao">account_balance</span>
-            <img id="img-logo" src="" alt="Logo do Sistema" style="display: none; width: 80%; max-height: 120px; object-fit: contain; margin-bottom: 10px;">
-            <h3 id="titulo-sistema">A carregar...</h3>
+            <img id="img-logo" src="" alt="Logo do Sistema" style="display: none; width: 80%; max-height: 90px; object-fit: contain; margin-bottom: 10px;">
+            <h3 id="titulo-sistema">Carregando...</h3>
             <p>Acesso Restrito</p>
         </div>
 
@@ -108,7 +112,7 @@
                     <input type="password" class="form-control" id="senha_usuario" placeholder="••••••••" required>
                 </div>
                 
-                <button type="submit" class="btn btn-primary btn-login" id="btn-entrar">
+                <button type="submit" class="btn btn-login" id="btn-entrar">
                     Entrar no Sistema
                 </button>
             </form>
@@ -118,7 +122,6 @@
 
     <!-- SCRIPT DO SISTEMA COM FIREBASE CENTRALIZADO -->
     <script type="module">
-        // IMPORTAÇÃO DA CONEXÃO CENTRALIZADA (firebase_config.js)
         import { db } from './firebase_config.js';
         import { collection, getDocs, getDoc, doc, query, where, updateDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
@@ -150,43 +153,52 @@
                         img.style.display = 'block';
                     }
                 } else {
-                    document.getElementById('titulo-sistema').innerText = "SIG-EDU Central";
+                    document.getElementById('titulo-sistema').innerText = "SIG-EDU";
                 }
             } catch (erro) {
-                console.error("Aviso: Banco de dados ainda sem configurações registradas.", erro);
-                document.getElementById('titulo-sistema').innerText = "SIG-EDU Central";
+                console.error("Aviso: Configurações não encontradas.", erro);
+                document.getElementById('titulo-sistema').innerText = "SIG-EDU";
             }
         };
 
         // ==========================================
-        // MOTOR DE LOGIN BLINDADO
+        // MOTOR DE LOGIN BLINDADO (DUPLA TIPAGEM)
         // ==========================================
         window.fazerLogin = async function() {
-            // Limpa espaços vazios e formata
-            const ceu = document.getElementById('id_ceu').value.trim();
-            const rf = document.getElementById('rf_usuario').value.trim();
+            const ceuTexto = document.getElementById('id_ceu').value.trim();
+            const rfTexto = document.getElementById('rf_usuario').value.trim();
             const senha = document.getElementById('senha_usuario').value.trim();
 
-            if(!ceu || !rf || !senha) {
+            if(!ceuTexto || !rfTexto || !senha) {
                 Swal.fire('Atenção', 'Preencha todos os campos.', 'warning');
                 return;
             }
 
             Swal.fire({
                 title: 'Autenticando...',
-                text: 'Consultando credenciais no servidor.',
+                text: 'Consultando banco de dados.',
                 allowOutsideClick: false,
                 didOpen: () => { Swal.showLoading(); }
             });
 
             try {
                 const usuariosRef = collection(db, "usuarios");
-                const q = query(usuariosRef, 
-                    where("id_ceu", "==", ceu),
-                    where("rf_usuario", "==", rf)
-                );
                 
-                const querySnapshot = await getDocs(q);
+                // 1ª Tentativa: Procura como TEXTO (String)
+                let q = query(usuariosRef, where("id_ceu", "==", ceuTexto), where("rf_usuario", "==", rfTexto));
+                let querySnapshot = await getDocs(q);
+
+                // 2ª Tentativa: Se não achou como texto, tenta como NÚMERO (Integer)
+                if (querySnapshot.empty) {
+                    q = query(usuariosRef, where("id_ceu", "==", Number(ceuTexto)), where("rf_usuario", "==", Number(rfTexto)));
+                    querySnapshot = await getDocs(q);
+                }
+
+                // 3ª Tentativa Cruzada: CEU como texto e RF como Número
+                if (querySnapshot.empty) {
+                    q = query(usuariosRef, where("id_ceu", "==", ceuTexto), where("rf_usuario", "==", Number(rfTexto)));
+                    querySnapshot = await getDocs(q);
+                }
 
                 if (querySnapshot.empty) {
                     Swal.fire('Acesso Negado', 'Usuário não encontrado nesta unidade.', 'error');
@@ -199,7 +211,7 @@
 
                 querySnapshot.forEach((documento) => {
                     const dados = documento.data();
-                    if (dados.senha_usuario === senha) {
+                    if (dados.senha_usuario === senha || String(dados.senha_usuario) === senha) {
                         usuarioValido = true;
                         dadosUsuario = dados;
                         idDocumentoFirebase = documento.id; 
@@ -216,12 +228,11 @@
                     return;
                 }
 
-                // SUCESSO - Preenche variáveis de sessão
-                localStorage.setItem('ceu_codigo_eol', ceu);
-                localStorage.setItem('ceu_rf_logado', rf); 
-                localStorage.setItem('sig_id_unidade', ceu); // Chave para os módulos novos
-                localStorage.setItem('sig_rf', rf); // Chave para os módulos novos
-                localStorage.setItem('ceu_planilha_id', dadosUsuario.id_planilha_banco || "");
+                // SUCESSO - Preenche variáveis
+                localStorage.setItem('ceu_codigo_eol', ceuTexto);
+                localStorage.setItem('ceu_rf_logado', rfTexto); 
+                localStorage.setItem('sig_id_unidade', ceuTexto); 
+                localStorage.setItem('sig_rf', rfTexto); 
                 localStorage.setItem('ceu_nome', dadosUsuario.nome_ceu || "Escola");
                 localStorage.setItem('ceu_nome_usuario', dadosUsuario.nome_usuario || "Gestor");
                 
@@ -231,7 +242,7 @@
                 localStorage.setItem('ceu_perfil', dadosUsuario.perfil_usuario || "padrao"); 
                 localStorage.setItem('sig_nivel_acesso', JSON.stringify([dadosUsuario.perfil_usuario || 'SECRETARIA']));
                 
-                // Redireciona para o Painel Principal (Ajuste o nome do arquivo se necessário)
+                // Redireciona para o Painel Principal (Ajuste o nome do arquivo da sua dashboard principal)
                 window.location.href = "dashboard.html"; 
 
             } catch (erro) {
@@ -289,7 +300,7 @@
                     document.getElementById('senha_usuario').value = ''; 
                 });
             } catch (erro) {
-                Swal.fire('Erro', 'Ocorreu um erro ao atualizar a senha no banco.', 'error');
+                Swal.fire('Erro', 'Ocorreu um erro ao atualizar a senha.', 'error');
                 console.error(erro);
             }
         };

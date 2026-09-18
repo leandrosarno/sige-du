@@ -49,7 +49,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Proteção Admin
         window.onload = function() {
             try {
                 const perfis = JSON.parse(localStorage.getItem('sig_nivel_acesso') || '[]');
@@ -77,7 +76,6 @@
             barraContainer.style.display = 'flex';
             statusText.style.display = 'block';
 
-            // Leitura do arquivo CSV via PapaParse
             Papa.parse(arquivoInput.files[0], {
                 header: true,
                 skipEmptyLines: true,
@@ -89,7 +87,6 @@
                         return;
                     }
 
-                    // Validação da coluna chave
                     if (!dados[0].hasOwnProperty('id_unidade')) {
                         Swal.fire('Erro Crítico', 'A coluna "id_unidade" não foi encontrada no cabeçalho do CSV.', 'error');
                         btn.disabled = false;
@@ -99,8 +96,7 @@
                     const totalRegistros = dados.length;
                     statusText.innerText = `Preparando ${totalRegistros} registros...`;
 
-                    // O Firebase aceita lotes de no máximo 500 gravações por vez
-                    const TAMANHO_LOTE = 500;
+                    const TAMANHO_LOTE = 450; // Margem de segurança menor que 500
                     let lotesEnviados = 0;
                     let totalLotes = Math.ceil(totalRegistros / TAMANHO_LOTE);
 
@@ -110,10 +106,15 @@
                             const batch = writeBatch(db);
 
                             lote.forEach(municipe => {
-                                // Cria um ID único aleatório para cada munícipe
+                                // O FAXINEIRO DE COLUNAS FANTASMAS
+                                Object.keys(municipe).forEach(chave => {
+                                    if (!chave || chave.trim() === "") {
+                                        delete municipe[chave];
+                                    }
+                                });
+
                                 const docRef = doc(collection(db, "municipes")); 
                                 
-                                // Adiciona metadados úteis para o sistema
                                 municipe.data_cadastro = new Date().toISOString();
                                 municipe.rf_cadastrador = localStorage.getItem('sig_rf') || "SISTEMA_MIGRACAO";
                                 
@@ -123,7 +124,6 @@
                             await batch.commit();
                             lotesEnviados++;
 
-                            // Atualiza a interface
                             const percentual = Math.round((lotesEnviados / totalLotes) * 100);
                             barra.style.width = percentual + '%';
                             barra.innerText = percentual + '%';
@@ -136,7 +136,7 @@
 
                     } catch (erro) {
                         console.error("Erro na importação:", erro);
-                        Swal.fire('Erro na Migração', 'O processo foi interrompido devido a uma falha de conexão.', 'error');
+                        Swal.fire('Erro na Migração', 'O processo falhou no Firebase. Veja o console (F12) para detalhes.', 'error');
                         statusText.innerText = "Falha no envio.";
                         statusText.classList.replace('text-muted', 'text-danger');
                     } finally {

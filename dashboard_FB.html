@@ -18,9 +18,8 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        /* LARGURA DO MENU REDUZIDA PARA 220px */
         .sidebar {
-            width: 200px; background: #2c3e50; color: white;
+            width: 220px; background: #2c3e50; color: white;
             display: flex; flex-direction: column;
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
             height: 100vh; overflow-y: auto; overflow-x: hidden; white-space: nowrap;
@@ -28,15 +27,14 @@
         }
 
         .sidebar-header {
-            padding: 5px; text-align: center; background: #1a252f;
+            padding: 20px; text-align: center; background: #1a252f;
             border-bottom: 1px solid #34495e; transition: all 0.3s;
         }
 
-        /* FONTE 10 E SEM NEGRITO (normal) */
         .sidebar a {
             color: #ecf0f1; text-decoration: none; padding: 15px 20px;
             display: flex; align-items: center; gap: 12px;
-            border-left: 1px solid transparent; transition: all 0.2s;
+            border-left: 4px solid transparent; transition: all 0.2s;
             font-size: 10px; 
             font-weight: normal !important; 
         }
@@ -110,101 +108,17 @@
             <img id="dash-img-logo" src="" alt="Logo" style="display: none; width: 100%; max-height: 120px; object-fit: contain; margin: 0 auto;">
         </div>
 
-        <a href="javascript:void(0)" class="ativo" id="link-inicio" onclick="window.abrirFormFilho('inicio.html', this)">
-            <span class="material-icons">home</span> Início
-        </a>
-
-        <a href="javascript:void(0)" id="link-alunos" onclick="window.abrirFormFilho('alunos.html', this)">
-            <span class="material-icons">people</span> Munícipes
-        </a>
-
-        <a href="#submenuTurmas" id="link-turmas" data-bs-toggle="collapse" style="justify-content: space-between;" onclick="window.removerAtivo(this)">
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <span class="material-icons">school</span> Turmas e Matrículas
+        <!-- O MENU ESTÁTICIO SUMIU. AQUI ENTRA O MOTOR DINÂMICO DO FIREBASE -->
+        <div id="menu-dinamico-container" style="flex-grow: 1; overflow-y: auto;">
+            <!-- Um aviso visual até o Firebase desenhar tudo -->
+            <div class="text-center text-muted" style="font-size: 11px; margin-top: 20px;">
+                <div class="spinner-border spinner-border-sm mb-1" role="status"></div><br>
+                Montando Painel...
             </div>
-            <span class="material-icons" style="font-size: 18px;">expand_more</span>
-        </a>
-        <div class="collapse submenu" id="submenuTurmas">
-            <a href="javascript:void(0)" onclick="window.abrirFormFilho('ChamadaOnline.html', this)"><span class="material-icons" style="font-size: 18px;">fact_check</span> Chamada On-line</a>
-            <a href="javascript:void(0)" onclick="window.abrirFormFilho('ConfiguracoesCeu.html', this)"><span class="material-icons" style="font-size: 18px;">fact_check</span> Config. Lista de Espera</a>
-            <a href="javascript:void(0)" onclick="window.abrirFormFilho('turmas.html', this)"><span class="material-icons" style="font-size: 18px;">class</span> Turmas</a>
-            <a href="javascript:void(0)" onclick="window.abrirFormFilho('FormMatricula.html', this)"><span class="material-icons" style="font-size: 18px;">how_to_reg</span> Fazer Matrículas</a>
-            <a href="javascript:void(0)" onclick="window.abrirFormFilho('GerenciadorMatriculas.html', this)"><span class="material-icons" style="font-size: 18px;">manage_accounts</span> Gerenciar Matrículas</a>
-            <a href="javascript:void(0)" onclick="window.abrirFormFilho('FormLiberacao.html', this)"><span class="material-icons" style="font-size: 18px;">manage_accounts</span> Liberar Chamada On-line</a>
-        </div>
-        
-        <a href="#submenuImpressao" id="link-impressao" data-bs-toggle="collapse" style="justify-content: space-between;" onclick="window.removerAtivo(this)">
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <span class="material-icons">print</span> Impressão / Expedição
-            </div>
-            <span class="material-icons" style="font-size: 18px;">expand_more</span>
-        </a>
-        <div class="collapse submenu" id="submenuImpressao">
-            <a href="javascript:void(0)" onclick="window.abrirFormFilho('ImprimirCarteirinhas.html', this)">🪪 Uso Geral <span class="badge bg-danger rounded-pill ms-auto" id="badge-uso-geral">0</span></a>
-            <a href="javascript:void(0)" onclick="window.abrirFormFilho('TelaImpressaoAcademia.html', this)">🏋️ Academia <span class="badge bg-danger rounded-pill ms-auto" id="badge-academia">0</span></a>
-            <a href="javascript:void(0)" onclick="window.abrirFormFilho('TelaImpressaoRaia.html', this)">🏊‍♂️ Raia Livre <span class="badge bg-danger rounded-pill ms-auto" id="badge-raia">0</span></a>
-            <a href="javascript:void(0)" onclick="window.abrirFormFilho('FormChamada.html', this)">📋 Listas de Chamada (física)</a>
-            <a href="javascript:void(0)" onclick="window.abrirFormFilho('ImprimirChamadaOnline.html', this)">📋 Listas de Chamada (on-line)</a>            
-            <a href="javascript:void(0)" onclick="window.abrirFormFilho('ListaVagas.html', this)">📄 Listas de Vagas</a>
-            <a href="javascript:void(0)" onclick="window.abrirFormFilho('protocolo_retirada_carteirinha.html', this)">📄 Prot. Ret. Carteirinha</a>            
-        </div>
-        
-        <a href="#submenuRecreio" id="link-recreio" data-bs-toggle="collapse" style="justify-content: space-between;" onclick="window.removerAtivo(this)">
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <span class="material-icons" style="color: #ffffff;">celebration</span> Recreio nas Férias 
-            </div>
-            <span class="material-icons" style="font-size: 18px;">expand_more</span>
-        </a>
-        <div class="collapse submenu" id="submenuRecreio">
-            <a href="javascript:void(0)" onclick="window.abrirFormFilho('TelaCadastroRecreio.html', this)"><span class="material-icons" style="font-size: 18px;">person_add</span> Cadastrar</a>
-            <a href="javascript:void(0)" onclick="window.abrirFormFilho('TabelaCriancasRF.html', this)"><span class="material-icons" style="font-size: 18px;">table_view</span> Edição Rápida </a>
-            <a href="javascript:void(0)" onclick="window.abrirFormFilho('funcao_bloqueada.html', this)"><span class="material-icons" style="font-size: 18px;">manage_search</span> Consultar / Editar</a>
-            <a href="javascript:void(0)" onclick="window.abrirFormFilho('TelaImprimirCrachasRF.html', this)"><span class="material-icons" style="font-size: 18px;">badge</span> Crachás de Acesso</a>
-            <a href="javascript:void(0)" onclick="window.abrirFormFilho('GraficosRF.html', this)"><span class="material-icons" style="font-size: 18px;">bar_chart</span> Painel de Gráficos</a>
-            <a href="javascript:void(0)" onclick="window.abrirFormFilho('TelaListaChamadaRF.html?v=2', this)"><span class="material-icons" style="font-size: 18px;">checklist</span> Listas de Impressão</a>
-            <a href="javascript:void(0)" onclick="window.abrirFormFilho('TelaChamadaQualitativaRF.html?v=2', this)"><span class="material-icons" style="font-size: 18px;">checklist</span> Chamada Qualitativa</a>
         </div>
 
-        <a href="#submenuCadastros" id="link-cadastros" data-bs-toggle="collapse" style="justify-content: space-between;" onclick="window.removerAtivo(this)">
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <span class="material-icons">settings</span> Cadastros Base
-            </div>
-            <span class="material-icons" style="font-size: 18px;">expand_more</span>
-        </a>
-        <div class="collapse submenu" id="submenuCadastros">
-            <a href="javascript:void(0)" onclick="window.abrirFormFilho('nucleos.html', this)"><span class="material-icons" style="font-size: 15px;">domain</span> Núcleos</a>
-            <a href="javascript:void(0)" onclick="window.abrirFormFilho('espacos.html', this)"><span class="material-icons" style="font-size: 15px;">place</span> Espaços</a>
-            <a href="javascript:void(0)" onclick="window.abrirFormFilho('professores.html', this)"><span class="material-icons" style="font-size: 15px;">school</span> Professores</a>
-            <a href="javascript:void(0)" onclick="window.abrirFormFilho('tipo_responsavel.html', this)"><span class="material-icons" style="font-size: 15px;">badge</span> Tipo Resp.</a>
-            <a href="javascript:void(0)" onclick="window.abrirFormFilho('modalidades.html', this)"><span class="material-icons" style="font-size: 15px;">sports_soccer</span> Modalidades</a>
-
-            <a href="javascript:void(0)" onclick="window.abrirFormFilho('gerenciar_gavetas.html', this)"><span class="material-icons" style="font-size: 15px;">sports_soccer</span> Estrutura do Menu</a>
-            
-            <a href="javascript:void(0)" onclick="window.abrirFormFilho('gerenciar_botoes.html', this)"><span class="material-icons" style="font-size: 15px;">sports_soccer</span> Gerenciar Botões</a>
-            
-            <a href="javascript:void(0)" id="btnAdminUsuarios" style="display: none;" onclick="window.abrirFormFilho('gerenciar_usuarios.html', this)">
-                <span class="material-icons" style="font-size: 15px;">admin_panel_settings</span> Gerenciar Usuários
-            </a>
-            
-        </div>
-
-        <a href="javascript:void(0)" id="btnRegrasRF" style="display: none;" onclick="window.abrirFormFilho('CadastroRegrasRF.html', this)">
-            <span class="material-icons">wb_sunny</span> RF - Regras
-        </a>
-        <a href="javascript:void(0)" id="btnPasseiosDRE" style="display: none;" onclick="window.abrirFormFilho('dre_passeios.html', this)">
-            <span class="material-icons">directions_bus</span> RF - Passeios
-        </a>
-        <a href="javascript:void(0)" id="btnRelatorioDRE" style="display: none;" onclick="window.abrirFormFilho('RelatorioFrequenciaDRE.html', this)">
-            <span class="material-icons">analytics</span> Relatório DRE
-        </a>
-        <a href="javascript:void(0)" id="btnDemograficoDRE" style="display: none;" onclick="window.abrirFormFilho('RelatorioIdadeTurmaDRE.html', this)">
-            <span class="material-icons">pie_chart</span> Relatório Idade/Turma
-        </a>
-        <a href="javascript:void(0)" id="btnAtracoesDRE" style="display: none;" onclick="window.abrirFormFilho('dre_atracoes.html', this)">
-            <span class="material-icons">theater_comedy</span> Atrações e Eventos
-        </a>
-        
         <div style="margin-top: auto;"></div>
+        <!-- APENAS ESSE BOTÃO CONTINUA VERMELHO -->
         <a href="#" onclick="window.fazerLogout()" style="background: #c0392b;">
             <span class="material-icons">logout</span> Sair
         </a>
@@ -303,7 +217,7 @@
         };
 
         window.atualizarContadoresImpressao = function() {
-            let idUnidade = localStorage.getItem('sig_id_unidade');
+            const idUnidade = localStorage.getItem('sig_id_unidade');
             if(!idUnidade || typeof API_URL === 'undefined') return;
 
             const pacote = {
@@ -464,6 +378,83 @@
         };
 
         // ==========================================
+        // O MOTOR DO MENU DINÂMICO
+        // ==========================================
+        async function carregarMenuDinamico(perfisUsuario) {
+            try {
+                // Função auxiliar que checa se os Arrays têm alguma permissão em comum
+                const temPermissao = (perfisPermitidos) => {
+                    if (!perfisPermitidos || !Array.isArray(perfisPermitidos)) return false;
+                    return perfisUsuario.some(p => perfisPermitidos.includes(p));
+                };
+
+                // 1. Busca Gavetas e Botões do Banco
+                const [gavetasSnap, botoesSnap] = await Promise.all([
+                    getDocs(collection(db, "gavetas")),
+                    getDocs(collection(db, "botoes"))
+                ]);
+
+                let gavetas = [];
+                gavetasSnap.forEach(doc => gavetas.push(doc.data()));
+
+                let botoes = [];
+                botoesSnap.forEach(doc => botoes.push(doc.data()));
+
+                // 2. Filtra quem tem permissão e ordena
+                const gavetasPermitidas = gavetas
+                    .filter(g => temPermissao(g.perfis_permitidos))
+                    .sort((a, b) => Number(a.ordem) - Number(b.ordem));
+
+                const botoesPermitidos = botoes
+                    .filter(b => temPermissao(b.perfis_permitidos))
+                    .sort((a, b) => Number(a.ordem) - Number(b.ordem));
+
+                // 3. Monta o HTML do Menu
+                let menuHTML = `
+                    <a href="javascript:void(0)" class="ativo" id="link-inicio" onclick="window.abrirFormFilho('inicio.html', this)">
+                        <span class="material-icons">home</span> Início
+                    </a>
+                `;
+
+                // Renderiza cada gaveta que o usuário tem acesso
+                gavetasPermitidas.forEach(gaveta => {
+                    const botoesDaGaveta = botoesPermitidos.filter(b => b.id_gaveta === gaveta.id_gaveta);
+
+                    // Só desenha a gaveta se ela tiver pelo menos 1 botão dentro dela (ou se for vazia mas permitida)
+                    if (botoesDaGaveta.length > 0) {
+                        menuHTML += `
+                        <a href="#submenu_${gaveta.id_gaveta}" data-bs-toggle="collapse" style="justify-content: space-between;" onclick="window.removerAtivo(this)">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <span class="material-icons">${gaveta.icone_gaveta}</span> ${gaveta.nome_gaveta}
+                            </div>
+                            <span class="material-icons" style="font-size: 18px;">expand_more</span>
+                        </a>
+                        <div class="collapse submenu" id="submenu_${gaveta.id_gaveta}">
+                        `;
+
+                        // Injeta os botões daquela gaveta
+                        botoesDaGaveta.forEach(botao => {
+                            menuHTML += `
+                            <a href="javascript:void(0)" onclick="window.abrirFormFilho('${botao.url_destino}', this)">
+                                <span class="material-icons" style="font-size: 15px;">${botao.icone || 'chevron_right'}</span> ${botao.nome_botao}
+                            </a>
+                            `;
+                        });
+
+                        menuHTML += `</div>`;
+                    }
+                });
+
+                // Insere o menu pronto na div vazia
+                document.getElementById('menu-dinamico-container').innerHTML = menuHTML;
+
+            } catch (erro) {
+                console.error("Falha ao desenhar o menu dinâmico:", erro);
+                document.getElementById('menu-dinamico-container').innerHTML = `<p class="text-danger text-center mt-3">Falha ao carregar os menus do sistema.</p>`;
+            }
+        }
+
+        // ==========================================
         // INICIALIZAÇÃO FIREBASE E CARREGAMENTO
         // ==========================================
         async function inicializarDashboard() {
@@ -478,7 +469,7 @@
                     return;
                 }
 
-                // O TRADUTOR DE ARRAYS E TEXTOS PARA O FIREBASE
+                // O TRADUTOR DE ARRAYS
                 let perfisUsuario = ["UNIDADE"];
                 try {
                     const cru = localStorage.getItem('sig_nivel_acesso') || "UNIDADE";
@@ -502,12 +493,7 @@
                 const isProfessor = perfisUsuario.includes("PROFESSOR");
                 const isUnidade = perfisUsuario.includes("UNIDADE");
 
-                // 1. Libera o botão de Gestão de Usuários apenas se for ADMIN
-                if (isAdmin) {
-                    document.getElementById('btnAdminUsuarios').style.display = 'flex';
-                }
-
-                // 2. Preenchendo Informações Básicas
+                // Preenchendo Informações Básicas
                 document.getElementById('lbl-rf').innerText = "RF: " + rfLogado;
                 document.getElementById('lbl-nome-usuario').innerText = nomeUsuario || "Funcionário";
 
@@ -518,9 +504,9 @@
                     imgAvatar.style.display = 'block';
                 }
 
-                // 3. BUSCA DO NOME DA UNIDADE E LOGO NO FIREBASE
+                // BUSCA DO NOME DA UNIDADE E LOGO NO FIREBASE
                 try {
-                    if (!idUnidade) { idUnidade = "000000"; } // Trava de segurança
+                    if (!idUnidade) { idUnidade = "000000"; }
                     
                     let dadosUnidade = null;
                     const docRef = doc(db, "unidades", idUnidade);
@@ -558,24 +544,10 @@
                     document.getElementById('lbl-ceu').innerText = "UNIDADE: " + idUnidade;
                 }
 
-                // 4. CONTROLE DE VISIBILIDADE DE MENUS
-                if (isDRE || isSME) {
-                    const btnRF = document.getElementById('btnRegrasRF');
-                    if (btnRF) btnRF.style.display = 'flex';
-                    
-                    const btnPasseios = document.getElementById('btnPasseiosDRE');
-                    if (btnPasseios) btnPasseios.style.display = 'flex';
+                // INICIA O MOTOR DINÂMICO
+                await carregarMenuDinamico(perfisUsuario);
 
-                    const btnRelatorio = document.getElementById('btnRelatorioDRE');
-                    if (btnRelatorio) btnRelatorio.style.display = 'flex';
-                    
-                    const btnDemografico = document.getElementById('btnDemograficoDRE');
-                    if (btnDemografico) btnDemografico.style.display = 'flex';
-
-                    const btnAtracoes = document.getElementById('btnAtracoesDRE');
-                    if(btnAtracoes) btnAtracoes.style.display = 'flex';
-                }
-                
+                // CONTROLE DA TELA INICIAL (IFRAME)
                 if (isProfessor && !isUnidade && !isAdmin && !isDRE && !isSME) {
                     const sidebar = document.querySelector('.sidebar');
                     if (sidebar) sidebar.style.display = 'none';
@@ -590,17 +562,7 @@
                     document.getElementById('frame-filho').src = "ChamadaOnline.html";
 
                 } else if (!isUnidade && !isAdmin && (isDRE || isSME)) {
-                    const itensParaOcultar = [
-                        'link-inicio', 'link-alunos', 'link-turmas', 'submenuTurmas',
-                        'link-cadastros', 'submenuCadastros', 'link-impressao', 'submenuImpressao',
-                        'link-recreio', 'submenuRecreio'
-                    ];
-                    itensParaOcultar.forEach(id => {
-                        const elemento = document.getElementById(id);
-                        if (elemento) elemento.style.display = 'none';
-                    });
                     document.getElementById('frame-filho').src = "PainelDRE.html";
-
                 } else {
                     document.getElementById('frame-filho').src = "inicio.html"; 
                 }
@@ -613,7 +575,6 @@
             }
         }
 
-        // Roda ao carregar a página
         inicializarDashboard();
     </script>
 </body>

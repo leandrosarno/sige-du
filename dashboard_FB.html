@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="config.js"></script>
+    <!-- A referência ao antigo config.js do Google Sheets foi removida -->
     
     <style>
         body {
@@ -108,9 +108,7 @@
             <img id="dash-img-logo" src="" alt="Logo" style="display: none; width: 100%; max-height: 120px; object-fit: contain; margin: 0 auto;">
         </div>
 
-        <!-- O MENU ESTÁTICIO SUMIU. AQUI ENTRA O MOTOR DINÂMICO DO FIREBASE -->
         <div id="menu-dinamico-container" style="flex-grow: 1; overflow-y: auto;">
-            <!-- Um aviso visual até o Firebase desenhar tudo -->
             <div class="text-center text-muted" style="font-size: 11px; margin-top: 20px;">
                 <div class="spinner-border spinner-border-sm mb-1" role="status"></div><br>
                 Montando Painel...
@@ -118,7 +116,6 @@
         </div>
 
         <div style="margin-top: auto;"></div>
-        <!-- APENAS ESSE BOTÃO CONTINUA VERMELHO -->
         <a href="#" onclick="window.fazerLogout()" style="background: #c0392b;">
             <span class="material-icons">logout</span> Sair
         </a>
@@ -159,7 +156,8 @@
     <!-- MOTOR FIREBASE INTEGRADO -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
-        import { getFirestore, collection, getDocs, query, where, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+        // Importando o updateDoc para possibilitar a gravação de senhas e fotos
+        import { getFirestore, collection, getDocs, query, where, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCpCXxJbD8dPXkT7mcoz4qK8Wjt7WTRwFA",
@@ -216,41 +214,6 @@
             window.location.href = "index_FB.html"; 
         };
 
-        window.atualizarContadoresImpressao = function() {
-            const idUnidade = localStorage.getItem('sig_id_unidade');
-            if(!idUnidade || typeof API_URL === 'undefined') return;
-
-            const pacote = {
-                acao: "contarPendenciasImpressao",
-                dados: { idPlanilha: idUnidade } 
-            };
-
-            fetch(API_URL, {
-                method: 'POST',
-                body: JSON.stringify(pacote)
-            })
-            .then(res => res.json())
-            .then(retorno => {
-                if(retorno.status === "sucesso") {
-                    const badgeComum = document.getElementById('badge-uso-geral');
-                    const badgeAcademia = document.getElementById('badge-academia');
-                    const badgeRaia = document.getElementById('badge-raia');
-                    
-                    const atualizarBolinha = (elemento, valor) => {
-                        if(elemento) {
-                            elemento.innerText = valor;
-                            elemento.className = valor > 0 ? "badge bg-danger rounded-pill ms-auto" : "badge bg-secondary rounded-pill ms-auto";
-                        }
-                    };
-
-                    atualizarBolinha(badgeComum, retorno.comum);
-                    atualizarBolinha(badgeAcademia, retorno.academia);
-                    atualizarBolinha(badgeRaia, retorno.raia);
-                }
-            })
-            .catch(err => console.log("Falha ao buscar contadores:", err));
-        };
-
         window.previewAvatar = function(event) {
             const file = event.target.files[0];
             if(file) {
@@ -301,10 +264,6 @@
                                 <input type="password" id="swal-conf-senha" class="form-control form-control-lg" style="border-radius: 8px; font-size: 14px;" placeholder="Repita a senha">
                             </div>
                         </div>
-                        
-                        <div style="font-size:12px; background: #f8f9fa; padding: 12px; border-radius: 8px; color: #6c757d; border: 1px solid #e9ecef;">
-                            <strong>Regras para nova senha:</strong> Entre 8 e 12 caracteres. Obrigatório ter Maiúscula, minúscula, Número e Símbolo (!@#$).
-                        </div>
                     </div>
                 `,
                 confirmButtonText: '<span class="material-icons" style="vertical-align: middle; font-size: 18px; margin-right: 5px;">save</span> Salvar Perfil',
@@ -323,20 +282,17 @@
                         if (!sAtual || !s1 || !s2) { Swal.showValidationMessage('⚠️ Preencha a Atual, a Nova e a Confirmação!'); return false; }
                         if (s1 !== s2) { Swal.showValidationMessage('⚠️ As novas senhas não conferem!'); return false; }
                         if (!/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,12}$/.test(s1)) {
-                            Swal.showValidationMessage('⚠️ A nova senha não atende aos requisitos de segurança!'); return false;
+                            Swal.showValidationMessage('⚠️ A nova senha deve ter letras, números e símbolos!'); return false;
                         }
                     }
 
                     if (!sAtual && !s1 && !s2 && fileInput.files.length === 0) {
-                        Swal.showValidationMessage('⚠️ Você não fez nenhuma alteração!'); return false;
+                        Swal.showValidationMessage('⚠️ Nenhuma alteração informada.'); return false;
                     }
 
                     let fotoBase64 = null;
-                    let nomeArquivo = null;
-
                     if (fileInput.files.length > 0) {
                         const file = fileInput.files[0];
-                        nomeArquivo = file.name;
                         fotoBase64 = await new Promise((resolve, reject) => {
                             const reader = new FileReader();
                             reader.onload = e => resolve(e.target.result);
@@ -344,35 +300,55 @@
                             reader.readAsDataURL(file);
                         });
                     }
-                    return { senhaAtual: sAtual, novaSenha: s1, fotoBase64: fotoBase64, nomeArquivo: nomeArquivo };
+                    return { senhaAtual: sAtual, novaSenha: s1, fotoBase64: fotoBase64 };
                 }
-            }).then((result) => {
+            }).then(async (result) => {
                 if (result.isConfirmed) {
-                    Swal.fire({ title: 'A regravar o seu perfil...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+                    Swal.fire({ title: 'Salvando no Firebase...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
 
-                    const pacote = {
-                        acao: "alterarSenhaLogado",
-                        dados: {
-                            rf: rf, ceu: ceu, senhaAtual: result.value.senhaAtual, novaSenha: result.value.novaSenha,
-                            fotoBase64: result.value.fotoBase64, nomeArquivo: result.value.nomeArquivo
+                    const val = result.value;
+
+                    try {
+                        // Busca o usuário direto pelo RF e Unidade
+                        const q = query(collection(db, "usuarios"), where("rf_usuario", "==", rf), where("id_unidade", "==", ceu));
+                        const snap = await getDocs(q);
+
+                        if (snap.empty) {
+                            Swal.fire('Erro', 'Usuário não encontrado no banco.', 'error');
+                            return;
                         }
-                    };
 
-                    fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) })
-                    .then(res => res.json())
-                    .then(retorno => {
-                        if (retorno.status === "sucesso") {
-                            if (retorno.novaFoto && retorno.novaFoto !== "") {
-                                localStorage.setItem('sig_foto', retorno.novaFoto);
-                                document.getElementById('icone-avatar-padrao').style.display = 'none';
-                                const imgAvatar = document.getElementById('img-avatar-usuario');
-                                imgAvatar.src = retorno.novaFoto;
-                                imgAvatar.style.display = 'block';
-                            }
-                            Swal.fire('Elegante!', retorno.mensagem, 'success');
-                        } else { Swal.fire('Atenção', retorno.mensagem, 'warning'); }
-                    })
-                    .catch(err => { Swal.fire('Erro', 'Falha ao conectar com o servidor.', 'error'); });
+                        const userDoc = snap.docs[0];
+                        const userData = userDoc.data();
+
+                        // Valida a senha antiga antes de trocar
+                        if (val.novaSenha && userData.senha_usuario !== val.senhaAtual) {
+                            Swal.fire('Atenção', 'A senha atual informada está incorreta.', 'warning');
+                            return;
+                        }
+
+                        // Prepara as informações a serem alteradas
+                        const updates = {};
+                        if (val.novaSenha) updates.senha_usuario = val.novaSenha;
+                        if (val.fotoBase64) updates.url_foto = val.fotoBase64;
+
+                        // Grava no Firebase
+                        await updateDoc(userDoc.ref, updates);
+
+                        // Atualiza a tela sem recarregar a página
+                        if (updates.url_foto) {
+                            localStorage.setItem('sig_foto', updates.url_foto);
+                            document.getElementById('icone-avatar-padrao').style.display = 'none';
+                            const imgAvatar = document.getElementById('img-avatar-usuario');
+                            imgAvatar.src = updates.url_foto;
+                            imgAvatar.style.display = 'block';
+                        }
+
+                        Swal.fire('Elegante!', 'Perfil atualizado com sucesso.', 'success');
+                    } catch (error) {
+                        console.error(error);
+                        Swal.fire('Erro', 'Falha ao atualizar no banco de dados.', 'error');
+                    }
                 }
             });
         };
@@ -382,13 +358,11 @@
         // ==========================================
         async function carregarMenuDinamico(perfisUsuario) {
             try {
-                // Função auxiliar que checa se os Arrays têm alguma permissão em comum
                 const temPermissao = (perfisPermitidos) => {
                     if (!perfisPermitidos || !Array.isArray(perfisPermitidos)) return false;
                     return perfisUsuario.some(p => perfisPermitidos.includes(p));
                 };
 
-                // 1. Busca Gavetas e Botões do Banco
                 const [gavetasSnap, botoesSnap] = await Promise.all([
                     getDocs(collection(db, "gavetas")),
                     getDocs(collection(db, "botoes"))
@@ -400,7 +374,6 @@
                 let botoes = [];
                 botoesSnap.forEach(doc => botoes.push(doc.data()));
 
-                // 2. Filtra quem tem permissão e ordena
                 const gavetasPermitidas = gavetas
                     .filter(g => temPermissao(g.perfis_permitidos))
                     .sort((a, b) => Number(a.ordem) - Number(b.ordem));
@@ -409,18 +382,15 @@
                     .filter(b => temPermissao(b.perfis_permitidos))
                     .sort((a, b) => Number(a.ordem) - Number(b.ordem));
 
-                // 3. Monta o HTML do Menu
                 let menuHTML = `
                     <a href="javascript:void(0)" class="ativo" id="link-inicio" onclick="window.abrirFormFilho('inicio.html', this)">
                         <span class="material-icons">home</span> Início
                     </a>
                 `;
 
-                // Renderiza cada gaveta que o usuário tem acesso
                 gavetasPermitidas.forEach(gaveta => {
                     const botoesDaGaveta = botoesPermitidos.filter(b => b.id_gaveta === gaveta.id_gaveta);
 
-                    // Só desenha a gaveta se ela tiver pelo menos 1 botão dentro dela (ou se for vazia mas permitida)
                     if (botoesDaGaveta.length > 0) {
                         menuHTML += `
                         <a href="#submenu_${gaveta.id_gaveta}" data-bs-toggle="collapse" style="justify-content: space-between;" onclick="window.removerAtivo(this)">
@@ -432,7 +402,6 @@
                         <div class="collapse submenu" id="submenu_${gaveta.id_gaveta}">
                         `;
 
-                        // Injeta os botões daquela gaveta
                         botoesDaGaveta.forEach(botao => {
                             menuHTML += `
                             <a href="javascript:void(0)" onclick="window.abrirFormFilho('${botao.url_destino}', this)">
@@ -445,7 +414,6 @@
                     }
                 });
 
-                // Insere o menu pronto na div vazia
                 document.getElementById('menu-dinamico-container').innerHTML = menuHTML;
 
             } catch (erro) {
@@ -469,7 +437,6 @@
                     return;
                 }
 
-                // O TRADUTOR DE ARRAYS
                 let perfisUsuario = ["UNIDADE"];
                 try {
                     const cru = localStorage.getItem('sig_nivel_acesso') || "UNIDADE";
@@ -493,9 +460,17 @@
                 const isProfessor = perfisUsuario.includes("PROFESSOR");
                 const isUnidade = perfisUsuario.includes("UNIDADE");
 
-                // Preenchendo Informações Básicas
+                // PREENCHE DADOS DO USUÁRIO
                 document.getElementById('lbl-rf').innerText = "RF: " + rfLogado;
-                document.getElementById('lbl-nome-usuario').innerText = nomeUsuario || "Funcionário";
+
+                // SAUDAÇÃO INTELIGENTE (Cartão/Topbar)
+                const horaAtual = new Date().getHours();
+                let saudacao = "BOM DIA";
+                if (horaAtual >= 12 && horaAtual < 18) saudacao = "BOA TARDE";
+                else if (horaAtual >= 18 || horaAtual < 5) saudacao = "BOA NOITE";
+
+                const primeiroNome = nomeUsuario ? nomeUsuario.split(' ')[0].toUpperCase() : "GESTOR";
+                document.getElementById('lbl-nome-usuario').innerText = `${saudacao} ${primeiroNome}!`;
 
                 if (fotoUser && fotoUser !== "undefined" && fotoUser.trim() !== "") {
                     document.getElementById('icone-avatar-padrao').style.display = 'none';
@@ -504,7 +479,7 @@
                     imgAvatar.style.display = 'block';
                 }
 
-                // BUSCA DO NOME DA UNIDADE E LOGO NO FIREBASE
+                // BUSCA DO NOME DA UNIDADE E LOGO
                 try {
                     if (!idUnidade) { idUnidade = "000000"; }
                     
@@ -566,8 +541,6 @@
                 } else {
                     document.getElementById('frame-filho').src = "inicio.html"; 
                 }
-
-                setTimeout(window.atualizarContadoresImpressao, 1500); 
 
             } catch (falhaFatal) {
                 console.error("Falha Fatal na inicialização:", falhaFatal);

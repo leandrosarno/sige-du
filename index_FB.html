@@ -3,231 +3,249 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIG-EDU | Sistema de Gestão</title>
+    <title>SIG-EDU - Login (Homologação Firebase)</title>
+    
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     
     <style>
-        body { margin: 0; overflow: hidden; background-color: #f4f7f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        
-        /* ------------------------------------------- */
-        /* TELA DE LOGIN QUADRADA E PEQUENA            */
-        /* ------------------------------------------- */
-        #tela-login {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            background: linear-gradient(135deg, #1e293b, #0f172a);
-        }
-        .login-box {
-            background: #ffffff;
-            width: 360px;
-            padding: 40px 30px;
-            border-radius: 16px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-            text-align: center;
-        }
-        .login-box .material-icons { font-size: 50px; color: #0d6efd; margin-bottom: 10px; }
-        .login-box h4 { font-weight: 800; color: #1e293b; margin-bottom: 5px; }
-        .login-box p { color: #64748b; font-size: 14px; margin-bottom: 25px; }
-        .login-box .form-control { border-radius: 8px; padding: 12px 15px; margin-bottom: 15px; background-color: #f8fafc; border: 1px solid #cbd5e1; }
-        .login-box .form-control:focus { border-color: #0d6efd; box-shadow: none; background-color: #ffffff; }
-        .btn-login { background: #0d6efd; color: white; border: none; width: 100%; padding: 12px; border-radius: 8px; font-weight: 700; margin-top: 10px; transition: 0.3s; }
-        .btn-login:hover { background: #0b5ed7; transform: translateY(-2px); }
-
-        /* ------------------------------------------- */
-        /* PAINEL DO SISTEMA (OCULTO ATÉ LOGAR)        */
-        /* ------------------------------------------- */
-        #tela-app { display: none; height: 100vh; }
-        
-        /* BARRA LATERAL (SIDEBAR) */
-        #sidebar { width: 260px; background: #1e293b; color: white; display: flex; flex-direction: column; transition: all 0.3s; }
-        .sidebar-header { padding: 25px 20px; text-align: center; border-bottom: 1px solid #334155; }
-        .sidebar-header h4 { margin: 0; font-weight: 900; color: #38bdf8; letter-spacing: 1px; display: flex; align-items: center; justify-content: center; gap: 8px;}
-        .sidebar-menu { padding: 20px 0; flex-grow: 1; overflow-y: auto; }
-        
-        .sidebar a { padding: 14px 25px; display: flex; align-items: center; gap: 15px; color: #cbd5e1; text-decoration: none; font-weight: 600; font-size: 15px; transition: 0.2s; border-left: 4px solid transparent; cursor: pointer; }
-        .sidebar a:hover { background: #334155; color: white; }
-        .sidebar a.ativo { background: #0f172a; color: #38bdf8; border-left-color: #38bdf8; }
-        
-        .sidebar-footer { padding: 20px; border-top: 1px solid #334155; }
-        .btn-sair { color: #f87171; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; text-decoration: none; font-weight: bold; padding: 10px; border-radius: 8px; transition: 0.2s; }
-        .btn-sair:hover { background: #451a20; color: #ef4444; }
-
-        /* ÁREA PRINCIPAL */
-        #main-content { flex-grow: 1; display: flex; flex-direction: column; height: 100vh; width: calc(100% - 260px); }
-        
-        /* BARRA SUPERIOR */
-        #topbar { background: white; height: 70px; display: flex; align-items: center; justify-content: space-between; padding: 0 30px; box-shadow: 0 2px 15px rgba(0,0,0,0.05); z-index: 10; }
-        .unidade-badge { background: #e0f2fe; color: #0284c7; padding: 6px 16px; border-radius: 20px; font-weight: 800; font-size: 14px; letter-spacing: 0.5px;}
-        
-        /* IFRAME ONDE AS TELAS ABREM */
-        #frame-conteudo { width: 100%; height: calc(100vh - 70px); border: none; background-color: #f4f7f6; }
+        :root { --cor-primaria: #0d6efd; --cor-fundo: #f4f7f6; }
+        body { background-color: var(--cor-fundo); display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .login-card { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 400px; border-top: 5px solid #ff9800; /* Borda laranja para lembrar que é ambiente de teste */ }
+        .login-header { text-align: center; margin-bottom: 30px; }
+        .login-header span { font-size: 50px; color: var(--cor-primaria); }
+        .login-header h3 { font-weight: 700; color: #333; margin-top: 10px; }
+        .btn-login { background-color: var(--cor-primaria); border: none; width: 100%; padding: 12px; font-weight: bold; font-size: 16px; margin-top: 20px; }
+        .btn-login:hover { background-color: #0b5ed7; }
+        .form-control { padding: 12px; border-radius: 8px; }
     </style>
 </head>
 <body>
 
-    <!-- ========================================== -->
-    <!-- TELA 1: CAIXA DE LOGIN QUADRADA            -->
-    <!-- ========================================== -->
-    <div id="tela-login">
-        <div class="login-box animate__animated animate__zoomIn">
-            <span class="material-icons">admin_panel_settings</span>
-            <h4>SIG-EDU</h4>
-            <p>Acesso ao Módulo de Gestão</p>
-
-            <input type="number" id="input-unidade" class="form-control text-center fw-bold" placeholder="CÓDIGO DA UNIDADE">
-            <input type="text" id="input-rf" class="form-control text-center" placeholder="REGISTRO FUNCIONAL (RF)">
-            <input type="password" id="input-senha" class="form-control text-center" placeholder="SENHA DE ACESSO">
-            
-            <button class="btn-login" onclick="fazerLogin()">ENTRAR NO SISTEMA</button>
+    <div class="login-card">
+        <div class="login-header" id="box-logo">
+            <span class="material-icons" id="icone-padrao" style="font-size: 75px; color: var(--cor-primaria);">account_balance</span>
+            <img id="img-logo" src="" alt="Logo do Sistema" style="display: none; width: 100%; height: 120px; object-fit: contain; margin: 0 auto 15px auto;">
+            <h3 id="titulo-sistema">A carregar...</h3>
+            <p class="text-muted">Acesso Restrito - Firebase</p>
         </div>
+
+        <!-- O formulário agora chama window.fazerLogin() devido ao script module -->
+        <form id="formLogin" onsubmit="event.preventDefault(); window.fazerLogin();">
+            <div class="mb-3">
+                <label class="form-label fw-bold">Código EOL da Unidade</label>
+                <input type="number" class="form-control" id="id_ceu" placeholder="Ex: 123456" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-bold">RF do Funcionário</label>
+                <input type="number" class="form-control" id="rf_usuario" placeholder="Apenas números" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-bold">Senha de Acesso</label>
+                <input type="password" class="form-control" id="senha_usuario" placeholder="Sua senha" required>
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-login" id="btn-entrar">ENTRAR NO SISTEMA</button>
+        </form>
     </div>
 
-
-    <!-- ========================================== -->
-    <!-- TELA 2: PAINEL DO SISTEMA                  -->
-    <!-- ========================================== -->
-    <div id="tela-app">
-        <!-- MENU LATERAL -->
-        <nav id="sidebar" class="sidebar">
-            <div class="sidebar-header">
-                <h4><span class="material-icons fs-3">domain</span> SIG-EDU</h4>
-                <small class="text-muted fw-bold mt-1 d-block" style="font-size: 11px; text-transform: uppercase;">Gestão de Unidades</small>
-            </div>
-            
-            <div class="sidebar-menu">
-                <a class="ativo" onclick="abrirFormFilho('inicio_FB.html', this)">
-                    <span class="material-icons">dashboard</span> Painel Inicial
-                </a>
-                <a onclick="abrirFormFilho('alunos_FB.html', this)">
-                    <span class="material-icons">people_alt</span> Munícipes
-                </a>
-                <a onclick="abrirFormFilho('turmas_FB.html', this)">
-                    <span class="material-icons">class</span> Turmas / Aulas
-                </a>
-                <a onclick="abrirFormFilho('relatorios_FB.html', this)">
-                    <span class="material-icons">insert_chart</span> Relatórios
-                </a>
-            </div>
-
-            <div class="sidebar-footer">
-                <a class="btn-sair" onclick="fazerLogout()">
-                    <span class="material-icons">logout</span> Encerrar Sessão
-                </a>
-            </div>
-        </nav>
-
-        <!-- CONTEÚDO À DIREITA -->
-        <div id="main-content">
-            
-            <header id="topbar">
-                <div class="d-flex align-items-center gap-3">
-                    <span class="unidade-badge" id="nome-unidade-topo">
-                        <i class="fas fa-spinner fa-spin"></i> Conectando...
-                    </span>
-                </div>
-                <div class="d-flex align-items-center gap-2">
-                    <div style="text-align: right; line-height: 1.2;">
-                        <div style="font-weight: 700; color: #1e293b; font-size: 14px;">Módulo Secretaria</div>
-                        <div id="info-rf-topo" style="font-size: 12px; color: #64748b; font-weight: 600;">RF: ---</div>
-                    </div>
-                    <span class="material-icons ms-2" style="color: #cbd5e1; font-size: 38px;">account_circle</span>
-                </div>
-            </header>
-
-            <!-- O Inicio.html ou Alunos.html abrem aqui dentro -->
-            <iframe id="frame-conteudo" src="inicio_FB.html"></iframe>
-        </div>
-    </div>
-
-
-    <!-- ========================================== -->
-    <!-- MOTOR JAVASCRIPT DE SESSÃO E NAVEGAÇÃO     -->
-    <!-- ========================================== -->
+    <!-- SCRIPT DO SISTEMA COM FIREBASE -->
     <script type="module">
-        import { db } from './firebase_config.js';
+        // 1. IMPORTAÇÃO DAS BIBLIOTECAS OFICIAIS DO FIRESTORE
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+        import { getFirestore, collection, getDocs, getDoc, doc, query, where, updateDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
-        // 1. AO ABRIR O SITE, VERIFICA SE JÁ EXISTE LOGIN SALVO
-        window.onload = function() {
-            const idUnidade = localStorage.getItem('sig_id_unidade');
-            const rfLogado = localStorage.getItem('sig_rf');
-            
-            if (idUnidade && rfLogado) {
-                // Já está logado: Esconde a caixa de login e mostra o painel
-                document.getElementById('tela-login').style.display = 'none';
-                document.getElementById('tela-app').style.display = 'flex';
-                
-                document.getElementById('nome-unidade-topo').innerHTML = `<span class="material-icons align-middle fs-6 me-1">domain</span> UNIDADE: ${idUnidade}`;
-                document.getElementById('info-rf-topo').innerText = `RF: ${rfLogado}`;
-            } else {
-                // Não está logado: Mostra apenas a caixa de login
-                document.getElementById('tela-login').style.display = 'flex';
-                document.getElementById('tela-app').style.display = 'none';
+        // 2. A CHAVE MESTRE DO SEU PROJETO SIG-EDU
+        const firebaseConfig = {
+            apiKey: "AIzaSyCpCXxJbD8dPXkT7mcoz4qK8Wjt7WTRwFA",
+            authDomain: "sig-edu.firebaseapp.com",
+            projectId: "sig-edu",
+            storageBucket: "sig-edu.firebasestorage.app",
+            messagingSenderId: "233239725278",
+            appId: "1:233239725278:web:809b9c42feacd99175ee4f",
+            measurementId: "G-E5LLYGW7DN"
+        };
+
+        // 3. INICIALIZANDO O BANCO DE DADOS
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // ==========================================
+        // LOGO E CONFIGURAÇÕES GERAIS
+        // ==========================================
+        window.onload = async function() {
+            localStorage.clear();
+
+            try {
+                // Ao invés da API, ele lê um documento chamado "sistema" dentro da coleção "configuracoes"
+                const docRef = doc(db, "configuracoes", "sistema");
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const dados = docSnap.data();
+                    document.getElementById('titulo-sistema').innerText = dados.nomeSistema || "SIG-EDU";
+                    localStorage.setItem('ceu_nome_sistema', dados.nomeSistema || "SIG-EDU");
+                    
+                    if (dados.logoUrl) {
+                        localStorage.setItem('ceu_logo_sistema', dados.logoUrl);
+                        document.getElementById('icone-padrao').style.display = 'none';
+                        const img = document.getElementById('img-logo');
+                        img.src = dados.logoUrl;
+                        
+                        if(dados.tamanhoLogo) {
+                            img.style.height = dados.tamanhoLogo; 
+                            localStorage.setItem('ceu_tamanho_logo', dados.tamanhoLogo); 
+                        }
+                        img.style.display = 'block';
+                    }
+                } else {
+                    document.getElementById('titulo-sistema').innerText = "SIG-EDU Central";
+                }
+            } catch (erro) {
+                console.error("Aviso: Banco de dados ainda sem configurações registradas.", erro);
+                document.getElementById('titulo-sistema').innerText = "SIG-EDU Central";
             }
         };
 
-        // 2. FUNÇÃO DO BOTÃO "ENTRAR"
-        window.fazerLogin = function() {
-            const unidade = document.getElementById('input-unidade').value.trim();
-            const rf = document.getElementById('input-rf').value.trim();
-            const senha = document.getElementById('input-senha').value.trim();
+        // ==========================================
+        // MOTOR DE LOGIN BLINDADO (FIREBASE)
+        // ==========================================
+        window.fazerLogin = async function() {
+            const ceu = document.getElementById('id_ceu').value.trim();
+            const rf = document.getElementById('rf_usuario').value.trim();
+            const senha = document.getElementById('senha_usuario').value.trim();
 
-            if (!unidade || !rf || !senha) {
-                Swal.fire('Campos Incompletos', 'Por favor, preencha a Unidade, seu RF e sua Senha.', 'warning');
+            if(!ceu || !rf || !senha) {
+                Swal.fire('Atenção', 'Preencha todos os campos.', 'warning');
                 return;
             }
 
-            // Grava os dados na memória do navegador
-            localStorage.setItem('sig_id_unidade', unidade);
-            localStorage.setItem('sig_rf', rf);
-            localStorage.setItem('sig_nivel_acesso', JSON.stringify(['SECRETARIA'])); // Permissão padrão por enquanto
-            
             Swal.fire({
-                title: 'Acesso Liberado!',
-                text: 'Bem-vindo ao SIG-EDU',
-                icon: 'success',
-                timer: 1200,
-                showConfirmButton: false
-            }).then(() => {
-                // Recarrega a página para entrar no painel
-                window.location.reload();
+                title: 'A validar acessos...',
+                text: 'Consultando o banco de dados seguro.',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
             });
+
+            try {
+                // Consulta rápida no Firebase: "Procure na coleção usuarios onde EOL e RF sejam iguais ao digitado"
+                const usuariosRef = collection(db, "usuarios");
+                const q = query(usuariosRef, 
+                    where("id_ceu", "==", ceu),
+                    where("rf_usuario", "==", rf)
+                );
+                
+                const querySnapshot = await getDocs(q);
+
+                if (querySnapshot.empty) {
+                    Swal.fire('Acesso Negado', 'Usuário não encontrado.', 'error');
+                    return;
+                }
+
+                let usuarioValido = false;
+                let dadosUsuario = null;
+                let idDocumentoFirebase = null;
+
+                // O Firebase devolve a lista (mesmo que seja só 1). Validamos a senha.
+                querySnapshot.forEach((documento) => {
+                    const dados = documento.data();
+                    if (dados.senha_usuario === senha) {
+                        usuarioValido = true;
+                        dadosUsuario = dados;
+                        idDocumentoFirebase = documento.id; // Guardamos o ID real do banco para alterar a senha
+                    }
+                });
+
+                if (!usuarioValido) {
+                    Swal.fire('Acesso Negado', 'Senha incorreta.', 'error');
+                    return;
+                }
+
+                // Verifica se precisa trocar a senha
+                if (dadosUsuario.primeiro_acesso === true) {
+                    window.tratarPrimeiroAcesso("É necessário redefinir a sua senha inicial de segurança.", { idDoc: idDocumentoFirebase });
+                    return;
+                }
+
+                // LOGIN COM SUCESSO - Preenche as mochilas do localStorage
+                localStorage.setItem('ceu_codigo_eol', ceu);
+                localStorage.setItem('ceu_rf_logado', rf); 
+                localStorage.setItem('ceu_planilha_id', dadosUsuario.id_planilha_banco || "");
+                localStorage.setItem('ceu_nome', dadosUsuario.nome_ceu || "Escola");
+                localStorage.setItem('ceu_nome_especifico', dadosUsuario.nome_ceu || "Escola");
+                localStorage.setItem('ceu_nome_usuario', dadosUsuario.nome_usuario || "Gestor");
+                
+                if(dadosUsuario.logo_ceu) localStorage.setItem('ceu_logo', dadosUsuario.logo_ceu);
+                if(dadosUsuario.foto_usuario) localStorage.setItem('ceu_foto_usuario', dadosUsuario.foto_usuario);
+                
+                localStorage.setItem('ceu_perfil', dadosUsuario.perfil_usuario || "padrao"); 
+                
+                // Joga para o Dashboard instantaneamente!
+                window.location.href = "dashboard.html"; 
+
+            } catch (erro) {
+                Swal.fire('Erro de Conexão', 'Falha ao conectar com o banco de dados.', 'error');
+                console.error("Erro no Login Firebase: ", erro);
+            }
         };
 
-        // 3. FUNÇÃO DO BOTÃO DE SAIR
-        window.fazerLogout = function() {
+        // ==========================================
+        // FLUXO DE PRIMEIRO ACESSO (MUDAR SENHA)
+        // ==========================================
+        window.tratarPrimeiroAcesso = function(mensagemDoServidor, dadosAuxiliares) {
             Swal.fire({
-                title: 'Encerrar Sessão?',
-                text: "Você será desconectado e voltará para a tela de login.",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#64748b',
-                confirmButtonText: 'Sim, Sair',
-                cancelButtonText: 'Cancelar'
+                title: '🔒 Primeiro Acesso',
+                text: mensagemDoServidor,
+                icon: 'info',
+                html: `
+                    <div style="text-align: left; font-size: 14px;">
+                        <label class="mt-2 fw-bold">Nova Senha:</label>
+                        <input type="password" id="swal-nova-senha" class="swal2-input" placeholder="Mínimo 8 caracteres">
+                        <label class="mt-2 fw-bold">Confirmar Nova Senha:</label>
+                        <input type="password" id="swal-conf-senha" class="swal2-input" placeholder="Repita a senha">
+                    </div>
+                `,
+                confirmButtonText: 'Gravar Nova Senha',
+                confirmButtonColor: '#198754',
+                allowOutsideClick: false,
+                preConfirm: () => {
+                    const s1 = document.getElementById('swal-nova-senha').value;
+                    const s2 = document.getElementById('swal-conf-senha').value;
+                    if (s1 !== s2) { Swal.showValidationMessage('As senhas não conferem!'); return false; }
+                    if (!/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,12}$/.test(s1)) {
+                        Swal.showValidationMessage('A senha é muito fraca (use maiúsculas, números e símbolos)!'); return false;
+                    }
+                    return s1;
+                }
             }).then((result) => {
                 if (result.isConfirmed) {
-                    localStorage.removeItem('sig_id_unidade');
-                    localStorage.removeItem('sig_rf');
-                    localStorage.removeItem('sig_nivel_acesso');
-                    window.location.reload();
+                    window.enviarNovaSenha(dadosAuxiliares.idDoc, result.value);
                 }
             });
         };
 
-        // 4. FUNÇÃO DO MENU LATERAL (Abre as telas dentro do Iframe)
-        window.abrirFormFilho = function(url, elementoClicado) {
-            const iframe = document.getElementById('frame-conteudo');
-            iframe.src = url;
+        window.enviarNovaSenha = async function(idDocumentoFirebase, novaSenha) {
+            Swal.fire({ title: 'A gravar no Firebase...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
             
-            if(elementoClicado) {
-                const links = document.querySelectorAll('.sidebar a');
-                links.forEach(link => link.classList.remove('ativo'));
-                elementoClicado.classList.add('ativo');
+            try {
+                // Atualiza o documento específico no banco de dados e remove o status de primeiro acesso
+                const usuarioRef = doc(db, "usuarios", idDocumentoFirebase);
+                await updateDoc(usuarioRef, {
+                    senha_usuario: novaSenha,
+                    primeiro_acesso: false
+                });
+
+                Swal.fire('Sucesso!', 'Senha alterada. Faça login com a nova senha!', 'success').then(() => { 
+                    document.getElementById('senha_usuario').value = ''; 
+                });
+            } catch (erro) {
+                Swal.fire('Erro', 'Ocorreu um erro ao atualizar a senha no banco.', 'error');
+                console.error(erro);
             }
         };
     </script>

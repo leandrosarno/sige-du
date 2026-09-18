@@ -104,16 +104,21 @@
 
                     <div class="col-md-9">
                         <div class="row g-4">
-                            <div class="col-md-4">
+                            <!-- 🌟 NOVO CAMPO DE PRONTUÁRIO/ID_ALUNO ADICIONADO AQUI -->
+                            <div class="col-md-3">
+                                <label class="form-label text-primary fw-bold">Prontuário / ID <span class="text-danger">*</span></label>
+                                <input type="number" id="aluno-prontuario" class="form-control border-primary" placeholder="Gerado auto. se vazio" style="background-color: #f0f7ff;">
+                            </div>
+                            <div class="col-md-3">
                                 <label class="form-label">Código EOL</label>
                                 <input type="number" id="aluno-eol" class="form-control" placeholder="Apenas números">
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label class="form-label">CIN (CPF ou RG) <span class="text-danger">*</span></label>
                                 <input type="text" id="aluno-cin" class="form-control" placeholder="000.000.000-00">
                             </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Data de Nascimento <span class="text-danger">*</span></label>
+                            <div class="col-md-3">
+                                <label class="form-label">Data Nasc. <span class="text-danger">*</span></label>
                                 <input type="date" id="aluno-nasc" class="form-control">
                             </div>
                             <div class="col-md-6">
@@ -387,21 +392,9 @@
 
     <!-- MOTOR FIREBASE INTEGRADO -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
-        import { getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyCpCXxJbD8dPXkT7mcoz4qK8Wjt7WTRwFA",
-            authDomain: "sig-edu.firebaseapp.com",
-            projectId: "sig-edu",
-            storageBucket: "sig-edu.firebasestorage.app",
-            messagingSenderId: "233239725278",
-            appId: "1:233239725278:web:809b9c42feacd99175ee4f",
-            measurementId: "G-E5LLYGW7DN"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        // 🌟 Importação Centralizada do DB
+        import { db } from './firebase_config.js';
+        import { doc, setDoc, getDoc, updateDoc, deleteDoc, collection } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
         // FUNÇÕES GLOBAIS PARA ACESSO VIA ONCLICK NO HTML
         window.voltarParaLista = function() {
@@ -448,6 +441,28 @@
             }
         };
 
+        // 🛡️ MOTOR DE EXTRAÇÃO SEGURO
+        function extrairDadoSeguro(documento, chavesAlvo) {
+            if (!documento || typeof documento !== 'object') return '';
+            let melhorValor = '';
+            for (let chaveOriginal in documento) {
+                if (Object.prototype.hasOwnProperty.call(documento, chaveOriginal)) {
+                    let chaveNormalizada = chaveOriginal.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9_]/g, "");
+                    if (chavesAlvo.includes(chaveNormalizada)) {
+                        let valorCru = documento[chaveOriginal];
+                        if (valorCru !== null && valorCru !== undefined) {
+                            if (String(valorCru).trim() !== '') {
+                                return valorCru;
+                            } else {
+                                melhorValor = valorCru;
+                            }
+                        }
+                    }
+                }
+            }
+            return melhorValor;
+        }
+
         // INICIALIZAÇÃO
         window.onload = async function() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -477,14 +492,13 @@
                     Swal.close(); 
                     const aluno = docSnap.data();
                     
-                    // Valida se o aluno pertence ao CEU logado
                     if (aluno.id_unidade !== idUnidade && !JSON.parse(localStorage.getItem('sig_nivel_acesso') || '[]').includes('ADMIN')) {
                         Swal.fire('Acesso Negado', 'Este munícipe pertence a outra unidade.', 'error');
                         window.voltarParaLista();
                         return;
                     }
 
-                    const nomeDisplay = aluno.nome || aluno.nome_completo || "SEM NOME";
+                    const nomeDisplay = extrairDadoSeguro(aluno, ['nome_completo', 'nome', 'aluno']) || "SEM NOME";
                     document.querySelector('.titulo-tela').innerHTML = `<span class="material-icons align-middle" style="font-size: 32px; color: #ff9800;">edit_document</span> Editando: <span class="text-primary">${nomeDisplay}</span>`;
 
                     preencherFormulario(aluno);
@@ -506,55 +520,80 @@
             const btnExcluir = document.getElementById('btn-excluir-aluno');
             if (btnExcluir) btnExcluir.style.display = 'flex';
             
-            if (aluno.link_foto && aluno.link_foto !== "") {
-                document.getElementById('aluno-preview-foto').src = aluno.link_foto;
+            // 📸 EXTRATOR DE FOTOS DO DRIVE
+            let linkCru = extrairDadoSeguro(aluno, ['link_foto', 'foto', 'url_foto']);
+            const semFotoPlaceholder = "https://via.placeholder.com/150/cbd5e1/ffffff?text=SEM+FOTO";
+            
+            if (linkCru && linkCru.includes('http')) {
+                const matchID = linkCru.match(/(?:id=|file\/d\/|d\/)([^&\/]+)/);
+                if (matchID && matchID[1]) {
+                    document.getElementById('aluno-preview-foto').src = `https://drive.google.com/thumbnail?id=${matchID[1]}&sz=w300`;
+                } else {
+                    document.getElementById('aluno-preview-foto').src = linkCru.trim();
+                }
+            } else {
+                document.getElementById('aluno-preview-foto').src = semFotoPlaceholder;
             }
 
-            document.getElementById('aluno-eol').value = aluno.eol || aluno.id_municipe || "";
-            document.getElementById('aluno-cin').value = aluno.cpf || aluno.cin || "";
-            document.getElementById('aluno-nasc').value = aluno.data_nascimento || "";
-            document.getElementById('aluno-nome').value = aluno.nome || aluno.nome_completo || "";
-            document.getElementById('aluno-social').value = aluno.nome_social || "";
+            // 🪪 DADOS PRINCIPAIS
+            document.getElementById('aluno-prontuario').value = extrairDadoSeguro(aluno, ['id_aluno', 'num_prontuario', 'prontuario']);
+            document.getElementById('aluno-eol').value = extrairDadoSeguro(aluno, ['id_eol', 'eol']);
+            document.getElementById('aluno-cin').value = extrairDadoSeguro(aluno, ['cin', 'cpf', 'rg']);
+            document.getElementById('aluno-nome').value = extrairDadoSeguro(aluno, ['nome_completo', 'nome', 'aluno']);
+            document.getElementById('aluno-social').value = extrairDadoSeguro(aluno, ['nome_social']);
+
+            // 📅 CONVERSOR DE DATAS (Arruma dd/mm/yyyy para yyyy-mm-dd)
+            let dataNasc = String(extrairDadoSeguro(aluno, ['data_nascimento', 'nascimento', 'datanascimento'])).trim();
+            if(dataNasc && dataNasc.includes('/')) {
+                let partes = dataNasc.split('/');
+                if(partes.length === 3) dataNasc = `${partes[2]}-${partes[1]}-${partes[0]}`;
+            } else if (dataNasc && dataNasc.includes('T')) {
+                dataNasc = dataNasc.split('T')[0];
+            }
+            document.getElementById('aluno-nasc').value = dataNasc || "";
+
+            // 📍 CONTATO E ENDEREÇO
+            document.getElementById('aluno-cep').value = extrairDadoSeguro(aluno, ['cep']);
+            document.getElementById('aluno-logradouro').value = extrairDadoSeguro(aluno, ['logradouro']);
+            document.getElementById('aluno-endereco').value = extrairDadoSeguro(aluno, ['endereco']);
+            document.getElementById('aluno-numero').value = extrairDadoSeguro(aluno, ['numero']);
+            document.getElementById('aluno-complemento').value = extrairDadoSeguro(aluno, ['complemento']);
+            document.getElementById('aluno-bairro').value = extrairDadoSeguro(aluno, ['bairro']);
+            document.getElementById('aluno-cidade').value = extrairDadoSeguro(aluno, ['cidade']);
+            document.getElementById('aluno-estado').value = extrairDadoSeguro(aluno, ['estado']);
+
+            document.getElementById('aluno-tel1').value = extrairDadoSeguro(aluno, ['telefone_principal', 'telefone', 'tel_proprio']);
+            document.getElementById('aluno-tipo-tel1').value = extrairDadoSeguro(aluno, ['tipo_contato', 'tel_tipo']);
+            document.getElementById('aluno-tel-recado').value = extrairDadoSeguro(aluno, ['telefone_recados', 'tel_recado']);
+            document.getElementById('aluno-recado-com').value = extrairDadoSeguro(aluno, ['recados_com', 'recado_com']);
+            document.getElementById('aluno-resp').value = extrairDadoSeguro(aluno, ['responsavel_legal', 'resp_legal']);
             
-            document.getElementById('aluno-cep').value = aluno.cep || "";
-            document.getElementById('aluno-logradouro').value = aluno.logradouro || "";
-            document.getElementById('aluno-endereco').value = aluno.endereco || "";
-            document.getElementById('aluno-numero').value = aluno.numero || "";
-            document.getElementById('aluno-complemento').value = aluno.complemento || "";
-            document.getElementById('aluno-bairro').value = aluno.bairro || "";
-            document.getElementById('aluno-cidade').value = aluno.cidade || "";
-            document.getElementById('aluno-estado').value = aluno.estado || "";
-
-            document.getElementById('aluno-tel1').value = aluno.tel_proprio || aluno.telefone || "";
-            document.getElementById('aluno-tipo-tel1').value = aluno.tel_tipo || "";
-            document.getElementById('aluno-tel-recado').value = aluno.tel_recado || "";
-            document.getElementById('aluno-recado-com').value = aluno.recado_com || "";
-
-            document.getElementById('aluno-resp').value = aluno.resp_legal || "";
+            // 🩺 SAÚDE E PERMISSÕES
+            document.getElementById('aluno-saida').value = window.safeSimNao(extrairDadoSeguro(aluno, ['aut_vai_desacompanhado', 'autorizacao_saida']));
+            document.getElementById('aluno-quem-autorizou').value = extrairDadoSeguro(aluno, ['quem_autorizou']);
+            document.getElementById('aluno-pcd').value = window.safeSimNao(extrairDadoSeguro(aluno, ['pcd']));
+            document.getElementById('aluno-def-qual').value = extrairDadoSeguro(aluno, ['especificar_pcd', 'deficiencia_qual']);
+            document.getElementById('aluno-laudo-pcd').value = window.safeSimNao(extrairDadoSeguro(aluno, ['tem_laudo_pcd', 'laudo_pcd']));
+            document.getElementById('aluno-restr').value = window.safeSimNao(extrairDadoSeguro(aluno, ['rest_alimentar', 'restricao_alimentar']));
+            document.getElementById('aluno-restr-qual').value = extrairDadoSeguro(aluno, ['especificar_rest_alimentar', 'restricao_qual']);
+            document.getElementById('aluno-laudo-restr').value = window.safeSimNao(extrairDadoSeguro(aluno, ['tem_laudo_rest_aliment', 'laudo_restricao']));
             
-            document.getElementById('aluno-saida').value = window.safeSimNao(aluno.autorizacao_saida);
-            document.getElementById('aluno-quem-autorizou').value = aluno.quem_autorizou || "";
-            document.getElementById('aluno-pcd').value = window.safeSimNao(aluno.pcd);
-            document.getElementById('aluno-def-qual').value = aluno.deficiencia_qual || "";
-            document.getElementById('aluno-laudo-pcd').value = window.safeSimNao(aluno.laudo_pcd);
-            document.getElementById('aluno-restr').value = window.safeSimNao(aluno.restricao_alimentar);
-            document.getElementById('aluno-restr-qual').value = aluno.restricao_qual || "";
-            document.getElementById('aluno-laudo-restr').value = window.safeSimNao(aluno.laudo_restricao);
+            let parqValue = extrairDadoSeguro(aluno, ['par_q', 'parq']);
+            if (window.safeSimNao(parqValue) === "SIM") { document.getElementById('aluno-parq').checked = true; }
+
+            // 🎟️ CARTEIRINHAS
+            document.getElementById('aluno-print-geral').value = window.safeSimNao(extrairDadoSeguro(aluno, ['imp_uso_geral', 'imprimir_cg']));
+            document.getElementById('aluno-via-geral').value = extrairDadoSeguro(aluno, ['via_cart_uso_geral', 'via_geral']) || 0;
             
-            if (window.safeSimNao(aluno.parq) === "SIM") { document.getElementById('aluno-parq').checked = true; }
+            document.getElementById('aluno-perm-academia').value = window.safeSimNao(extrairDadoSeguro(aluno, ['cart_academia', 'perm_academia']));
+            document.getElementById('aluno-print-academia').value = window.safeSimNao(extrairDadoSeguro(aluno, ['imp_academia', 'imprimir_cal']));
+            document.getElementById('aluno-via-academia').value = extrairDadoSeguro(aluno, ['via_cart_academia', 'via_academia']) || 0;
 
-            document.getElementById('aluno-print-geral').value = window.safeSimNao(aluno.imprimir_cg);
-            document.getElementById('aluno-via-geral').value = aluno.via_geral || 0;
-            
-            document.getElementById('aluno-perm-academia').value = window.safeSimNao(aluno.perm_academia);
-            document.getElementById('aluno-print-academia').value = window.safeSimNao(aluno.imprimir_cal);
-            document.getElementById('aluno-via-academia').value = aluno.via_academia || 0;
+            document.getElementById('aluno-perm-raia').value = window.safeSimNao(extrairDadoSeguro(aluno, ['cart_raia_livre', 'perm_raia']));
+            document.getElementById('aluno-print-raia').value = window.safeSimNao(extrairDadoSeguro(aluno, ['imp_raia', 'imprimir_crl']));
+            document.getElementById('aluno-via-piscina').value = extrairDadoSeguro(aluno, ['via_cart_piscina', 'via_piscina']) || 0;
 
-            document.getElementById('aluno-perm-raia').value = window.safeSimNao(aluno.perm_raia);
-            document.getElementById('aluno-print-raia').value = window.safeSimNao(aluno.imprimir_crl);
-            document.getElementById('aluno-via-piscina').value = aluno.via_piscina || 0;
-
-            document.getElementById('aluno-obs').value = aluno.obs || "";
+            document.getElementById('aluno-obs').value = extrairDadoSeguro(aluno, ['observacoes', 'obs']);
         }
 
         window.salvarNovoAluno = async function() {
@@ -588,7 +627,6 @@
             const idEdicao = document.body.getAttribute('data-id-edicao');
             let urlFinalFoto = fotoBase64;
             
-            // Se for edição e não subiu foto nova, mantém a velha da tela
             if (idEdicao && !fotoBase64) {
                 const srcAtual = document.getElementById('aluno-preview-foto').src;
                 if(srcAtual && srcAtual.includes('data:image')) {
@@ -596,20 +634,21 @@
                 }
             }
 
-            // Geração de Prontuário Provisório caso seja novo aluno
-            let prontuarioGerado = document.getElementById('aluno-eol').value || Math.floor(100000 + Math.random() * 900000).toString();
+            // Lê o Prontuário digitado. Se estiver em branco (novo aluno), gera um.
+            let prontuarioDigitado = document.getElementById('aluno-prontuario').value.trim();
+            let prontuarioFinal = prontuarioDigitado || Math.floor(100000 + Math.random() * 900000).toString();
 
+            // Grava os dados no banco usando as colunas exatas do seu padrão de importação
             const pacoteAluno = {
                 id_unidade: idUnidade,
-                eol: document.getElementById('aluno-eol').value,
-                id_municipe: document.getElementById('aluno-eol').value, // Duplicado propositalmente por segurança da migração
-                nome: nome,
+                id_aluno: prontuarioFinal,
+                num_prontuario: prontuarioFinal,
+                id_eol: document.getElementById('aluno-eol').value,
                 nome_completo: nome,
                 nome_social: document.getElementById('aluno-social').value,
-                cpf: cin,
                 cin: cin,
                 data_nascimento: nasc,
-                resp_legal: document.getElementById('aluno-resp').value,
+                responsavel_legal: document.getElementById('aluno-resp').value,
                 logradouro: document.getElementById('aluno-logradouro').value,
                 endereco: document.getElementById('aluno-endereco').value,
                 numero: document.getElementById('aluno-numero').value,
@@ -618,28 +657,28 @@
                 cep: document.getElementById('aluno-cep').value,
                 cidade: document.getElementById('aluno-cidade').value,
                 estado: document.getElementById('aluno-estado').value,
-                tel_proprio: document.getElementById('aluno-tel1').value,
-                tel_tipo: document.getElementById('aluno-tipo-tel1').value,
-                tel_recado: document.getElementById('aluno-tel-recado').value,
-                recado_com: document.getElementById('aluno-recado-com').value,
-                obs: document.getElementById('aluno-obs').value,
+                telefone_principal: document.getElementById('aluno-tel1').value,
+                tipo_contato: document.getElementById('aluno-tipo-tel1').value,
+                telefone_recados: document.getElementById('aluno-tel-recado').value,
+                recados_com: document.getElementById('aluno-recado-com').value,
+                observacoes: document.getElementById('aluno-obs').value,
                 pcd: document.getElementById('aluno-pcd').value,
-                deficiencia_qual: document.getElementById('aluno-def-qual').value,
-                laudo_pcd: document.getElementById('aluno-laudo-pcd').value,
-                restricao_alimentar: document.getElementById('aluno-restr').value,
-                restricao_qual: document.getElementById('aluno-restr-qual').value,
-                laudo_restricao: document.getElementById('aluno-laudo-restr').value,
-                autorizacao_saida: document.getElementById('aluno-saida').value,
+                especificar_pcd: document.getElementById('aluno-def-qual').value,
+                tem_laudo_pcd: document.getElementById('aluno-laudo-pcd').value,
+                rest_alimentar: document.getElementById('aluno-restr').value,
+                especificar_rest_alimentar: document.getElementById('aluno-restr-qual').value,
+                tem_laudo_rest_aliment: document.getElementById('aluno-laudo-restr').value,
+                aut_vai_desacompanhado: document.getElementById('aluno-saida').value,
                 quem_autorizou: document.getElementById('aluno-quem-autorizou').value,
-                parq: document.getElementById('aluno-parq').checked ? "SIM" : "NÃO",
-                imprimir_cg: document.getElementById('aluno-print-geral').value,
-                imprimir_cal: document.getElementById('aluno-print-academia').value,
-                perm_academia: document.getElementById('aluno-perm-academia').value,
-                imprimir_crl: document.getElementById('aluno-print-raia').value,
-                perm_raia: document.getElementById('aluno-perm-raia').value,
-                via_geral: Number(document.getElementById('aluno-via-geral').value),
-                via_academia: Number(document.getElementById('aluno-via-academia').value),
-                via_piscina: Number(document.getElementById('aluno-via-piscina').value),
+                par_q: document.getElementById('aluno-parq').checked ? "SIM" : "NÃO",
+                imp_uso_geral: document.getElementById('aluno-print-geral').value,
+                imp_academia: document.getElementById('aluno-print-academia').value,
+                cart_academia: document.getElementById('aluno-perm-academia').value,
+                imp_raia: document.getElementById('aluno-print-raia').value,
+                cart_raia_livre: document.getElementById('aluno-perm-raia').value,
+                via_cart_uso_geral: Number(document.getElementById('aluno-via-geral').value),
+                via_cart_academia: Number(document.getElementById('aluno-via-academia').value),
+                via_cart_piscina: Number(document.getElementById('aluno-via-piscina').value),
                 data_atualizacao: new Date().toISOString()
             };
 
@@ -653,9 +692,7 @@
                 if (idEdicao) {
                     const docRef = doc(db, "municipes", idEdicao);
                     await updateDoc(docRef, pacoteAluno);
-                    prontuarioGerado = JSON.parse(sessionStorage.getItem('alunoAtualCompleto')).prontuario || prontuarioGerado;
                 } else {
-                    pacoteAluno.prontuario = prontuarioGerado;
                     pacoteAluno.data_cadastro = new Date().toISOString();
                     const docRef = doc(collection(db, "municipes"));
                     await setDoc(docRef, pacoteAluno);
@@ -667,7 +704,7 @@
                         Dados gravados com sucesso.<br><br>
                         <div style="background: #e8f0fe; padding: 15px; border-radius: 10px; border: 1px dashed #0d6efd; margin-top: 10px;">
                             <span style="font-size: 14px; color: #495057; text-transform: uppercase; font-weight: bold;">Número do Prontuário</span><br>
-                            <span style="font-size: 32px; color: #0d6efd; font-weight: 900; letter-spacing: 2px;">${prontuarioGerado}</span>
+                            <span style="font-size: 32px; color: #0d6efd; font-weight: 900; letter-spacing: 2px;">${prontuarioFinal}</span>
                         </div>
                     `,
                     icon: 'success',

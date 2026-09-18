@@ -19,7 +19,6 @@
         .search-box .material-icons { position: absolute; left: 12px; top: 10px; color: #94a3b8; }
         .table-custom { margin-bottom: 0; }
         
-        /* ❄️ MÁGICA DO CABEÇALHO FIXO ❄️ */
         .table-custom thead th { 
             position: sticky; 
             top: 0; 
@@ -50,7 +49,7 @@
                 <h4 class="m-0 fw-bold text-dark d-flex align-items-center gap-2">
                     <span class="material-icons text-primary" style="font-size: 28px;">people_alt</span> Munícipes Cadastrados
                 </h4>
-                <small class="text-muted" id="contador-alunos">Carregando dados da unidade...</small>
+                <small class="text-muted" id="contador-alunos">Carregando dados estruturados...</small>
             </div>
             <div class="d-flex gap-3">
                 <div class="search-box">
@@ -79,7 +78,7 @@
                     <tr>
                         <td colspan="6" class="text-center py-5 text-muted">
                             <div class="spinner-border text-primary mb-3" role="status"></div>
-                            <br>Otimizando conexão e processando prontuários...
+                            <br>Processando ordenação rígida de prontuários...
                         </td>
                     </tr>
                 </tbody>
@@ -87,36 +86,44 @@
         </div>
     </div>
 
-    <!-- MOTOR FIREBASE INTEGRADO -->
+    <!-- MOTOR FIREBASE COM ARQUITETURA BLINDADA -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
-        import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyCpCXxJbD8dPXkT7mcoz4qK8Wjt7WTRwFA",
-            authDomain: "sig-edu.firebaseapp.com",
-            projectId: "sig-edu",
-            storageBucket: "sig-edu.firebasestorage.app",
-            messagingSenderId: "233239725278",
-            appId: "1:233239725278:web:809b9c42feacd99175ee4f",
-            measurementId: "G-E5LLYGW7DN"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        // Importação centralizada do seu arquivo firebase_config.js
+        import { db } from './firebase_config.js';
+        import { collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
         let alunosGlobais = [];
         let timerBusca = null;
 
-        function pegarValorBlindado(aluno, chavesAlvo) {
-            if (!aluno) return '';
-            for (let dbKey in aluno) {
-                let chaveLimpa = dbKey.trim().toLowerCase().replace(/[^a-z0-9_]/g, "");
-                if (chavesAlvo.includes(chaveLimpa)) {
-                    return aluno[dbKey];
+        // 🛡️ MOTOR DE EXTRAÇÃO SEGURO (Nível Enterprise)
+        // Varre o documento Firebase garantindo que não retornará células vazias se houver uma cheia
+        function extrairDadoSeguro(documento, chavesAlvo) {
+            if (!documento || typeof documento !== 'object') return '';
+            let melhorValor = '';
+            
+            for (let chaveOriginal in documento) {
+                if (Object.prototype.hasOwnProperty.call(documento, chaveOriginal)) {
+                    // Normalização extrema de chave (sem acentos, sem espaços, minúscula)
+                    let chaveNormalizada = chaveOriginal.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9_]/g, "");
+                    
+                    if (chavesAlvo.includes(chaveNormalizada)) {
+                        let valorCru = documento[chaveOriginal];
+                        
+                        // Captura o dado apenas se ele existir (ignora nulos)
+                        if (valorCru !== null && valorCru !== undefined) {
+                            let valorTexto = String(valorCru).trim();
+                            // Se achou um dado preenchido de verdade, devolve imediatamente.
+                            if (valorTexto !== '') {
+                                return valorCru;
+                            } else {
+                                // Guarda o vazio apenas como último recurso
+                                melhorValor = valorCru;
+                            }
+                        }
+                    }
                 }
             }
-            return '';
+            return melhorValor;
         }
 
         window.onload = async function() {
@@ -132,9 +139,8 @@
             }
 
             try {
-                // Consulta limpa: Traz todos os registros da unidade para a memória do computador organizar
+                // Consulta limpa sem limite para organizar rigorosamente todos os prontuários no cliente
                 const q = query(collection(db, "municipes"), where("id_unidade", "==", idUnidade));
-                
                 const querySnapshot = await getDocs(q);
                 
                 alunosGlobais = [];
@@ -144,26 +150,34 @@
                     alunosGlobais.push(dado);
                 });
 
-                // 🌟 A MÁGICA DA ORDENAÇÃO POR PRONTUÁRIO 🌟
+                // 🛡️ MOTOR DE ORDENAÇÃO MATEMÁTICA ABSOLUTA
                 alunosGlobais.sort((a, b) => {
-                    // Extrai o valor, remove qualquer letra (caso alguém tenha digitado texto sem querer) e converte para número
-                    let prontA = Number(String(pegarValorBlindado(a, ['num_prontuario', 'prontuario', 'id_aluno'])).replace(/\D/g, '')) || 0;
-                    let prontB = Number(String(pegarValorBlindado(b, ['num_prontuario', 'prontuario', 'id_aluno'])).replace(/\D/g, '')) || 0;
+                    let prontA_raw = extrairDadoSeguro(a, ['num_prontuario', 'prontuario', 'id_aluno']);
+                    let prontB_raw = extrairDadoSeguro(b, ['num_prontuario', 'prontuario', 'id_aluno']);
+
+                    // Converte para número inteiro rígido. Remove letras e pontos.
+                    let prontA = parseInt(String(prontA_raw).replace(/\D/g, ''), 10) || 0;
+                    let prontB = parseInt(String(prontB_raw).replace(/\D/g, ''), 10) || 0;
                     
-                    // Ordenação decrescente: o maior número fica no topo
-                    return prontB - prontA;
+                    // Ordenação Principal: Maior Prontuário fica no topo
+                    if (prontB !== prontA) {
+                        return prontB - prontA; 
+                    } else {
+                        // 🛡️ Desempate Determinístico (impede a lista de "dançar" ao atualizar a tela)
+                        return (b.idFirebase || "").localeCompare(a.idFirebase || "");
+                    }
                 });
 
-                // Desenha apenas os 100 primeiros na tela para garantir a velocidade visual
+                // Trava a tela nos 100 primeiros registros perfeitos
                 renderizarTabela(alunosGlobais.slice(0, 100), "");
 
             } catch (err) {
                 console.error("Erro ao buscar no Firebase:", err);
                 
                 if (err.message.includes('Quota')) {
-                    document.getElementById('corpo-tabela').innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4 fw-bold"><i class="fas fa-ban fs-2 mb-2"></i><br>Limite de leituras atingido.<br>Verifique o painel do Firebase ou aguarde a cota zerar.</td></tr>`;
+                    document.getElementById('corpo-tabela').innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4 fw-bold"><i class="fas fa-ban fs-2 mb-2"></i><br>Limite de leituras atingido no Firebase.<br>Altere para o plano Blaze ou aguarde a cota diária zerar.</td></tr>`;
                 } else {
-                    document.getElementById('corpo-tabela').innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4 fw-bold"><i class="fas fa-exclamation-triangle"></i> Falha ao carregar a base de dados.</td></tr>`;
+                    document.getElementById('corpo-tabela').innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4 fw-bold"><i class="fas fa-exclamation-triangle"></i> Falha ao processar os dados seguros.</td></tr>`;
                 }
             }
         }
@@ -173,28 +187,26 @@
             
             const tbody = document.getElementById('corpo-tabela');
             if(termo.length > 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-5 text-muted"><div class="spinner-border text-primary mb-3" role="status"></div><br>Buscando <b>${termo}</b>...</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-5 text-muted"><div class="spinner-border text-primary mb-3" role="status"></div><br>Processando busca blindada: <b>${termo}</b>...</td></tr>`;
             }
 
             timerBusca = setTimeout(() => {
                 termo = termo.toUpperCase().trim();
                 
                 if (termo === "") {
-                    // Ao limpar a busca, volta a mostrar os 100 prontuários mais recentes
                     renderizarTabela(alunosGlobais.slice(0, 100), "");
                     return;
                 }
 
                 const resultados = alunosGlobais.filter(al => {
-                    const nome = pegarValorBlindado(al, ['nome_completo', 'nome']).toUpperCase();
-                    const eol = pegarValorBlindado(al, ['id_eol', 'eol']).toUpperCase();
-                    const pront = String(pegarValorBlindado(al, ['num_prontuario', 'prontuario'])).toUpperCase();
-                    const cin = pegarValorBlindado(al, ['cin', 'cpf']).toUpperCase();
+                    const nome = extrairDadoSeguro(al, ['nome_completo', 'nome', 'aluno']).toUpperCase();
+                    const eol = extrairDadoSeguro(al, ['id_eol', 'eol']).toUpperCase();
+                    const pront = String(extrairDadoSeguro(al, ['num_prontuario', 'prontuario', 'id_aluno'])).toUpperCase();
+                    const cin = extrairDadoSeguro(al, ['cin', 'cpf', 'rg']).toUpperCase();
 
                     return nome.includes(termo) || eol.includes(termo) || pront.includes(termo) || cin.includes(termo);
                 });
 
-                // Mostra no máximo 100 resultados compatíveis com a busca
                 renderizarTabela(resultados.slice(0, 100), termo, resultados.length);
             }, 400); 
         };
@@ -210,7 +222,7 @@
             }
             
             if(lista.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-5 text-muted"><span class="material-icons fs-1 mb-2">person_off</span><br>Nenhum aluno encontrado para esta busca.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-5 text-muted"><span class="material-icons fs-1 mb-2">person_off</span><br>Nenhum aluno encontrado.</td></tr>`;
                 return;
             }
 
@@ -218,12 +230,12 @@
             const semFotoPlaceholder = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='%2394a3b8'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E";
 
             lista.forEach(al => {
-                const prontuario = pegarValorBlindado(al, ['num_prontuario', 'prontuario', 'id_aluno']) || '-';
-                const eol = pegarValorBlindado(al, ['id_eol', 'eol']) || '-';
-                const nome = pegarValorBlindado(al, ['nome_completo', 'nome']) || '-';
-                const cpf = pegarValorBlindado(al, ['cin', 'cpf']) || '-';
+                const prontuario = extrairDadoSeguro(al, ['num_prontuario', 'prontuario', 'id_aluno']) || '-';
+                const eol = extrairDadoSeguro(al, ['id_eol', 'eol']) || '-';
+                const nome = extrairDadoSeguro(al, ['nome_completo', 'nome', 'aluno']) || '-';
+                const cpf = extrairDadoSeguro(al, ['cin', 'cpf', 'rg']) || '-';
                 
-                let linkCru = pegarValorBlindado(al, ['link_foto', 'foto']);
+                let linkCru = extrairDadoSeguro(al, ['link_foto', 'foto', 'url_foto']);
                 let urlFoto = semFotoPlaceholder;
 
                 if (linkCru && linkCru.includes('http')) {

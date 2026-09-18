@@ -19,6 +19,7 @@
         .search-box .material-icons { position: absolute; left: 12px; top: 10px; color: #94a3b8; }
         .table-custom { margin-bottom: 0; }
         
+        /* ❄️ MÁGICA DO CABEÇALHO FIXO ❄️ */
         .table-custom thead th { 
             position: sticky; 
             top: 0; 
@@ -78,7 +79,7 @@
                     <tr>
                         <td colspan="6" class="text-center py-5 text-muted">
                             <div class="spinner-border text-primary mb-3" role="status"></div>
-                            <br>Processando ordenação rígida de prontuários...
+                            <br>Processando ordenação rigorosa por ID do Aluno...
                         </td>
                     </tr>
                 </tbody>
@@ -88,35 +89,30 @@
 
     <!-- MOTOR FIREBASE COM ARQUITETURA BLINDADA -->
     <script type="module">
-        // Importação centralizada do seu arquivo firebase_config.js
+        // Importação centralizada
         import { db } from './firebase_config.js';
         import { collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
         let alunosGlobais = [];
         let timerBusca = null;
+        const LIMITE_TELA = 30; // 🌟 Limite de 30 registros definido aqui
 
-        // 🛡️ MOTOR DE EXTRAÇÃO SEGURO (Nível Enterprise)
-        // Varre o documento Firebase garantindo que não retornará células vazias se houver uma cheia
+        // 🛡️ MOTOR DE EXTRAÇÃO SEGURO
         function extrairDadoSeguro(documento, chavesAlvo) {
             if (!documento || typeof documento !== 'object') return '';
             let melhorValor = '';
             
             for (let chaveOriginal in documento) {
                 if (Object.prototype.hasOwnProperty.call(documento, chaveOriginal)) {
-                    // Normalização extrema de chave (sem acentos, sem espaços, minúscula)
                     let chaveNormalizada = chaveOriginal.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9_]/g, "");
                     
                     if (chavesAlvo.includes(chaveNormalizada)) {
                         let valorCru = documento[chaveOriginal];
-                        
-                        // Captura o dado apenas se ele existir (ignora nulos)
                         if (valorCru !== null && valorCru !== undefined) {
                             let valorTexto = String(valorCru).trim();
-                            // Se achou um dado preenchido de verdade, devolve imediatamente.
                             if (valorTexto !== '') {
                                 return valorCru;
                             } else {
-                                // Guarda o vazio apenas como último recurso
                                 melhorValor = valorCru;
                             }
                         }
@@ -139,7 +135,6 @@
             }
 
             try {
-                // Consulta limpa sem limite para organizar rigorosamente todos os prontuários no cliente
                 const q = query(collection(db, "municipes"), where("id_unidade", "==", idUnidade));
                 const querySnapshot = await getDocs(q);
                 
@@ -150,32 +145,33 @@
                     alunosGlobais.push(dado);
                 });
 
-                // 🛡️ MOTOR DE ORDENAÇÃO MATEMÁTICA ABSOLUTA
+                // 🛡️ MOTOR DE ORDENAÇÃO MATEMÁTICA ABSOLUTA (Foco 100% no id_aluno)
                 alunosGlobais.sort((a, b) => {
-                    let prontA_raw = extrairDadoSeguro(a, ['num_prontuario', 'prontuario', 'id_aluno']);
-                    let prontB_raw = extrairDadoSeguro(b, ['num_prontuario', 'prontuario', 'id_aluno']);
+                    // Tenta achar o id_aluno primeiro. Se não achar, usa o num_prontuario.
+                    let prontA_raw = extrairDadoSeguro(a, ['id_aluno', 'num_prontuario', 'prontuario']);
+                    let prontB_raw = extrairDadoSeguro(b, ['id_aluno', 'num_prontuario', 'prontuario']);
 
                     // Converte para número inteiro rígido. Remove letras e pontos.
                     let prontA = parseInt(String(prontA_raw).replace(/\D/g, ''), 10) || 0;
                     let prontB = parseInt(String(prontB_raw).replace(/\D/g, ''), 10) || 0;
                     
-                    // Ordenação Principal: Maior Prontuário fica no topo
+                    // Ordenação Decrescente: o maior número fica no topo
                     if (prontB !== prontA) {
                         return prontB - prontA; 
                     } else {
-                        // 🛡️ Desempate Determinístico (impede a lista de "dançar" ao atualizar a tela)
+                        // Desempate invisível para garantir estabilidade da tabela
                         return (b.idFirebase || "").localeCompare(a.idFirebase || "");
                     }
                 });
 
-                // Trava a tela nos 100 primeiros registros perfeitos
-                renderizarTabela(alunosGlobais.slice(0, 100), "");
+                // Trava a tela nos 30 primeiros registros
+                renderizarTabela(alunosGlobais.slice(0, LIMITE_TELA), "");
 
             } catch (err) {
                 console.error("Erro ao buscar no Firebase:", err);
                 
                 if (err.message.includes('Quota')) {
-                    document.getElementById('corpo-tabela').innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4 fw-bold"><i class="fas fa-ban fs-2 mb-2"></i><br>Limite de leituras atingido no Firebase.<br>Altere para o plano Blaze ou aguarde a cota diária zerar.</td></tr>`;
+                    document.getElementById('corpo-tabela').innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4 fw-bold"><i class="fas fa-ban fs-2 mb-2"></i><br>Limite de leituras atingido no Firebase.<br>Aguarde a cota diária zerar.</td></tr>`;
                 } else {
                     document.getElementById('corpo-tabela').innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4 fw-bold"><i class="fas fa-exclamation-triangle"></i> Falha ao processar os dados seguros.</td></tr>`;
                 }
@@ -194,20 +190,22 @@
                 termo = termo.toUpperCase().trim();
                 
                 if (termo === "") {
-                    renderizarTabela(alunosGlobais.slice(0, 100), "");
+                    // Volta para os 30 últimos
+                    renderizarTabela(alunosGlobais.slice(0, LIMITE_TELA), "");
                     return;
                 }
 
                 const resultados = alunosGlobais.filter(al => {
                     const nome = extrairDadoSeguro(al, ['nome_completo', 'nome', 'aluno']).toUpperCase();
                     const eol = extrairDadoSeguro(al, ['id_eol', 'eol']).toUpperCase();
-                    const pront = String(extrairDadoSeguro(al, ['num_prontuario', 'prontuario', 'id_aluno'])).toUpperCase();
+                    const pront = String(extrairDadoSeguro(al, ['id_aluno', 'num_prontuario', 'prontuario'])).toUpperCase();
                     const cin = extrairDadoSeguro(al, ['cin', 'cpf', 'rg']).toUpperCase();
 
                     return nome.includes(termo) || eol.includes(termo) || pront.includes(termo) || cin.includes(termo);
                 });
 
-                renderizarTabela(resultados.slice(0, 100), termo, resultados.length);
+                // Mostra até 30 resultados da busca
+                renderizarTabela(resultados.slice(0, LIMITE_TELA), termo, resultados.length);
             }, 400); 
         };
 
@@ -217,7 +215,7 @@
             if(termoBusca === "") {
                 document.getElementById('contador-alunos').innerHTML = `Exibindo os <b>${lista.length}</b> prontuários mais recentes.`;
             } else {
-                let txtTotal = totalEncontrado > 100 ? `100 de ${totalEncontrado}` : totalEncontrado;
+                let txtTotal = totalEncontrado > LIMITE_TELA ? `${LIMITE_TELA} de ${totalEncontrado}` : totalEncontrado;
                 document.getElementById('contador-alunos').innerText = `${txtTotal} aluno(s) encontrado(s) na tela para "${termoBusca}"`;
             }
             
@@ -230,7 +228,8 @@
             const semFotoPlaceholder = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='%2394a3b8'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E";
 
             lista.forEach(al => {
-                const prontuario = extrairDadoSeguro(al, ['num_prontuario', 'prontuario', 'id_aluno']) || '-';
+                // Preenche usando a prioridade certa: id_aluno primeiro!
+                const prontuario = extrairDadoSeguro(al, ['id_aluno', 'num_prontuario', 'prontuario']) || '-';
                 const eol = extrairDadoSeguro(al, ['id_eol', 'eol']) || '-';
                 const nome = extrairDadoSeguro(al, ['nome_completo', 'nome', 'aluno']) || '-';
                 const cpf = extrairDadoSeguro(al, ['cin', 'cpf', 'rg']) || '-';

@@ -7,17 +7,18 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <!-- Leitor de CSV -->
+    <!-- Leitor de CSV (PapaParse) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <style>
         body { background-color: #f4f7f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-        .import-card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); width: 100%; max-width: 500px; text-align: center; }
+        .import-card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); width: 100%; max-width: 500px; text-align: center; border-top: 5px solid #0d6efd; display: none; }
         .progress { height: 25px; border-radius: 12px; display: none; margin-top: 20px; }
     </style>
 </head>
 <body>
 
-    <div class="import-card">
+    <!-- A DIV com id="tela-conteudo" começa oculta e só aparece para o ADMIN -->
+    <div class="import-card animate__animated animate__fadeIn" id="tela-conteudo">
         <h3 class="fw-bold text-primary mb-3"><i class="fas fa-file-csv"></i> Importação em Massa</h3>
         <p class="text-muted mb-4">Selecione o arquivo CSV contendo os dados dos munícipes. O cabeçalho deve conter a coluna <b>id_unidade</b>.</p>
         
@@ -32,38 +33,52 @@
         <p id="status-texto" class="mt-2 text-muted fw-bold" style="display: none;"></p>
     </div>
 
+    <!-- MOTOR DO IMPORTADOR CENTRALIZADO -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
-        import { getFirestore, collection, doc, writeBatch } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+        import { db } from './firebase_config.js';
+        import { collection, doc, writeBatch } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyCpCXxJbD8dPXkT7mcoz4qK8Wjt7WTRwFA",
-            authDomain: "sig-edu.firebaseapp.com",
-            projectId: "sig-edu",
-            storageBucket: "sig-edu.firebasestorage.app",
-            messagingSenderId: "233239725278",
-            appId: "1:233239725278:web:809b9c42feacd99175ee4f",
-            measurementId: "G-E5LLYGW7DN"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
+        // ==========================================
+        // 1. TRAVA DE SEGURANÇA INTELIGENTE
+        // ==========================================
         window.onload = function() {
+            let perfisUsuario = ["UNIDADE"];
             try {
-                const perfis = JSON.parse(localStorage.getItem('sig_nivel_acesso') || '[]');
-                if (!perfis.includes('ADMIN')) {
-                    document.body.innerHTML = '<h2 class="text-center text-danger mt-5">Acesso Negado</h2>';
+                const cru = localStorage.getItem('sig_nivel_acesso') || "UNIDADE";
+                if (cru.startsWith('[')) {
+                    let lido = JSON.parse(cru);
+                    if (lido.length === 1 && lido[0].includes(',')) {
+                        perfisUsuario = lido[0].split(',').map(p => p.trim().toUpperCase());
+                    } else {
+                        perfisUsuario = lido.map(p => p.trim().toUpperCase());
+                    }
+                } else {
+                    perfisUsuario = cru.split(',').map(p => p.trim().toUpperCase());
                 }
             } catch (e) {
-                document.body.innerHTML = '<h2 class="text-center text-danger mt-5">Acesso Negado</h2>';
+                perfisUsuario = ["UNIDADE"];
+            }
+
+            if (!perfisUsuario.includes('ADMIN')) {
+                Swal.fire({
+                    icon: 'error', title: 'Acesso Negado', text: 'Esta ferramenta é restrita aos Administradores do sistema.',
+                    confirmButtonColor: '#0d6efd', allowOutsideClick: false
+                }).then(() => { 
+                    window.location.href = "inicio_FB.html"; 
+                });
+            } else {
+                // Libera a interface de importação para o Administrador
+                document.getElementById('tela-conteudo').style.display = 'block';
             }
         }
 
+        // ==========================================
+        // 2. LÓGICA DE IMPORTAÇÃO COM PAPAPARSE
+        // ==========================================
         window.iniciarImportacao = function() {
             const arquivoInput = document.getElementById('arquivoCsv');
             if (!arquivoInput.files[0]) {
-                Swal.fire('Atenção', 'Selecione um arquivo CSV primeiro.', 'warning');
+                Swal.fire('Atenção', 'Selecione um arquivo CSV do seu computador primeiro.', 'warning');
                 return;
             }
 
@@ -82,13 +97,14 @@
                 complete: async function(resultados) {
                     const dados = resultados.data;
                     if (dados.length === 0) {
-                        Swal.fire('Erro', 'O arquivo CSV está vazio ou inválido.', 'error');
+                        Swal.fire('Erro', 'O arquivo CSV está vazio ou em formato inválido.', 'error');
                         btn.disabled = false;
                         return;
                     }
 
+                    // Validação crítica de coluna
                     if (!dados[0].hasOwnProperty('id_unidade')) {
-                        Swal.fire('Erro Crítico', 'A coluna "id_unidade" não foi encontrada no cabeçalho do CSV.', 'error');
+                        Swal.fire('Erro Crítico', 'A coluna obrigatória "id_unidade" não foi encontrada no cabeçalho do CSV. Verifique a planilha.', 'error');
                         btn.disabled = false;
                         return;
                     }
@@ -96,7 +112,7 @@
                     const totalRegistros = dados.length;
                     statusText.innerText = `Preparando ${totalRegistros} registros...`;
 
-                    const TAMANHO_LOTE = 450; // Margem de segurança menor que 500
+                    const TAMANHO_LOTE = 450; // Margem de segurança de lotes do Firestore (limite é 500)
                     let lotesEnviados = 0;
                     let totalLotes = Math.ceil(totalRegistros / TAMANHO_LOTE);
 
@@ -106,37 +122,41 @@
                             const batch = writeBatch(db);
 
                             lote.forEach(municipe => {
-                                // O FAXINEIRO DE COLUNAS FANTASMAS
+                                // O FAXINEIRO DE COLUNAS FANTASMAS (Limpa colunas vazias geradas pelo Excel)
                                 Object.keys(municipe).forEach(chave => {
                                     if (!chave || chave.trim() === "") {
                                         delete municipe[chave];
                                     }
                                 });
 
+                                // Cria uma referência nova para a coleção "municipes"
                                 const docRef = doc(collection(db, "municipes")); 
                                 
+                                // Adiciona as chaves de rastro
                                 municipe.data_cadastro = new Date().toISOString();
                                 municipe.rf_cadastrador = localStorage.getItem('sig_rf') || "SISTEMA_MIGRACAO";
                                 
                                 batch.set(docRef, municipe);
                             });
 
+                            // Executa o envio do pacote de 450 itens para o banco
                             await batch.commit();
                             lotesEnviados++;
 
+                            // Atualiza a barrinha visual
                             const percentual = Math.round((lotesEnviados / totalLotes) * 100);
                             barra.style.width = percentual + '%';
                             barra.innerText = percentual + '%';
-                            statusText.innerText = `Processando: ${Math.min(i + TAMANHO_LOTE, totalRegistros)} de ${totalRegistros}`;
+                            statusText.innerText = `Processando Lote ${lotesEnviados}: ${Math.min(i + TAMANHO_LOTE, totalRegistros)} de ${totalRegistros}`;
                         }
 
-                        Swal.fire('Migração Concluída!', `Todos os ${totalRegistros} munícipes foram importados com sucesso.`, 'success');
+                        Swal.fire('Migração Concluída!', `Todos os ${totalRegistros} munícipes foram injetados no Firebase com sucesso.`, 'success');
                         statusText.innerText = "Importação finalizada com sucesso!";
                         statusText.classList.replace('text-muted', 'text-success');
 
                     } catch (erro) {
                         console.error("Erro na importação:", erro);
-                        Swal.fire('Erro na Migração', 'O processo falhou no Firebase. Veja o console (F12) para detalhes.', 'error');
+                        Swal.fire('Erro na Migração', 'Ocorreu um erro no disparo para o Firebase. Abra o console (F12) para ver os detalhes.', 'error');
                         statusText.innerText = "Falha no envio.";
                         statusText.classList.replace('text-muted', 'text-danger');
                     } finally {

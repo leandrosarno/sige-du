@@ -19,6 +19,7 @@
         .search-box .material-icons { position: absolute; left: 12px; top: 10px; color: #94a3b8; }
         .table-custom { margin-bottom: 0; }
         
+        /* ❄️ MÁGICA DO CABEÇALHO FIXO ❄️ */
         .table-custom thead th { 
             position: sticky; 
             top: 0; 
@@ -78,7 +79,7 @@
                     <tr>
                         <td colspan="6" class="text-center py-5 text-muted">
                             <div class="spinner-border text-primary mb-3" role="status"></div>
-                            <br>Otimizando conexão com o banco de dados...
+                            <br>Otimizando conexão e processando prontuários...
                         </td>
                     </tr>
                 </tbody>
@@ -86,9 +87,10 @@
         </div>
     </div>
 
+    <!-- MOTOR FIREBASE INTEGRADO -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
-        import { getFirestore, collection, getDocs, query, where, limit } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCpCXxJbD8dPXkT7mcoz4qK8Wjt7WTRwFA",
@@ -130,13 +132,8 @@
             }
 
             try {
-                // 🛑 FREIO DE SEGURANÇA INSTALADO: limit(100)
-                // O sistema agora baixa estritamente os 100 registros mais recentes da unidade.
-                const q = query(
-                    collection(db, "municipes"), 
-                    where("id_unidade", "==", idUnidade),
-                    limit(100)
-                );
+                // Consulta limpa: Traz todos os registros da unidade para a memória do computador organizar
+                const q = query(collection(db, "municipes"), where("id_unidade", "==", idUnidade));
                 
                 const querySnapshot = await getDocs(q);
                 
@@ -147,23 +144,24 @@
                     alunosGlobais.push(dado);
                 });
 
+                // 🌟 A MÁGICA DA ORDENAÇÃO POR PRONTUÁRIO 🌟
                 alunosGlobais.sort((a, b) => {
-                    let dataA = a.data_cadastro || a.data_atualizacao || "";
-                    let dataB = b.data_cadastro || b.data_atualizacao || "";
-                    if (dataA && dataB) return dataB.localeCompare(dataA); 
-
-                    let prontA = Number(pegarValorBlindado(a, ['num_prontuario', 'prontuario', 'id_aluno'])) || 0;
-                    let prontB = Number(pegarValorBlindado(b, ['num_prontuario', 'prontuario', 'id_aluno'])) || 0;
+                    // Extrai o valor, remove qualquer letra (caso alguém tenha digitado texto sem querer) e converte para número
+                    let prontA = Number(String(pegarValorBlindado(a, ['num_prontuario', 'prontuario', 'id_aluno'])).replace(/\D/g, '')) || 0;
+                    let prontB = Number(String(pegarValorBlindado(b, ['num_prontuario', 'prontuario', 'id_aluno'])).replace(/\D/g, '')) || 0;
+                    
+                    // Ordenação decrescente: o maior número fica no topo
                     return prontB - prontA;
                 });
 
-                renderizarTabela(alunosGlobais, "");
+                // Desenha apenas os 100 primeiros na tela para garantir a velocidade visual
+                renderizarTabela(alunosGlobais.slice(0, 100), "");
 
             } catch (err) {
                 console.error("Erro ao buscar no Firebase:", err);
                 
                 if (err.message.includes('Quota')) {
-                    document.getElementById('corpo-tabela').innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4 fw-bold"><i class="fas fa-ban fs-2 mb-2"></i><br>Limite diário do plano gratuito atingido.<br>O sistema voltará a funcionar automaticamente em breve, ou atualize para o plano Blaze.</td></tr>`;
+                    document.getElementById('corpo-tabela').innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4 fw-bold"><i class="fas fa-ban fs-2 mb-2"></i><br>Limite de leituras atingido.<br>Verifique o painel do Firebase ou aguarde a cota zerar.</td></tr>`;
                 } else {
                     document.getElementById('corpo-tabela').innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4 fw-bold"><i class="fas fa-exclamation-triangle"></i> Falha ao carregar a base de dados.</td></tr>`;
                 }
@@ -182,7 +180,8 @@
                 termo = termo.toUpperCase().trim();
                 
                 if (termo === "") {
-                    renderizarTabela(alunosGlobais, "");
+                    // Ao limpar a busca, volta a mostrar os 100 prontuários mais recentes
+                    renderizarTabela(alunosGlobais.slice(0, 100), "");
                     return;
                 }
 
@@ -195,7 +194,8 @@
                     return nome.includes(termo) || eol.includes(termo) || pront.includes(termo) || cin.includes(termo);
                 });
 
-                renderizarTabela(resultados, termo, resultados.length);
+                // Mostra no máximo 100 resultados compatíveis com a busca
+                renderizarTabela(resultados.slice(0, 100), termo, resultados.length);
             }, 400); 
         };
 
@@ -203,13 +203,14 @@
             const tbody = document.getElementById('corpo-tabela');
             
             if(termoBusca === "") {
-                document.getElementById('contador-alunos').innerHTML = `Exibindo as <b>${lista.length}</b> matrículas recentes. <br><span class="text-warning"><i class="fas fa-info-circle"></i> Otimizado para economia de dados.</span>`;
+                document.getElementById('contador-alunos').innerHTML = `Exibindo os <b>${lista.length}</b> prontuários mais recentes.`;
             } else {
-                document.getElementById('contador-alunos').innerText = `${totalEncontrado} aluno(s) encontrado(s) na tela para "${termoBusca}"`;
+                let txtTotal = totalEncontrado > 100 ? `100 de ${totalEncontrado}` : totalEncontrado;
+                document.getElementById('contador-alunos').innerText = `${txtTotal} aluno(s) encontrado(s) na tela para "${termoBusca}"`;
             }
             
             if(lista.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-5 text-muted"><span class="material-icons fs-1 mb-2">person_off</span><br>Nenhum aluno recente encontrado. Use a busca avançada em breve.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-5 text-muted"><span class="material-icons fs-1 mb-2">person_off</span><br>Nenhum aluno encontrado para esta busca.</td></tr>`;
                 return;
             }
 

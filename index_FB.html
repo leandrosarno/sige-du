@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIG-EDU - Login (Homologação Firebase)</title>
+    <title>SIG-EDU - Login</title>
     
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
@@ -15,65 +15,112 @@
     
     <style>
         :root { --cor-primaria: #0d6efd; --cor-fundo: #f4f7f6; }
-        body { background-color: var(--cor-fundo); display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .login-card { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 400px; border-top: 5px solid #ff9800; /* Borda laranja para lembrar que é ambiente de teste */ }
-        .login-header { text-align: center; margin-bottom: 30px; }
-        .login-header span { font-size: 50px; color: var(--cor-primaria); }
-        .login-header h3 { font-weight: 700; color: #333; margin-top: 10px; }
-        .btn-login { background-color: var(--cor-primaria); border: none; width: 100%; padding: 12px; font-weight: bold; font-size: 16px; margin-top: 20px; }
-        .btn-login:hover { background-color: #0b5ed7; }
-        .form-control { padding: 12px; border-radius: 8px; }
+        body { 
+            background-color: var(--cor-fundo); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100vh; 
+            margin: 0; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+        }
+        
+        .login-wrapper {
+            display: flex;
+            flex-direction: row;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 750px;
+            overflow: hidden;
+            border-top: 5px solid #ff9800; /* Identificador de Homologação */
+        }
+
+        /* LADO ESQUERDO: LOGO E MARCA */
+        .login-left {
+            flex: 1;
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            text-align: center;
+            border-right: 1px solid #cbd5e1;
+        }
+        .login-left span.icone-padrao { font-size: 80px; color: var(--cor-primaria); margin-bottom: 10px; }
+        .login-left h3 { font-weight: 800; color: #1e293b; margin-top: 15px; margin-bottom: 5px; font-size: 24px; }
+        .login-left p { color: #64748b; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin: 0; }
+
+        /* LADO DIREITO: FORMULÁRIO */
+        .login-right {
+            flex: 1.2;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .form-label { font-weight: 700; color: #4a5568; font-size: 13px; text-transform: uppercase; margin-bottom: 5px; }
+        .form-control { padding: 12px 15px; border-radius: 8px; background-color: #f8fafc; border: 1px solid #cbd5e1; font-weight: 600; color: #1e293b; margin-bottom: 20px; transition: all 0.2s; text-align: center;}
+        .form-control:focus { background-color: #ffffff; border-color: var(--cor-primaria); box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.1); }
+        
+        .btn-login { background-color: var(--cor-primaria); border: none; width: 100%; padding: 14px; font-weight: 800; font-size: 15px; border-radius: 8px; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s; margin-top: 10px; }
+        .btn-login:hover { background-color: #0b5ed7; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(13, 110, 253, 0.3); }
+
+        /* Responsividade para telas pequenas */
+        @media (max-width: 768px) {
+            .login-wrapper { flex-direction: column; max-width: 400px; margin: 20px; }
+            .login-left { border-right: none; border-bottom: 1px solid #cbd5e1; padding: 30px 20px; }
+            .login-right { padding: 30px 25px; }
+        }
     </style>
 </head>
 <body>
 
-    <div class="login-card">
-        <div class="login-header" id="box-logo">
-            <span class="material-icons" id="icone-padrao" style="font-size: 75px; color: var(--cor-primaria);">account_balance</span>
-            <img id="img-logo" src="" alt="Logo do Sistema" style="display: none; width: 100%; height: 120px; object-fit: contain; margin: 0 auto 15px auto;">
+    <div class="login-wrapper animate__animated animate__fadeIn">
+        
+        <!-- COLUNA ESQUERDA (MARCA) -->
+        <div class="login-left" id="box-logo">
+            <span class="material-icons icone-padrao" id="icone-padrao">account_balance</span>
+            <img id="img-logo" src="" alt="Logo do Sistema" style="display: none; width: 80%; max-height: 120px; object-fit: contain; margin-bottom: 10px;">
             <h3 id="titulo-sistema">A carregar...</h3>
-            <p class="text-muted">Acesso Restrito - Firebase</p>
+            <p>Acesso Restrito</p>
         </div>
 
-        <!-- O formulário agora chama window.fazerLogin() devido ao script module -->
-        <form id="formLogin" onsubmit="event.preventDefault(); window.fazerLogin();">
-            <div class="mb-3">
-                <label class="form-label fw-bold">Código EOL da Unidade</label>
-                <input type="number" class="form-control" id="id_ceu" placeholder="Ex: 123456" required>
-            </div>
-            <div class="mb-3">
-                <label class="form-label fw-bold">RF do Funcionário</label>
-                <input type="number" class="form-control" id="rf_usuario" placeholder="Apenas números" required>
-            </div>
-            <div class="mb-3">
-                <label class="form-label fw-bold">Senha de Acesso</label>
-                <input type="password" class="form-control" id="senha_usuario" placeholder="Sua senha" required>
-            </div>
-            
-            <button type="submit" class="btn btn-primary btn-login" id="btn-entrar">ENTRAR NO SISTEMA</button>
-        </form>
+        <!-- COLUNA DIREITA (FORMULÁRIO) -->
+        <div class="login-right">
+            <form id="formLogin" onsubmit="event.preventDefault(); window.fazerLogin();">
+                
+                <div>
+                    <label class="form-label">Cód. EOL da Unidade</label>
+                    <input type="text" inputmode="numeric" class="form-control" id="id_ceu" placeholder="Ex: 123456" required>
+                </div>
+                
+                <div>
+                    <label class="form-label">RF do Funcionário</label>
+                    <input type="text" inputmode="numeric" class="form-control" id="rf_usuario" placeholder="Apenas números" required>
+                </div>
+                
+                <div>
+                    <label class="form-label">Senha de Acesso</label>
+                    <input type="password" class="form-control" id="senha_usuario" placeholder="••••••••" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-login" id="btn-entrar">
+                    Entrar no Sistema
+                </button>
+            </form>
+        </div>
+        
     </div>
 
-    <!-- SCRIPT DO SISTEMA COM FIREBASE -->
+    <!-- SCRIPT DO SISTEMA COM FIREBASE CENTRALIZADO -->
     <script type="module">
-        // 1. IMPORTAÇÃO DAS BIBLIOTECAS OFICIAIS DO FIRESTORE
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
-        import { getFirestore, collection, getDocs, getDoc, doc, query, where, updateDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
-
-        // 2. A CHAVE MESTRE DO SEU PROJETO SIG-EDU
-        const firebaseConfig = {
-            apiKey: "AIzaSyCpCXxJbD8dPXkT7mcoz4qK8Wjt7WTRwFA",
-            authDomain: "sig-edu.firebaseapp.com",
-            projectId: "sig-edu",
-            storageBucket: "sig-edu.firebasestorage.app",
-            messagingSenderId: "233239725278",
-            appId: "1:233239725278:web:809b9c42feacd99175ee4f",
-            measurementId: "G-E5LLYGW7DN"
-        };
-
-        // 3. INICIALIZANDO O BANCO DE DADOS
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        // IMPORTAÇÃO DA CONEXÃO CENTRALIZADA (firebase_config.js)
+        import { db } from './firebase_config.js';
+        import { collection, getDocs, getDoc, doc, query, where, updateDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
         // ==========================================
         // LOGO E CONFIGURAÇÕES GERAIS
@@ -82,7 +129,6 @@
             localStorage.clear();
 
             try {
-                // Ao invés da API, ele lê um documento chamado "sistema" dentro da coleção "configuracoes"
                 const docRef = doc(db, "configuracoes", "sistema");
                 const docSnap = await getDoc(docRef);
 
@@ -113,9 +159,10 @@
         };
 
         // ==========================================
-        // MOTOR DE LOGIN BLINDADO (FIREBASE)
+        // MOTOR DE LOGIN BLINDADO
         // ==========================================
         window.fazerLogin = async function() {
+            // Limpa espaços vazios e formata
             const ceu = document.getElementById('id_ceu').value.trim();
             const rf = document.getElementById('rf_usuario').value.trim();
             const senha = document.getElementById('senha_usuario').value.trim();
@@ -126,14 +173,13 @@
             }
 
             Swal.fire({
-                title: 'A validar acessos...',
-                text: 'Consultando o banco de dados seguro.',
+                title: 'Autenticando...',
+                text: 'Consultando credenciais no servidor.',
                 allowOutsideClick: false,
                 didOpen: () => { Swal.showLoading(); }
             });
 
             try {
-                // Consulta rápida no Firebase: "Procure na coleção usuarios onde EOL e RF sejam iguais ao digitado"
                 const usuariosRef = collection(db, "usuarios");
                 const q = query(usuariosRef, 
                     where("id_ceu", "==", ceu),
@@ -143,7 +189,7 @@
                 const querySnapshot = await getDocs(q);
 
                 if (querySnapshot.empty) {
-                    Swal.fire('Acesso Negado', 'Usuário não encontrado.', 'error');
+                    Swal.fire('Acesso Negado', 'Usuário não encontrado nesta unidade.', 'error');
                     return;
                 }
 
@@ -151,13 +197,12 @@
                 let dadosUsuario = null;
                 let idDocumentoFirebase = null;
 
-                // O Firebase devolve a lista (mesmo que seja só 1). Validamos a senha.
                 querySnapshot.forEach((documento) => {
                     const dados = documento.data();
                     if (dados.senha_usuario === senha) {
                         usuarioValido = true;
                         dadosUsuario = dados;
-                        idDocumentoFirebase = documento.id; // Guardamos o ID real do banco para alterar a senha
+                        idDocumentoFirebase = documento.id; 
                     }
                 });
 
@@ -166,26 +211,27 @@
                     return;
                 }
 
-                // Verifica se precisa trocar a senha
                 if (dadosUsuario.primeiro_acesso === true) {
                     window.tratarPrimeiroAcesso("É necessário redefinir a sua senha inicial de segurança.", { idDoc: idDocumentoFirebase });
                     return;
                 }
 
-                // LOGIN COM SUCESSO - Preenche as mochilas do localStorage
+                // SUCESSO - Preenche variáveis de sessão
                 localStorage.setItem('ceu_codigo_eol', ceu);
                 localStorage.setItem('ceu_rf_logado', rf); 
+                localStorage.setItem('sig_id_unidade', ceu); // Chave para os módulos novos
+                localStorage.setItem('sig_rf', rf); // Chave para os módulos novos
                 localStorage.setItem('ceu_planilha_id', dadosUsuario.id_planilha_banco || "");
                 localStorage.setItem('ceu_nome', dadosUsuario.nome_ceu || "Escola");
-                localStorage.setItem('ceu_nome_especifico', dadosUsuario.nome_ceu || "Escola");
                 localStorage.setItem('ceu_nome_usuario', dadosUsuario.nome_usuario || "Gestor");
                 
                 if(dadosUsuario.logo_ceu) localStorage.setItem('ceu_logo', dadosUsuario.logo_ceu);
                 if(dadosUsuario.foto_usuario) localStorage.setItem('ceu_foto_usuario', dadosUsuario.foto_usuario);
                 
                 localStorage.setItem('ceu_perfil', dadosUsuario.perfil_usuario || "padrao"); 
+                localStorage.setItem('sig_nivel_acesso', JSON.stringify([dadosUsuario.perfil_usuario || 'SECRETARIA']));
                 
-                // Joga para o Dashboard instantaneamente!
+                // Redireciona para o Painel Principal (Ajuste o nome do arquivo se necessário)
                 window.location.href = "dashboard.html"; 
 
             } catch (erro) {
@@ -195,7 +241,7 @@
         };
 
         // ==========================================
-        // FLUXO DE PRIMEIRO ACESSO (MUDAR SENHA)
+        // REDEFINIÇÃO DE SENHA NO PRIMEIRO ACESSO
         // ==========================================
         window.tratarPrimeiroAcesso = function(mensagemDoServidor, dadosAuxiliares) {
             Swal.fire({
@@ -204,9 +250,9 @@
                 icon: 'info',
                 html: `
                     <div style="text-align: left; font-size: 14px;">
-                        <label class="mt-2 fw-bold">Nova Senha:</label>
+                        <label class="mt-2 fw-bold text-dark">Nova Senha:</label>
                         <input type="password" id="swal-nova-senha" class="swal2-input" placeholder="Mínimo 8 caracteres">
-                        <label class="mt-2 fw-bold">Confirmar Nova Senha:</label>
+                        <label class="mt-2 fw-bold text-dark">Confirmar Nova Senha:</label>
                         <input type="password" id="swal-conf-senha" class="swal2-input" placeholder="Repita a senha">
                     </div>
                 `,
@@ -230,10 +276,9 @@
         };
 
         window.enviarNovaSenha = async function(idDocumentoFirebase, novaSenha) {
-            Swal.fire({ title: 'A gravar no Firebase...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+            Swal.fire({ title: 'A gravar no banco...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
             
             try {
-                // Atualiza o documento específico no banco de dados e remove o status de primeiro acesso
                 const usuarioRef = doc(db, "usuarios", idDocumentoFirebase);
                 await updateDoc(usuarioRef, {
                     senha_usuario: novaSenha,

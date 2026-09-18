@@ -44,7 +44,9 @@
         .card-link h3 { color: #6f42c1; font-size: 24px; display: flex; align-items: center; justify-content: center; gap: 10px;}
         
         .tag-global { font-size: 10px; color: #dc3545; text-transform: uppercase; margin-top: 8px; font-weight: 800; letter-spacing: 0.5px; }
-        .tag-erro { font-size: 12px; color: #dc3545; font-weight: 800; }
+        
+        /* Nova tag para o Raio-X de Erros */
+        .tag-erro { font-size: 10px; color: #dc3545; font-weight: 700; line-height: 1.2; display: block; text-transform: none; word-wrap: break-word; }
     </style>
 </head>
 <body>
@@ -93,7 +95,7 @@
         </div>
     </div>
 
-    <!-- MOTOR FIREBASE COM RADAR GLOBAL E DUPLA TIPAGEM -->
+    <!-- MOTOR FIREBASE COM RAIO-X DE ERROS -->
     <script type="module">
         import { db } from './firebase_config.js';
         import { collection, query, where, getCountFromServer } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
@@ -146,7 +148,6 @@
             buscarEAnimar("recreio_ferias", "tot-recreio", idUnidade);
         }
 
-        // MOTOR BLINDADO (Local vs Global)
         async function buscarEAnimar(nomeColecao, idElementoHTML, idUnidade) {
             const el = document.getElementById(idElementoHTML);
             try {
@@ -154,26 +155,30 @@
                 let totalEncontrado = 0;
                 let isGlobal = false;
 
-                // MODO TI: Se logou com 000000, lê o banco todo por padrão
                 if (idUnidade === "000000") {
                     const snapshot = await getCountFromServer(refColecao);
                     totalEncontrado = snapshot.data().count;
                 } else {
-                    // MODO UNIDADE: Procura o número cravado da unidade logada
                     const qTexto = query(refColecao, where("id_unidade", "==", String(idUnidade).trim()));
                     const snapTexto = await getCountFromServer(qTexto);
                     
-                    const qNumero = query(refColecao, where("id_unidade", "==", Number(idUnidade)));
-                    const snapNumero = await getCountFromServer(qNumero);
+                    const idNumerico = Number(idUnidade);
+                    let contagemNumerica = 0;
+                    
+                    // Prevenção contra conversão inválida que causa erro no Firebase
+                    if (!isNaN(idNumerico)) {
+                        const qNumero = query(refColecao, where("id_unidade", "==", idNumerico));
+                        const snapNumero = await getCountFromServer(qNumero);
+                        contagemNumerica = snapNumero.data().count;
+                    }
 
-                    totalEncontrado = snapTexto.data().count + snapNumero.data().count;
+                    totalEncontrado = snapTexto.data().count + contagemNumerica;
 
-                    // O RADAR GLOBAL: Se deu 0 na unidade, vamos olhar o banco de dados inteiro para achar os órfãos
                     if (totalEncontrado === 0) {
                         const snapGlobal = await getCountFromServer(refColecao);
                         if (snapGlobal.data().count > 0) {
                             totalEncontrado = snapGlobal.data().count;
-                            isGlobal = true; // Avisa a interface que o número não pertence a essa unidade
+                            isGlobal = true; 
                         }
                     }
                 }
@@ -183,7 +188,8 @@
             } catch (error) {
                 console.error(`Erro ao contar ${nomeColecao}:`, error);
                 el.classList.remove('skeleton');
-                el.innerHTML = `<span class="tag-erro"><i class="fas fa-lock"></i> Bloqueado</span>`;
+                // Exibe o erro real vindo do Google
+                el.innerHTML = `<span class="tag-erro"><i class="fas fa-bug"></i> ${error.message}</span>`;
             }
         }
 
@@ -197,7 +203,6 @@
             }
 
             let atual = 0;
-            // Acelera a contagem para números muito grandes
             const incremento = Math.ceil(valorFinal / 25);
             
             const timer = setInterval(() => {
@@ -208,7 +213,6 @@
                     
                     let textoFinal = atual.toLocaleString('pt-BR');
                     
-                    // Se achou no banco geral mas não tem a tag da unidade, exibe o aviso
                     if (isGlobal) {
                         el.innerHTML = `${textoFinal} <div class="tag-global"><i class="fas fa-exclamation-triangle"></i> Banco Global</div>`;
                     } else {

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista de Alunos - Novo Sistema</title>
+    <title>Lista de Alunos - SIG-EDU</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -19,6 +19,7 @@
         .search-box .material-icons { position: absolute; left: 12px; top: 10px; color: #94a3b8; }
         .table-custom { margin-bottom: 0; }
         
+        /* ❄️ MÁGICA DO CABEÇALHO FIXO ❄️ */
         .table-custom thead th { 
             position: sticky; 
             top: 0; 
@@ -88,6 +89,7 @@
         </div>
     </div>
 
+    <!-- MOTOR FIREBASE INTEGRADO -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
         import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
@@ -108,18 +110,13 @@
         let alunosGlobais = [];
         let timerBusca = null;
 
-        // O LEITOR BLINDADO MELHORADO (Ignora sujeiras ocultas do Excel)
-        function getValorSeguro(obj, possiveisChaves) {
-            if (!obj) return '';
-            const chavesDoObjeto = Object.keys(obj);
-            
-            for (let chave of chavesDoObjeto) {
-                // Remove qualquer espaço, acento ou caractere fantasma invisível
-                let chaveLimpa = chave.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9_]/g, "");
-                
-                // Se a nossa lista de "possíveis chaves" contiver essa chave limpa, encontramos o dado
-                if (possiveisChaves.some(pc => pc.replace(/[^a-z0-9_]/g, "") === chaveLimpa)) {
-                    return obj[chave];
+        // 🌟 FUNÇÃO BLINDADA: Acha a coluna mesmo se o Excel tiver deixado espaços invisíveis
+        function pegarValorBlindado(aluno, chavesAlvo) {
+            if (!aluno) return '';
+            for (let dbKey in aluno) {
+                let chaveLimpa = dbKey.trim().toLowerCase().replace(/[^a-z0-9_]/g, "");
+                if (chavesAlvo.includes(chaveLimpa)) {
+                    return aluno[dbKey];
                 }
             }
             return '';
@@ -138,23 +135,25 @@
             }
 
             try {
-                // Traz os dados[cite: 1]
+                // Traz apenas os munícipes pertencentes ao CEU logado
                 const q = query(collection(db, "municipes"), where("id_unidade", "==", idUnidade));
                 const querySnapshot = await getDocs(q);
                 
                 alunosGlobais = [];
                 querySnapshot.forEach((doc) => {
                     let dado = doc.data();
-                    dado.idFirebase = doc.id; 
+                    dado.idFirebase = doc.id; // Guarda a chave do Firebase
                     alunosGlobais.push(dado);
                 });
 
+                // Ordena alfabeticamente pelo nome_completo
                 alunosGlobais.sort((a, b) => {
-                    let nomeA = getValorSeguro(a, ['nome_completo', 'nome']).toUpperCase();
-                    let nomeB = getValorSeguro(b, ['nome_completo', 'nome']).toUpperCase();
+                    let nomeA = pegarValorBlindado(a, ['nome_completo', 'nome']).toUpperCase();
+                    let nomeB = pegarValorBlindado(b, ['nome_completo', 'nome']).toUpperCase();
                     return nomeA.localeCompare(nomeB);
                 });
 
+                // Renderiza os 100 primeiros para ser rápido
                 renderizarTabela(alunosGlobais.slice(0, 100), "");
 
             } catch (err) {
@@ -179,10 +178,14 @@
                     return;
                 }
 
+                // Filtro na memória que olha exatamente para as suas colunas do CSV
                 const resultados = alunosGlobais.filter(al => {
-                    return Object.values(al).some(valor => 
-                        String(valor).toUpperCase().includes(termo)
-                    );
+                    const nome = pegarValorBlindado(al, ['nome_completo', 'nome']).toUpperCase();
+                    const eol = pegarValorBlindado(al, ['id_eol', 'eol']).toUpperCase();
+                    const pront = String(pegarValorBlindado(al, ['num_prontuario', 'prontuario'])).toUpperCase();
+                    const cin = pegarValorBlindado(al, ['cin', 'cpf']).toUpperCase();
+
+                    return nome.includes(termo) || eol.includes(termo) || pront.includes(termo) || cin.includes(termo);
                 });
 
                 renderizarTabela(resultados.slice(0, 100), termo, resultados.length);
@@ -193,7 +196,7 @@
             const tbody = document.getElementById('corpo-tabela');
             
             if(termoBusca === "") {
-                document.getElementById('contador-alunos').innerHTML = `Mostrando os primeiros <b>${lista.length}</b> de <b>${alunosGlobais.length}</b> cadastrados. <br>Use a busca para encontrar registros específicos.`;
+                document.getElementById('contador-alunos').innerHTML = `Mostrando os primeiros <b>${lista.length}</b> de <b>${alunosGlobais.length}</b> cadastrados. <br>Use a busca para pesquisar em toda a base.`;
             } else {
                 let txtTotal = totalEncontrado > 100 ? `100 de ${totalEncontrado}` : totalEncontrado;
                 document.getElementById('contador-alunos').innerText = `${txtTotal} aluno(s) encontrado(s) para "${termoBusca}"`;
@@ -208,15 +211,25 @@
             const semFotoPlaceholder = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='%2394a3b8'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E";
 
             lista.forEach(al => {
-                // AQUI ESTÃO AS SUAS CHAVES EXATAS DO CSV
-                const prontuario = getValorSeguro(al, ['num_prontuario', 'id_aluno', 'prontuario']) || '-';
-                const eol = getValorSeguro(al, ['id_eol', 'eol']) || '-';
-                const nome = getValorSeguro(al, ['nome_completo', 'nome']) || '-';
-                const cpf = getValorSeguro(al, ['cin', 'cpf', 'rg']) || '-';
+                // EXTRATOR EXATO DOS SEUS DADOS
+                const prontuario = pegarValorBlindado(al, ['num_prontuario', 'prontuario', 'id_aluno']) || '-';
+                const eol = pegarValorBlindado(al, ['id_eol', 'eol']) || '-';
+                const nome = pegarValorBlindado(al, ['nome_completo', 'nome']) || '-';
+                const cpf = pegarValorBlindado(al, ['cin', 'cpf']) || '-';
                 
-                let urlFotoRaw = getValorSeguro(al, ['link_foto', 'foto']);
-                // Garante que não tenha espaços extras em volta do link do Google Drive
-                const urlFoto = (urlFotoRaw && urlFotoRaw.trim().includes('http')) ? urlFotoRaw.trim() : semFotoPlaceholder;
+                // EXTRATOR DE FOTOS DO GOOGLE DRIVE
+                let linkCru = pegarValorBlindado(al, ['link_foto', 'foto']);
+                let urlFoto = semFotoPlaceholder;
+
+                if (linkCru && linkCru.includes('http')) {
+                    // Pega o ID da foto e converte para miniatura (fura o bloqueio do Drive)
+                    const matchID = linkCru.match(/(?:id=|file\/d\/|d\/)([^&\/]+)/);
+                    if (matchID && matchID[1]) {
+                        urlFoto = `https://drive.google.com/thumbnail?id=${matchID[1]}&sz=w150`;
+                    } else {
+                        urlFoto = linkCru.trim();
+                    }
+                }
                 
                 html += `
                 <tr>

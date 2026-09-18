@@ -39,7 +39,7 @@
         /* Força todos os inputs e textareas a ficarem maiúsculos */
         input[type="text"], textarea { text-transform: uppercase; }
 
-        /* Remove COMPLETAMENTE as setinhas caso algum navegador insista */
+        /* Remove as setinhas dos números para sempre */
         input[type="number"]::-webkit-outer-spin-button,
         input[type="number"]::-webkit-inner-spin-button {
             -webkit-appearance: none;
@@ -115,7 +115,7 @@
 
                     <div class="col-md-9">
                         <div class="row g-4">
-                            <!-- 🌟 TROCADO DE TYPE="NUMBER" PARA TYPE="TEXT" COM INPUTMODE NUMERIC -->
+                            <!-- CAMPO PRONTUÁRIO/ID BLINDADO E SEM SETAS -->
                             <div class="col-md-3">
                                 <label class="form-label text-primary fw-bold">Prontuário / ID <span class="text-danger">*</span></label>
                                 <input type="text" inputmode="numeric" id="aluno-prontuario" class="form-control border-primary fw-bold" placeholder="Gerado auto." style="background-color: #f0f7ff;">
@@ -401,11 +401,26 @@
         </div> 
     </div>
 
-    <!-- MOTOR FIREBASE INTEGRADO -->
+    <!-- 🌟 MOTOR FIREBASE 100% INTERNO PARA NÃO QUEBRAR O CORS DO NAVEGADOR LOCAL -->
     <script type="module">
-        import { db } from './firebase_config.js';
-        import { doc, setDoc, getDoc, updateDoc, deleteDoc, collection } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+        import { getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc, collection } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
+        // CONFIGURAÇÃO INTERNA BLINDADA
+        const firebaseConfig = {
+            apiKey: "AIzaSyCpCXxJbD8dPXkT7mcoz4qK8Wjt7WTRwFA",
+            authDomain: "sig-edu.firebaseapp.com",
+            projectId: "sig-edu",
+            storageBucket: "sig-edu.firebasestorage.app",
+            messagingSenderId: "233239725278",
+            appId: "1:233239725278:web:809b9c42feacd99175ee4f",
+            measurementId: "G-E5LLYGW7DN"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // FUNÇÕES GLOBAIS
         window.voltarParaLista = function() {
             if(window.parent && typeof window.parent.abrirFormFilho === 'function') {
                 window.parent.abrirFormFilho('alunos_FB.html', window.parent.document.querySelector('.sidebar a.ativo'));
@@ -527,7 +542,7 @@
             const btnExcluir = document.getElementById('btn-excluir-aluno');
             if (btnExcluir) btnExcluir.style.display = 'flex';
             
-            // 📸 CARREGAMENTO FORÇADO DE FOTOS DO DRIVE
+            // 📸 EXTRATOR PROFISSIONAL DE FOTOS DO DRIVE
             let linkCru = extrairDadoSeguro(aluno, ['link_foto', 'foto', 'url_foto']);
             const semFotoPlaceholder = "https://via.placeholder.com/150/cbd5e1/ffffff?text=SEM+FOTO";
             
@@ -542,14 +557,14 @@
                 document.getElementById('aluno-preview-foto').src = semFotoPlaceholder;
             }
 
-            // 🪪 DADOS PRINCIPAIS (Agora em caixas de Texto sem setinhas!)
+            // 🪪 DADOS PRINCIPAIS (Sem Type Number)
             document.getElementById('aluno-prontuario').value = extrairDadoSeguro(aluno, ['id_aluno', 'num_prontuario', 'prontuario']);
             document.getElementById('aluno-eol').value = extrairDadoSeguro(aluno, ['id_eol', 'eol']);
             document.getElementById('aluno-cin').value = extrairDadoSeguro(aluno, ['cin', 'cpf', 'rg']);
             document.getElementById('aluno-nome').value = extrairDadoSeguro(aluno, ['nome_completo', 'nome', 'aluno']);
             document.getElementById('aluno-social').value = extrairDadoSeguro(aluno, ['nome_social']);
 
-            // 📅 CONVERSOR DE DATAS MEGA-ROBUSTO (Força formato YYYY-MM-DD com zeros para o HTML não bugar)
+            // 📅 CONVERSOR DE DATAS MEGA-ROBUSTO
             let rawDate = extrairDadoSeguro(aluno, ['data_nascimento', 'nascimento', 'datanascimento']);
             let dataNascFinal = "";
             if (rawDate) {
@@ -558,11 +573,10 @@
                     let p = strD.split('/');
                     if (p.length === 3) dataNascFinal = `${p[2]}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}`;
                 } else if (strD.includes('-')) {
-                    // Pega só a data se vier suja com T ou espaço de hora
                     let p = strD.split('T')[0].split(' ')[0].split('-');
                     if (p.length === 3) dataNascFinal = `${p[0]}-${p[1].padStart(2, '0')}-${p[2].padStart(2, '0')}`;
                 } else {
-                    dataNascFinal = strD; // Fallback extremo
+                    dataNascFinal = strD;
                 }
             }
             document.getElementById('aluno-nasc').value = dataNascFinal;
@@ -596,7 +610,7 @@
             let parqValue = extrairDadoSeguro(aluno, ['par_q', 'parq']);
             if (window.safeSimNao(parqValue) === "SIM") { document.getElementById('aluno-parq').checked = true; }
 
-            // 🎟️ CARTEIRINHAS (Sem setinhas de número!)
+            // 🎟️ CARTEIRINHAS
             document.getElementById('aluno-print-geral').value = window.safeSimNao(extrairDadoSeguro(aluno, ['imp_uso_geral', 'imprimir_cg']));
             document.getElementById('aluno-via-geral').value = extrairDadoSeguro(aluno, ['via_cart_uso_geral', 'via_geral']) || 0;
             

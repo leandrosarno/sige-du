@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista de Alunos - SIG-EDU</title>
+    <title>Lista de Alunos - Novo Sistema</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -146,11 +146,20 @@
                     alunosGlobais.push(dado);
                 });
 
-                // Ordena alfabeticamente pelo nome_completo
+                // 🌟 NOVA ORDENAÇÃO: OS MAIS RECENTES PRIMEIRO
                 alunosGlobais.sort((a, b) => {
-                    let nomeA = pegarValorBlindado(a, ['nome_completo', 'nome']).toUpperCase();
-                    let nomeB = pegarValorBlindado(b, ['nome_completo', 'nome']).toUpperCase();
-                    return nomeA.localeCompare(nomeB);
+                    let dataA = a.data_cadastro || a.data_atualizacao || "";
+                    let dataB = b.data_cadastro || b.data_atualizacao || "";
+
+                    if (dataA && dataB) {
+                        return dataB.localeCompare(dataA); // Organiza em ordem Decrescente (do maior/mais novo para o menor)
+                    }
+
+                    // Se por acaso forem alunos migrados antigos sem a data, desempata pelo número do prontuário
+                    let prontA = Number(pegarValorBlindado(a, ['num_prontuario', 'prontuario', 'id_aluno'])) || 0;
+                    let prontB = Number(pegarValorBlindado(b, ['num_prontuario', 'prontuario', 'id_aluno'])) || 0;
+                    
+                    return prontB - prontA;
                 });
 
                 // Renderiza os 100 primeiros para ser rápido
@@ -196,7 +205,7 @@
             const tbody = document.getElementById('corpo-tabela');
             
             if(termoBusca === "") {
-                document.getElementById('contador-alunos').innerHTML = `Mostrando os primeiros <b>${lista.length}</b> de <b>${alunosGlobais.length}</b> cadastrados. <br>Use a busca para pesquisar em toda a base.`;
+                document.getElementById('contador-alunos').innerHTML = `Mostrando os últimos <b>${lista.length}</b> de <b>${alunosGlobais.length}</b> cadastrados. <br>Use a busca para pesquisar em toda a base.`;
             } else {
                 let txtTotal = totalEncontrado > 100 ? `100 de ${totalEncontrado}` : totalEncontrado;
                 document.getElementById('contador-alunos').innerText = `${txtTotal} aluno(s) encontrado(s) para "${termoBusca}"`;

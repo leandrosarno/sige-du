@@ -10,8 +10,38 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <style>
-        body { margin: 0; overflow: hidden; background-color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        #wrapper { display: flex; height: 100vh; }
+        body { margin: 0; overflow: hidden; background-color: #f4f7f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        
+        /* ------------------------------------------- */
+        /* TELA DE LOGIN QUADRADA E PEQUENA            */
+        /* ------------------------------------------- */
+        #tela-login {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+        }
+        .login-box {
+            background: #ffffff;
+            width: 360px;
+            padding: 40px 30px;
+            border-radius: 16px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+        .login-box .material-icons { font-size: 50px; color: #0d6efd; margin-bottom: 10px; }
+        .login-box h4 { font-weight: 800; color: #1e293b; margin-bottom: 5px; }
+        .login-box p { color: #64748b; font-size: 14px; margin-bottom: 25px; }
+        .login-box .form-control { border-radius: 8px; padding: 12px 15px; margin-bottom: 15px; background-color: #f8fafc; border: 1px solid #cbd5e1; }
+        .login-box .form-control:focus { border-color: #0d6efd; box-shadow: none; background-color: #ffffff; }
+        .btn-login { background: #0d6efd; color: white; border: none; width: 100%; padding: 12px; border-radius: 8px; font-weight: 700; margin-top: 10px; transition: 0.3s; }
+        .btn-login:hover { background: #0b5ed7; transform: translateY(-2px); }
+
+        /* ------------------------------------------- */
+        /* PAINEL DO SISTEMA (OCULTO ATÉ LOGAR)        */
+        /* ------------------------------------------- */
+        #tela-app { display: none; height: 100vh; }
         
         /* BARRA LATERAL (SIDEBAR) */
         #sidebar { width: 260px; background: #1e293b; color: white; display: flex; flex-direction: column; transition: all 0.3s; }
@@ -28,7 +58,7 @@
         .btn-sair:hover { background: #451a20; color: #ef4444; }
 
         /* ÁREA PRINCIPAL */
-        #main-content { flex-grow: 1; display: flex; flex-direction: column; height: 100vh; }
+        #main-content { flex-grow: 1; display: flex; flex-direction: column; height: 100vh; width: calc(100% - 260px); }
         
         /* BARRA SUPERIOR */
         #topbar { background: white; height: 70px; display: flex; align-items: center; justify-content: space-between; padding: 0 30px; box-shadow: 0 2px 15px rgba(0,0,0,0.05); z-index: 10; }
@@ -40,7 +70,28 @@
 </head>
 <body>
 
-    <div id="wrapper">
+    <!-- ========================================== -->
+    <!-- TELA 1: CAIXA DE LOGIN QUADRADA            -->
+    <!-- ========================================== -->
+    <div id="tela-login">
+        <div class="login-box animate__animated animate__zoomIn">
+            <span class="material-icons">admin_panel_settings</span>
+            <h4>SIG-EDU</h4>
+            <p>Acesso ao Módulo de Gestão</p>
+
+            <input type="number" id="input-unidade" class="form-control text-center fw-bold" placeholder="CÓDIGO DA UNIDADE">
+            <input type="text" id="input-rf" class="form-control text-center" placeholder="REGISTRO FUNCIONAL (RF)">
+            <input type="password" id="input-senha" class="form-control text-center" placeholder="SENHA DE ACESSO">
+            
+            <button class="btn-login" onclick="fazerLogin()">ENTRAR NO SISTEMA</button>
+        </div>
+    </div>
+
+
+    <!-- ========================================== -->
+    <!-- TELA 2: PAINEL DO SISTEMA                  -->
+    <!-- ========================================== -->
+    <div id="tela-app">
         <!-- MENU LATERAL -->
         <nav id="sidebar" class="sidebar">
             <div class="sidebar-header">
@@ -82,53 +133,76 @@
                 <div class="d-flex align-items-center gap-2">
                     <div style="text-align: right; line-height: 1.2;">
                         <div style="font-weight: 700; color: #1e293b; font-size: 14px;">Módulo Secretaria</div>
-                        <div style="font-size: 12px; color: #64748b; font-weight: 600;">Acesso Autorizado</div>
+                        <div id="info-rf-topo" style="font-size: 12px; color: #64748b; font-weight: 600;">RF: ---</div>
                     </div>
                     <span class="material-icons ms-2" style="color: #cbd5e1; font-size: 38px;">account_circle</span>
                 </div>
             </header>
 
-            <!-- AQUI É ONDE A MÁGICA ACONTECE (O Inicio.html ou Alunos.html abrem aqui dentro) -->
+            <!-- O Inicio.html ou Alunos.html abrem aqui dentro -->
             <iframe id="frame-conteudo" src="inicio_FB.html"></iframe>
         </div>
     </div>
 
-    <!-- MOTOR DE INTEGRAÇÃO E LOGIN -->
+
+    <!-- ========================================== -->
+    <!-- MOTOR JAVASCRIPT DE SESSÃO E NAVEGAÇÃO     -->
+    <!-- ========================================== -->
     <script type="module">
         import { db } from './firebase_config.js';
 
-        // Assim que a tela principal carrega, verifica se a pessoa está "logada"
+        // 1. AO ABRIR O SITE, VERIFICA SE JÁ EXISTE LOGIN SALVO
         window.onload = function() {
             const idUnidade = localStorage.getItem('sig_id_unidade');
+            const rfLogado = localStorage.getItem('sig_rf');
             
-            if (!idUnidade) {
-                forcarLogin();
-            } else {
+            if (idUnidade && rfLogado) {
+                // Já está logado: Esconde a caixa de login e mostra o painel
+                document.getElementById('tela-login').style.display = 'none';
+                document.getElementById('tela-app').style.display = 'flex';
+                
                 document.getElementById('nome-unidade-topo').innerHTML = `<span class="material-icons align-middle fs-6 me-1">domain</span> UNIDADE: ${idUnidade}`;
+                document.getElementById('info-rf-topo').innerText = `RF: ${rfLogado}`;
+            } else {
+                // Não está logado: Mostra apenas a caixa de login
+                document.getElementById('tela-login').style.display = 'flex';
+                document.getElementById('tela-app').style.display = 'none';
             }
         };
 
-        // FUNÇÃO GLOBAL DE NAVEGAÇÃO
-        // As telas "filhas" (como alunos_FB.html) chamam essa função usando window.parent.abrirFormFilho
-        window.abrirFormFilho = function(url, elementoClicado) {
-            const iframe = document.getElementById('frame-conteudo');
-            
-            // Troca o arquivo que está rodando no meio da tela
-            iframe.src = url;
-            
-            // Pinta o botão correto no menu de azul (se a pessoa clicou pelo menu)
-            if(elementoClicado) {
-                const links = document.querySelectorAll('.sidebar a');
-                links.forEach(link => link.classList.remove('ativo'));
-                elementoClicado.classList.add('ativo');
+        // 2. FUNÇÃO DO BOTÃO "ENTRAR"
+        window.fazerLogin = function() {
+            const unidade = document.getElementById('input-unidade').value.trim();
+            const rf = document.getElementById('input-rf').value.trim();
+            const senha = document.getElementById('input-senha').value.trim();
+
+            if (!unidade || !rf || !senha) {
+                Swal.fire('Campos Incompletos', 'Por favor, preencha a Unidade, seu RF e sua Senha.', 'warning');
+                return;
             }
+
+            // Grava os dados na memória do navegador
+            localStorage.setItem('sig_id_unidade', unidade);
+            localStorage.setItem('sig_rf', rf);
+            localStorage.setItem('sig_nivel_acesso', JSON.stringify(['SECRETARIA'])); // Permissão padrão por enquanto
+            
+            Swal.fire({
+                title: 'Acesso Liberado!',
+                text: 'Bem-vindo ao SIG-EDU',
+                icon: 'success',
+                timer: 1200,
+                showConfirmButton: false
+            }).then(() => {
+                // Recarrega a página para entrar no painel
+                window.location.reload();
+            });
         };
 
-        // FUNÇÃO DE LOGOUT
+        // 3. FUNÇÃO DO BOTÃO DE SAIR
         window.fazerLogout = function() {
             Swal.fire({
                 title: 'Encerrar Sessão?',
-                text: "Você será desconectado da unidade atual.",
+                text: "Você será desconectado e voltará para a tela de login.",
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#d33',
@@ -138,46 +212,24 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     localStorage.removeItem('sig_id_unidade');
+                    localStorage.removeItem('sig_rf');
                     localStorage.removeItem('sig_nivel_acesso');
                     window.location.reload();
                 }
             });
         };
 
-        // SISTEMA BÁSICO DE LOGIN (Garante que ninguém entra sem estar numa Unidade)
-        function forcarLogin() {
-            Swal.fire({
-                title: 'Acesso ao SIG-EDU',
-                text: 'Digite o código da sua Unidade (Ex: 101, 102)',
-                input: 'text',
-                inputPlaceholder: 'Código da Unidade',
-                allowOutsideClick: false,
-                allowEscapeKey: false,
-                confirmButtonText: 'ACESSAR PAINEL',
-                confirmButtonColor: '#0d6efd',
-                preConfirm: (idDigitado) => {
-                    if (!idDigitado) {
-                        Swal.showValidationMessage('Obrigatório informar a unidade.');
-                    }
-                    return idDigitado;
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    // Grava o ID da unidade no navegador do usuário
-                    localStorage.setItem('sig_id_unidade', result.value);
-                    localStorage.setItem('sig_nivel_acesso', JSON.stringify(['SECRETARIA']));
-                    
-                    Swal.fire({
-                        title: 'Logado com sucesso!',
-                        icon: 'success',
-                        timer: 1500,
-                        showConfirmButton: false
-                    }).then(() => {
-                        window.location.reload();
-                    });
-                }
-            });
-        }
+        // 4. FUNÇÃO DO MENU LATERAL (Abre as telas dentro do Iframe)
+        window.abrirFormFilho = function(url, elementoClicado) {
+            const iframe = document.getElementById('frame-conteudo');
+            iframe.src = url;
+            
+            if(elementoClicado) {
+                const links = document.querySelectorAll('.sidebar a');
+                links.forEach(link => link.classList.remove('ativo'));
+                elementoClicado.classList.add('ativo');
+            }
+        };
     </script>
 </body>
 </html>

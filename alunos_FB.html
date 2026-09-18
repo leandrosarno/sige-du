@@ -19,7 +19,6 @@
         .search-box .material-icons { position: absolute; left: 12px; top: 10px; color: #94a3b8; }
         .table-custom { margin-bottom: 0; }
         
-        /* ❄️ MÁGICA DO CABEÇALHO FIXO ❄️ */
         .table-custom thead th { 
             position: sticky; 
             top: 0; 
@@ -89,13 +88,12 @@
 
     <!-- MOTOR FIREBASE COM ARQUITETURA BLINDADA -->
     <script type="module">
-        // Importação centralizada
         import { db } from './firebase_config.js';
         import { collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
         let alunosGlobais = [];
         let timerBusca = null;
-        const LIMITE_TELA = 30; // 🌟 Limite de 30 registros definido aqui
+        const LIMITE_TELA = 30; 
 
         // 🛡️ MOTOR DE EXTRAÇÃO SEGURO
         function extrairDadoSeguro(documento, chavesAlvo) {
@@ -129,8 +127,16 @@
         async function carregarAlunosDoFirebase() {
             const idUnidade = localStorage.getItem('sig_id_unidade');
             
+            // 🛑 TRAVA ANTI-TRAVAMENTO: Se não estiver logado, avisa na tela e para o script
             if(!idUnidade) {
-                Swal.fire('Erro', 'Unidade não identificada no login.', 'error');
+                document.getElementById('corpo-tabela').innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center text-danger py-5 fw-bold">
+                            <i class="fas fa-user-lock fs-1 mb-3"></i><br>
+                            Sessão Expirada ou Não Autenticada.<br>Por favor, faça o login novamente a partir do painel principal.
+                        </td>
+                    </tr>`;
+                Swal.fire('Acesso Negado', 'Sua sessão é anônima ou expirou. Você precisa logar na sua Unidade.', 'error');
                 return;
             }
 
@@ -145,26 +151,20 @@
                     alunosGlobais.push(dado);
                 });
 
-                // 🛡️ MOTOR DE ORDENAÇÃO MATEMÁTICA ABSOLUTA (Foco 100% no id_aluno)
                 alunosGlobais.sort((a, b) => {
-                    // Tenta achar o id_aluno primeiro. Se não achar, usa o num_prontuario.
                     let prontA_raw = extrairDadoSeguro(a, ['id_aluno', 'num_prontuario', 'prontuario']);
                     let prontB_raw = extrairDadoSeguro(b, ['id_aluno', 'num_prontuario', 'prontuario']);
 
-                    // Converte para número inteiro rígido. Remove letras e pontos.
                     let prontA = parseInt(String(prontA_raw).replace(/\D/g, ''), 10) || 0;
                     let prontB = parseInt(String(prontB_raw).replace(/\D/g, ''), 10) || 0;
                     
-                    // Ordenação Decrescente: o maior número fica no topo
                     if (prontB !== prontA) {
                         return prontB - prontA; 
                     } else {
-                        // Desempate invisível para garantir estabilidade da tabela
                         return (b.idFirebase || "").localeCompare(a.idFirebase || "");
                     }
                 });
 
-                // Trava a tela nos 30 primeiros registros
                 renderizarTabela(alunosGlobais.slice(0, LIMITE_TELA), "");
 
             } catch (err) {
@@ -173,7 +173,7 @@
                 if (err.message.includes('Quota')) {
                     document.getElementById('corpo-tabela').innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4 fw-bold"><i class="fas fa-ban fs-2 mb-2"></i><br>Limite de leituras atingido no Firebase.<br>Aguarde a cota diária zerar.</td></tr>`;
                 } else {
-                    document.getElementById('corpo-tabela').innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4 fw-bold"><i class="fas fa-exclamation-triangle"></i> Falha ao processar os dados seguros.</td></tr>`;
+                    document.getElementById('corpo-tabela').innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4 fw-bold"><i class="fas fa-exclamation-triangle"></i> Falha ao processar a conexão segura.<br>Certifique-se de estar rodando pelo Live Server.</td></tr>`;
                 }
             }
         }
@@ -190,7 +190,6 @@
                 termo = termo.toUpperCase().trim();
                 
                 if (termo === "") {
-                    // Volta para os 30 últimos
                     renderizarTabela(alunosGlobais.slice(0, LIMITE_TELA), "");
                     return;
                 }
@@ -204,7 +203,6 @@
                     return nome.includes(termo) || eol.includes(termo) || pront.includes(termo) || cin.includes(termo);
                 });
 
-                // Mostra até 30 resultados da busca
                 renderizarTabela(resultados.slice(0, LIMITE_TELA), termo, resultados.length);
             }, 400); 
         };
@@ -228,7 +226,6 @@
             const semFotoPlaceholder = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='%2394a3b8'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E";
 
             lista.forEach(al => {
-                // Preenche usando a prioridade certa: id_aluno primeiro!
                 const prontuario = extrairDadoSeguro(al, ['id_aluno', 'num_prontuario', 'prontuario']) || '-';
                 const eol = extrairDadoSeguro(al, ['id_eol', 'eol']) || '-';
                 const nome = extrairDadoSeguro(al, ['nome_completo', 'nome', 'aluno']) || '-';

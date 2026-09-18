@@ -3,215 +3,181 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Início - Dashboard SIG-EDU</title>
+    <title>SIG-EDU | Sistema de Gestão</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <style>
-        body { background-color: #f4f7f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 25px; }
+        body { margin: 0; overflow: hidden; background-color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        #wrapper { display: flex; height: 100vh; }
         
-        .welcome-header { margin-bottom: 30px; color: #2c3e50; }
-        .welcome-header h2 { font-weight: 800; font-size: 28px; }
-        .welcome-header p { color: #64748b; font-size: 16px; margin: 0; }
-
-        /* Estilo dos Cards de Resumo */
-        .summary-card { 
-            background: #ffffff; 
-            border-radius: 16px; 
-            padding: 24px; 
-            border: none; 
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04); 
-            display: flex; 
-            align-items: center; 
-            gap: 20px; 
-            transition: all 0.3s ease; 
-            position: relative;
-            overflow: hidden;
-        }
-        .summary-card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08); }
+        /* BARRA LATERAL (SIDEBAR) */
+        #sidebar { width: 260px; background: #1e293b; color: white; display: flex; flex-direction: column; transition: all 0.3s; }
+        .sidebar-header { padding: 25px 20px; text-align: center; border-bottom: 1px solid #334155; }
+        .sidebar-header h4 { margin: 0; font-weight: 900; color: #38bdf8; letter-spacing: 1px; display: flex; align-items: center; justify-content: center; gap: 8px;}
+        .sidebar-menu { padding: 20px 0; flex-grow: 1; overflow-y: auto; }
         
-        .icon-box { 
-            width: 60px; 
-            height: 60px; 
-            border-radius: 14px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-        }
-        .icon-box .material-icons { font-size: 32px; }
+        .sidebar a { padding: 14px 25px; display: flex; align-items: center; gap: 15px; color: #cbd5e1; text-decoration: none; font-weight: 600; font-size: 15px; transition: 0.2s; border-left: 4px solid transparent; cursor: pointer; }
+        .sidebar a:hover { background: #334155; color: white; }
+        .sidebar a.ativo { background: #0f172a; color: #38bdf8; border-left-color: #38bdf8; }
+        
+        .sidebar-footer { padding: 20px; border-top: 1px solid #334155; }
+        .btn-sair { color: #f87171; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; text-decoration: none; font-weight: bold; padding: 10px; border-radius: 8px; transition: 0.2s; }
+        .btn-sair:hover { background: #451a20; color: #ef4444; }
 
-        .info-box h3 { margin: 0; font-size: 32px; font-weight: 900; color: #1e293b; line-height: 1; }
-        .info-box p { margin: 5px 0 0 0; font-size: 14px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
-
-        /* Cores Específicas dos Cards */
-        .card-blue .icon-box { background: #e0f2fe; color: #0284c7; }
-        .card-green .icon-box { background: #dcfce7; color: #16a34a; }
-        .card-cyan .icon-box { background: #cffafe; color: #0891b2; }
-        .card-red .icon-box { background: #fee2e2; color: #dc2626; }
-
-        /* Efeito de carregamento skeleton */
-        .skeleton { background: #e2e8f0; border-radius: 8px; color: transparent !important; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-
-        .action-banner { background: linear-gradient(135deg, #0d6efd, #0b5ed7); border-radius: 16px; padding: 30px; color: white; margin-top: 30px; box-shadow: 0 8px 20px rgba(13, 110, 253, 0.2); display: flex; justify-content: space-between; align-items: center; }
-        .action-banner h4 { font-weight: 800; margin-bottom: 8px; }
-        .action-banner p { margin: 0; opacity: 0.9; }
-        .btn-banner { background: #ffffff; color: #0d6efd; font-weight: 800; padding: 12px 24px; border-radius: 10px; text-decoration: none; transition: 0.2s; border: none; }
-        .btn-banner:hover { background: #f8fafc; transform: scale(1.05); }
+        /* ÁREA PRINCIPAL */
+        #main-content { flex-grow: 1; display: flex; flex-direction: column; height: 100vh; }
+        
+        /* BARRA SUPERIOR */
+        #topbar { background: white; height: 70px; display: flex; align-items: center; justify-content: space-between; padding: 0 30px; box-shadow: 0 2px 15px rgba(0,0,0,0.05); z-index: 10; }
+        .unidade-badge { background: #e0f2fe; color: #0284c7; padding: 6px 16px; border-radius: 20px; font-weight: 800; font-size: 14px; letter-spacing: 0.5px;}
+        
+        /* IFRAME ONDE AS TELAS ABREM */
+        #frame-conteudo { width: 100%; height: calc(100vh - 70px); border: none; background-color: #f4f7f6; }
     </style>
 </head>
 <body>
 
-    <div class="welcome-header animate__animated animate__fadeIn">
-        <h2>Painel de Controle</h2>
-        <p>Visão geral da unidade estruturada em tempo real.</p>
+    <div id="wrapper">
+        <!-- MENU LATERAL -->
+        <nav id="sidebar" class="sidebar">
+            <div class="sidebar-header">
+                <h4><span class="material-icons fs-3">domain</span> SIG-EDU</h4>
+                <small class="text-muted fw-bold mt-1 d-block" style="font-size: 11px; text-transform: uppercase;">Gestão de Unidades</small>
+            </div>
+            
+            <div class="sidebar-menu">
+                <a class="ativo" onclick="abrirFormFilho('inicio_FB.html', this)">
+                    <span class="material-icons">dashboard</span> Painel Inicial
+                </a>
+                <a onclick="abrirFormFilho('alunos_FB.html', this)">
+                    <span class="material-icons">people_alt</span> Munícipes
+                </a>
+                <a onclick="abrirFormFilho('turmas_FB.html', this)">
+                    <span class="material-icons">class</span> Turmas / Aulas
+                </a>
+                <a onclick="abrirFormFilho('relatorios_FB.html', this)">
+                    <span class="material-icons">insert_chart</span> Relatórios
+                </a>
+            </div>
+
+            <div class="sidebar-footer">
+                <a class="btn-sair" onclick="fazerLogout()">
+                    <span class="material-icons">logout</span> Encerrar Sessão
+                </a>
+            </div>
+        </nav>
+
+        <!-- CONTEÚDO À DIREITA -->
+        <div id="main-content">
+            
+            <header id="topbar">
+                <div class="d-flex align-items-center gap-3">
+                    <span class="unidade-badge" id="nome-unidade-topo">
+                        <i class="fas fa-spinner fa-spin"></i> Conectando...
+                    </span>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <div style="text-align: right; line-height: 1.2;">
+                        <div style="font-weight: 700; color: #1e293b; font-size: 14px;">Módulo Secretaria</div>
+                        <div style="font-size: 12px; color: #64748b; font-weight: 600;">Acesso Autorizado</div>
+                    </div>
+                    <span class="material-icons ms-2" style="color: #cbd5e1; font-size: 38px;">account_circle</span>
+                </div>
+            </header>
+
+            <!-- AQUI É ONDE A MÁGICA ACONTECE (O Inicio.html ou Alunos.html abrem aqui dentro) -->
+            <iframe id="frame-conteudo" src="inicio_FB.html"></iframe>
+        </div>
     </div>
 
-    <!-- CARDS DE ESTATÍSTICAS -->
-    <div class="row g-4 animate__animated animate__fadeInUp">
-        
-        <!-- Total de Munícipes -->
-        <div class="col-md-6 col-lg-3">
-            <div class="summary-card card-blue">
-                <div class="icon-box">
-                    <span class="material-icons">people_alt</span>
-                </div>
-                <div class="info-box">
-                    <h3 id="tot-municipes" class="skeleton">0000</h3>
-                    <p>Total Munícipes</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Alunos Academia -->
-        <div class="col-md-6 col-lg-3">
-            <div class="summary-card card-green">
-                <div class="icon-box">
-                    <span class="material-icons">fitness_center</span>
-                </div>
-                <div class="info-box">
-                    <h3 id="tot-academia" class="skeleton">000</h3>
-                    <p>Ativos na Academia</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Alunos Piscina -->
-        <div class="col-md-6 col-lg-3">
-            <div class="summary-card card-cyan">
-                <div class="icon-box">
-                    <span class="material-icons">pool</span>
-                </div>
-                <div class="info-box">
-                    <h3 id="tot-raia" class="skeleton">000</h3>
-                    <p>Ativos Raia Livre</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Fila de Impressão -->
-        <div class="col-md-6 col-lg-3">
-            <div class="summary-card card-red">
-                <div class="icon-box">
-                    <span class="material-icons">print</span>
-                </div>
-                <div class="info-box">
-                    <h3 id="tot-imprimir" class="skeleton">000</h3>
-                    <p>Cart. p/ Imprimir</p>
-                </div>
-            </div>
-        </div>
-
-    </div>
-
-    <!-- BANNER DE AÇÃO RÁPIDA -->
-    <div class="action-banner animate__animated animate__fadeInUp" style="animation-delay: 0.2s;">
-        <div>
-            <h4>Central de Impressão de Carteirinhas</h4>
-            <p>Você tem <strong id="txt-fila">...</strong> carteirinhas gerais aguardando impressão na fila.</p>
-        </div>
-        <button class="btn-banner d-flex align-items-center gap-2" onclick="abrirFilaImpressao()">
-            <span class="material-icons">print</span> Acessar Fila de Impressão
-        </button>
-    </div>
-
-    <!-- MOTOR DE ESTATÍSTICAS (OTIMIZADO PARA NÃO GASTAR LEITURAS) -->
+    <!-- MOTOR DE INTEGRAÇÃO E LOGIN -->
     <script type="module">
         import { db } from './firebase_config.js';
-        import { collection, query, where, getCountFromServer } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
-        window.onload = async function() {
+        // Assim que a tela principal carrega, verifica se a pessoa está "logada"
+        window.onload = function() {
             const idUnidade = localStorage.getItem('sig_id_unidade');
             
-            if(!idUnidade) {
-                document.getElementById('tot-municipes').innerText = "ERRO";
-                document.getElementById('tot-municipes').classList.remove('skeleton');
-                return;
-            }
-
-            const colecao = collection(db, "municipes");
-
-            try {
-                // 1. CONTA TOTAL DE MUNÍCIPES
-                const qTotal = query(colecao, where("id_unidade", "==", idUnidade));
-                const snapTotal = await getCountFromServer(qTotal);
-                atualizarCard('tot-municipes', snapTotal.data().count);
-
-                // 2. CONTA ALUNOS DA ACADEMIA
-                const qAcademia = query(colecao, where("id_unidade", "==", idUnidade), where("cart_academia", "==", "SIM"));
-                const snapAcademia = await getCountFromServer(qAcademia);
-                atualizarCard('tot-academia', snapAcademia.data().count);
-
-                // 3. CONTA ALUNOS DA RAIA LIVRE
-                const qRaia = query(colecao, where("id_unidade", "==", idUnidade), where("cart_raia_livre", "==", "SIM"));
-                const snapRaia = await getCountFromServer(qRaia);
-                atualizarCard('tot-raia', snapRaia.data().count);
-
-                // 4. CONTA FILA DE IMPRESSÃO (Uso Geral)
-                const qImprimir = query(colecao, where("id_unidade", "==", idUnidade), where("imp_uso_geral", "==", "SIM"));
-                const snapImprimir = await getCountFromServer(qImprimir);
-                const qtdImprimir = snapImprimir.data().count;
-                
-                atualizarCard('tot-imprimir', qtdImprimir);
-                document.getElementById('txt-fila').innerText = qtdImprimir;
-
-            } catch (error) {
-                console.error("Erro ao puxar totais:", error);
-                const ids = ['tot-municipes', 'tot-academia', 'tot-raia', 'tot-imprimir'];
-                ids.forEach(id => {
-                    document.getElementById(id).innerText = "---";
-                    document.getElementById(id).classList.remove('skeleton');
-                });
+            if (!idUnidade) {
+                forcarLogin();
+            } else {
+                document.getElementById('nome-unidade-topo').innerHTML = `<span class="material-icons align-middle fs-6 me-1">domain</span> UNIDADE: ${idUnidade}`;
             }
         };
 
-        function atualizarCard(idElemento, valor) {
-            const el = document.getElementById(idElemento);
-            // Faz a animação de contagem rápida
-            let atual = 0;
-            const incremento = Math.ceil(valor / 20) || 1;
-            const timer = setInterval(() => {
-                atual += incremento;
-                if (atual >= valor) {
-                    atual = valor;
-                    clearInterval(timer);
-                }
-                el.innerText = atual;
-            }, 30);
+        // FUNÇÃO GLOBAL DE NAVEGAÇÃO
+        // As telas "filhas" (como alunos_FB.html) chamam essa função usando window.parent.abrirFormFilho
+        window.abrirFormFilho = function(url, elementoClicado) {
+            const iframe = document.getElementById('frame-conteudo');
             
-            el.classList.remove('skeleton');
-        }
+            // Troca o arquivo que está rodando no meio da tela
+            iframe.src = url;
+            
+            // Pinta o botão correto no menu de azul (se a pessoa clicou pelo menu)
+            if(elementoClicado) {
+                const links = document.querySelectorAll('.sidebar a');
+                links.forEach(link => link.classList.remove('ativo'));
+                elementoClicado.classList.add('ativo');
+            }
+        };
 
-        // Função para linkar com o módulo de impressão futuro
-        window.abrirFilaImpressao = function() {
+        // FUNÇÃO DE LOGOUT
+        window.fazerLogout = function() {
             Swal.fire({
-                title: 'Fila de Impressão',
-                text: 'A tela de impressão em lote está sendo conectada ao Firebase. Em breve!',
-                icon: 'info',
-                confirmButtonColor: '#0d6efd'
+                title: 'Encerrar Sessão?',
+                text: "Você será desconectado da unidade atual.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Sim, Sair',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    localStorage.removeItem('sig_id_unidade');
+                    localStorage.removeItem('sig_nivel_acesso');
+                    window.location.reload();
+                }
             });
         };
+
+        // SISTEMA BÁSICO DE LOGIN (Garante que ninguém entra sem estar numa Unidade)
+        function forcarLogin() {
+            Swal.fire({
+                title: 'Acesso ao SIG-EDU',
+                text: 'Digite o código da sua Unidade (Ex: 101, 102)',
+                input: 'text',
+                inputPlaceholder: 'Código da Unidade',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                confirmButtonText: 'ACESSAR PAINEL',
+                confirmButtonColor: '#0d6efd',
+                preConfirm: (idDigitado) => {
+                    if (!idDigitado) {
+                        Swal.showValidationMessage('Obrigatório informar a unidade.');
+                    }
+                    return idDigitado;
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Grava o ID da unidade no navegador do usuário
+                    localStorage.setItem('sig_id_unidade', result.value);
+                    localStorage.setItem('sig_nivel_acesso', JSON.stringify(['SECRETARIA']));
+                    
+                    Swal.fire({
+                        title: 'Logado com sucesso!',
+                        icon: 'success',
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                }
+            });
+        }
     </script>
 </body>
 </html>

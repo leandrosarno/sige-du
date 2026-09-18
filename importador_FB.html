@@ -2,39 +2,74 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Robô de Migração SIG-EDU - Completo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Robô de Migração SIG-EDU</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
     <style>
-        body { font-family: 'Segoe UI', sans-serif; padding: 50px; text-align: center; background-color: #f4f6f8; }
-        .caixa { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); display: inline-block; }
-        button { background-color: #1a73e8; color: white; border: none; padding: 12px 24px; font-weight: bold; cursor: pointer; border-radius: 4px; font-size: 14px; }
-        button:hover { background-color: #1557b0; }
-        #status { margin-top: 20px; font-weight: bold; color: #333; }
+        body { background-color: #f4f7f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .caixa { background: white; padding: 40px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); text-align: center; max-width: 500px; width: 100%; border-top: 5px solid #0d6efd; display: none; }
+        .icone-robo { font-size: 70px; color: #0d6efd; margin-bottom: 15px; }
+        h3 { font-weight: 800; color: #1e293b; margin-bottom: 10px; }
+        p { color: #64748b; font-size: 14px; margin-bottom: 30px; font-weight: 500; }
+        
+        .btn-migrar { background-color: #0d6efd; color: white; border: none; padding: 14px 24px; font-weight: 800; border-radius: 8px; font-size: 15px; width: 100%; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-migrar:hover { background-color: #0b5ed7; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(13, 110, 253, 0.3); color: white;}
     </style>
 </head>
 <body>
 
-    <div class="caixa">
-        <h2>Injeção de Dados em Massa - SIG-EDU</h2>
-        <p>Aperte o botão para migrar TODAS as 62 unidades limpas para o Firebase.</p>
-        <button onclick="iniciarImportacao()">MIGRAR TODAS AS UNIDADES</button>
-        <p id="status"></p>
+    <div class="caixa animate__animated animate__zoomIn" id="tela-conteudo">
+        <span class="material-icons icone-robo">cloud_upload</span>
+        <h3>Injeção de Dados em Massa</h3>
+        <p>Módulo Administrativo para implantação de Unidades.<br>Migre as 62 unidades estruturadas direto para o Firebase.</p>
+        
+        <button class="btn-migrar" onclick="iniciarImportacao()">
+            <span class="material-icons">rocket_launch</span> MIGRAR UNIDADES
+        </button>
     </div>
 
+    <!-- SCRIPT DO ROBÔ COM INTEGRAÇÃO CENTRALIZADA -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
-        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+        import { db } from './firebase_config.js';
+        import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
         // ==========================================
-        // 1. COLE SUAS CHAVES DO FIREBASE AQUI
+        // 1. TRAVA DE SEGURANÇA INTELIGENTE
         // ==========================================
-        const firebaseConfig = {
-            apiKey: "SUA_API_KEY",
-            authDomain: "sig-edu.firebaseapp.com",
-            projectId: "sig-edu"
+        window.onload = function() {
+            let perfisUsuario = ["UNIDADE"];
+            try {
+                const cru = localStorage.getItem('sig_nivel_acesso') || "UNIDADE";
+                if (cru.startsWith('[')) {
+                    let lido = JSON.parse(cru);
+                    if (lido.length === 1 && lido[0].includes(',')) {
+                        perfisUsuario = lido[0].split(',').map(p => p.trim().toUpperCase());
+                    } else {
+                        perfisUsuario = lido.map(p => p.trim().toUpperCase());
+                    }
+                } else {
+                    perfisUsuario = cru.split(',').map(p => p.trim().toUpperCase());
+                }
+            } catch (e) {
+                perfisUsuario = ["UNIDADE"];
+            }
+
+            if (!perfisUsuario.includes('ADMIN')) {
+                Swal.fire({
+                    icon: 'error', title: 'Acesso Negado', text: 'Permissão exclusiva para Administradores do Sistema.',
+                    confirmButtonColor: '#0d6efd', allowOutsideClick: false
+                }).then(() => { 
+                    window.location.href = "inicio_FB.html"; 
+                });
+            } else {
+                // Libera a tela para o Admin
+                document.getElementById('tela-conteudo').style.display = 'block';
+            }
         };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
 
         // ==========================================
         // 2. TODAS AS 62 UNIDADES TRATADAS E LIMPAS
@@ -109,18 +144,21 @@
         // 3. MOTOR DE MIGRAÇÃO
         // ==========================================
         window.iniciarImportacao = async function() {
-            document.getElementById('status').innerText = "Conectando ao Firebase... Aguarde!";
+            Swal.fire({
+                title: 'Iniciando Migração...',
+                html: 'Injetando dados das Unidades no Firebase. Por favor, aguarde.',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading() }
+            });
+
             let sucesso = 0;
 
             for (let i = 0; i < listaUnidades.length; i++) {
                 const uni = listaUnidades[i];
                 
                 try {
-                    // Se for DRE, você pode mandar para outra coleção. Mas aqui vamos mandar pra "unidades" 
-                    // para não perder os dados.
                     const docRef = doc(db, "unidades", uni.id);
                     
-                    // Salvando campos retos e diretos, sem mapas ou chaves aspeadas!
                     await setDoc(docRef, {
                         id_regional: uni.id_reg,
                         nome_unidade: uni.nome,
@@ -139,7 +177,13 @@
                     console.error("Falha ao gravar CEU EOL: " + uni.id, erro);
                 }
             }
-            document.getElementById('status').innerText = `✅ Migração Concluída! ${sucesso} itens cadastrados no Firestore sem aspas.`;
+            
+            Swal.fire({
+                icon: 'success',
+                title: 'Migração Concluída!',
+                text: `${sucesso} Unidades foram gravadas com sucesso no banco de dados.`,
+                confirmButtonColor: '#0d6efd'
+            });
         };
     </script>
 </body>

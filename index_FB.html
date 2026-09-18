@@ -2,197 +2,214 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Login - Sistema</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Início - Dashboard SIG-EDU</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
     <style>
-        :root {
-            --google-blue: #1a73e8;
-            --bg-color: #f0f2f5;
-            --border-color: #dadce0;
+        body { background-color: #f4f7f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 25px; }
+        
+        .welcome-header { margin-bottom: 30px; color: #2c3e50; }
+        .welcome-header h2 { font-weight: 800; font-size: 28px; }
+        .welcome-header p { color: #64748b; font-size: 16px; margin: 0; }
+
+        /* Estilo dos Cards de Resumo */
+        .summary-card { 
+            background: #ffffff; 
+            border-radius: 16px; 
+            padding: 24px; 
+            border: none; 
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04); 
+            display: flex; 
+            align-items: center; 
+            gap: 20px; 
+            transition: all 0.3s ease; 
+            position: relative;
+            overflow: hidden;
         }
-        body { background-color: var(--bg-color); display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 10px; color: #333; }
-        .login-box { background: #fff; width: 280px; padding: 20px; border: 1px solid var(--border-color); border-top: 4px solid var(--google-blue); box-shadow: 2px 2px 10px rgba(0,0,0,0.15); border-radius: 0; }
-        .login-header { text-align: center; border-bottom: 1px solid #eee; margin-bottom: 15px; padding-bottom: 10px; }
+        .summary-card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08); }
         
-        /* Ajuste para o logo se encaixar bem */
-        #logoSistema { max-width: 120px; max-height: 80px; object-fit: contain; margin-bottom: 10px; display: none; margin-left: auto; margin-right: auto; }
-        
-        .login-header span { font-size: 32px; color: var(--google-blue); }
-        .login-header h3 { font-weight: bold; margin: 5px 0 2px 0; font-size: 13px; }
-        .login-header p { margin: 0; color: #666; font-size: 9px; }
-        .form-group { margin-bottom: 10px; }
-        .form-label { display: block; font-weight: bold; margin-bottom: 3px; font-size: 10px; }
-        .form-control { width: 100%; padding: 4px 6px; border: 1px solid #aaa; border-radius: 0; font-size: 10px; box-sizing: border-box; height: 22px; }
-        .form-control:focus { outline: none; border-color: var(--google-blue); }
-        .btn-login { background-color: var(--google-blue); color: white; border: 1px solid #0d47a1; width: 100%; padding: 4px; font-weight: bold; font-size: 10px; cursor: pointer; margin-top: 10px; height: 24px; border-radius: 0; }
-        .btn-login:hover { background-color: #1557b0; }
-        .link-senha { display: block; text-align: center; margin-top: 12px; color: var(--google-blue); text-decoration: underline; cursor: pointer; font-size: 9px; }
-        .link-senha:hover { color: #0d47a1; }
-        
-        /* SWEETALERT DESIGN CORPORATIVO */
-        div:where(.swal2-container) div:where(.swal2-popup) { width: 280px !important; padding: 20px !important; border-radius: 0 !important; border: 1px solid var(--border-color) !important; border-top: 4px solid var(--google-blue) !important; box-shadow: 2px 2px 10px rgba(0,0,0,0.15) !important; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important; }
-        div:where(.swal2-container) h2:where(.swal2-title) { font-size: 11px !important; font-weight: bold !important; color: #333 !important; margin: 0 0 5px 0 !important; }
-        div:where(.swal2-container) div:where(.swal2-html-container) { font-size: 10px !important; color: #666 !important; margin: 5px 0 15px 0 !important; }
-        div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm { border-radius: 0 !important; font-size: 10px !important; font-weight: bold !important; padding: 4px !important; width: 100% !important; height: 24px !important; background-color: var(--google-blue) !important; border: 1px solid #0d47a1 !important; }
-        div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm:hover { background-color: #1557b0 !important; }
-        div:where(.swal2-container) .swal2-icon { transform: scale(0.5) !important; margin: 0 auto 5px auto !important; }
+        .icon-box { 
+            width: 60px; 
+            height: 60px; 
+            border-radius: 14px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+        }
+        .icon-box .material-icons { font-size: 32px; }
+
+        .info-box h3 { margin: 0; font-size: 32px; font-weight: 900; color: #1e293b; line-height: 1; }
+        .info-box p { margin: 5px 0 0 0; font-size: 14px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* Cores Específicas dos Cards */
+        .card-blue .icon-box { background: #e0f2fe; color: #0284c7; }
+        .card-green .icon-box { background: #dcfce7; color: #16a34a; }
+        .card-cyan .icon-box { background: #cffafe; color: #0891b2; }
+        .card-red .icon-box { background: #fee2e2; color: #dc2626; }
+
+        /* Efeito de carregamento skeleton */
+        .skeleton { background: #e2e8f0; border-radius: 8px; color: transparent !important; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
+        .action-banner { background: linear-gradient(135deg, #0d6efd, #0b5ed7); border-radius: 16px; padding: 30px; color: white; margin-top: 30px; box-shadow: 0 8px 20px rgba(13, 110, 253, 0.2); display: flex; justify-content: space-between; align-items: center; }
+        .action-banner h4 { font-weight: 800; margin-bottom: 8px; }
+        .action-banner p { margin: 0; opacity: 0.9; }
+        .btn-banner { background: #ffffff; color: #0d6efd; font-weight: 800; padding: 12px 24px; border-radius: 10px; text-decoration: none; transition: 0.2s; border: none; }
+        .btn-banner:hover { background: #f8fafc; transform: scale(1.05); }
     </style>
 </head>
 <body>
-    <div class="login-box">
-        <div class="login-header">
-            <!-- Novos IDs para injetar o Logo e o Nome do Sistema -->
-            <img id="logoSistema" src="" alt="Logo do Sistema">
-            <span id="iconePadrao" class="material-icons">admin_panel_settings</span>
-            <h3 id="tituloSistema">Carregando...</h3>
-            <p>Acesso Restrito ao Sistema</p>
-        </div>
-        <form id="formLogin" onsubmit="event.preventDefault(); window.fazerLogin();">
-            <div class="form-group">
-                <label class="form-label">Código EOL da Unidade</label>
-                <input type="text" class="form-control" id="id_unidade" placeholder="Ex: 700038" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
-            </div>
-            <div class="form-group">
-                <label class="form-label">RF do Servidor</label>
-                <input type="text" class="form-control" id="rf_usuario" placeholder="Apenas números" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Senha</label>
-                <input type="password" class="form-control" id="senha_usuario" placeholder="******" required>
-            </div>
-            <button type="submit" class="btn-login">CONECTAR</button>
-        </form>
-        <a class="link-senha" onclick="window.recuperarSenha()">Esqueci minha senha</a>
+
+    <div class="welcome-header animate__animated animate__fadeIn">
+        <h2>Painel de Controle</h2>
+        <p>Visão geral da unidade estruturada em tempo real.</p>
     </div>
 
+    <!-- CARDS DE ESTATÍSTICAS -->
+    <div class="row g-4 animate__animated animate__fadeInUp">
+        
+        <!-- Total de Munícipes -->
+        <div class="col-md-6 col-lg-3">
+            <div class="summary-card card-blue">
+                <div class="icon-box">
+                    <span class="material-icons">people_alt</span>
+                </div>
+                <div class="info-box">
+                    <h3 id="tot-municipes" class="skeleton">0000</h3>
+                    <p>Total Munícipes</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alunos Academia -->
+        <div class="col-md-6 col-lg-3">
+            <div class="summary-card card-green">
+                <div class="icon-box">
+                    <span class="material-icons">fitness_center</span>
+                </div>
+                <div class="info-box">
+                    <h3 id="tot-academia" class="skeleton">000</h3>
+                    <p>Ativos na Academia</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alunos Piscina -->
+        <div class="col-md-6 col-lg-3">
+            <div class="summary-card card-cyan">
+                <div class="icon-box">
+                    <span class="material-icons">pool</span>
+                </div>
+                <div class="info-box">
+                    <h3 id="tot-raia" class="skeleton">000</h3>
+                    <p>Ativos Raia Livre</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fila de Impressão -->
+        <div class="col-md-6 col-lg-3">
+            <div class="summary-card card-red">
+                <div class="icon-box">
+                    <span class="material-icons">print</span>
+                </div>
+                <div class="info-box">
+                    <h3 id="tot-imprimir" class="skeleton">000</h3>
+                    <p>Cart. p/ Imprimir</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- BANNER DE AÇÃO RÁPIDA -->
+    <div class="action-banner animate__animated animate__fadeInUp" style="animation-delay: 0.2s;">
+        <div>
+            <h4>Central de Impressão de Carteirinhas</h4>
+            <p>Você tem <strong id="txt-fila">...</strong> carteirinhas gerais aguardando impressão na fila.</p>
+        </div>
+        <button class="btn-banner d-flex align-items-center gap-2" onclick="abrirFilaImpressao()">
+            <span class="material-icons">print</span> Acessar Fila de Impressão
+        </button>
+    </div>
+
+    <!-- MOTOR DE ESTATÍSTICAS (OTIMIZADO PARA NÃO GASTAR LEITURAS) -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
-        import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+        import { db } from './firebase_config.js';
+        import { collection, query, where, getCountFromServer } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyCpCXxJbD8dPXkT7mcoz4qK8Wjt7WTRwFA",
-            authDomain: "sig-edu.firebaseapp.com",
-            projectId: "sig-edu",
-            storageBucket: "sig-edu.firebasestorage.app",
-            messagingSenderId: "233239725278",
-            appId: "1:233239725278:web:809b9c42feacd99175ee4f",
-            measurementId: "G-E5LLYGW7DN"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        // Limpa resíduos de acessos anteriores
-        localStorage.clear();
-
-        // MÁGICA 1: Função para buscar as configurações gerais do sistema
-        async function carregarConfiguracoes() {
-            try {
-                const configRef = collection(db, "configuracoes");
-                const configSnapshot = await getDocs(configRef);
-                
-                if (!configSnapshot.empty) {
-                    // Pega o primeiro documento encontrado na coleção
-                    const dadosConfig = configSnapshot.docs[0].data();
-                    
-                    if (dadosConfig.nomeSistema) {
-                        document.getElementById('tituloSistema').innerText = dadosConfig.nomeSistema;
-                        document.title = "Login - " + dadosConfig.nomeSistema;
-                    }
-                    
-                    if (dadosConfig.logoUrl) {
-                        const imgLogo = document.getElementById('logoSistema');
-                        imgLogo.src = dadosConfig.logoUrl;
-                        imgLogo.style.display = 'block';
-                        // Esconde o ícone padrão de cadeado/escudo se tivermos um logo
-                        document.getElementById('iconePadrao').style.display = 'none'; 
-                    }
-                } else {
-                    document.getElementById('tituloSistema').innerText = "SIG-EDU Central";
-                }
-            } catch (erro) {
-                console.error("Erro ao carregar configurações do Firebase:", erro);
-                document.getElementById('tituloSistema').innerText = "SIG-EDU Central";
-            }
-        }
-
-        // Executa a busca de configurações assim que o script é lido
-        carregarConfiguracoes();
-
-        window.fazerLogin = async function() {
-            const unidade = document.getElementById('id_unidade').value.trim();
-            const rf = document.getElementById('rf_usuario').value.trim();
-            const senha = document.getElementById('senha_usuario').value.trim();
-
-            if(!unidade || !rf || !senha) {
-                Swal.fire({ icon: 'warning', title: 'Atenção', text: 'Preencha todos os campos.' });
+        window.onload = async function() {
+            const idUnidade = localStorage.getItem('sig_id_unidade');
+            
+            if(!idUnidade) {
+                document.getElementById('tot-municipes').innerText = "ERRO";
+                document.getElementById('tot-municipes').classList.remove('skeleton');
                 return;
             }
 
-            Swal.fire({
-                title: 'A validar acessos...',
-                text: 'Consultando servidor.',
-                allowOutsideClick: false,
-                didOpen: () => { Swal.showLoading(); }
-            });
+            const colecao = collection(db, "municipes");
 
             try {
-                const usuariosRef = collection(db, "usuarios");
-                const q = query(usuariosRef, 
-                    where("id_unidade", "==", unidade),
-                    where("rf_usuario", "==", rf)
-                );
+                // 1. CONTA TOTAL DE MUNÍCIPES
+                const qTotal = query(colecao, where("id_unidade", "==", idUnidade));
+                const snapTotal = await getCountFromServer(qTotal);
+                atualizarCard('tot-municipes', snapTotal.data().count);
+
+                // 2. CONTA ALUNOS DA ACADEMIA
+                const qAcademia = query(colecao, where("id_unidade", "==", idUnidade), where("cart_academia", "==", "SIM"));
+                const snapAcademia = await getCountFromServer(qAcademia);
+                atualizarCard('tot-academia', snapAcademia.data().count);
+
+                // 3. CONTA ALUNOS DA RAIA LIVRE
+                const qRaia = query(colecao, where("id_unidade", "==", idUnidade), where("cart_raia_livre", "==", "SIM"));
+                const snapRaia = await getCountFromServer(qRaia);
+                atualizarCard('tot-raia', snapRaia.data().count);
+
+                // 4. CONTA FILA DE IMPRESSÃO (Uso Geral)
+                const qImprimir = query(colecao, where("id_unidade", "==", idUnidade), where("imp_uso_geral", "==", "SIM"));
+                const snapImprimir = await getCountFromServer(qImprimir);
+                const qtdImprimir = snapImprimir.data().count;
                 
-                const querySnapshot = await getDocs(q);
+                atualizarCard('tot-imprimir', qtdImprimir);
+                document.getElementById('txt-fila').innerText = qtdImprimir;
 
-                if (querySnapshot.empty) {
-                    Swal.fire({ icon: 'error', title: 'Acesso Negado', text: 'Credenciais não encontradas ou Unidade incorreta.' });
-                    return;
-                }
-
-                let usuarioValido = false;
-                let dadosUsuario = null;
-
-                querySnapshot.forEach((documento) => {
-                    const dados = documento.data();
-                    if (dados.senha_usuario === senha) {
-                        usuarioValido = true;
-                        dadosUsuario = dados;
-                    }
+            } catch (error) {
+                console.error("Erro ao puxar totais:", error);
+                const ids = ['tot-municipes', 'tot-academia', 'tot-raia', 'tot-imprimir'];
+                ids.forEach(id => {
+                    document.getElementById(id).innerText = "---";
+                    document.getElementById(id).classList.remove('skeleton');
                 });
-
-                if (!usuarioValido) {
-                    Swal.fire({ icon: 'error', title: 'Acesso Negado', text: 'Senha incorreta.' });
-                    return;
-                }
-
-// MÁGICA 2: Guardando as Chaves Estrangeiras no bolso do navegador
-let perfis = dadosUsuario.id_nivel_acesso;
-if (!Array.isArray(perfis)) perfis = [perfis || "UNIDADE"]; // Força virar Array
-
-localStorage.setItem('sig_rf', dadosUsuario.rf_usuario);
-localStorage.setItem('sig_id_unidade', dadosUsuario.id_unidade);
-localStorage.setItem('sig_nivel_acesso', JSON.stringify(perfis)); // Salva o Array como texto
-localStorage.setItem('sig_nome', dadosUsuario.nome_usuario);
-localStorage.setItem('sig_email', dadosUsuario.email_usuario || "");
-localStorage.setItem('sig_foto', dadosUsuario.url_foto || "");
-                
-                // Redireciona para o Painel de Controle
-                window.location.href = "dashboard_FB.html";
-
-            } catch (erro) {
-                Swal.fire({ icon: 'error', title: 'Erro de Conexão', text: 'Falha ao conectar no banco de dados.' });
-                console.error(erro);
             }
         };
 
-        window.recuperarSenha = function() {
+        function atualizarCard(idElemento, valor) {
+            const el = document.getElementById(idElemento);
+            // Faz a animação de contagem rápida
+            let atual = 0;
+            const incremento = Math.ceil(valor / 20) || 1;
+            const timer = setInterval(() => {
+                atual += incremento;
+                if (atual >= valor) {
+                    atual = valor;
+                    clearInterval(timer);
+                }
+                el.innerText = atual;
+            }, 30);
+            
+            el.classList.remove('skeleton');
+        }
+
+        // Função para linkar com o módulo de impressão futuro
+        window.abrirFilaImpressao = function() {
             Swal.fire({
-                title: 'Recuperar Acesso',
-                text: 'Contate o Administrador de TI da sua Regional para solicitar uma nova credencial.',
-                icon: 'warning',
-                confirmButtonText: 'ENTENDIDO'
+                title: 'Fila de Impressão',
+                text: 'A tela de impressão em lote está sendo conectada ao Firebase. Em breve!',
+                icon: 'info',
+                confirmButtonColor: '#0d6efd'
             });
         };
     </script>

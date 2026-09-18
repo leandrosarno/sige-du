@@ -19,7 +19,6 @@
         .search-box .material-icons { position: absolute; left: 12px; top: 10px; color: #94a3b8; }
         .table-custom { margin-bottom: 0; }
         
-        /* ❄️ MÁGICA DO CABEÇALHO FIXO ❄️ */
         .table-custom thead th { 
             position: sticky; 
             top: 0; 
@@ -45,19 +44,17 @@
 <body>
 
     <div class="card-list animate__animated animate__fadeIn">
-        
         <div class="cabecalho-lista">
             <div>
                 <h4 class="m-0 fw-bold text-dark d-flex align-items-center gap-2">
                     <span class="material-icons text-primary" style="font-size: 28px;">people_alt</span> Munícipes Cadastrados
                 </h4>
-                <small class="text-muted" id="contador-alunos">Carregando base de dados...</small>
+                <small class="text-muted" id="contador-alunos">Carregando dados da unidade...</small>
             </div>
-            
             <div class="d-flex gap-3">
                 <div class="search-box">
                     <span class="material-icons">search</span>
-                    <input type="text" id="campo-busca" class="form-control" placeholder="Buscar por Nome, EOL ou Prontuário..." onkeyup="iniciarBuscaLocal(this.value)">
+                    <input type="text" id="campo-busca" class="form-control" placeholder="Buscar na tela..." onkeyup="iniciarBuscaLocal(this.value)">
                 </div>
                 <button class="btn btn-novo d-flex align-items-center gap-2" onclick="abrirNovoCadastro()">
                     <span class="material-icons">add_circle</span> Novo Aluno
@@ -81,7 +78,7 @@
                     <tr>
                         <td colspan="6" class="text-center py-5 text-muted">
                             <div class="spinner-border text-primary mb-3" role="status"></div>
-                            <br>Conectando ao banco de dados e baixando registros...
+                            <br>Otimizando conexão com o banco de dados...
                         </td>
                     </tr>
                 </tbody>
@@ -89,10 +86,9 @@
         </div>
     </div>
 
-    <!-- MOTOR FIREBASE INTEGRADO -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
-        import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, query, where, limit } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCpCXxJbD8dPXkT7mcoz4qK8Wjt7WTRwFA",
@@ -110,7 +106,6 @@
         let alunosGlobais = [];
         let timerBusca = null;
 
-        // 🌟 FUNÇÃO BLINDADA: Acha a coluna mesmo se o Excel tiver deixado espaços invisíveis
         function pegarValorBlindado(aluno, chavesAlvo) {
             if (!aluno) return '';
             for (let dbKey in aluno) {
@@ -135,39 +130,43 @@
             }
 
             try {
-                // Traz apenas os munícipes pertencentes ao CEU logado
-                const q = query(collection(db, "municipes"), where("id_unidade", "==", idUnidade));
+                // 🛑 FREIO DE SEGURANÇA INSTALADO: limit(100)
+                // O sistema agora baixa estritamente os 100 registros mais recentes da unidade.
+                const q = query(
+                    collection(db, "municipes"), 
+                    where("id_unidade", "==", idUnidade),
+                    limit(100)
+                );
+                
                 const querySnapshot = await getDocs(q);
                 
                 alunosGlobais = [];
                 querySnapshot.forEach((doc) => {
                     let dado = doc.data();
-                    dado.idFirebase = doc.id; // Guarda a chave do Firebase
+                    dado.idFirebase = doc.id; 
                     alunosGlobais.push(dado);
                 });
 
-                // 🌟 NOVA ORDENAÇÃO: OS MAIS RECENTES PRIMEIRO
                 alunosGlobais.sort((a, b) => {
                     let dataA = a.data_cadastro || a.data_atualizacao || "";
                     let dataB = b.data_cadastro || b.data_atualizacao || "";
+                    if (dataA && dataB) return dataB.localeCompare(dataA); 
 
-                    if (dataA && dataB) {
-                        return dataB.localeCompare(dataA); // Organiza em ordem Decrescente (do maior/mais novo para o menor)
-                    }
-
-                    // Se por acaso forem alunos migrados antigos sem a data, desempata pelo número do prontuário
                     let prontA = Number(pegarValorBlindado(a, ['num_prontuario', 'prontuario', 'id_aluno'])) || 0;
                     let prontB = Number(pegarValorBlindado(b, ['num_prontuario', 'prontuario', 'id_aluno'])) || 0;
-                    
                     return prontB - prontA;
                 });
 
-                // Renderiza os 100 primeiros para ser rápido
-                renderizarTabela(alunosGlobais.slice(0, 100), "");
+                renderizarTabela(alunosGlobais, "");
 
             } catch (err) {
                 console.error("Erro ao buscar no Firebase:", err);
-                document.getElementById('corpo-tabela').innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4 fw-bold"><i class="fas fa-exclamation-triangle"></i> Falha ao carregar a base de dados.</td></tr>`;
+                
+                if (err.message.includes('Quota')) {
+                    document.getElementById('corpo-tabela').innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4 fw-bold"><i class="fas fa-ban fs-2 mb-2"></i><br>Limite diário do plano gratuito atingido.<br>O sistema voltará a funcionar automaticamente em breve, ou atualize para o plano Blaze.</td></tr>`;
+                } else {
+                    document.getElementById('corpo-tabela').innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4 fw-bold"><i class="fas fa-exclamation-triangle"></i> Falha ao carregar a base de dados.</td></tr>`;
+                }
             }
         }
 
@@ -183,11 +182,10 @@
                 termo = termo.toUpperCase().trim();
                 
                 if (termo === "") {
-                    renderizarTabela(alunosGlobais.slice(0, 100), "");
+                    renderizarTabela(alunosGlobais, "");
                     return;
                 }
 
-                // Filtro na memória que olha exatamente para as suas colunas do CSV
                 const resultados = alunosGlobais.filter(al => {
                     const nome = pegarValorBlindado(al, ['nome_completo', 'nome']).toUpperCase();
                     const eol = pegarValorBlindado(al, ['id_eol', 'eol']).toUpperCase();
@@ -197,7 +195,7 @@
                     return nome.includes(termo) || eol.includes(termo) || pront.includes(termo) || cin.includes(termo);
                 });
 
-                renderizarTabela(resultados.slice(0, 100), termo, resultados.length);
+                renderizarTabela(resultados, termo, resultados.length);
             }, 400); 
         };
 
@@ -205,14 +203,13 @@
             const tbody = document.getElementById('corpo-tabela');
             
             if(termoBusca === "") {
-                document.getElementById('contador-alunos').innerHTML = `Mostrando os últimos <b>${lista.length}</b> de <b>${alunosGlobais.length}</b> cadastrados. <br>Use a busca para pesquisar em toda a base.`;
+                document.getElementById('contador-alunos').innerHTML = `Exibindo as <b>${lista.length}</b> matrículas recentes. <br><span class="text-warning"><i class="fas fa-info-circle"></i> Otimizado para economia de dados.</span>`;
             } else {
-                let txtTotal = totalEncontrado > 100 ? `100 de ${totalEncontrado}` : totalEncontrado;
-                document.getElementById('contador-alunos').innerText = `${txtTotal} aluno(s) encontrado(s) para "${termoBusca}"`;
+                document.getElementById('contador-alunos').innerText = `${totalEncontrado} aluno(s) encontrado(s) na tela para "${termoBusca}"`;
             }
             
             if(lista.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-5 text-muted"><span class="material-icons fs-1 mb-2">person_off</span><br>Nenhum aluno encontrado para esta busca.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-5 text-muted"><span class="material-icons fs-1 mb-2">person_off</span><br>Nenhum aluno recente encontrado. Use a busca avançada em breve.</td></tr>`;
                 return;
             }
 
@@ -220,18 +217,15 @@
             const semFotoPlaceholder = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='%2394a3b8'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E";
 
             lista.forEach(al => {
-                // EXTRATOR EXATO DOS SEUS DADOS
                 const prontuario = pegarValorBlindado(al, ['num_prontuario', 'prontuario', 'id_aluno']) || '-';
                 const eol = pegarValorBlindado(al, ['id_eol', 'eol']) || '-';
                 const nome = pegarValorBlindado(al, ['nome_completo', 'nome']) || '-';
                 const cpf = pegarValorBlindado(al, ['cin', 'cpf']) || '-';
                 
-                // EXTRATOR DE FOTOS DO GOOGLE DRIVE
                 let linkCru = pegarValorBlindado(al, ['link_foto', 'foto']);
                 let urlFoto = semFotoPlaceholder;
 
                 if (linkCru && linkCru.includes('http')) {
-                    // Pega o ID da foto e converte para miniatura (fura o bloqueio do Drive)
                     const matchID = linkCru.match(/(?:id=|file\/d\/|d\/)([^&\/]+)/);
                     if (matchID && matchID[1]) {
                         urlFoto = `https://drive.google.com/thumbnail?id=${matchID[1]}&sz=w150`;

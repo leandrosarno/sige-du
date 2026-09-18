@@ -62,37 +62,36 @@
 
     <!-- SCRIPT FIREBASE E LÓGICA -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
-        import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+        import { db } from './firebase_config.js';
+        import { collection, getDocs, doc, setDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyCpCXxJbD8dPXkT7mcoz4qK8Wjt7WTRwFA",
-            authDomain: "sig-edu.firebaseapp.com",
-            projectId: "sig-edu",
-            storageBucket: "sig-edu.firebasestorage.app",
-            messagingSenderId: "233239725278",
-            appId: "1:233239725278:web:809b9c42feacd99175ee4f",
-            measurementId: "G-E5LLYGW7DN"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        // 1. TRAVA DE SEGURANÇA
+        // 1. TRAVA DE SEGURANÇA INTELIGENTE
         window.onload = function() {
-            let perfisAtivos = [];
+            let perfisUsuario = ["UNIDADE"];
             try {
-                perfisAtivos = JSON.parse(localStorage.getItem('sig_nivel_acesso') || '[]');
-                if (!Array.isArray(perfisAtivos)) perfisAtivos = [perfisAtivos];
-            } catch(e) {
-                perfisAtivos = [];
+                const cru = localStorage.getItem('sig_nivel_acesso') || "UNIDADE";
+                if (cru.startsWith('[')) {
+                    let lido = JSON.parse(cru);
+                    if (lido.length === 1 && lido[0].includes(',')) {
+                        perfisUsuario = lido[0].split(',').map(p => p.trim().toUpperCase());
+                    } else {
+                        perfisUsuario = lido.map(p => p.trim().toUpperCase());
+                    }
+                } else {
+                    perfisUsuario = cru.split(',').map(p => p.trim().toUpperCase());
+                }
+            } catch (e) {
+                perfisUsuario = ["UNIDADE"];
             }
 
-            if (!perfisAtivos.includes('ADMIN')) {
+            if (!perfisUsuario.includes('ADMIN')) {
                 Swal.fire({
                     icon: 'error', title: 'Acesso Negado', text: 'Permissão exclusiva para Administradores.',
                     confirmButtonColor: '#0d6efd', allowOutsideClick: false
-                }).then(() => { window.location.href = "inicio.html"; });
+                }).then(() => { 
+                    // Redireciona para o Início NOVO
+                    window.location.href = "inicio_FB.html"; 
+                });
             } else {
                 document.getElementById('tela-conteudo').style.display = 'block';
                 carregarUsuarios();
@@ -116,7 +115,6 @@
                     const docId = documento.id; 
                     let perfis = Array.isArray(u.id_nivel_acesso) ? u.id_nivel_acesso : [u.id_nivel_acesso || "UNIDADE"];
                     
-                    // CORREÇÃO: Usando as classes CSS corretas para colorir as etiquetas
                     const badgesHtml = perfis.map(p => {
                         let cor = 'bg-unidade';
                         if(p === 'ADMIN') cor = 'bg-admin';
@@ -147,7 +145,7 @@
                 });
             } catch (erro) {
                 console.error("Erro na tabela:", erro);
-                Swal.fire('Erro', 'Falha ao buscar usuários no Firebase.', 'error');
+                Swal.fire('Erro', 'Falha ao buscar usuários no banco de dados.', 'error');
             }
         }
 

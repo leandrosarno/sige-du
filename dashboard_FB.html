@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <!-- A referência ao antigo config.js do Google Sheets foi removida -->
+    <!-- Referência ao config.js do Google Sheets foi removida -->
     
     <style>
         body {
@@ -142,6 +142,7 @@
                         RF: Carregando...
                     </a>
                 </div>
+                <!-- O nome simples do usuário restaurado na Topbar -->
                 <div id="lbl-nome-usuario" style="font-size: 11px; color: #6c757d; font-weight: 600; margin-top: 2px;">
                     Funcionário
                 </div>
@@ -156,7 +157,6 @@
     <!-- MOTOR FIREBASE INTEGRADO -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
-        // Importando o updateDoc para possibilitar a gravação de senhas e fotos
         import { getFirestore, collection, getDocs, query, where, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -307,35 +307,54 @@
                     Swal.fire({ title: 'Salvando no Firebase...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
 
                     const val = result.value;
+                    const chaveComposta = `${rf}_${ceu}`;
 
                     try {
-                        // Busca o usuário direto pelo RF e Unidade
-                        const q = query(collection(db, "usuarios"), where("rf_usuario", "==", rf), where("id_unidade", "==", ceu));
-                        const snap = await getDocs(q);
+                        const docRef = doc(db, "usuarios", chaveComposta);
+                        const docSnap = await getDoc(docRef);
 
-                        if (snap.empty) {
-                            Swal.fire('Erro', 'Usuário não encontrado no banco.', 'error');
+                        if (!docSnap.exists()) {
+                            // Fallback caso seja o cadastro muito antigo
+                            const q = query(collection(db, "usuarios"), where("rf_usuario", "==", rf), where("id_unidade", "==", ceu));
+                            const snap = await getDocs(q);
+                            if(snap.empty) {
+                                Swal.fire('Erro', 'Usuário não encontrado no banco.', 'error');
+                                return;
+                            }
+                            const userDoc = snap.docs[0];
+                            const userData = userDoc.data();
+                            if (val.novaSenha && userData.senha_usuario !== val.senhaAtual) {
+                                Swal.fire('Atenção', 'A senha atual informada está incorreta.', 'warning');
+                                return;
+                            }
+                            const updates = {};
+                            if (val.novaSenha) updates.senha_usuario = val.novaSenha;
+                            if (val.fotoBase64) updates.url_foto = val.fotoBase64;
+                            await updateDoc(userDoc.ref, updates);
+                            if (updates.url_foto) {
+                                localStorage.setItem('sig_foto', updates.url_foto);
+                                document.getElementById('icone-avatar-padrao').style.display = 'none';
+                                const imgAvatar = document.getElementById('img-avatar-usuario');
+                                imgAvatar.src = updates.url_foto;
+                                imgAvatar.style.display = 'block';
+                            }
+                            Swal.fire('Elegante!', 'Perfil atualizado com sucesso.', 'success');
                             return;
                         }
 
-                        const userDoc = snap.docs[0];
-                        const userData = userDoc.data();
+                        const userData = docSnap.data();
 
-                        // Valida a senha antiga antes de trocar
                         if (val.novaSenha && userData.senha_usuario !== val.senhaAtual) {
                             Swal.fire('Atenção', 'A senha atual informada está incorreta.', 'warning');
                             return;
                         }
 
-                        // Prepara as informações a serem alteradas
                         const updates = {};
                         if (val.novaSenha) updates.senha_usuario = val.novaSenha;
                         if (val.fotoBase64) updates.url_foto = val.fotoBase64;
 
-                        // Grava no Firebase
-                        await updateDoc(userDoc.ref, updates);
+                        await updateDoc(docRef, updates);
 
-                        // Atualiza a tela sem recarregar a página
                         if (updates.url_foto) {
                             localStorage.setItem('sig_foto', updates.url_foto);
                             document.getElementById('icone-avatar-padrao').style.display = 'none';
@@ -460,17 +479,11 @@
                 const isProfessor = perfisUsuario.includes("PROFESSOR");
                 const isUnidade = perfisUsuario.includes("UNIDADE");
 
-                // PREENCHE DADOS DO USUÁRIO
+                // PREENCHE DADOS DO USUÁRIO NA BARRA SUPERIOR
                 document.getElementById('lbl-rf').innerText = "RF: " + rfLogado;
-
-                // SAUDAÇÃO INTELIGENTE (Cartão/Topbar)
-                const horaAtual = new Date().getHours();
-                let saudacao = "BOM DIA";
-                if (horaAtual >= 12 && horaAtual < 18) saudacao = "BOA TARDE";
-                else if (horaAtual >= 18 || horaAtual < 5) saudacao = "BOA NOITE";
-
-                const primeiroNome = nomeUsuario ? nomeUsuario.split(' ')[0].toUpperCase() : "GESTOR";
-                document.getElementById('lbl-nome-usuario').innerText = `${saudacao} ${primeiroNome}!`;
+                
+                // Manteve-se o "Funcionário" ou o primeiro nome limpo
+                document.getElementById('lbl-nome-usuario').innerText = nomeUsuario ? nomeUsuario.split(' ')[0] : "Funcionário";
 
                 if (fotoUser && fotoUser !== "undefined" && fotoUser.trim() !== "") {
                     document.getElementById('icone-avatar-padrao').style.display = 'none';

@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerenciar Usuários</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
@@ -112,19 +113,19 @@
 
                 querySnapshot.forEach((documento) => {
                     const u = documento.data();
-                    const docId = documento.id; // Pegando o ID do Firebase (que agora é a chave composta)
+                    const docId = documento.id; 
                     let perfis = Array.isArray(u.id_nivel_acesso) ? u.id_nivel_acesso : [u.id_nivel_acesso || "UNIDADE"];
                     
+                    // CORREÇÃO: Usando as classes CSS corretas para colorir as etiquetas
                     const badgesHtml = perfis.map(p => {
-                        let cor = 'bg-primary';
-                        if(p === 'ADMIN') cor = 'bg-danger';
-                        if(p === 'DRE') cor = 'bg-purple'; 
-                        if(p === 'SME') cor = 'bg-warning';
-                        if(p === 'PROFESSOR') cor = 'bg-success';
+                        let cor = 'bg-unidade';
+                        if(p === 'ADMIN') cor = 'bg-admin';
+                        if(p === 'DRE') cor = 'bg-dre'; 
+                        if(p === 'SME') cor = 'bg-sme';
+                        if(p === 'PROFESSOR') cor = 'bg-professor';
                         return `<span class="badge badge-perfil ${cor} me-1">${p}</span>`;
                     }).join('');
 
-                    // Destaca visualmente se for o suporte global
                     const unidadeDisplay = u.id_unidade === '000000' 
                         ? '<span class="text-danger fw-bold"><i class="fas fa-globe"></i> GLOBAL (000000)</span>' 
                         : u.id_unidade;
@@ -241,7 +242,6 @@
                     Swal.fire({ title: 'Salvando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
                     const val = result.value;
                     try {
-                        // CHAVE COMPOSTA PARA EVITAR SUBSTITUIÇÃO DE VÍNCULOS
                         const novoDocId = `${val.rf}_${val.unidade}`;
 
                         await setDoc(doc(db, "usuarios", novoDocId), {
@@ -254,7 +254,6 @@
                             url_foto: val.url_foto
                         });
 
-                        // Se você editou e alterou o RF ou a Unidade, apaga o registro velho pra não duplicar!
                         if (docIdEdicao && docIdEdicao !== novoDocId) {
                             await deleteDoc(doc(db, "usuarios", docIdEdicao));
                         }
@@ -277,7 +276,6 @@
             const unLogada = localStorage.getItem('sig_id_unidade');
             const minhaChaveLogada = `${rfLogado}_${unLogada}`;
 
-            // Trava para o cara não apagar o próprio login atual ou seu registro antigo
             if (docId === minhaChaveLogada || docId === rfLogado) {
                 Swal.fire('Atenção', 'Você não pode excluir o seu próprio usuário que está logado no momento!', 'warning'); 
                 return;

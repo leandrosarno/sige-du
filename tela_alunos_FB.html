@@ -36,7 +36,18 @@
         
         .section-title { color: #0d6efd; font-weight: 700; font-size: 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid #edf2f7; padding-bottom: 10px; }
     
+        /* Força todos os inputs e textareas a ficarem maiúsculos */
         input[type="text"], textarea { text-transform: uppercase; }
+
+        /* Remove COMPLETAMENTE as setinhas caso algum navegador insista */
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
     </style>
 </head>
 <body>
@@ -104,14 +115,14 @@
 
                     <div class="col-md-9">
                         <div class="row g-4">
-                            <!-- 🌟 NOVO CAMPO DE PRONTUÁRIO/ID_ALUNO ADICIONADO AQUI -->
+                            <!-- 🌟 TROCADO DE TYPE="NUMBER" PARA TYPE="TEXT" COM INPUTMODE NUMERIC -->
                             <div class="col-md-3">
                                 <label class="form-label text-primary fw-bold">Prontuário / ID <span class="text-danger">*</span></label>
-                                <input type="number" id="aluno-prontuario" class="form-control border-primary" placeholder="Gerado auto. se vazio" style="background-color: #f0f7ff;">
+                                <input type="text" inputmode="numeric" id="aluno-prontuario" class="form-control border-primary fw-bold" placeholder="Gerado auto." style="background-color: #f0f7ff;">
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label">Código EOL</label>
-                                <input type="number" id="aluno-eol" class="form-control" placeholder="Apenas números">
+                                <input type="text" inputmode="numeric" id="aluno-eol" class="form-control" placeholder="Apenas números">
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label">CIN (CPF ou RG) <span class="text-danger">*</span></label>
@@ -294,7 +305,7 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label text-muted">Número da Via (Automático)</label>
-                            <input type="number" id="aluno-via-geral" class="form-control w-25 text-center fw-bold text-primary" value="0" readonly style="background-color: #e2e8f0; cursor: not-allowed;">
+                            <input type="text" id="aluno-via-geral" class="form-control w-25 text-center fw-bold text-primary" value="0" readonly style="background-color: #e2e8f0; cursor: not-allowed;">
                         </div>
                     </div>
                 </div>
@@ -318,7 +329,7 @@
                         </div>
                         <div class="col-md-4">
                             <label class="form-label text-muted">Número da Via (Automático)</label>
-                            <input type="number" id="aluno-via-academia" class="form-control w-25 text-center fw-bold text-danger" value="0" readonly style="background-color: #e2e8f0; cursor: not-allowed;">
+                            <input type="text" id="aluno-via-academia" class="form-control w-25 text-center fw-bold text-danger" value="0" readonly style="background-color: #e2e8f0; cursor: not-allowed;">
                         </div>
                     </div>
                 </div>
@@ -342,7 +353,7 @@
                         </div>
                         <div class="col-md-4">
                             <label class="form-label text-muted">Número da Via (Automático)</label>
-                            <input type="number" id="aluno-via-piscina" class="form-control w-25 text-center fw-bold text-info" value="0" readonly style="background-color: #e2e8f0; cursor: not-allowed;">
+                            <input type="text" id="aluno-via-piscina" class="form-control w-25 text-center fw-bold text-info" value="0" readonly style="background-color: #e2e8f0; cursor: not-allowed;">
                         </div>
                     </div>
                 </div>
@@ -392,11 +403,9 @@
 
     <!-- MOTOR FIREBASE INTEGRADO -->
     <script type="module">
-        // 🌟 Importação Centralizada do DB
         import { db } from './firebase_config.js';
         import { doc, setDoc, getDoc, updateDoc, deleteDoc, collection } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
-        // FUNÇÕES GLOBAIS PARA ACESSO VIA ONCLICK NO HTML
         window.voltarParaLista = function() {
             if(window.parent && typeof window.parent.abrirFormFilho === 'function') {
                 window.parent.abrirFormFilho('alunos_FB.html', window.parent.document.querySelector('.sidebar a.ativo'));
@@ -441,7 +450,7 @@
             }
         };
 
-        // 🛡️ MOTOR DE EXTRAÇÃO SEGURO
+        // 🛡️ MOTOR DE EXTRAÇÃO SEGURO 
         function extrairDadoSeguro(documento, chavesAlvo) {
             if (!documento || typeof documento !== 'object') return '';
             let melhorValor = '';
@@ -463,7 +472,6 @@
             return melhorValor;
         }
 
-        // INICIALIZAÇÃO
         window.onload = async function() {
             const urlParams = new URLSearchParams(window.location.search);
             const idEdicao = urlParams.get('id');
@@ -481,8 +489,7 @@
 
         async function carregarDadosDoAluno(idFirebase) {
             const idUnidade = localStorage.getItem('sig_id_unidade');
-
-            Swal.fire({ title: 'Buscando Prontuário...', text: 'Lendo do Firebase...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+            Swal.fire({ title: 'Buscando Prontuário...', text: 'Lendo do banco de dados...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
 
             try {
                 const docRef = doc(db, "municipes", idFirebase);
@@ -520,7 +527,7 @@
             const btnExcluir = document.getElementById('btn-excluir-aluno');
             if (btnExcluir) btnExcluir.style.display = 'flex';
             
-            // 📸 EXTRATOR DE FOTOS DO DRIVE
+            // 📸 CARREGAMENTO FORÇADO DE FOTOS DO DRIVE
             let linkCru = extrairDadoSeguro(aluno, ['link_foto', 'foto', 'url_foto']);
             const semFotoPlaceholder = "https://via.placeholder.com/150/cbd5e1/ffffff?text=SEM+FOTO";
             
@@ -535,22 +542,30 @@
                 document.getElementById('aluno-preview-foto').src = semFotoPlaceholder;
             }
 
-            // 🪪 DADOS PRINCIPAIS
+            // 🪪 DADOS PRINCIPAIS (Agora em caixas de Texto sem setinhas!)
             document.getElementById('aluno-prontuario').value = extrairDadoSeguro(aluno, ['id_aluno', 'num_prontuario', 'prontuario']);
             document.getElementById('aluno-eol').value = extrairDadoSeguro(aluno, ['id_eol', 'eol']);
             document.getElementById('aluno-cin').value = extrairDadoSeguro(aluno, ['cin', 'cpf', 'rg']);
             document.getElementById('aluno-nome').value = extrairDadoSeguro(aluno, ['nome_completo', 'nome', 'aluno']);
             document.getElementById('aluno-social').value = extrairDadoSeguro(aluno, ['nome_social']);
 
-            // 📅 CONVERSOR DE DATAS (Arruma dd/mm/yyyy para yyyy-mm-dd)
-            let dataNasc = String(extrairDadoSeguro(aluno, ['data_nascimento', 'nascimento', 'datanascimento'])).trim();
-            if(dataNasc && dataNasc.includes('/')) {
-                let partes = dataNasc.split('/');
-                if(partes.length === 3) dataNasc = `${partes[2]}-${partes[1]}-${partes[0]}`;
-            } else if (dataNasc && dataNasc.includes('T')) {
-                dataNasc = dataNasc.split('T')[0];
+            // 📅 CONVERSOR DE DATAS MEGA-ROBUSTO (Força formato YYYY-MM-DD com zeros para o HTML não bugar)
+            let rawDate = extrairDadoSeguro(aluno, ['data_nascimento', 'nascimento', 'datanascimento']);
+            let dataNascFinal = "";
+            if (rawDate) {
+                let strD = String(rawDate).trim();
+                if (strD.includes('/')) {
+                    let p = strD.split('/');
+                    if (p.length === 3) dataNascFinal = `${p[2]}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}`;
+                } else if (strD.includes('-')) {
+                    // Pega só a data se vier suja com T ou espaço de hora
+                    let p = strD.split('T')[0].split(' ')[0].split('-');
+                    if (p.length === 3) dataNascFinal = `${p[0]}-${p[1].padStart(2, '0')}-${p[2].padStart(2, '0')}`;
+                } else {
+                    dataNascFinal = strD; // Fallback extremo
+                }
             }
-            document.getElementById('aluno-nasc').value = dataNasc || "";
+            document.getElementById('aluno-nasc').value = dataNascFinal;
 
             // 📍 CONTATO E ENDEREÇO
             document.getElementById('aluno-cep').value = extrairDadoSeguro(aluno, ['cep']);
@@ -581,7 +596,7 @@
             let parqValue = extrairDadoSeguro(aluno, ['par_q', 'parq']);
             if (window.safeSimNao(parqValue) === "SIM") { document.getElementById('aluno-parq').checked = true; }
 
-            // 🎟️ CARTEIRINHAS
+            // 🎟️ CARTEIRINHAS (Sem setinhas de número!)
             document.getElementById('aluno-print-geral').value = window.safeSimNao(extrairDadoSeguro(aluno, ['imp_uso_geral', 'imprimir_cg']));
             document.getElementById('aluno-via-geral').value = extrairDadoSeguro(aluno, ['via_cart_uso_geral', 'via_geral']) || 0;
             
@@ -634,11 +649,9 @@
                 }
             }
 
-            // Lê o Prontuário digitado. Se estiver em branco (novo aluno), gera um.
             let prontuarioDigitado = document.getElementById('aluno-prontuario').value.trim();
             let prontuarioFinal = prontuarioDigitado || Math.floor(100000 + Math.random() * 900000).toString();
 
-            // Grava os dados no banco usando as colunas exatas do seu padrão de importação
             const pacoteAluno = {
                 id_unidade: idUnidade,
                 id_aluno: prontuarioFinal,

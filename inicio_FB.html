@@ -9,7 +9,6 @@
     <style>
         body { background-color: #f4f7f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; }
         
-        /* Estilos do Cartão de Boas Vindas Dinâmico */
         .welcome-card {
             border: none;
             border-radius: 15px;
@@ -20,12 +19,10 @@
             transition: background 0.5s ease;
         }
         
-        /* Paletas de Cores por Turno */
         .bg-manha { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
         .bg-tarde { background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); }
         .bg-noite { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
 
-        /* Estilos dos Cartões Menores */
         .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
         .stat-card {
             background: white; border: none; border-radius: 10px;
@@ -37,18 +34,16 @@
         .stat-card h6 { color: #6c757d; font-size: 11px; text-transform: uppercase; font-weight: bold; margin-bottom: 10px; }
         .stat-card h3 { color: #2c3e50; font-size: 28px; font-weight: bold; margin: 0; }
 
-        /* Efeito de carregamento skeleton para os números */
         .skeleton { background: #e2e8f0; border-radius: 8px; color: transparent !important; animation: pulse 1.5s infinite; display: inline-block; min-width: 60px; height: 35px; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
-        /* Estilo interativo para o card da TV */
         .card-link { cursor: pointer; }
         .card-link h3 { color: #6f42c1; font-size: 24px; display: flex; align-items: center; justify-content: center; gap: 10px;}
     </style>
 </head>
 <body>
     <div class="container-fluid">
-        <!-- Cartão de Boas Vindas -->
+        
         <div id="cartao-boas-vindas" class="welcome-card bg-manha animate__animated animate__fadeIn">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
@@ -59,9 +54,7 @@
             </div>
         </div>
 
-        <!-- Cartões de Resumo Operacional -->
         <div class="cards-grid animate__animated animate__fadeInUp">
-            
             <div class="stat-card" style="border-bottom-color: #0d6efd;">
                 <h6>Munícipes Cadastrados</h6>
                 <h3 id="tot-municipes" class="skeleton">0</h3>
@@ -82,22 +75,19 @@
                 <h3 id="tot-fila" class="skeleton">0</h3>
             </div>
 
-            <!-- NOVO CARTÃO: RECREIO NAS FÉRIAS -->
             <div class="stat-card" style="border-bottom-color: #e83e8c;">
                 <h6>Recreio nas Férias (Inscrições)</h6>
                 <h3 id="tot-recreio" class="skeleton">0</h3>
             </div>
 
-            <!-- CARTÃO AGENDA TV (Preparado para receber o link depois) -->
             <div class="stat-card card-link" style="border-bottom-color: #6f42c1;" onclick="abrirAgendaTV()">
                 <h6>Agenda da TV</h6>
                 <h3><i class="fas fa-tv"></i> Acessar</h3>
             </div>
-            
         </div>
     </div>
 
-    <!-- MOTOR FIREBASE E LÓGICAS DA TELA -->
+    <!-- MOTOR FIREBASE COM INTELIGÊNCIA DE DUPLA TIPAGEM -->
     <script type="module">
         import { db } from './firebase_config.js';
         import { collection, query, where, getCountFromServer } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
@@ -107,7 +97,6 @@
             carregarEstatisticasFirebase();
         };
 
-        // 1. CONFIGURAÇÃO VISUAL DO CARTÃO (Tempo e Usuário)
         function configurarCartaoBoasVindas() {
             const nomeCompleto = localStorage.getItem('ceu_nome_usuario') || localStorage.getItem('sig_nome') || "GESTOR";
             const primeiroNome = nomeCompleto.split(' ')[0].toUpperCase();
@@ -140,49 +129,49 @@
             dataTexto.innerText = dataFormatada;
         }
 
-        // 2. BUSCA OTIMIZADA NO FIREBASE (Gastando zero de cota de leitura de documentos)
         async function carregarEstatisticasFirebase() {
             const idUnidade = localStorage.getItem('sig_id_unidade');
             if (!idUnidade) return;
 
-            // Munícipes Cadastrados
             buscarEAnimar("municipes", "tot-municipes", idUnidade);
-            
-            // Turmas Ativas
             buscarEAnimar("turmas", "tot-turmas", idUnidade);
-            
-            // Matrículas Realizadas
             buscarEAnimar("matriculas", "tot-matriculas", idUnidade);
-            
-            // Fila de Espera
             buscarEAnimar("fila_espera", "tot-fila", idUnidade);
-            
-            // Recreio nas Férias
             buscarEAnimar("recreio_ferias", "tot-recreio", idUnidade);
         }
 
-        // Função universal para ir no banco, contar, e fazer a animação dos números
+        // MOTOR BLINDADO QUE LÊ TEXTO E NÚMERO
         async function buscarEAnimar(nomeColecao, idElementoHTML, idUnidade) {
             try {
                 const refColecao = collection(db, nomeColecao);
-                const q = query(refColecao, where("id_unidade", "==", idUnidade));
-                
-                // Pede pro Google contar no servidor (muito rápido e não baixa os dados)
-                const snapshot = await getCountFromServer(q);
-                const totalEncontrado = snapshot.data().count;
+                let totalEncontrado = 0;
+
+                // MODO ADMIN GLOBAL: Lê o banco de dados inteiro
+                if (idUnidade === "000000") {
+                    const snapshot = await getCountFromServer(refColecao);
+                    totalEncontrado = snapshot.data().count;
+                } else {
+                    // MODO UNIDADE: Soma as tipagens para garantir que não perde dados do CSV
+                    const qTexto = query(refColecao, where("id_unidade", "==", String(idUnidade)));
+                    const snapTexto = await getCountFromServer(qTexto);
+                    
+                    const qNumero = query(refColecao, where("id_unidade", "==", Number(idUnidade)));
+                    const snapNumero = await getCountFromServer(qNumero);
+
+                    totalEncontrado = snapTexto.data().count + snapNumero.data().count;
+                }
 
                 animarContador(idElementoHTML, totalEncontrado);
             } catch (error) {
-                console.log(`Coleção '${nomeColecao}' vazia ou sem permissão ainda. Exibindo zero.`);
+                console.log(`Aguardando dados para a coleção '${nomeColecao}'.`);
                 document.getElementById(idElementoHTML).classList.remove('skeleton');
                 document.getElementById(idElementoHTML).innerText = "0";
             }
         }
 
-        // 3. EFEITO DE CONTAGEM RÁPIDA (Como num painel de carro)
         function animarContador(idElemento, valorFinal) {
             const el = document.getElementById(idElemento);
-            el.classList.remove('skeleton'); // Tira a barra de carregamento
+            el.classList.remove('skeleton'); 
 
             if (valorFinal === 0) {
                 el.innerText = "0";
@@ -190,22 +179,21 @@
             }
 
             let atual = 0;
-            const incremento = Math.ceil(valorFinal / 20) || 1;
+            // Dinâmica matemática para números gigantes (como 10.700) subirem rápido na tela
+            const incremento = Math.ceil(valorFinal / 30);
+            
             const timer = setInterval(() => {
                 atual += incremento;
                 if (atual >= valorFinal) {
                     atual = valorFinal;
                     clearInterval(timer);
                 }
-                el.innerText = atual;
+                el.innerText = atual.toLocaleString('pt-BR');
             }, 30);
         }
 
-        // 4. FUNÇÃO PARA A AGENDA DA TV
         window.abrirAgendaTV = function() {
-            // Quando você tiver o link definitivo da TV, nós trocamos esse alert pelo comando de abrir nova guia!
             alert("Em breve! O módulo da TV será conectado a este botão.");
-            // Exemplo futuro: window.open("sua_pagina_tv.html", "_blank");
         };
     </script>
 </body>

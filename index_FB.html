@@ -2,307 +2,195 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIG-EDU - Login</title>
-    
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-    <meta http-equiv="Pragma" content="no-cache" />
-    <meta http-equiv="Expires" content="0" />
-    
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <title>Login - Sistema</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        :root { --cor-primaria: #0d6efd; --cor-fundo: #f4f7f6; }
-        body { 
-            background-color: var(--cor-fundo); 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            height: 100vh; 
-            margin: 0; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+        :root {
+            --google-blue: #1a73e8;
+            --bg-color: #f0f2f5;
+            --border-color: #dadce0;
         }
+        body { background-color: var(--bg-color); display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 10px; color: #333; }
+        .login-box { background: #fff; width: 280px; padding: 20px; border: 1px solid var(--border-color); border-top: 4px solid var(--google-blue); box-shadow: 2px 2px 10px rgba(0,0,0,0.15); border-radius: 0; }
+        .login-header { text-align: center; border-bottom: 1px solid #eee; margin-bottom: 15px; padding-bottom: 10px; }
         
-        /* --------------------------------------------------- */
-        /* CARTÃO DE LOGIN: HORIZONTAL E BEM PEQUENO/COMPACTO  */
-        /* --------------------------------------------------- */
-        .login-wrapper {
-            display: flex;
-            flex-direction: row;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-            width: 100%;
-            max-width: 520px; /* Reduzido drasticamente */
-            min-height: 280px;
-            overflow: hidden;
-            border-top: 4px solid #ff9800; /* Identificador de Homologação */
-        }
-
-        /* LADO ESQUERDO: LOGO E MARCA */
-        .login-left {
-            flex: 0.8;
-            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px 15px;
-            text-align: center;
-            border-right: 1px solid #e2e8f0;
-        }
-        .login-left span.icone-padrao { font-size: 60px; color: var(--cor-primaria); margin-bottom: 5px; }
-        .login-left h3 { font-weight: 800; color: #1e293b; margin-top: 10px; margin-bottom: 2px; font-size: 18px; }
-        .login-left p { color: #64748b; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin: 0; }
-
-        /* LADO DIREITO: FORMULÁRIO */
-        .login-right {
-            flex: 1.2;
-            padding: 25px 20px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
+        /* Ajuste para o logo se encaixar bem */
+        #logoSistema { max-width: 120px; max-height: 80px; object-fit: contain; margin-bottom: 10px; display: none; margin-left: auto; margin-right: auto; }
         
-        .form-label { font-weight: 700; color: #4a5568; font-size: 11px; text-transform: uppercase; margin-bottom: 3px; }
-        .form-control { padding: 8px 12px; border-radius: 6px; background-color: #f8fafc; border: 1px solid #cbd5e1; font-weight: 600; font-size: 13px; color: #1e293b; margin-bottom: 12px; transition: all 0.2s; text-align: center;}
-        .form-control:focus { background-color: #ffffff; border-color: var(--cor-primaria); box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1); }
+        .login-header span { font-size: 32px; color: var(--google-blue); }
+        .login-header h3 { font-weight: bold; margin: 5px 0 2px 0; font-size: 13px; }
+        .login-header p { margin: 0; color: #666; font-size: 9px; }
+        .form-group { margin-bottom: 10px; }
+        .form-label { display: block; font-weight: bold; margin-bottom: 3px; font-size: 10px; }
+        .form-control { width: 100%; padding: 4px 6px; border: 1px solid #aaa; border-radius: 0; font-size: 10px; box-sizing: border-box; height: 22px; }
+        .form-control:focus { outline: none; border-color: var(--google-blue); }
+        .btn-login { background-color: var(--google-blue); color: white; border: 1px solid #0d47a1; width: 100%; padding: 4px; font-weight: bold; font-size: 10px; cursor: pointer; margin-top: 10px; height: 24px; border-radius: 0; }
+        .btn-login:hover { background-color: #1557b0; }
+        .link-senha { display: block; text-align: center; margin-top: 12px; color: var(--google-blue); text-decoration: underline; cursor: pointer; font-size: 9px; }
+        .link-senha:hover { color: #0d47a1; }
         
-        .btn-login { background-color: var(--cor-primaria); color: white; border: none; width: 100%; padding: 10px; font-weight: 800; font-size: 13px; border-radius: 6px; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s; margin-top: 5px; }
-        .btn-login:hover { background-color: #0b5ed7; transform: translateY(-1px); box-shadow: 0 4px 10px rgba(13, 110, 253, 0.2); }
-
-        /* Responsividade para celulares */
-        @media (max-width: 550px) {
-            .login-wrapper { flex-direction: column; max-width: 320px; margin: 20px; }
-            .login-left { border-right: none; border-bottom: 1px solid #e2e8f0; padding: 20px; }
-            .login-right { padding: 20px; }
-        }
+        /* SWEETALERT DESIGN CORPORATIVO */
+        div:where(.swal2-container) div:where(.swal2-popup) { width: 280px !important; padding: 20px !important; border-radius: 0 !important; border: 1px solid var(--border-color) !important; border-top: 4px solid var(--google-blue) !important; box-shadow: 2px 2px 10px rgba(0,0,0,0.15) !important; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important; }
+        div:where(.swal2-container) h2:where(.swal2-title) { font-size: 11px !important; font-weight: bold !important; color: #333 !important; margin: 0 0 5px 0 !important; }
+        div:where(.swal2-container) div:where(.swal2-html-container) { font-size: 10px !important; color: #666 !important; margin: 5px 0 15px 0 !important; }
+        div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm { border-radius: 0 !important; font-size: 10px !important; font-weight: bold !important; padding: 4px !important; width: 100% !important; height: 24px !important; background-color: var(--google-blue) !important; border: 1px solid #0d47a1 !important; }
+        div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm:hover { background-color: #1557b0 !important; }
+        div:where(.swal2-container) .swal2-icon { transform: scale(0.5) !important; margin: 0 auto 5px auto !important; }
     </style>
 </head>
 <body>
-
-    <div class="login-wrapper animate__animated animate__fadeIn">
-        
-        <!-- COLUNA ESQUERDA (MARCA) -->
-        <div class="login-left" id="box-logo">
-            <span class="material-icons icone-padrao" id="icone-padrao">account_balance</span>
-            <img id="img-logo" src="" alt="Logo do Sistema" style="display: none; width: 80%; max-height: 90px; object-fit: contain; margin-bottom: 10px;">
-            <h3 id="titulo-sistema">Carregando...</h3>
-            <p>Acesso Restrito</p>
+    <div class="login-box">
+        <div class="login-header">
+            <!-- Novos IDs para injetar o Logo e o Nome do Sistema -->
+            <img id="logoSistema" src="" alt="Logo do Sistema">
+            <span id="iconePadrao" class="material-icons">admin_panel_settings</span>
+            <h3 id="tituloSistema">Carregando...</h3>
+            <p>Acesso Restrito ao Sistema</p>
         </div>
-
-        <!-- COLUNA DIREITA (FORMULÁRIO) -->
-        <div class="login-right">
-            <form id="formLogin" onsubmit="event.preventDefault(); window.fazerLogin();">
-                
-                <div>
-                    <label class="form-label">Cód. EOL da Unidade</label>
-                    <input type="text" inputmode="numeric" class="form-control" id="id_ceu" placeholder="Ex: 123456" required>
-                </div>
-                
-                <div>
-                    <label class="form-label">RF do Funcionário</label>
-                    <input type="text" inputmode="numeric" class="form-control" id="rf_usuario" placeholder="Apenas números" required>
-                </div>
-                
-                <div>
-                    <label class="form-label">Senha de Acesso</label>
-                    <input type="password" class="form-control" id="senha_usuario" placeholder="••••••••" required>
-                </div>
-                
-                <button type="submit" class="btn btn-login" id="btn-entrar">
-                    Entrar no Sistema
-                </button>
-            </form>
-        </div>
-        
+        <form id="formLogin" onsubmit="event.preventDefault(); window.fazerLogin();">
+            <div class="form-group">
+                <label class="form-label">Código EOL da Unidade</label>
+                <input type="text" class="form-control" id="id_unidade" placeholder="Ex: 700038" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">RF do Servidor</label>
+                <input type="text" class="form-control" id="rf_usuario" placeholder="Apenas números" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Senha</label>
+                <input type="password" class="form-control" id="senha_usuario" placeholder="******" required>
+            </div>
+            <button type="submit" class="btn-login">CONECTAR</button>
+        </form>
+        <a class="link-senha" onclick="window.recuperarSenha()">Esqueci minha senha</a>
     </div>
 
-    <!-- SCRIPT DO SISTEMA COM FIREBASE CENTRALIZADO -->
     <script type="module">
-        import { db } from './firebase_config.js';
-        import { collection, getDocs, getDoc, doc, query, where, updateDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
-        // ==========================================
-        // LOGO E CONFIGURAÇÕES GERAIS
-        // ==========================================
-        window.onload = async function() {
-            localStorage.clear();
-
-            try {
-                const docRef = doc(db, "configuracoes", "sistema");
-                const docSnap = await getDoc(docRef);
-
-                if (docSnap.exists()) {
-                    const dados = docSnap.data();
-                    document.getElementById('titulo-sistema').innerText = dados.nomeSistema || "SIG-EDU";
-                    localStorage.setItem('ceu_nome_sistema', dados.nomeSistema || "SIG-EDU");
-                    
-                    if (dados.logoUrl) {
-                        localStorage.setItem('ceu_logo_sistema', dados.logoUrl);
-                        document.getElementById('icone-padrao').style.display = 'none';
-                        const img = document.getElementById('img-logo');
-                        img.src = dados.logoUrl;
-                        
-                        if(dados.tamanhoLogo) {
-                            img.style.height = dados.tamanhoLogo; 
-                            localStorage.setItem('ceu_tamanho_logo', dados.tamanhoLogo); 
-                        }
-                        img.style.display = 'block';
-                    }
-                } else {
-                    document.getElementById('titulo-sistema').innerText = "SIG-EDU";
-                }
-            } catch (erro) {
-                console.error("Aviso: Configurações não encontradas.", erro);
-                document.getElementById('titulo-sistema').innerText = "SIG-EDU";
-            }
+        const firebaseConfig = {
+            apiKey: "AIzaSyCpCXxJbD8dPXkT7mcoz4qK8Wjt7WTRwFA",
+            authDomain: "sig-edu.firebaseapp.com",
+            projectId: "sig-edu",
+            storageBucket: "sig-edu.firebasestorage.app",
+            messagingSenderId: "233239725278",
+            appId: "1:233239725278:web:809b9c42feacd99175ee4f",
+            measurementId: "G-E5LLYGW7DN"
         };
 
-        // ==========================================
-        // MOTOR DE LOGIN BLINDADO (DUPLA TIPAGEM)
-        // ==========================================
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Limpa resíduos de acessos anteriores
+        localStorage.clear();
+
+        // MÁGICA 1: Função para buscar as configurações gerais do sistema
+        async function carregarConfiguracoes() {
+            try {
+                const configRef = collection(db, "configuracoes");
+                const configSnapshot = await getDocs(configRef);
+                
+                if (!configSnapshot.empty) {
+                    // Pega o primeiro documento encontrado na coleção
+                    const dadosConfig = configSnapshot.docs[0].data();
+                    
+                    if (dadosConfig.nomeSistema) {
+                        document.getElementById('tituloSistema').innerText = dadosConfig.nomeSistema;
+                        document.title = "Login - " + dadosConfig.nomeSistema;
+                    }
+                    
+                    if (dadosConfig.logoUrl) {
+                        const imgLogo = document.getElementById('logoSistema');
+                        imgLogo.src = dadosConfig.logoUrl;
+                        imgLogo.style.display = 'block';
+                        // Esconde o ícone padrão de cadeado/escudo se tivermos um logo
+                        document.getElementById('iconePadrao').style.display = 'none'; 
+                    }
+                } else {
+                    document.getElementById('tituloSistema').innerText = "SIG-EDU Central";
+                }
+            } catch (erro) {
+                console.error("Erro ao carregar configurações do Firebase:", erro);
+                document.getElementById('tituloSistema').innerText = "SIG-EDU Central";
+            }
+        }
+
+        // Executa a busca de configurações assim que o script é lido
+        carregarConfiguracoes();
+
         window.fazerLogin = async function() {
-            const ceuTexto = document.getElementById('id_ceu').value.trim();
-            const rfTexto = document.getElementById('rf_usuario').value.trim();
+            const unidade = document.getElementById('id_unidade').value.trim();
+            const rf = document.getElementById('rf_usuario').value.trim();
             const senha = document.getElementById('senha_usuario').value.trim();
 
-            if(!ceuTexto || !rfTexto || !senha) {
-                Swal.fire('Atenção', 'Preencha todos os campos.', 'warning');
+            if(!unidade || !rf || !senha) {
+                Swal.fire({ icon: 'warning', title: 'Atenção', text: 'Preencha todos os campos.' });
                 return;
             }
 
             Swal.fire({
-                title: 'Autenticando...',
-                text: 'Consultando banco de dados.',
+                title: 'A validar acessos...',
+                text: 'Consultando servidor.',
                 allowOutsideClick: false,
                 didOpen: () => { Swal.showLoading(); }
             });
 
             try {
                 const usuariosRef = collection(db, "usuarios");
+                const q = query(usuariosRef, 
+                    where("id_unidade", "==", unidade),
+                    where("rf_usuario", "==", rf)
+                );
                 
-                // 1ª Tentativa: Procura como TEXTO (String)
-                let q = query(usuariosRef, where("id_ceu", "==", ceuTexto), where("rf_usuario", "==", rfTexto));
-                let querySnapshot = await getDocs(q);
-
-                // 2ª Tentativa: Se não achou como texto, tenta como NÚMERO (Integer)
-                if (querySnapshot.empty) {
-                    q = query(usuariosRef, where("id_ceu", "==", Number(ceuTexto)), where("rf_usuario", "==", Number(rfTexto)));
-                    querySnapshot = await getDocs(q);
-                }
-
-                // 3ª Tentativa Cruzada: CEU como texto e RF como Número
-                if (querySnapshot.empty) {
-                    q = query(usuariosRef, where("id_ceu", "==", ceuTexto), where("rf_usuario", "==", Number(rfTexto)));
-                    querySnapshot = await getDocs(q);
-                }
+                const querySnapshot = await getDocs(q);
 
                 if (querySnapshot.empty) {
-                    Swal.fire('Acesso Negado', 'Usuário não encontrado nesta unidade.', 'error');
+                    Swal.fire({ icon: 'error', title: 'Acesso Negado', text: 'Credenciais não encontradas ou Unidade incorreta.' });
                     return;
                 }
 
                 let usuarioValido = false;
                 let dadosUsuario = null;
-                let idDocumentoFirebase = null;
 
                 querySnapshot.forEach((documento) => {
                     const dados = documento.data();
-                    if (dados.senha_usuario === senha || String(dados.senha_usuario) === senha) {
+                    if (dados.senha_usuario === senha) {
                         usuarioValido = true;
                         dadosUsuario = dados;
-                        idDocumentoFirebase = documento.id; 
                     }
                 });
 
                 if (!usuarioValido) {
-                    Swal.fire('Acesso Negado', 'Senha incorreta.', 'error');
+                    Swal.fire({ icon: 'error', title: 'Acesso Negado', text: 'Senha incorreta.' });
                     return;
                 }
 
-                if (dadosUsuario.primeiro_acesso === true) {
-                    window.tratarPrimeiroAcesso("É necessário redefinir a sua senha inicial de segurança.", { idDoc: idDocumentoFirebase });
-                    return;
-                }
-
-                // SUCESSO - Preenche variáveis
-                localStorage.setItem('ceu_codigo_eol', ceuTexto);
-                localStorage.setItem('ceu_rf_logado', rfTexto); 
-                localStorage.setItem('sig_id_unidade', ceuTexto); 
-                localStorage.setItem('sig_rf', rfTexto); 
-                localStorage.setItem('ceu_nome', dadosUsuario.nome_ceu || "Escola");
-                localStorage.setItem('ceu_nome_usuario', dadosUsuario.nome_usuario || "Gestor");
+                // Guardando as Chaves Estrangeiras no bolso do navegador
+                localStorage.setItem('sig_rf', dadosUsuario.rf_usuario); 
+                localStorage.setItem('sig_id_unidade', dadosUsuario.id_unidade);
+                localStorage.setItem('sig_nivel_acesso', dadosUsuario.id_nivel_acesso);
+                localStorage.setItem('sig_nome', dadosUsuario.nome_usuario);
+                localStorage.setItem('sig_email', dadosUsuario.email_usuario || "");
+                localStorage.setItem('sig_foto', dadosUsuario.url_foto || "");
                 
-                if(dadosUsuario.logo_ceu) localStorage.setItem('ceu_logo', dadosUsuario.logo_ceu);
-                if(dadosUsuario.foto_usuario) localStorage.setItem('ceu_foto_usuario', dadosUsuario.foto_usuario);
-                
-                localStorage.setItem('ceu_perfil', dadosUsuario.perfil_usuario || "padrao"); 
-                localStorage.setItem('sig_nivel_acesso', JSON.stringify([dadosUsuario.perfil_usuario || 'SECRETARIA']));
-                
-                // Redireciona para o Painel Principal (Ajuste o nome do arquivo da sua dashboard principal)
-                window.location.href = "dashboard.html"; 
+                // Redireciona para o Painel de Controle
+                window.location.href = "dashboard_FB.html";
 
             } catch (erro) {
-                Swal.fire('Erro de Conexão', 'Falha ao conectar com o banco de dados.', 'error');
-                console.error("Erro no Login Firebase: ", erro);
-            }
-        };
-
-        // ==========================================
-        // REDEFINIÇÃO DE SENHA NO PRIMEIRO ACESSO
-        // ==========================================
-        window.tratarPrimeiroAcesso = function(mensagemDoServidor, dadosAuxiliares) {
-            Swal.fire({
-                title: '🔒 Primeiro Acesso',
-                text: mensagemDoServidor,
-                icon: 'info',
-                html: `
-                    <div style="text-align: left; font-size: 14px;">
-                        <label class="mt-2 fw-bold text-dark">Nova Senha:</label>
-                        <input type="password" id="swal-nova-senha" class="swal2-input" placeholder="Mínimo 8 caracteres">
-                        <label class="mt-2 fw-bold text-dark">Confirmar Nova Senha:</label>
-                        <input type="password" id="swal-conf-senha" class="swal2-input" placeholder="Repita a senha">
-                    </div>
-                `,
-                confirmButtonText: 'Gravar Nova Senha',
-                confirmButtonColor: '#198754',
-                allowOutsideClick: false,
-                preConfirm: () => {
-                    const s1 = document.getElementById('swal-nova-senha').value;
-                    const s2 = document.getElementById('swal-conf-senha').value;
-                    if (s1 !== s2) { Swal.showValidationMessage('As senhas não conferem!'); return false; }
-                    if (!/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,12}$/.test(s1)) {
-                        Swal.showValidationMessage('A senha é muito fraca (use maiúsculas, números e símbolos)!'); return false;
-                    }
-                    return s1;
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.enviarNovaSenha(dadosAuxiliares.idDoc, result.value);
-                }
-            });
-        };
-
-        window.enviarNovaSenha = async function(idDocumentoFirebase, novaSenha) {
-            Swal.fire({ title: 'A gravar no banco...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
-            
-            try {
-                const usuarioRef = doc(db, "usuarios", idDocumentoFirebase);
-                await updateDoc(usuarioRef, {
-                    senha_usuario: novaSenha,
-                    primeiro_acesso: false
-                });
-
-                Swal.fire('Sucesso!', 'Senha alterada. Faça login com a nova senha!', 'success').then(() => { 
-                    document.getElementById('senha_usuario').value = ''; 
-                });
-            } catch (erro) {
-                Swal.fire('Erro', 'Ocorreu um erro ao atualizar a senha.', 'error');
+                Swal.fire({ icon: 'error', title: 'Erro de Conexão', text: 'Falha ao conectar no banco de dados.' });
                 console.error(erro);
             }
+        };
+
+        window.recuperarSenha = function() {
+            Swal.fire({
+                title: 'Recuperar Acesso',
+                text: 'Contate o Administrador de TI da sua Regional para solicitar uma nova credencial.',
+                icon: 'warning',
+                confirmButtonText: 'ENTENDIDO'
+            });
         };
     </script>
 </body>

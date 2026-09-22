@@ -178,7 +178,6 @@
         </div>
     </div>
 
-    <!-- MOTOR FIREBASE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
         import { getFirestore, collection, query, where, getDocs, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
@@ -215,7 +214,6 @@
             try {
                 let q = collection(db, "rf_inscricoes");
                 
-                // Se não for ADMIN ou SME global, filtra pela unidade do usuário
                 if (ceuId !== "000000" && ceuId !== "999999") {
                     q = query(collection(db, "rf_inscricoes"), where("id_unidade", "==", String(ceuId)));
                 }
@@ -227,7 +225,6 @@
                     dadosGlobais.push({ id: docCrianca.id, ...docCrianca.data() });
                 });
 
-                // Ordena por nome em ordem alfabética
                 dadosGlobais.sort((a, b) => (a.nome_crianca || "").localeCompare(b.nome_crianca || ""));
 
                 document.getElementById('lbl-total').innerText = `${dadosGlobais.length} crianças registradas`;
@@ -250,15 +247,17 @@
             }
 
             lista.forEach(cri => {
-                // Monta as tags de características
+                // 🌟 AQUI ESTÃO TODAS AS TAGS AGORA!
                 let tags = '';
                 if (cri.inclusao === 'SIM') tags += `<span class="tag-info text-primary border-primary">♿ Inclusão</span>`;
                 if (cri.dieta_especial === 'SIM') tags += `<span class="tag-info text-warning border-warning" style="color: #b06000 !important;">🥗 Dieta</span>`;
+                if (cri.sozinho === 'SIM') tags += `<span class="tag-info text-success border-success" style="color: #146c2e !important;">🚶 Vai Sozinho</span>`;
+                if (cri.piscina === 'SIM') tags += `<span class="tag-info text-info border-info" style="color: #00639b !important;">🏊 Piscina</span>`;
                 if (cri.restricao_imagem === 'SIM') tags += `<span class="tag-info text-dark border-dark">📷 Rest. Imagem</span>`;
                 if (cri.abrigo && cri.abrigo !== 'NÃO' && cri.abrigo !== '-') tags += `<span class="tag-info text-danger border-danger">🏠 Abrigo</span>`;
+                
                 if (tags === '') tags = `<span class="text-muted" style="font-size: 11px;">Padrão</span>`;
 
-                // Status do botão imprimir
                 const isImprimir = (cri.imprimir === 'SIM');
                 const classeBtnImp = isImprimir ? 'sim' : 'nao';
                 const textoBtnImp = isImprimir ? 'SIM' : 'NÃO';
@@ -274,7 +273,6 @@
                         </td>
                         <td>${tags}</td>
                         <td class="text-center">
-                            <!-- 🪪 O TOGGLE MÁGICO DE IMPRESSÃO -->
                             <div class="btn-imprimir ${classeBtnImp}" onclick="toggleImprimir('${cri.id}', '${cri.imprimir}')">
                                 ${textoBtnImp}
                             </div>
@@ -288,17 +286,10 @@
             });
         }
 
-        // ==========================================
-        // 🔄 TOGGLE RÁPIDO DO CRACHÁ NO FIREBASE
-        // ==========================================
         window.toggleImprimir = async function(id, statusAtual) {
             const novoStatus = (statusAtual === 'SIM') ? 'NÃO' : 'SIM';
-            
             try {
-                // Atualiza no Firebase instantaneamente
                 await updateDoc(doc(db, "rf_inscricoes", id), { imprimir: novoStatus });
-                
-                // Atualiza a memória local e re-renderiza a tabela
                 const idx = dadosGlobais.findIndex(c => c.id === id);
                 if (idx > -1) {
                     dadosGlobais[idx].imprimir = novoStatus;
@@ -309,9 +300,6 @@
             }
         };
 
-        // ==========================================
-        // ✏️ EDIÇÃO COMPLETA DA CRIANÇA
-        // ==========================================
         window.abrirModalEdicao = function(id) {
             const cri = dadosGlobais.find(c => c.id === id);
             if (!cri) return;
@@ -329,7 +317,6 @@
             document.getElementById('edit_piscina').value = cri.piscina || 'SIM';
             document.getElementById('edit_rest_img').value = cri.restricao_imagem || 'NÃO';
             
-            // Corrige valores antigos de abrigo para SIM/NÃO padrão
             let valAbrigo = cri.abrigo || 'NÃO';
             if (valAbrigo !== 'NÃO' && valAbrigo !== 'NAO' && valAbrigo !== '-') valAbrigo = 'SIM';
             document.getElementById('edit_abrigo').value = valAbrigo;
@@ -367,8 +354,6 @@
 
             try {
                 await updateDoc(doc(db, "rf_inscricoes", id), dadosAtualizados);
-                
-                // Atualiza a memória local para não precisar recarregar a página inteira
                 const idx = dadosGlobais.findIndex(c => c.id === id);
                 if (idx > -1) {
                     dadosGlobais[idx] = { ...dadosGlobais[idx], ...dadosAtualizados };
@@ -384,9 +369,6 @@
             }
         };
 
-        // ==========================================
-        // 🗑️ EXCLUSÃO DA CRIANÇA
-        // ==========================================
         window.excluirCrianca = function(id) {
             const cri = dadosGlobais.find(c => c.id === id);
             
@@ -414,9 +396,6 @@
             });
         };
 
-        // ==========================================
-        // 🔍 FILTRO DE BUSCA LOCAL
-        // ==========================================
         window.filtrarTabela = function() {
             const texto = document.getElementById('iptBusca').value.toLowerCase();
             const filtrados = dadosGlobais.filter(c => {

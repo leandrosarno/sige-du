@@ -122,21 +122,32 @@
     <div class="page-break no-print" id="quebraPagina" style="display: none;"></div>
     <div id="containerPais" class="malha-impressao"></div>
 
-    <!-- MOTOR FIREBASE COM REGRAS E BATCH UPDATE -->
+    <!-- MOTOR FIREBASE INDEPENDENTE -->
     <script type="module">
-        import { db } from './firebase_config.js';
-        import { collection, query, where, getDocs, getDoc, doc, writeBatch } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+        import { getFirestore, collection, query, where, getDocs, getDoc, doc, writeBatch } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCpCXxJbD8dPXkT7mcoz4qK8Wjt7WTRwFA",
+            authDomain: "sig-edu.firebaseapp.com",
+            projectId: "sig-edu",
+            storageBucket: "sig-edu.firebasestorage.app",
+            messagingSenderId: "233239725278",
+            appId: "1:233239725278:web:809b9c42feacd99175ee4f"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
 
         const LOGO_PADRAO = "https://logodownload.org/wp-content/uploads/2014/11/prefeitura-sao-paulo-logo-1.png";
         
         let ceuId = "";
-        let nomeCeu = "";
+        let nomeCeu = "CEU NÃO IDENTIFICADO";
         let regrasSME = {};
         let filaImpressao = [];
 
         window.onload = async function() {
             ceuId = localStorage.getItem('sig_id_unidade') || "";
-            nomeCeu = localStorage.getItem('sig_nome_unidade') || "CEU NÃO IDENTIFICADO";
             
             if (!ceuId || ceuId === "000000") {
                 if (localStorage.getItem('sig_nivel_acesso')?.includes('ADMIN')) {
@@ -154,6 +165,14 @@
 
         async function carregarDados() {
             try {
+                // 🔍 Buscar o Nome Oficial do CEU
+                if (ceuId !== "999999") {
+                    const ceuSnap = await getDoc(doc(db, "unidades", String(ceuId)));
+                    if (ceuSnap.exists()) {
+                        nomeCeu = ceuSnap.data().nome_unidade;
+                    }
+                }
+
                 // 1. Puxar as Regras da SME
                 const regrasSnap = await getDoc(doc(db, "configuracoes", "regras_rf"));
                 if (regrasSnap.exists()) {
@@ -201,7 +220,7 @@
 
             const validarImg = (img) => (img && img !== "") ? img : "";
             
-            let logoRender = LOGO_PADRAO; // A prefeitura geralmente usa um padrão fixo se não houver um customizado
+            let logoRender = LOGO_PADRAO; 
             let periodoRF = `${regrasSME.mes}/${regrasSME.ano}` || "FÉRIAS";
 
             filaImpressao.forEach(cri => {
@@ -217,7 +236,7 @@
                 const corFaixaSoz = isSozinho ? regrasSME.cor_sozinho_sim : regrasSME.cor_sozinho_nao;
 
                 // Cor da Idade
-                let corIdade = regrasSME['c' + cri.idade] || '#e2e8f0'; // Default cinza se não tiver cor definida para aquela idade
+                let corIdade = regrasSME['c' + cri.idade] || '#e2e8f0'; 
 
                 // ==========================================
                 // 🧒 CRACHÁ DA CRIANÇA
@@ -319,7 +338,6 @@
             }
         }
 
-        // FUNÇÃO DE LIMPEZA COM WRITE BATCH (Múltiplas gravações em 1 comando)
         window.limparFila = async function() {
             const confirmacao = await Swal.fire({
                 title: 'Tem certeza?',

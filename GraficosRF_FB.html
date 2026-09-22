@@ -6,108 +6,140 @@
   <title>Gráficos - Recreio nas Férias</title>
   
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <!-- ÍCONES VAZADOS E FINOS -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script src="config.js"></script>
+  
   <style>
-    body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    .card-kpi { border: none; border-radius: 12px; transition: 0.3s; }
-    .card-kpi:hover { transform: translateY(-3px); }
-    .kpi-icon { width: 50px; height: 50px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
-    .card-chart { border: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    body { background-color: #ffffff; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; color: #1f1f1f; }
+    
+    .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        vertical-align: middle;
+    }
+
+    .header-title { font-size: 20px; font-weight: 600; color: #1f1f1f; display: flex; align-items: center; gap: 8px; margin: 0; }
+    
+    /* CARTÕES KPI */
+    .card-kpi { border: 1px solid #e3e3e3; border-radius: 16px; transition: transform 0.2s, background 0.2s; background: #ffffff; box-shadow: none; }
+    .card-kpi:hover { background: #f8f9fa; transform: translateY(-3px); }
+    .kpi-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+    .kpi-icon .material-symbols-outlined { font-size: 28px; font-variation-settings: 'FILL' 1; }
+    
+    /* CARTÕES GRÁFICOS */
+    .card-chart { border: 1px solid #e3e3e3; border-radius: 16px; box-shadow: none; background: #ffffff; padding: 20px; }
+    .card-chart h6 { color: #444746; font-size: 14px; font-weight: 600; margin-bottom: 20px; display: flex; align-items: center; gap: 6px; }
     .chart-container { position: relative; height: 300px; width: 100%; }
+
+    /* FILTROS */
+    .form-select { border-radius: 8px; border-color: #cbd5e1; font-size: 13px; color: #444746; font-weight: 500; }
+    .form-select:focus { border-color: #0b57d0; box-shadow: none; }
+    .btn-update { border-radius: 50px; padding: 6px 16px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
   </style>
 </head>
-<body class="p-3">
+<body class="p-4">
 
   <div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex justify-content-between align-items-center mb-4">
       <div>
-        <h4 class="fw-bold text-primary m-0"><i class="fa-solid fa-chart-pie me-2"></i>Estatísticas - Recreio nas Férias</h4>
-        <small class="text-muted">Acompanhamento de matriculados e indicadores em tempo real</small>
+        <h4 class="header-title"><span class="material-symbols-outlined text-primary">pie_chart</span> Estatísticas - Recreio nas Férias</h4>
+        <small class="text-muted" style="margin-left: 32px;">Acompanhamento de matrículas e indicadores em tempo real</small>
       </div>
-      <button class="btn btn-primary btn-sm fw-bold shadow-sm" onclick="carregarDados()">
-        <i class="fa-solid fa-rotate me-1"></i> Atualizar Dados
+      <button class="btn btn-primary btn-update shadow-sm" onclick="carregarDados()">
+        <span class="material-symbols-outlined" style="font-size: 18px;">sync</span> Atualizar Dados
       </button>
     </div>
 
-    <div class="card card-chart mb-4 p-3 bg-white">
-      <div class="row g-2 align-items-center">
-        <div class="col-md-1 text-muted fw-bold"><i class="fa-solid fa-filter me-1"></i> Filtros:</div>
+    <!-- PAINEL DE FILTROS -->
+    <div class="card card-chart mb-4 bg-light" style="padding: 15px;">
+      <div class="row g-3 align-items-center">
+        <div class="col-md-2 text-muted fw-bold" style="font-size: 13px;">
+            <span class="material-symbols-outlined" style="font-size: 18px;">filter_alt</span> FILTROS:
+        </div>
         
         <div class="col-md-3">
-          <select id="filtroTurma" class="form-select form-select-sm fw-bold" onchange="processarEDesenhar()">
+          <select id="filtroTurma" class="form-select" onchange="processarEDesenhar()">
             <option value="TODAS">Todas as Turmas</option>
           </select>
         </div>
 
         <div class="col-md-3">
-          <select id="filtroIdade" class="form-select form-select-sm fw-bold" onchange="processarEDesenhar()">
+          <select id="filtroIdade" class="form-select" onchange="processarEDesenhar()">
             <option value="TODAS">Todas as Idades</option>
           </select>
         </div>
 
-        <div class="col-md-3">
-          <select id="filtroAbrigo" class="form-select form-select-sm fw-bold" onchange="processarEDesenhar()">
-            <option value="TODOS">Todas as Origens (Abrigo/Comunidade)</option>
-            <option value="ABRIGO">Apenas Crianças de Abrigo</option>
+        <div class="col-md-2">
+          <select id="filtroAbrigo" class="form-select" onchange="processarEDesenhar()">
+            <option value="TODOS">Todas as Origens</option>
+            <option value="ABRIGO">Apenas Abrigo</option>
             <option value="COMUNIDADE">Apenas Comunidade</option>
           </select>
         </div>
 
         <div class="col-md-2 text-end">
-          <button class="btn btn-outline-secondary btn-sm w-100 fw-bold" onclick="resetarFiltros()">Limpar Filtros</button>
+          <button class="btn btn-outline-secondary btn-sm w-100 fw-bold" style="border-radius: 8px; height: 34px;" onclick="resetarFiltros()">Limpar Filtros</button>
         </div>
       </div>
     </div>
 
+    <!-- INDICADORES (KPIs) -->
     <div class="row g-3 mb-4">
       <div class="col-md-3">
-        <div class="card card-kpi bg-white shadow-sm p-3 d-flex flex-row align-items-center">
-          <div class="kpi-icon bg-primary text-white me-3"><i class="fa-solid fa-children"></i></div>
+        <div class="card card-kpi p-3 d-flex flex-row align-items-center">
+          <div class="kpi-icon me-3" style="background-color: #d3e3fd; color: #0b57d0;">
+              <span class="material-symbols-outlined">child_care</span>
+          </div>
           <div>
-            <small class="text-muted fw-bold">TOTAL MATRICULADOS</small>
-            <h3 class="fw-bold m-0 text-primary" id="kpiTotal">0</h3>
+            <small class="text-muted fw-bold" style="font-size: 11px;">TOTAL MATRICULADOS</small>
+            <h3 class="fw-bold m-0" style="color: #0b57d0;" id="kpiTotal">0</h3>
           </div>
         </div>
       </div>
 
       <div class="col-md-3">
-        <div class="card card-kpi bg-white shadow-sm p-3 d-flex flex-row align-items-center">
-          <div class="kpi-icon bg-info text-white me-3"><i class="fa-solid fa-wheelchair"></i></div>
+        <div class="card card-kpi p-3 d-flex flex-row align-items-center">
+          <div class="kpi-icon me-3" style="background-color: #c2e7ff; color: #00639b;">
+              <span class="material-symbols-outlined">accessible</span>
+          </div>
           <div>
-            <small class="text-muted fw-bold">INCLUSÃO (PCD)</small>
-            <h3 class="fw-bold m-0 text-info" id="kpiInclusao">0</h3>
+            <small class="text-muted fw-bold" style="font-size: 11px;">INCLUSÃO (PCD)</small>
+            <h3 class="fw-bold m-0" style="color: #00639b;" id="kpiInclusao">0</h3>
           </div>
         </div>
       </div>
 
       <div class="col-md-3">
-        <div class="card card-kpi bg-white shadow-sm p-3 d-flex flex-row align-items-center">
-          <div class="kpi-icon bg-warning text-dark me-3"><i class="fa-solid fa-utensils"></i></div>
+        <div class="card card-kpi p-3 d-flex flex-row align-items-center">
+          <div class="kpi-icon me-3" style="background-color: #fef7e0; color: #b06000;">
+              <span class="material-symbols-outlined">restaurant</span>
+          </div>
           <div>
-            <small class="text-muted fw-bold">DIETA ESPECIAL</small>
-            <h3 class="fw-bold m-0 text-warning" id="kpiDieta">0</h3>
+            <small class="text-muted fw-bold" style="font-size: 11px;">DIETA ESPECIAL</small>
+            <h3 class="fw-bold m-0" style="color: #b06000;" id="kpiDieta">0</h3>
           </div>
         </div>
       </div>
 
       <div class="col-md-3">
-        <div class="card card-kpi bg-white shadow-sm p-3 d-flex flex-row align-items-center">
-          <div class="kpi-icon bg-success text-white me-3"><i class="fa-solid fa-person-walking"></i></div>
+        <div class="card card-kpi p-3 d-flex flex-row align-items-center">
+          <div class="kpi-icon me-3" style="background-color: #c4eed0; color: #146c2e;">
+              <span class="material-symbols-outlined">directions_walk</span>
+          </div>
           <div>
-            <small class="text-muted fw-bold">VAI DESACOMPANHADO</small>
-            <h3 class="fw-bold m-0 text-success" id="kpiSozinho">0</h3>
+            <small class="text-muted fw-bold" style="font-size: 11px;">VAI DESACOMPANHADO</small>
+            <h3 class="fw-bold m-0" style="color: #146c2e;" id="kpiSozinho">0</h3>
           </div>
         </div>
       </div>
     </div>
 
+    <!-- GRÁFICOS -->
     <div class="row g-3">
       <div class="col-md-6">
-        <div class="card card-chart p-3">
-          <h6 class="fw-bold text-dark mb-3"><i class="fa-solid fa-chart-column me-2 text-primary"></i>Crianças por Idade</h6>
+        <div class="card card-chart">
+          <h6><span class="material-symbols-outlined text-primary">bar_chart</span> Distribuição por Idade</h6>
           <div class="chart-container">
             <canvas id="chartIdade"></canvas>
           </div>
@@ -115,8 +147,8 @@
       </div>
 
       <div class="col-md-6">
-        <div class="card card-chart p-3">
-          <h6 class="fw-bold text-dark mb-3"><i class="fa-solid fa-users-rectangle me-2 text-primary"></i>Crianças por Turma</h6>
+        <div class="card card-chart">
+          <h6><span class="material-symbols-outlined" style="color: #65558f;">groups</span> Matrículas por Turma</h6>
           <div class="chart-container">
             <canvas id="chartTurma"></canvas>
           </div>
@@ -124,8 +156,8 @@
       </div>
 
       <div class="col-md-6">
-        <div class="card card-chart p-3">
-          <h6 class="fw-bold text-dark mb-3"><i class="fa-solid fa-list-check me-2 text-primary"></i>Indicadores de Saúde e Segurança</h6>
+        <div class="card card-chart">
+          <h6><span class="material-symbols-outlined" style="color: #b3261e;">fact_check</span> Indicadores de Saúde e Regras</h6>
           <div class="chart-container">
             <canvas id="chartIndicadores"></canvas>
           </div>
@@ -133,8 +165,8 @@
       </div>
 
       <div class="col-md-6">
-        <div class="card card-chart p-3">
-          <h6 class="fw-bold text-dark mb-3"><i class="fa-solid fa-house-chimney-user me-2 text-primary"></i>Distribuição Abrigo / Comunidade</h6>
+        <div class="card card-chart">
+          <h6><span class="material-symbols-outlined" style="color: #fd7e14;">roofing</span> Origem: Abrigo / Comunidade</h6>
           <div class="chart-container">
             <canvas id="chartAbrigo"></canvas>
           </div>
@@ -143,43 +175,55 @@
     </div>
   </div>
 
-  <script>
-/*    const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec"; */
-    const idPlanilhaAtiva = localStorage.getItem('ceu_planilha_id');
+  <!-- MOTOR FIREBASE -->
+  <script type="module">
+    import { db } from './firebase_config.js';
+    import { collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
     let dadosBrutosGlobal = [];
     let instanciasGraficos = {};
+    let ceuId = "";
 
     window.onload = function() {
-      carregarDados();
+      ceuId = localStorage.getItem('sig_id_unidade') || "";
+      if (!ceuId) {
+          Swal.fire('Erro', 'Unidade não identificada. Faça login novamente.', 'error');
+          return;
+      }
+      window.carregarDados();
     };
 
-    async function carregarDados() {
-      if (!idPlanilhaAtiva) {
-        Swal.fire('Erro', 'Unidade não identificada.', 'error');
-        return;
-      }
-
-      Swal.fire({ title: 'Carregando Estatísticas...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-
-      const pacote = { acao: "carregarCriancasRF", dados: { idPlanilha: idPlanilhaAtiva } };
+    window.carregarDados = async function() {
+      Swal.fire({ title: 'Analisando Dados...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
       try {
-        const resRaw = await fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) });
-        const res = await resRaw.json();
+        let q = collection(db, "rf_inscricoes");
+        
+        // Se não for ADMIN(999999) ou SME(000000), filtra apenas as crianças da unidade logada
+        if (ceuId !== "000000" && ceuId !== "999999") {
+            q = query(collection(db, "rf_inscricoes"), where("id_unidade", "==", String(ceuId)));
+        }
+
+        const snap = await getDocs(q);
+        dadosBrutosGlobal = [];
+        
+        snap.forEach(doc => {
+            dadosBrutosGlobal.push(doc.data());
+        });
+
         Swal.close();
 
-        if (res.sucesso) {
-          dadosBrutosGlobal = res.criancas || [];
-          preencherOpcoesFiltros();
-          processarEDesenhar();
+        if (dadosBrutosGlobal.length > 0) {
+            preencherOpcoesFiltros();
+            window.processarEDesenhar();
         } else {
-          Swal.fire('Atenção', res.erro || 'Falha ao buscar dados da planilha.', 'warning');
+            Swal.fire('Vazio', 'Nenhum registro encontrado para esta unidade.', 'info');
         }
       } catch (e) {
-        Swal.fire('Erro', 'Falha na conexão com o servidor.', 'error');
+        console.error(e);
+        Swal.fire('Erro', 'Falha na conexão com o Banco de Dados.', 'error');
       }
-    }
+    };
 
     function preencherOpcoesFiltros() {
       const selectTurma = document.getElementById('filtroTurma');
@@ -191,23 +235,23 @@
       const turmasUnicas = [...new Set(dadosBrutosGlobal.map(c => c.turma).filter(t => t))].sort();
       const idadesUnicas = [...new Set(dadosBrutosGlobal.map(c => Number(c.idade)).filter(i => !isNaN(i)))].sort((a, b) => a - b);
 
-      turmasUnicas.forEach(t => selectTurma.innerHTML += `<option value="${t}">${t}</option>`);
+      turmasUnicas.forEach(t => selectTurma.innerHTML += `<option value="${t}">Turma ${t}</option>`);
       idadesUnicas.forEach(i => selectIdade.innerHTML += `<option value="${i}">${i} anos</option>`);
     }
 
-    function resetarFiltros() {
+    window.resetarFiltros = function() {
       document.getElementById('filtroTurma').value = 'TODAS';
       document.getElementById('filtroIdade').value = 'TODAS';
       document.getElementById('filtroAbrigo').value = 'TODOS';
-      processarEDesenhar();
-    }
+      window.processarEDesenhar();
+    };
 
-    function processarEDesenhar() {
+    window.processarEDesenhar = function() {
       const fTurma = document.getElementById('filtroTurma').value;
       const fIdade = document.getElementById('filtroIdade').value;
       const fAbrigo = document.getElementById('filtroAbrigo').value;
 
-      // Filtragem dinâmica instantânea!
+      // FILTRAGEM INSTANTÂNEA NA MEMÓRIA DO NAVEGADOR
       const filtrados = dadosBrutosGlobal.filter(c => {
         let baterTurma = (fTurma === 'TODAS' || c.turma === fTurma);
         let baterIdade = (fIdade === 'TODAS' || String(c.idade) === fIdade);
@@ -216,10 +260,10 @@
         return baterTurma && baterIdade && baterAbrigo;
       });
 
-      // Atualiza KPIs
+      // Atualiza KPIs com os Nomes de Variáveis do Firebase
       document.getElementById('kpiTotal').innerText = filtrados.length;
       document.getElementById('kpiInclusao').innerText = filtrados.filter(c => c.inclusao === 'SIM').length;
-      document.getElementById('kpiDieta').innerText = filtrados.filter(c => c.dieta === 'SIM').length;
+      document.getElementById('kpiDieta').innerText = filtrados.filter(c => c.dieta_especial === 'SIM').length;
       document.getElementById('kpiSozinho').innerText = filtrados.filter(c => c.sozinho === 'SIM').length;
 
       // Desenha Gráficos
@@ -227,7 +271,7 @@
       desenharGraficoTurma(filtrados);
       desenharGraficoIndicadores(filtrados);
       desenharGraficoAbrigo(filtrados);
-    }
+    };
 
     // 📈 GRÁFICO 1: IDADES
     function desenharGraficoIdade(lista) {
@@ -238,9 +282,10 @@
       });
 
       renderChart('chartIdade', 'bar', Object.keys(contagem), [{
-        label: 'Crianças',
+        label: 'Matriculados',
         data: Object.values(contagem),
-        backgroundColor: '#0d6efd'
+        backgroundColor: '#0b57d0',
+        borderRadius: 4
       }]);
     }
 
@@ -255,22 +300,24 @@
       renderChart('chartTurma', 'bar', Object.keys(contagem), [{
         label: 'Matriculados',
         data: Object.values(contagem),
-        backgroundColor: '#6f42c1'
+        backgroundColor: '#65558f',
+        borderRadius: 4
       }]);
     }
 
-    // 📈 GRÁFICO 3: INDICADORES ESPECIAIS
+    // 📈 GRÁFICO 3: INDICADORES ESPECIAIS (Variáveis Firebase)
     function desenharGraficoIndicadores(lista) {
       const piscina = lista.filter(c => c.piscina === 'SIM').length;
-      const dieta = lista.filter(c => c.dieta === 'SIM').length;
+      const dieta = lista.filter(c => c.dieta_especial === 'SIM').length;
       const sozinho = lista.filter(c => c.sozinho === 'SIM').length;
       const inclusao = lista.filter(c => c.inclusao === 'SIM').length;
-      const restImg = lista.filter(c => c.restImg === 'SIM').length;
+      const restImg = lista.filter(c => c.restricao_imagem === 'SIM').length;
 
-      renderChart('chartIndicadores', 'bar', ['Piscina 🏊', 'Dieta 🥗', 'Desacompanhado 🚶', 'Inclusão ♿', 'Restr. Imagem 📸'], [{
+      renderChart('chartIndicadores', 'bar', ['Usa Piscina', 'Dieta', 'Desacompanhado', 'Inclusão', 'Restr. Imagem'], [{
         label: 'Total de Crianças',
         data: [piscina, dieta, sozinho, inclusao, restImg],
-        backgroundColor: ['#198754', '#ffc107', '#0dcaf0', '#0d6efd', '#212529']
+        backgroundColor: ['#146c2e', '#b06000', '#00639b', '#0b57d0', '#444746'],
+        borderRadius: 4
       }], { indexAxis: 'y' });
     }
 
@@ -281,11 +328,12 @@
 
       renderChart('chartAbrigo', 'doughnut', ['Comunidade', 'Abrigo'], [{
         data: [comunidade, abrigo],
-        backgroundColor: ['#0d6efd', '#fd7e14']
+        backgroundColor: ['#0b57d0', '#fd7e14'],
+        hoverOffset: 4
       }]);
     }
 
-    // Helper Universal para destruir e re-criar o gráfico sem sobrepor telas
+    // 🛠️ MOTOR UNIVERSAL DE GRÁFICOS (Destrói o antigo antes de desenhar o novo)
     function renderChart(canvasId, type, labels, datasets, extraOptions = {}) {
       if (instanciasGraficos[canvasId]) {
         instanciasGraficos[canvasId].destroy();
@@ -298,11 +346,17 @@
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: { legend: { display: type === 'doughnut' } },
+          plugins: { 
+              legend: { display: type === 'doughnut', position: 'bottom' } 
+          },
+          scales: type === 'doughnut' ? {} : {
+              x: { grid: { display: false } },
+              y: { beginAtZero: true, grid: { borderDash: [4, 4] } }
+          },
           ...extraOptions
         }
       });
     }
   </script>
 </body>
-</html>v
+</html>

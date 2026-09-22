@@ -7,7 +7,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="config.js"></script>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; }
         .cabecalho-chamada { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; }
@@ -33,45 +32,49 @@
         #cabecalho-impressao { display: none; text-align: center; margin-bottom: 20px; }
         #cabecalho-impressao h2 { margin: 0; font-size: 20px; font-weight: bold; text-transform: uppercase; }
         #cabecalho-impressao p { margin: 5px 0 0 0; font-size: 14px; }
+        #area-bloqueada { text-align: center; margin-top: 100px; color: #dc3545; display: none; }
 
-/* 🖨️ A MÁGICA DA IMPRESSÃO A4 */
+        /* 🖨️ A MÁGICA DA IMPRESSÃO A4 */
         @media print {
             @page { size: A4 landscape; margin: 10mm; }
             body { background-color: white; margin: 0; padding: 0; }
-            .cabecalho-chamada { display: none !important; } /* Some com os botões e selects */
-            #cabecalho-impressao { display: block !important; } /* Mostra o cabeçalho oficial */
+            .cabecalho-chamada { display: none !important; }
+            #cabecalho-impressao { display: block !important; }
             .tabela-container { box-shadow: none; border: none; overflow: visible; }
             table { min-width: 100%; }
             th { background-color: #e9ecef !important; color: black !important; -webkit-print-color-adjust: exact; position: static; }
             .col-nome { position: static !important; box-shadow: none !important; }
-            
-            /* 🌟 A CORREÇÃO DO RODAPÉ AQUI: Forçando fundo cinza claro e letra preta nas células */
             .rodape-totais, .rodape-totais td { background-color: #f1f3f5 !important; color: black !important; -webkit-print-color-adjust: exact; }
-            
-            .input-freq { color: black !important; } /* Letras pretas para economizar tinta */
+            .input-freq { color: black !important; }
         }
     </style>
 </head>
 <body>
-    <div class="container-fluid py-4">
+    <div id="area-bloqueada">
+        <i class="fas fa-lock" style="font-size: 80px;"></i>
+        <h1 style="font-weight: 900; margin-top: 20px;">ACESSO RESTRITO</h1>
+        <p>Apenas funcionários das Unidades CEU podem fazer o preenchimento da chamada.</p>
+    </div>
+
+    <div class="container-fluid py-4" id="area-sistema" style="display: none;">
         
         <!-- CABEÇALHO PARA IMPRESSORA -->
         <div id="cabecalho-impressao">
             <h2>Chamada Qualitativa - Recreio nas Férias</h2>
             <p><strong>Idade:</strong> <span id="print-idade">Não informada</span> | <strong>Agente Recreador:</strong> <span id="print-agente">Não informado</span></p>
+            <p><strong>Unidade:</strong> <span id="print-ceu">CEU</span></p>
         </div>
 
         <!-- CABEÇALHO DO SISTEMA -->
         <div class="cabecalho-chamada d-flex justify-content-between align-items-center flex-wrap gap-3">
             <div>
                 <h4 class="text-primary fw-bold mb-1"><i class="fas fa-clipboard-list"></i> Chamada Qualitativa</h4>
-                <div class="text-muted small" id="lbl-info-ceu">Recreio nas Férias</div>
+                <div class="text-muted small fw-bold" id="lbl-info-ceu">CEU NÃO IDENTIFICADO</div>
             </div>
             
             <div class="d-flex align-items-end gap-3 flex-grow-1" style="max-width: 700px;">
                 <div class="flex-grow-1">
                     <label class="form-label small fw-bold text-muted mb-1">Agente Recreador</label>
-                    <!-- 🌟 O oninput AQUI FAZ A MÁGICA DA SINCRONIA EM TEMPO REAL -->
                     <input type="text" class="form-control" id="txt-agente" placeholder="Nome do Agente" oninput="document.getElementById('print-agente').innerText = this.value || 'Não informado';">
                 </div>
                 <div style="width: 120px;">
@@ -97,16 +100,40 @@
         </div>
 
         <div class="tabela-container" id="area-tabela" style="display: none;"></div>
-
     </div>
 
-    <script>
+    <!-- MOTOR FIREBASE -->
+    <script type="module">
+        import { db } from './firebase_config.js';
+        import { collection, query, where, getDocs, getDoc, doc, writeBatch } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+
         let matrizDias = [];
+        let listaCriancasGlobal = [];
+        let ceuId = "";
 
-        async function carregarChamada() {
+        window.onload = async function() {
+            ceuId = localStorage.getItem('sig_id_unidade') || "";
+            const ceuNome = localStorage.getItem('sig_nome_unidade') || "CEU Desconhecido";
+            
+            if (!ceuId || ceuId === "000000") {
+                if (localStorage.getItem('sig_nivel_acesso')?.includes('ADMIN')) {
+                    ceuId = "999999"; 
+                    document.getElementById('lbl-info-ceu').innerText = "CEU TESTE ADMIN - Recreio nas Férias";
+                    document.getElementById('print-ceu').innerText = "CEU TESTE ADMIN";
+                } else {
+                    document.getElementById('area-bloqueada').style.display = 'block';
+                    return;
+                }
+            } else {
+                document.getElementById('lbl-info-ceu').innerText = `${ceuNome.toUpperCase()} - Recreio nas Férias`;
+                document.getElementById('print-ceu').innerText = ceuNome.toUpperCase();
+            }
+
+            document.getElementById('area-sistema').style.display = 'block';
+        };
+
+        window.carregarChamada = async function() {
             const idade = document.getElementById('sel-idade').value;
-            const idPlanilha = localStorage.getItem('ceu_planilha_id');
-
             if (!idade) {
                 Swal.fire('Atenção', 'Selecione uma idade.', 'warning'); return;
             }
@@ -115,36 +142,86 @@
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
             btn.disabled = true;
 
-            const pacote = {
-                acao: "buscarDadosChamadaQualitativa",
-                dados: { idPlanilha: idPlanilha, idade: idade }
-            };
-
             try {
-                const req = await fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) });
-                const res = await req.json();
+                // 1. PUXAR DATAS DA COLEÇÃO REGRAS (SME)
+                const docRegras = await getDoc(doc(db, "configuracoes", "regras_rf"));
+                if (!docRegras.exists()) {
+                    Swal.fire('Atenção', 'A SME ainda não configurou as regras globais e datas do Recreio.', 'warning');
+                    btn.innerHTML = '<i class="fas fa-search"></i> Carregar'; btn.disabled = false;
+                    return;
+                }
 
-                if (res.sucesso) {
-                    matrizDias = res.dias;
-                    renderizarTabela(res.criancas, res.dias);
-                    document.getElementById('area-tabela').style.display = 'block';
-                    document.getElementById('btn-salvar').style.display = 'inline-block'; 
-                    document.getElementById('btn-imprimir').style.display = 'inline-block'; 
-                } else {
-                    Swal.fire('Ops!', res.erro, 'info');
+                let dIniStr = docRegras.data().diaIni;
+                let dFimStr = docRegras.data().diaFim;
+                
+                if(!dIniStr || !dFimStr) {
+                    Swal.fire('Atenção', 'As datas de Início e Fim do programa não estão configuradas na matriz SME.', 'warning');
+                    btn.innerHTML = '<i class="fas fa-search"></i> Carregar'; btn.disabled = false;
+                    return;
+                }
+
+                // MONTAR ESTRUTURA DE DIAS
+                matrizDias = [];
+                let dataAtual = new Date(dIniStr + "T00:00:00");
+                let dataFim = new Date(dFimStr + "T00:00:00");
+                
+                while(dataAtual <= dataFim) {
+                    let diaF = ("0" + dataAtual.getDate()).slice(-2) + "/" + ("0" + (dataAtual.getMonth() + 1)).slice(-2);
+                    let strComparacao = dataAtual.toISOString().substring(0, 10); // "YYYY-MM-DD"
+                    matrizDias.push({ formato: diaF, iso: strComparacao });
+                    dataAtual.setDate(dataAtual.getDate() + 1);
+                }
+
+                // 2. PUXAR AS CRIANÇAS DESTE CEU E DESTA IDADE
+                const qCriancas = query(
+                    collection(db, "rf_inscricoes"),
+                    where("id_unidade", "==", String(ceuId)),
+                    where("idade", "==", parseInt(idade))
+                );
+
+                const snapCriancas = await getDocs(qCriancas);
+                listaCriancasGlobal = [];
+
+                snapCriancas.forEach(d => {
+                    let c = d.data();
+                    listaCriancasGlobal.push({
+                        id: d.id,
+                        nome: c.nome_crianca || "",
+                        turma: c.turma || "",
+                        dataMat: c.data_matricula || "",
+                        // O Firebase vai trazer um objeto 'frequencias': { '15/01': 'P', '16/01': 'F' }
+                        frequencias: c.frequencias || {}
+                    });
+                });
+
+                // Ordena por turma e depois por nome
+                listaCriancasGlobal.sort((a, b) => {
+                    if(a.turma !== b.turma) return a.turma.localeCompare(b.turma);
+                    return a.nome.localeCompare(b.nome);
+                });
+
+                if (listaCriancasGlobal.length === 0) {
+                    Swal.fire('Poxa...', 'Nenhuma criança de ' + idade + ' anos foi matriculada ainda.', 'info');
                     document.getElementById('area-tabela').style.display = 'none';
                     document.getElementById('btn-salvar').style.display = 'none';
                     document.getElementById('btn-imprimir').style.display = 'none';
+                } else {
+                    renderizarTabela(listaCriancasGlobal, matrizDias);
+                    document.getElementById('area-tabela').style.display = 'block';
+                    document.getElementById('btn-salvar').style.display = 'inline-block'; 
+                    document.getElementById('btn-imprimir').style.display = 'inline-block'; 
                 }
-            } catch (e) {
-                Swal.fire('Erro', 'Falha na comunicação.', 'error');
+
+            } catch (error) {
+                console.error("Erro ao puxar chamada:", error);
+                Swal.fire('Erro', 'Falha ao buscar dados no Firebase.', 'error');
             } finally {
                 btn.innerHTML = '<i class="fas fa-search"></i> Carregar';
                 btn.disabled = false;
             }
-        }
+        };
 
-function renderizarTabela(criancas, dias) {
+        function renderizarTabela(criancas, dias) {
             let html = `<table><thead><tr>
                 <th>TURMA</th>
                 <th class="col-nome" style="background-color: #2c3e50; color: white;">NOME DA CRIANÇA</th>`;
@@ -154,22 +231,28 @@ function renderizarTabela(criancas, dias) {
 
             criancas.forEach((c, idx) => {
                 let badgeIngresso = "";
-                if (c.dataMatPura > dias[0].dataReal) {
-                    badgeIngresso = `<span class="texto-ingresso">(Ingresso: ${c.dataMatStr})</span>`;
+                let strDataMat = c.dataMat.substring(0, 10); // "YYYY-MM-DD"
+                
+                // Se a criança foi matriculada DEPOIS do primeiro dia do programa
+                if (strDataMat > dias[0].iso) {
+                    let dm = new Date(c.dataMat);
+                    let formatada = ("0" + dm.getDate()).slice(-2) + "/" + ("0" + (dm.getMonth() + 1)).slice(-2);
+                    badgeIngresso = `<span class="texto-ingresso" title="Entrou atrasada">(Ingresso: ${formatada})</span>`;
                 }
 
-                html += `<tr data-idx="${idx}" data-id="${c.idCrianca}" data-mat="${c.dataMatStr}">
+                html += `<tr data-idx="${idx}" data-id="${c.id}" data-mat="${strDataMat}">
                     <td class="col-turma">${c.turma}</td>
                     <td class="col-nome">${c.nome} ${badgeIngresso}</td>`;
 
                 dias.forEach((d, diaIdx) => {
-                    let bloqueado = (d.dataReal < c.dataMatPura) ? 'dia-bloqueado readonly' : '';
-                    let visual = (d.dataReal < c.dataMatPura) ? 'background-color: #e9ecef;' : '';
+                    // Bloqueia digitação nos dias em que a criança ainda não existia no sistema
+                    let bloqueado = (d.iso < strDataMat) ? 'dia-bloqueado readonly tabindex="-1"' : '';
+                    let visual = (d.iso < strDataMat) ? 'background-color: #e9ecef;' : '';
                     let freqSalva = c.frequencias[d.formato] || ""; 
                     let corTexto = freqSalva === 'P' ? 'color: #198754;' : (freqSalva === 'F' ? 'color: #dc3545;' : '');
 
                     html += `<td style="padding: 0; ${visual}">
-                        <input type="text" class="input-freq ${bloqueado}" maxlength="1" data-dia="${diaIdx}" oninput="validarDigito(this)" value="${freqSalva}" style="${corTexto}">
+                        <input type="text" class="input-freq ${bloqueado}" maxlength="1" data-dia="${diaIdx}" data-formato="${d.formato}" oninput="validarDigito(this)" value="${freqSalva}" style="${corTexto}">
                     </td>`;
                 });
 
@@ -177,20 +260,28 @@ function renderizarTabela(criancas, dias) {
                          <td class="totais-aluno text-danger" id="tot-f-${idx}">0</td></tr>`;
             });
 
-            // 🌟 O NOVO RODAPÉ COM AS CAIXINHAS DE TOTAL GERAL
+            // RODAPÉ COM TOTAIS
             html += `<tr class="rodape-totais"><td colspan="2" style="text-align: right; background-color: #1a252f;">TOTAL NO DIA / GERAL:</td>`;
             dias.forEach((d, diaIdx) => { html += `<td id="tot-dia-${diaIdx}">0</td>`; });
             html += `<td id="tot-geral-p" style="background-color: #1a252f; color: #198754; font-size: 16px;">0</td>
                      <td id="tot-geral-f" style="background-color: #1a252f; color: #dc3545; font-size: 16px;">0</td></tr></tbody></table>`;
             
             document.getElementById('area-tabela').innerHTML = html;
-            recalcularTudo();
+            window.recalcularTudo();
         }
 
-        function recalcularTudo() {
+        window.validarDigito = function(input) {
+            let valor = input.value.toUpperCase();
+            if (valor !== 'P' && valor !== 'F') { input.value = ''; } 
+            else { 
+                input.value = valor;
+                input.style.color = valor === 'P' ? '#198754' : '#dc3545';
+            }
+            window.recalcularTudo();
+        };
+
+        window.recalcularTudo = function() {
             let totalPresencasGeral = Array(matrizDias.length).fill(0);
-            
-            // 🌟 VARIÁVEIS PARA ARMAZENAR O TOTAL GERAL DA TURMA
             let somaGeralP = 0;
             let somaGeralF = 0;
             
@@ -211,7 +302,6 @@ function renderizarTabela(criancas, dias) {
                 document.getElementById(`tot-p-${idxLinha}`).innerText = p;
                 document.getElementById(`tot-f-${idxLinha}`).innerText = f;
                 
-                // 🌟 SOMA OS RESULTADOS DO ALUNO NO MONTANTE GERAL
                 somaGeralP += p;
                 somaGeralF += f;
             });
@@ -220,145 +310,64 @@ function renderizarTabela(criancas, dias) {
                 document.getElementById(`tot-dia-${diaIdx}`).innerText = totalPresencasGeral[diaIdx];
             });
             
-            // 🌟 EXIBE O MONTANTE GERAL NAS NOVAS CAIXINHAS DO RODAPÉ
             document.getElementById('tot-geral-p').innerText = somaGeralP;
             document.getElementById('tot-geral-f').innerText = somaGeralF;
-        }
+        };
 
-
-
-
-
-        
-/*
-        function renderizarTabela(criancas, dias) {
-            let html = `<table><thead><tr>
-                <th>TURMA</th>
-                <th class="col-nome" style="background-color: #2c3e50; color: white;">NOME DA CRIANÇA</th>`;
-            
-            dias.forEach(d => { html += `<th>${d.formato}</th>`; });
-            html += `<th>PRES. (P)</th><th>FALTAS (F)</th></tr></thead><tbody>`;
-
-            criancas.forEach((c, idx) => {
-                let badgeIngresso = "";
-                if (c.dataMatPura > dias[0].dataReal) {
-                    badgeIngresso = `<span class="texto-ingresso">(Ingresso: ${c.dataMatStr})</span>`;
-                }
-
-                html += `<tr data-idx="${idx}" data-id="${c.idCrianca}" data-mat="${c.dataMatStr}">
-                    <td class="col-turma">${c.turma}</td>
-                    <td class="col-nome">${c.nome} ${badgeIngresso}</td>`;
-
-                dias.forEach((d, diaIdx) => {
-                    let bloqueado = (d.dataReal < c.dataMatPura) ? 'dia-bloqueado readonly' : '';
-                    let visual = (d.dataReal < c.dataMatPura) ? 'background-color: #e9ecef;' : '';
-                    let freqSalva = c.frequencias[d.formato] || ""; 
-                    let corTexto = freqSalva === 'P' ? 'color: #198754;' : (freqSalva === 'F' ? 'color: #dc3545;' : '');
-
-                    html += `<td style="padding: 0; ${visual}">
-                        <input type="text" class="input-freq ${bloqueado}" maxlength="1" data-dia="${diaIdx}" oninput="validarDigito(this)" value="${freqSalva}" style="${corTexto}">
-                    </td>`;
-                });
-
-                html += `<td class="totais-aluno text-success" id="tot-p-${idx}">0</td>
-                         <td class="totais-aluno text-danger" id="tot-f-${idx}">0</td></tr>`;
-            });
-
-            html += `<tr class="rodape-totais"><td colspan="2" style="text-align: right; background-color: #1a252f;">TOTAL DE PRESENÇAS NO DIA:</td>`;
-            dias.forEach((d, diaIdx) => { html += `<td id="tot-dia-${diaIdx}">0</td>`; });
-            html += `<td colspan="2" style="background-color: #1a252f;"></td></tr></tbody></table>`;
-            
-            document.getElementById('area-tabela').innerHTML = html;
-            recalcularTudo();
-        }
-*/
-        function validarDigito(input) {
-            let valor = input.value.toUpperCase();
-            if (valor !== 'P' && valor !== 'F') { input.value = ''; } 
-            else { 
-                input.value = valor;
-                input.style.color = valor === 'P' ? '#198754' : '#dc3545';
-            }
-            recalcularTudo();
-        }
-/*
-        function recalcularTudo() {
-            let totalPresencasGeral = Array(matrizDias.length).fill(0);
-            const linhas = document.querySelectorAll('tbody tr[data-idx]');
-            
-            linhas.forEach(tr => {
-                let p = 0; let f = 0;
-                let idxLinha = tr.getAttribute('data-idx');
-                const inputs = tr.querySelectorAll('.input-freq');
-                
-                inputs.forEach(input => {
-                    let val = input.value;
-                    let idxDia = input.getAttribute('data-dia');
-                    if (val === 'P') { p++; totalPresencasGeral[idxDia]++; } 
-                    else if (val === 'F') { f++; }
-                });
-
-                document.getElementById(`tot-p-${idxLinha}`).innerText = p;
-                document.getElementById(`tot-f-${idxLinha}`).innerText = f;
-            });
-
-            matrizDias.forEach((d, diaIdx) => {
-                document.getElementById(`tot-dia-${diaIdx}`).innerText = totalPresencasGeral[diaIdx];
-            });
-        }
-*/
-        async function salvarChamada() {
+        window.salvarChamada = async function() {
             const btnSalvar = document.getElementById('btn-salvar');
-            const idPlanilha = localStorage.getItem('ceu_planilha_id');
-            const idade = document.getElementById('sel-idade').value;
-
-            let registrosParaSalvar = [];
             const linhas = document.querySelectorAll('tbody tr[data-idx]');
             
-            linhas.forEach(tr => {
-                let idCrianca = tr.getAttribute('data-id');
-                let dataMat = tr.getAttribute('data-mat');
-                let nome = tr.querySelector('.col-nome').innerText.split('(Ingresso')[0].trim();
-                let turma = tr.querySelector('.col-turma').innerText.trim();
-                let frequencias = {};
-
-                const inputs = tr.querySelectorAll('.input-freq');
-                inputs.forEach((input, idx) => {
-                    let dataColuna = matrizDias[idx].formato;
-                    frequencias[dataColuna] = input.value.toUpperCase();
-                });
-
-                registrosParaSalvar.push({ id: idCrianca, nome: nome, turma: turma, dataMat: dataMat, frequencias: frequencias });
-            });
-
-            btnSalvar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+            btnSalvar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando no Firebase...';
             btnSalvar.disabled = true;
 
-            const pacote = {
-                acao: "salvarChamadaQualitativa",
-                dados: { idPlanilha: idPlanilha, idade: idade, dias: matrizDias, registros: registrosParaSalvar }
-            };
-
             try {
-                const req = await fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) });
-                const res = await req.json();
+                // Abre um pacote de atualizações cirúrgicas no Firebase (Write Batch)
+                const batch = writeBatch(db);
+                
+                linhas.forEach(tr => {
+                    let idCrianca = tr.getAttribute('data-id');
+                    let pCount = parseInt(document.getElementById(`tot-p-${tr.getAttribute('data-idx')}`).innerText);
+                    let fCount = parseInt(document.getElementById(`tot-f-${tr.getAttribute('data-idx')}`).innerText);
+                    let objFrequencias = {};
 
-                if (res.sucesso) { Swal.fire('Elegante!', res.mensagem, 'success'); } 
-                else { Swal.fire('Erro', res.erro, 'error'); }
-            } catch (e) {
-                Swal.fire('Erro', 'Falha ao salvar os dados no servidor.', 'error');
+                    const inputs = tr.querySelectorAll('.input-freq');
+                    inputs.forEach(input => {
+                        let chaveData = input.getAttribute('data-formato'); // Ex: "15/01"
+                        let valorLetra = input.value.toUpperCase();
+                        if (valorLetra === 'P' || valorLetra === 'F') {
+                            objFrequencias[chaveData] = valorLetra;
+                        }
+                    });
+
+                    // Atualiza cirurgicamente Apenas 3 campos no documento da criança
+                    const ref = doc(db, "rf_inscricoes", idCrianca);
+                    batch.update(ref, { 
+                        frequencias: objFrequencias,
+                        presencas: pCount,
+                        faltas: fCount
+                    });
+                });
+
+                // Dispara o pacote para a nuvem
+                await batch.commit();
+                
+                Swal.fire('Elegante!', 'A chamada foi gravada com sucesso no Firebase!', 'success');
+
+            } catch (error) {
+                console.error("Erro no batch:", error);
+                Swal.fire('Erro', 'Falha ao salvar. Verifique sua internet.', 'error');
             } finally {
                 btnSalvar.innerHTML = '<i class="fas fa-save"></i> Salvar';
                 btnSalvar.disabled = false;
             }
-        }
+        };
         
-        // Garante que o Agente esteja atualizado mesmo se o usuário clicar antes de digitar
-        function prepararImpressao() {
+        window.prepararImpressao = function() {
             const agente = document.getElementById('txt-agente').value;
             document.getElementById('print-agente').innerText = agente || 'Não informado';
             window.print();
-        }
+        };
     </script>
 </body>
 </html>

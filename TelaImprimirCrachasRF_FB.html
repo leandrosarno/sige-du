@@ -7,7 +7,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="config.js"></script>
     <style>
         body { font-family: 'Arial', sans-serif; background-color: #f0f2f5; }
         
@@ -90,15 +89,22 @@
 
         /* UI da Tela */
         .barra-ferramentas { background: #fff; padding: 15px 25px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        #area-bloqueada { text-align: center; margin-top: 100px; color: #dc3545; display: none; }
     </style>
 </head>
 <body>
 
-    <div class="container-fluid no-print mt-3">
+    <div id="area-bloqueada">
+        <i class="fas fa-lock" style="font-size: 80px;"></i>
+        <h1 style="font-weight: 900; margin-top: 20px;">ACESSO RESTRITO</h1>
+        <p>Apenas funcionários lotados em unidades CEU podem imprimir crachás da sua unidade.</p>
+    </div>
+
+    <div class="container-fluid no-print mt-3" id="area-sistema" style="display: none;">
         <div class="barra-ferramentas">
             <div>
                 <h4 class="m-0 text-primary fw-bold"><i class="fas fa-id-badge"></i> Motor de Impressão</h4>
-                <small class="text-muted" id="statusFila">Buscando dados no servidor...</small>
+                <small class="text-muted" id="statusFila">Buscando dados no Firebase e montando as regras da SME...</small>
             </div>
             <div>
                 <button class="btn btn-success fw-bold px-4" onclick="window.print()" id="btnImprimir" disabled>
@@ -116,71 +122,102 @@
     <div class="page-break no-print" id="quebraPagina" style="display: none;"></div>
     <div id="containerPais" class="malha-impressao"></div>
 
-    <script>
-        // Imagem padrão da Prefeitura
+    <!-- MOTOR FIREBASE COM REGRAS E BATCH UPDATE -->
+    <script type="module">
+        import { db } from './firebase_config.js';
+        import { collection, query, where, getDocs, getDoc, doc, writeBatch } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+
         const LOGO_PADRAO = "https://logodownload.org/wp-content/uploads/2014/11/prefeitura-sao-paulo-logo-1.png";
+        
+        let ceuId = "";
+        let nomeCeu = "";
+        let regrasSME = {};
+        let filaImpressao = [];
 
         window.onload = async function() {
-            const idPlanilha = localStorage.getItem('ceu_planilha_id');
-            // 🛡️ PEGA O NOME DO LOGIN SE O SERVIDOR FALHAR
-            const nomeCeuLocal = localStorage.getItem('nome_ceu') || "CEU NÃO IDENTIFICADO"; 
+            ceuId = localStorage.getItem('sig_id_unidade') || "";
+            nomeCeu = localStorage.getItem('sig_nome_unidade') || "CEU NÃO IDENTIFICADO";
             
-            if (!idPlanilha) {
-                Swal.fire('Erro', 'Banco de Dados não conectado.', 'error');
-                return;
+            if (!ceuId || ceuId === "000000") {
+                if (localStorage.getItem('sig_nivel_acesso')?.includes('ADMIN')) {
+                    ceuId = "999999"; 
+                    nomeCeu = "CEU TESTE ADMIN";
+                } else {
+                    document.getElementById('area-bloqueada').style.display = 'block';
+                    return;
+                }
             }
 
-            const pacote = {
-                acao: "buscarDadosNovoCrachaHTML",
-                dados: { idPlanilha: idPlanilha, nomeCeu: nomeCeuLocal }
-            };
+            document.getElementById('area-sistema').style.display = 'block';
+            await carregarDados();
+        };
 
+        async function carregarDados() {
             try {
-                const req = await fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) });
-                const res = await req.json();
+                // 1. Puxar as Regras da SME
+                const regrasSnap = await getDoc(doc(db, "configuracoes", "regras_rf"));
+                if (regrasSnap.exists()) {
+                    regrasSME = regrasSnap.data();
+                } else {
+                    document.getElementById('statusFila').innerText = "Regras do Programa não encontradas.";
+                    Swal.fire('Atenção', 'A SME ainda não configurou as regras (cores, ícones, etc).', 'warning');
+                    return;
+                }
 
-                if (res.sucesso) {
-                    // 🛡️ BLINDAGEM DO NOME: Se vier "NÃO IDENTIFICADO", usamos o do LocalStorage
-                    let nomeCeuFinal = res.nomeCeu;
-                    if (!nomeCeuFinal || nomeCeuFinal === "CEU NÃO IDENTIFICADO" || nomeCeuFinal === "") {
-                        nomeCeuFinal = nomeCeuLocal;
-                    }
+                // 2. Puxar a fila de crianças deste CEU
+                const qFila = query(
+                    collection(db, "rf_inscricoes"), 
+                    where("id_unidade", "==", String(ceuId)), 
+                    where("imprimir", "==", "SIM")
+                );
+                
+                const filaSnap = await getDocs(qFila);
+                filaSnap.forEach(docCri => {
+                    filaImpressao.push({ id: docCri.id, ...docCri.data() });
+                });
 
-                    renderizarCrachas(res.fila, res.regras, nomeCeuFinal);
-                    document.getElementById('statusFila').innerText = `${res.fila.length} crachás prontos para impressão!`;
+                if (filaImpressao.length > 0) {
+                    renderizarCrachas();
+                    document.getElementById('statusFila').innerText = `${filaImpressao.length} crachás prontos para impressão!`;
                     document.getElementById('btnImprimir').disabled = false;
                     document.getElementById('btnLimpar').disabled = false;
                 } else {
-                    document.getElementById('statusFila').innerText = "Fila vazia ou erro na busca.";
-                    Swal.fire('Atenção', res.erro || res.mensagem, 'info');
+                    document.getElementById('statusFila').innerText = "Fila de impressão vazia.";
+                    Swal.fire('Tudo limpo!', 'Não há crianças na fila de impressão deste CEU.', 'info');
                 }
-            } catch (e) {
+
+            } catch (error) {
+                console.error("Erro na carga de impressão:", error);
                 document.getElementById('statusFila').innerText = "Falha na conexão com o servidor.";
-                Swal.fire('Erro', 'Falha ao conectar com a API.', 'error');
+                Swal.fire('Erro', 'Falha ao buscar os dados no Firebase.', 'error');
             }
         }
 
-        function renderizarCrachas(fila, regras, nomeCeu) {
+        function renderizarCrachas() {
             const divCriancas = document.getElementById('containerCriancas');
             const divPais = document.getElementById('containerPais');
             let htmlCriancas = '';
             let htmlPais = '';
 
-            // 🛡️ ESCUDO ANTI-#REF! (Limpa a sujeira que vem da planilha Master)
-            const limpaLink = (link) => (link && !link.includes("#REF!") && link !== "") ? link : "";
+            const validarImg = (img) => (img && img !== "") ? img : "";
             
-            let logoRender = limpaLink(regras.logoPref);
-            if (logoRender === "") logoRender = LOGO_PADRAO;
+            let logoRender = LOGO_PADRAO; // A prefeitura geralmente usa um padrão fixo se não houver um customizado
+            let periodoRF = `${regrasSME.mes}/${regrasSME.ano}` || "FÉRIAS";
 
-            fila.forEach(cri => {
-                // 🛠️ Tratamento dos Ícones (Se vier quebrado, fica vazio e a caixa some)
-                const imgDieta = limpaLink(cri.dieta ? regras.dieta.sim : regras.dieta.nao);
-                const imgRestImg = limpaLink(cri.restImg ? regras.img.sim : regras.img.nao);
-                const imgInclusao = limpaLink(cri.inclusao ? regras.inclusao.sim : regras.inclusao.nao);
-                const imgPiscina = limpaLink(cri.piscina ? regras.piscina.sim : regras.piscina.nao);
+            filaImpressao.forEach(cri => {
+                // 🛠️ Tratamento dos Ícones baseados nas Regras Globais
+                const imgDieta = validarImg(cri.dieta_especial === 'SIM' ? regrasSME.dieta_sim : regrasSME.dieta_nao);
+                const imgRestImg = validarImg(cri.restricao_imagem === 'SIM' ? regrasSME.restricao_sim : regrasSME.restricao_nao);
+                const imgInclusao = validarImg(cri.inclusao === 'SIM' ? regrasSME.inclusao_sim : regrasSME.inclusao_nao);
+                const imgPiscina = validarImg(cri.piscina === 'SIM' ? regrasSME.piscina_sim : regrasSME.piscina_nao);
                 
-                const textoSozinho = cri.sozinho ? "AUTORIZADO IR SOZINHO" : "NÃO PODE IR SOZINHO";
-                const corFaixaSoz = cri.sozinho ? regras.sozinho.simCor : regras.sozinho.naoCor;
+                // Vai sozinho?
+                const isSozinho = (cri.sozinho === 'SIM');
+                const textoSozinho = isSozinho ? "AUTORIZADO IR SOZINHO" : "NÃO PODE IR SOZINHO";
+                const corFaixaSoz = isSozinho ? regrasSME.cor_sozinho_sim : regrasSME.cor_sozinho_nao;
+
+                // Cor da Idade
+                let corIdade = regrasSME['c' + cri.idade] || '#e2e8f0'; // Default cinza se não tiver cor definida para aquela idade
 
                 // ==========================================
                 // 🧒 CRACHÁ DA CRIANÇA
@@ -192,12 +229,12 @@
                         <div class="textos-cabecalho">
                             <div class="txt-sme">SECRETARIA MUNICIPAL DE EDUCAÇÃO</div>
                             <div class="txt-ceu">${nomeCeu.toUpperCase()}</div>
-                            <div class="txt-periodo">${regras.periodo}</div>
+                            <div class="txt-periodo">${periodoRF.toUpperCase()}</div>
                         </div>
                     </div>
                     
-                    <div class="faixa-nome" style="background-color: ${cri.corIdade};">
-                        ${cri.nome}
+                    <div class="faixa-nome" style="background-color: ${corIdade};">
+                        ${cri.nome_crianca}
                     </div>
                     
                     <div class="rodape">
@@ -205,8 +242,8 @@
                             <div class="contatos">
                                 <div class="linha-resp"><span>RESPONSÁVEL</span><span>TELEFONE</span></div>
                                 <div class="linha-dados">
-                                    <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 65%;">${cri.resp}</span>
-                                    <span>${cri.tel}</span>
+                                    <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 65%;">${cri.resp || '-'}</span>
+                                    <span>${cri.tel || '-'}</span>
                                 </div>
                             </div>
                             
@@ -249,7 +286,7 @@
                         <div class="textos-cabecalho">
                             <div class="txt-sme">SECRETARIA MUNICIPAL DE EDUCAÇÃO</div>
                             <div class="txt-ceu">${nomeCeu.toUpperCase()}</div>
-                            <div class="txt-periodo">${regras.periodo}</div>
+                            <div class="txt-periodo">${periodoRF.toUpperCase()}</div>
                         </div>
                     </div>
                     
@@ -258,12 +295,12 @@
                     <div class="area-dados-pais">
                         <div class="d-box">
                             <div class="d-lbl">NOME DA CRIANÇA</div>
-                            <div class="d-val">${cri.nome}</div>
+                            <div class="d-val">${cri.nome_crianca}</div>
                         </div>
                         <div style="display: flex; gap: 5px;">
                             <div class="d-box" style="flex: 1;">
                                 <div class="d-lbl">NOME DO RESPONSÁVEL</div>
-                                <div class="d-val" style="font-size: 9pt;">${cri.resp}</div>
+                                <div class="d-val" style="font-size: 9pt;">${cri.resp || '-'}</div>
                             </div>
                             <div class="d-box" style="width: 2.2cm; text-align: center;">
                                 <div class="d-lbl">IDADE</div>
@@ -277,15 +314,16 @@
             divCriancas.innerHTML = htmlCriancas;
             divPais.innerHTML = htmlPais;
             
-            if (fila.length > 0) {
+            if (filaImpressao.length > 0) {
                 document.getElementById('quebraPagina').style.display = 'block';
             }
         }
 
-        async function limparFila() {
+        // FUNÇÃO DE LIMPEZA COM WRITE BATCH (Múltiplas gravações em 1 comando)
+        window.limparFila = async function() {
             const confirmacao = await Swal.fire({
                 title: 'Tem certeza?',
-                text: "Isso removerá a marcação 'SIM' de todas as crianças na planilha.",
+                text: "Isso removerá a marcação 'SIM' de todas as crianças na fila de impressão.",
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#e74c3c',
@@ -298,28 +336,27 @@
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Limpando...';
                 btn.disabled = true;
 
-                const pacote = {
-                    acao: "limparFilaCrachasRecreio",
-                    dados: { idPlanilha: localStorage.getItem('ceu_planilha_id') }
-                };
-
                 try {
-                    const req = await fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) });
-                    const res = await req.json();
+                    const batch = writeBatch(db);
+                    
+                    filaImpressao.forEach(cri => {
+                        const ref = doc(db, "rf_inscricoes", cri.id);
+                        batch.update(ref, { imprimir: "NÃO" });
+                    });
 
-                    if (res.sucesso) {
-                        Swal.fire('Fila Limpa!', 'Todos os status de impressão foram zerados.', 'success')
-                        .then(() => { location.reload(); });
-                    } else {
-                        Swal.fire('Erro', res.erro, 'error');
-                        btn.innerHTML = '<i class="fas fa-trash-alt"></i> Limpar Fila';
-                        btn.disabled = false;
-                    }
+                    await batch.commit();
+
+                    Swal.fire('Fila Limpa!', 'Todos os status de impressão foram zerados com sucesso.', 'success')
+                    .then(() => { location.reload(); });
+                    
                 } catch(e) {
-                    Swal.fire('Erro', 'Falha na comunicação.', 'error');
+                    console.error("Erro no batch update:", e);
+                    Swal.fire('Erro', 'Falha ao processar a limpeza no banco.', 'error');
+                    btn.innerHTML = '<i class="fas fa-trash-alt"></i> Limpar Fila';
+                    btn.disabled = false;
                 }
             }
-        }
+        };
     </script>
 </body>
 </html>

@@ -341,7 +341,7 @@
                 document.getElementById('visao-gestao').style.display = 'block';
                 if (isSME) document.getElementById('li-tab-dre').style.display = 'block';
                 
-                await carregarDREs(); // Carrega o select primeiro
+                await carregarDREs(); 
                 await carregarUnidades();
             }
         };
@@ -370,8 +370,14 @@
                 let el = document.getElementById(prefixo + id);
                 if (el) el.value = "";
             });
-            if(prefixo === 'u_') document.getElementById('u_eol').readOnly = false;
-            if(prefixo === 'd_') document.getElementById('d_eol').readOnly = false;
+            if(prefixo === 'u_') {
+                document.getElementById('u_eol').readOnly = false;
+                document.getElementById('u_eol').removeAttribute('data-docid');
+            }
+            if(prefixo === 'd_') {
+                document.getElementById('d_eol').readOnly = false;
+                document.getElementById('d_eol').removeAttribute('data-docid');
+            }
         };
 
         // ==========================================
@@ -399,7 +405,7 @@
                     selectDre.disabled = true;
                 }
 
-                renderizarDREs(); // Se for SME, já renderiza a tabela 2
+                renderizarDREs(); 
             } catch (e) {
                 console.error(e);
             }
@@ -428,11 +434,13 @@
 
             globalUnidades.forEach(u => {
                 let img = (u.url_logo && u.url_logo.includes("http")) ? u.url_logo : "https://via.placeholder.com/40";
+                // Exibe o EOL primário na tabela, seja ele o documento ID ou campo interno
+                let unidadeId = u.id_unidade || u.id;
                 
                 tbody.innerHTML += `
                 <tr>
                     <td class="fw-bold text-primary">
-                        ${u.id}<br>
+                        ${unidadeId}<br>
                         <small class="text-muted">DRE: ${u.id_regional || 'N/A'}</small>
                     </td>
                     <td>
@@ -457,11 +465,13 @@
         }
 
         window.salvarUnidade = async function() {
-            let id = document.getElementById('u_eol').value.trim();
-            if(!id) return Swal.fire('Atenção', 'O Código EOL é obrigatório para ser o ID da unidade.', 'warning');
+            let idNovo = document.getElementById('u_eol').value.trim();
+            let idAntigo = document.getElementById('u_eol').dataset.docid;
+            
+            if(!idNovo) return Swal.fire('Atenção', 'O Código EOL é obrigatório para ser o ID da unidade.', 'warning');
 
             let dreVal = document.getElementById('u_dre').value;
-            if(isDRE && !isSME) dreVal = eolLogado; // Segurança extra para impedir hack no DOM
+            if(isDRE && !isSME) dreVal = eolLogado;
 
             const dados = {
                 id_regional: dreVal,
@@ -478,7 +488,14 @@
 
             Swal.fire({ title: 'Salvando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
             try {
-                await setDoc(doc(db, "unidades", id), dados);
+                // Cria ou Atualiza o documento com a chave EOL correta
+                await setDoc(doc(db, "unidades", idNovo), dados);
+                
+                // Corretor Automático de Banco: se a chave original era diferente, apaga a velha
+                if (idAntigo && idAntigo !== idNovo) {
+                    await deleteDoc(doc(db, "unidades", idAntigo));
+                }
+
                 Swal.fire('Salvo!', 'Unidade registrada com sucesso.', 'success');
                 window.limparForm('u_');
                 carregarUnidades();
@@ -488,8 +505,9 @@
         window.editarUnidade = function(id) {
             const u = globalUnidades.find(x => x.id === id);
             if(u) {
-                document.getElementById('u_eol').value = u.id;
-                document.getElementById('u_eol').readOnly = true; // Impede mudar a chave primária
+                document.getElementById('u_eol').value = u.id_unidade || u.id;
+                document.getElementById('u_eol').dataset.docid = u.id; // Guarda o ID verdadeiro do firebase
+                document.getElementById('u_eol').readOnly = true; 
                 document.getElementById('u_nome').value = u.nome_unidade;
                 document.getElementById('u_tipo').value = u.tipo_acesso;
                 document.getElementById('u_dre').value = u.id_regional;
@@ -514,10 +532,11 @@
 
             globalDREs.forEach(d => {
                 let img = (d.url_logo && d.url_logo.includes("http")) ? d.url_logo : "https://via.placeholder.com/40";
+                
                 tbody.innerHTML += `
                 <tr>
                     <td class="fw-bold text-primary" style="color: #8b5cf6 !important;">
-                        ${d.id}<br>
+                        ${d.id_regional || d.id}<br>
                         <span class="badge bg-primary" style="background-color: #8b5cf6 !important;">${d.sigla}</span>
                     </td>
                     <td>
@@ -539,14 +558,16 @@
         }
 
         window.salvarDRE = async function() {
-            let id = document.getElementById('d_eol').value.trim();
-            if(!id) return Swal.fire('Atenção', 'O Código da DRE é obrigatório.', 'warning');
+            let idNovo = document.getElementById('d_eol').value.trim();
+            let idAntigo = document.getElementById('d_eol').dataset.docid;
+
+            if(!idNovo) return Swal.fire('Atenção', 'O Código da DRE é obrigatório.', 'warning');
 
             const dados = {
-                id_regional: id,
+                id_regional: idNovo,
                 sigla: document.getElementById('d_sigla').value.trim().toUpperCase(),
                 nome_regional: document.getElementById('d_nome').value.trim().toUpperCase(),
-                id_secretaria: "SME", // Hardcoded para simplificar, já que a SME rege todas
+                id_secretaria: "SME", 
                 endereco_cep: document.getElementById('d_cep').value,
                 endereco_logradouro: document.getElementById('d_logradouro').value.toUpperCase(),
                 endereco_numero: document.getElementById('d_numero').value,
@@ -558,18 +579,28 @@
 
             Swal.fire({ title: 'Salvando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
             try {
-                await setDoc(doc(db, "regionais", id), dados);
+                // Salva o documento usando o EOL correto como chave primária
+                await setDoc(doc(db, "regionais", idNovo), dados);
+                
+                // MÁGICA: Corretor automático do Banco de Dados
+                if (idAntigo && idAntigo !== idNovo) {
+                    await deleteDoc(doc(db, "regionais", idAntigo));
+                }
+
                 Swal.fire('Salvo!', 'Regional DRE registrada com sucesso.', 'success');
                 window.limparForm('d_');
-                carregarDREs(); // Recarrega os dados e os selects
+                carregarDREs(); 
             } catch(e) { Swal.fire('Erro', 'Falha ao salvar no banco.', 'error'); }
         };
 
         window.editarDRE = function(id) {
             const d = globalDREs.find(x => x.id === id);
             if(d) {
-                document.getElementById('d_eol').value = d.id;
+                // Exibe o EOL real mesmo que a pasta no Firebase esteja com o nome errado
+                document.getElementById('d_eol').value = d.id_regional || d.id;
+                document.getElementById('d_eol').dataset.docid = d.id; // Guarda o ID original em segundo plano
                 document.getElementById('d_eol').readOnly = true;
+                
                 document.getElementById('d_sigla').value = d.sigla;
                 document.getElementById('d_nome').value = d.nome_regional;
                 document.getElementById('d_cep').value = d.endereco_cep || "";

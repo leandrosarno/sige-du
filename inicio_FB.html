@@ -44,8 +44,6 @@
         .card-link h3 { color: #6f42c1; font-size: 24px; display: flex; align-items: center; justify-content: center; gap: 10px;}
         
         .tag-global { font-size: 10px; color: #dc3545; text-transform: uppercase; margin-top: 8px; font-weight: 800; letter-spacing: 0.5px; }
-        
-        /* Nova tag para o Raio-X de Erros */
         .tag-erro { font-size: 10px; color: #dc3545; font-weight: 700; line-height: 1.2; display: block; text-transform: none; word-wrap: break-word; }
     </style>
 </head>
@@ -63,42 +61,42 @@
         </div>
 
         <div class="cards-grid animate__animated animate__fadeInUp">
-            <div class="stat-card" style="border-bottom-color: #0d6efd;">
+            
+            <!-- CARTÕES OCULTADOS TEMPORARIAMENTE -->
+            <div class="stat-card" style="display: none; border-bottom-color: #0d6efd;">
                 <h6>Munícipes Cadastrados</h6>
                 <h3 id="tot-municipes" class="skeleton">0</h3>
             </div>
-            
-            <div class="stat-card" style="border-bottom-color: #198754;">
+            <div class="stat-card" style="display: none; border-bottom-color: #198754;">
                 <h6>Turmas Ativas</h6>
                 <h3 id="tot-turmas" class="skeleton">0</h3>
             </div>
-            
-            <div class="stat-card" style="border-bottom-color: #ffc107;">
+            <div class="stat-card" style="display: none; border-bottom-color: #ffc107;">
                 <h6>Matrículas Realizadas</h6>
                 <h3 id="tot-matriculas" class="skeleton">0</h3>
             </div>
-            
-            <div class="stat-card" style="border-bottom-color: #dc3545;">
+            <div class="stat-card" style="display: none; border-bottom-color: #dc3545;">
                 <h6>Fila de Espera</h6>
                 <h3 id="tot-fila" class="skeleton">0</h3>
             </div>
+            <div class="stat-card card-link" style="display: none; border-bottom-color: #6f42c1;" onclick="abrirAgendaTV()">
+                <h6>Agenda da TV</h6>
+                <h3><i class="fas fa-tv"></i> Acessar</h3>
+            </div>
 
+            <!-- CARTÃO ATIVO: RECREIO NAS FÉRIAS -->
             <div class="stat-card" style="border-bottom-color: #e83e8c;">
                 <h6>Recreio nas Férias (Inscrições)</h6>
                 <h3 id="tot-recreio" class="skeleton">0</h3>
             </div>
 
-            <div class="stat-card card-link" style="border-bottom-color: #6f42c1;" onclick="abrirAgendaTV()">
-                <h6>Agenda da TV</h6>
-                <h3><i class="fas fa-tv"></i> Acessar</h3>
-            </div>
         </div>
     </div>
 
-    <!-- MOTOR FIREBASE COM RAIO-X DE ERROS -->
+    <!-- MOTOR FIREBASE UNIVERSAL (SME / DRE / CEU) -->
     <script type="module">
         import { db } from './firebase_config.js';
-        import { collection, query, where, getCountFromServer } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+        import { collection, query, where, getCountFromServer, getDocs } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
         window.onload = function() {
             configurarCartaoBoasVindas();
@@ -138,58 +136,67 @@
         }
 
         async function carregarEstatisticasFirebase() {
-            const idUnidade = localStorage.getItem('sig_id_unidade');
-            if (!idUnidade) return;
-
-            buscarEAnimar("municipes", "tot-municipes", idUnidade);
-            buscarEAnimar("turmas", "tot-turmas", idUnidade);
-            buscarEAnimar("matriculas", "tot-matriculas", idUnidade);
-            buscarEAnimar("fila_espera", "tot-fila", idUnidade);
-            buscarEAnimar("recreio_ferias", "tot-recreio", idUnidade);
-        }
-
-        async function buscarEAnimar(nomeColecao, idElementoHTML, idUnidade) {
-            const el = document.getElementById(idElementoHTML);
+            const el = document.getElementById('tot-recreio');
+            const idUnidade = localStorage.getItem('sig_id_unidade') || "";
+            
+            // Leitura de Perfil
+            let perfisUsuario = ["UNIDADE"];
             try {
-                const refColecao = collection(db, nomeColecao);
+                const cru = localStorage.getItem('sig_nivel_acesso') || "UNIDADE";
+                if (cru.startsWith('[')) {
+                    let lido = JSON.parse(cru);
+                    if (lido.length === 1 && lido[0].includes(',')) perfisUsuario = lido[0].split(',').map(p => p.trim().toUpperCase());
+                    else perfisUsuario = lido.map(p => p.trim().toUpperCase());
+                } else perfisUsuario = cru.split(',').map(p => p.trim().toUpperCase());
+            } catch (e) { perfisUsuario = ["UNIDADE"]; }
+
+            const isSME = perfisUsuario.includes('SME') || (perfisUsuario.includes('ADMIN') && idUnidade === '000000');
+            const isDRE = perfisUsuario.includes('DRE') || (perfisUsuario.includes('ADMIN') && idUnidade !== '000000');
+
+            try {
+                const refColecao = collection(db, "rf_inscricoes");
                 let totalEncontrado = 0;
                 let isGlobal = false;
 
-                if (idUnidade === "000000") {
+                if (isSME) {
+                    // Visão SME: Soma total da rede
                     const snapshot = await getCountFromServer(refColecao);
                     totalEncontrado = snapshot.data().count;
-                } else {
-                    const qTexto = query(refColecao, where("id_unidade", "==", String(idUnidade).trim()));
-                    const snapTexto = await getCountFromServer(qTexto);
+                    isGlobal = true;
+                } 
+                else if (isDRE) {
+                    // Visão DRE: Soma de todos os CEUs da regional
+                    const qUnidades = query(collection(db, "unidades"), where("id_regional", "==", String(idUnidade).trim()));
+                    const snapUnidades = await getDocs(qUnidades);
                     
-                    const idNumerico = Number(idUnidade);
-                    let contagemNumerica = 0;
-                    
-                    // Prevenção contra conversão inválida que causa erro no Firebase
-                    if (!isNaN(idNumerico)) {
-                        const qNumero = query(refColecao, where("id_unidade", "==", idNumerico));
-                        const snapNumero = await getCountFromServer(qNumero);
-                        contagemNumerica = snapNumero.data().count;
+                    for (let docU of snapUnidades.docs) {
+                        let eolCEU = docU.id;
+                        const qStr = query(refColecao, where("id_unidade", "==", String(eolCEU)));
+                        const qNum = query(refColecao, where("id_unidade", "==", Number(eolCEU)));
+                        const [s1, s2] = await Promise.all([getCountFromServer(qStr), getCountFromServer(qNum)]);
+                        totalEncontrado += (s1.data().count + s2.data().count);
                     }
+                } 
+                else {
+                    // Visão CEU: Apenas os inscritos locais
+                    const qStr = query(refColecao, where("id_unidade", "==", String(idUnidade).trim()));
+                    const snapStr = await getCountFromServer(qStr);
+                    totalEncontrado += snapStr.data().count;
 
-                    totalEncontrado = snapTexto.data().count + contagemNumerica;
-
-                    if (totalEncontrado === 0) {
-                        const snapGlobal = await getCountFromServer(refColecao);
-                        if (snapGlobal.data().count > 0) {
-                            totalEncontrado = snapGlobal.data().count;
-                            isGlobal = true; 
-                        }
+                    const idNumerico = Number(idUnidade);
+                    if (!isNaN(idNumerico)) {
+                        const qNum = query(refColecao, where("id_unidade", "==", idNumerico));
+                        const snapNum = await getCountFromServer(qNum);
+                        totalEncontrado += snapNum.data().count;
                     }
                 }
 
-                animarContador(idElementoHTML, totalEncontrado, isGlobal);
+                animarContador("tot-recreio", totalEncontrado, isGlobal);
 
             } catch (error) {
-                console.error(`Erro ao contar ${nomeColecao}:`, error);
+                console.error("Erro ao processar estatísticas:", error);
                 el.classList.remove('skeleton');
-                // Exibe o erro real vindo do Google
-                el.innerHTML = `<span class="tag-erro"><i class="fas fa-bug"></i> ${error.message}</span>`;
+                el.innerHTML = `<span class="tag-erro"><i class="fas fa-bug"></i> Falha de Conexão</span>`;
             }
         }
 
@@ -214,7 +221,7 @@
                     let textoFinal = atual.toLocaleString('pt-BR');
                     
                     if (isGlobal) {
-                        el.innerHTML = `${textoFinal} <div class="tag-global"><i class="fas fa-exclamation-triangle"></i> Banco Global</div>`;
+                        el.innerHTML = `${textoFinal} <div class="tag-global"><i class="fas fa-exclamation-triangle"></i> Rede SME</div>`;
                     } else {
                         el.innerHTML = textoFinal;
                     }
@@ -223,10 +230,6 @@
                 }
             }, 30);
         }
-
-        window.abrirAgendaTV = function() {
-            alert("Em breve! O módulo da TV será conectado a este botão.");
-        };
     </script>
 </body>
 </html>

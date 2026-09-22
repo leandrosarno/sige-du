@@ -65,7 +65,7 @@
         <i class="ri-lock-2-fill"></i>
         <h2>Acesso Negado</h2>
         <p style="color: var(--text-muted); max-width: 400px;">
-            Apenas o nível hierárquico <b>Diretoria Regional de Educação (DRE)</b> ou <b>SME</b> têm permissão para visualizar e alterar as regras globais do Recreio nas Férias.
+            Apenas os níveis <b>DRE</b>, <b>SME</b> e <b>ADMIN</b> têm permissão para visualizar e alterar as regras globais do Recreio nas Férias.
         </p>
     </div>
 
@@ -74,12 +74,12 @@
             <i class="ri-sun-cloud-fill"></i>
             <div>
                 <h1>Gestão Global: Recreio nas Férias</h1>
-                <p>Módulo de configuração exclusiva DRE / SME</p>
+                <p>Módulo de configuração exclusiva DRE / SME / ADMIN</p>
             </div>
         </div>
 
         <div class="content">
-            <form id="form-regras" onsubmit="salvar(event)">
+            <form id="form-regras">
                 
                 <div class="section-title"><i class="ri-file-paper-2-line"></i> 1. Regulamentação e Portaria</div>
                 <div class="grid-2">
@@ -113,7 +113,7 @@
                     <div class="form-group"><label>Máx. por Turma (6 a 14 anos)</label><input type="number" id="max6a14" placeholder="Ex: 35" required></div>
                 </div>
 
-                <div class="section-title"><i class="ri-image-add-fill"></i> 4. Ícones Visuais para Crachás (Arquivos de Imagem)</div>
+                <div class="section-title"><i class="ri-image-add-fill"></i> 4. Ícones Visuais para Crachás</div>
                 <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">Clique nos quadrados para enviar. Para remover um ícone, passe o mouse sobre ele e clique no ✖.</div>
 
                 <div style="background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px dashed var(--border);">
@@ -247,84 +247,66 @@
         </div>
     </div>
 
-    <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec";
+    <!-- MOTOR FIREBASE -->
+    <script type="module">
+        import { db } from './firebase_config.js';
+        import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+
         const placeholderImg = "https://via.placeholder.com/150/e2e8f0/64748b?text=Clique+Aqui";
 
-        document.addEventListener("DOMContentLoaded", () => {
-            const perfil = localStorage.getItem('ceu_perfil') || "CEU";
-            
-            // 🛡️ A FECHADURA CIRÚRGICA AQUI: Libera para DRE e SME
-            if (perfil !== "DRE" && perfil !== "SME") {
-                document.getElementById('bloqueio').style.display = 'flex';
-                document.getElementById('painel-regras').style.display = 'none';
-                return; 
+        window.onload = function() {
+            // TRAVA DE SEGURANÇA
+            let perfisUsuario = ["UNIDADE"];
+            try {
+                const cru = localStorage.getItem('sig_nivel_acesso') || "UNIDADE";
+                if (cru.startsWith('[')) {
+                    let lido = JSON.parse(cru);
+                    if (lido.length === 1 && lido[0].includes(',')) {
+                        perfisUsuario = lido[0].split(',').map(p => p.trim().toUpperCase());
+                    } else {
+                        perfisUsuario = lido.map(p => p.trim().toUpperCase());
+                    }
+                } else {
+                    perfisUsuario = cru.split(',').map(p => p.trim().toUpperCase());
+                }
+            } catch (e) {
+                perfisUsuario = ["UNIDADE"];
             }
 
-            document.getElementById('bloqueio').style.display = 'none';
-            document.getElementById('painel-regras').style.display = 'block';
-            
-            document.querySelectorAll('.icon-preview').forEach(img => img.src = placeholderImg);
+            const temAcessoGlobal = perfisUsuario.some(p => ['ADMIN', 'SME', 'DRE'].includes(p));
 
-            carregarRegrasAtuais();
-        });
+            if (!temAcessoGlobal) {
+                document.getElementById('bloqueio').style.display = 'flex';
+                document.getElementById('painel-regras').style.display = 'none';
+            } else {
+                document.getElementById('bloqueio').style.display = 'none';
+                document.getElementById('painel-regras').style.display = 'block';
+                document.querySelectorAll('.icon-preview').forEach(img => img.src = placeholderImg);
+                carregarRegrasAtuais();
+            }
 
-        function mostrarLixeira(idBtn) {
+            document.getElementById('form-regras').addEventListener('submit', salvarRegras);
+        };
+
+        // Funções de UI
+        window.mostrarLixeira = function(idBtn) {
             const imgSrc = document.getElementById(idBtn.replace('btn_del_', 'img_')).src;
             if (!imgSrc.includes("via.placeholder.com")) {
                 document.getElementById(idBtn).style.display = 'flex';
             }
-        }
-        function esconderLixeira(idBtn) { document.getElementById(idBtn).style.display = 'none'; }
+        };
         
-        function limparImagem(idImg) {
+        window.esconderLixeira = function(idBtn) { 
+            document.getElementById(idBtn).style.display = 'none'; 
+        };
+        
+        window.limparImagem = function(idImg) {
             document.getElementById(idImg).src = placeholderImg;
             document.getElementById(idImg.replace('img_', 'file_')).value = ""; 
             esconderLixeira(idImg.replace('img_', 'btn_del_'));
-        }
+        };
 
-        function carregarRegrasAtuais() {
-            const pacote = { acao: "getRegrasRF_Matriz", dados: {} };
-
-            fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) })
-            .then(res => res.json())
-            .then(retorno => {
-                if (retorno.status === "sucesso" || retorno.sucesso) {
-                    if (retorno.dados) preencherTela(retorno.dados);
-                }
-            })
-            .catch(err => console.error("Erro:", err));
-        }
-
-        function preencherTela(d) {
-            const idsTexto = ['portaria','dataPub','min0a3','min4a14','minCeci','ano','mes','diaIni','diaFim','max4e5','max6a14',
-                              'cor_sozinho_sim', 'cor_sozinho_nao',
-                              'c4','c5','c6','c7','c8','c9','c10','c11','c12','c13','c14'];
-            
-            const idsImagem = ['restricao_sim','restricao_nao','dieta_sim','dieta_nao','sozinho_sim','sozinho_nao','inclusao_sim','inclusao_nao','piscina_sim','piscina_nao'];
-
-            idsTexto.forEach(id => {
-                if(d[id]) {
-                     let valor = d[id];
-                     // A mágica da formatação universal de datas
-                     if(valor.indexOf("/") > -1 && valor.length <= 10) {
-                         let p = valor.split("/");
-                         if(p.length === 3) valor = p[2] + "-" + p[1] + "-" + p[0];
-                     } else if (valor.indexOf("T") > -1 && valor.indexOf("Z") > -1) {
-                         valor = valor.split("T")[0];
-                     }
-                     document.getElementById(id).value = valor;
-                }
-            });
-
-            idsImagem.forEach(id => {
-                if(d[id] && d[id] !== "") {
-                    document.getElementById('img_' + id).src = d[id];
-                }
-            });
-        }
-
-        function previewIcon(input, imgId) {
+        window.previewIcon = function(input, imgId) {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
@@ -346,72 +328,100 @@
                 };
                 reader.readAsDataURL(input.files[0]);
             }
+        };
+
+        async function carregarRegrasAtuais() {
+            try {
+                const docSnap = await getDoc(doc(db, "configuracoes", "regras_rf"));
+                if (docSnap.exists()) {
+                    preencherTela(docSnap.data());
+                }
+            } catch (err) {
+                console.error("Erro ao carregar regras:", err);
+                Swal.fire('Erro', 'Falha ao conectar com o banco de dados.', 'error');
+            }
         }
 
-        function salvar(e) {
+        function preencherTela(d) {
+            const idsTexto = ['portaria','dataPub','min0a3','min4a14','minCeci','ano','mes','diaIni','diaFim','max4e5','max6a14',
+                              'cor_sozinho_sim', 'cor_sozinho_nao',
+                              'c4','c5','c6','c7','c8','c9','c10','c11','c12','c13','c14'];
+            
+            const idsImagem = ['restricao_sim','restricao_nao','dieta_sim','dieta_nao','sozinho_sim','sozinho_nao','inclusao_sim','inclusao_nao','piscina_sim','piscina_nao'];
+
+            idsTexto.forEach(id => {
+                if(d[id]) {
+                     let valor = d[id];
+                     if(valor.indexOf("/") > -1 && valor.length <= 10) {
+                         let p = valor.split("/");
+                         if(p.length === 3) valor = p[2] + "-" + p[1] + "-" + p[0];
+                     } else if (valor.indexOf("T") > -1 && valor.indexOf("Z") > -1) {
+                         valor = valor.split("T")[0];
+                     }
+                     document.getElementById(id).value = valor;
+                }
+            });
+
+            idsImagem.forEach(id => {
+                if(d[id] && d[id] !== "") {
+                    document.getElementById('img_' + id).src = d[id];
+                }
+            });
+        }
+
+        async function salvarRegras(e) {
             e.preventDefault();
             const btn = document.getElementById('btn-salvar');
-            btn.innerHTML = '<i class="ri-loader-4-line spinning"></i> Gravando Matriz e Upando Imagens... (Aguarde)';
+            btn.innerHTML = '<i class="ri-loader-4-line spinning"></i> Gravando Matriz... (Aguarde)';
             btn.disabled = true;
 
-            const ceuLogado = String(localStorage.getItem('ceu_id') || sessionStorage.getItem('ceu_id') || localStorage.getItem('ceu_codigo_eol')).trim();
-
             const payload = {
-                acao: "salvarRegrasRF_Matriz",
-                dados: {
-                    ceuIdLogado: ceuLogado, 
-                    portaria: document.getElementById('portaria').value,
-                    dataPub: document.getElementById('dataPub').value,
-                    min0a3: document.getElementById('min0a3').value,
-                    min4a14: document.getElementById('min4a14').value,
-                    minCeci: document.getElementById('minCeci').value,
-                    ano: document.getElementById('ano').value,
-                    mes: document.getElementById('mes').value,
-                    diaIni: document.getElementById('diaIni').value,
-                    diaFim: document.getElementById('diaFim').value,
-                    max4e5: document.getElementById('max4e5').value,
-                    max6a14: document.getElementById('max6a14').value,
-                    
-                    restricao_sim: document.getElementById('img_restricao_sim').src,
-                    restricao_nao: document.getElementById('img_restricao_nao').src,
-                    dieta_sim: document.getElementById('img_dieta_sim').src,
-                    dieta_nao: document.getElementById('img_dieta_nao').src,
-                    sozinho_sim: document.getElementById('img_sozinho_sim').src,
-                    sozinho_nao: document.getElementById('img_sozinho_nao').src,
-                    inclusao_sim: document.getElementById('img_inclusao_sim').src,
-                    inclusao_nao: document.getElementById('img_inclusao_nao').src,
-                    piscina_sim: document.getElementById('img_piscina_sim').src,
-                    piscina_nao: document.getElementById('img_piscina_nao').src,
+                data_atualizacao: new Date().toISOString(),
+                rf_editor: localStorage.getItem('sig_rf') || "DESCONHECIDO",
+                portaria: document.getElementById('portaria').value,
+                dataPub: document.getElementById('dataPub').value,
+                min0a3: document.getElementById('min0a3').value,
+                min4a14: document.getElementById('min4a14').value,
+                minCeci: document.getElementById('minCeci').value,
+                ano: document.getElementById('ano').value,
+                mes: document.getElementById('mes').value,
+                diaIni: document.getElementById('diaIni').value,
+                diaFim: document.getElementById('diaFim').value,
+                max4e5: document.getElementById('max4e5').value,
+                max6a14: document.getElementById('max6a14').value,
+                
+                restricao_sim: document.getElementById('img_restricao_sim').src === placeholderImg ? "" : document.getElementById('img_restricao_sim').src,
+                restricao_nao: document.getElementById('img_restricao_nao').src === placeholderImg ? "" : document.getElementById('img_restricao_nao').src,
+                dieta_sim: document.getElementById('img_dieta_sim').src === placeholderImg ? "" : document.getElementById('img_dieta_sim').src,
+                dieta_nao: document.getElementById('img_dieta_nao').src === placeholderImg ? "" : document.getElementById('img_dieta_nao').src,
+                sozinho_sim: document.getElementById('img_sozinho_sim').src === placeholderImg ? "" : document.getElementById('img_sozinho_sim').src,
+                sozinho_nao: document.getElementById('img_sozinho_nao').src === placeholderImg ? "" : document.getElementById('img_sozinho_nao').src,
+                inclusao_sim: document.getElementById('img_inclusao_sim').src === placeholderImg ? "" : document.getElementById('img_inclusao_sim').src,
+                inclusao_nao: document.getElementById('img_inclusao_nao').src === placeholderImg ? "" : document.getElementById('img_inclusao_nao').src,
+                piscina_sim: document.getElementById('img_piscina_sim').src === placeholderImg ? "" : document.getElementById('img_piscina_sim').src,
+                piscina_nao: document.getElementById('img_piscina_nao').src === placeholderImg ? "" : document.getElementById('img_piscina_nao').src,
 
-                    cor_sozinho_sim: document.getElementById('cor_sozinho_sim').value,
-                    cor_sozinho_nao: document.getElementById('cor_sozinho_nao').value,
+                cor_sozinho_sim: document.getElementById('cor_sozinho_sim').value,
+                cor_sozinho_nao: document.getElementById('cor_sozinho_nao').value,
 
-                    c4: document.getElementById('c4').value, c5: document.getElementById('c5').value,
-                    c6: document.getElementById('c6').value, c7: document.getElementById('c7').value,
-                    c8: document.getElementById('c8').value, c9: document.getElementById('c9').value,
-                    c10: document.getElementById('c10').value, c11: document.getElementById('c11').value,
-                    c12: document.getElementById('c12').value, c13: document.getElementById('c13').value,
-                    c14: document.getElementById('c14').value
-                }
+                c4: document.getElementById('c4').value, c5: document.getElementById('c5').value,
+                c6: document.getElementById('c6').value, c7: document.getElementById('c7').value,
+                c8: document.getElementById('c8').value, c9: document.getElementById('c9').value,
+                c10: document.getElementById('c10').value, c11: document.getElementById('c11').value,
+                c12: document.getElementById('c12').value, c13: document.getElementById('c13').value,
+                c14: document.getElementById('c14').value
             };
 
-            fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) })
-            .then(res => res.json())
-            .then(retorno => {
+            try {
+                await setDoc(doc(db, "configuracoes", "regras_rf"), payload);
+                Swal.fire('Matriz Atualizada!', "As regras e ícones foram salvos com sucesso no Firebase.", 'success');
+            } catch (err) {
+                console.error("Erro ao salvar:", err);
+                Swal.fire('Erro', 'Falha ao salvar no banco de dados.', 'error');
+            } finally {
                 btn.innerHTML = '<i class="ri-save-3-line"></i> GRAVAR REGRAS DO RECREIO';
                 btn.disabled = false;
-
-                if (retorno.status === "sucesso" || retorno.sucesso === true) {
-                    Swal.fire('Matriz Atualizada!', retorno.mensagem || "As regras e ícones foram salvos com sucesso.", 'success');
-                } else {
-                    Swal.fire('Acesso Negado', retorno.mensagem || retorno.erro, 'error');
-                }
-            })
-            .catch(err => {
-                btn.innerHTML = '<i class="ri-save-3-line"></i> GRAVAR REGRAS DO RECREIO';
-                btn.disabled = false;
-                Swal.fire('Erro', 'Falha na comunicação com o servidor.', 'error');
-            });
+            }
         }
     </script>
 </body>

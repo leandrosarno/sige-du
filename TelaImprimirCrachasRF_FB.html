@@ -10,7 +10,6 @@
     <style>
         body { font-family: 'Arial', sans-serif; background-color: #f0f2f5; }
         
-        /* 🖨️ MÁGICA DA IMPRESSÃO A4 */
         @media print {
             @page { size: A4 portrait; margin: 7mm; }
             body { background: white; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
@@ -21,7 +20,6 @@
 
         .malha-impressao { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; padding: 10px; }
 
-        /* 🪪 O MOLDE DO CRACHÁ (Tamanho Padrão 9cm x 6cm) */
         .cracha {
             width: 9cm; height: 6cm; 
             border: 2px solid #000; 
@@ -32,7 +30,6 @@
             page-break-inside: avoid;
         }
 
-        /* 1. CABEÇALHO */
         .cabecalho { display: flex; height: 1.2cm; border-bottom: 2px solid #000; }
         .logo-sme { width: 1.5cm; border-right: 2px solid #000; display: flex; align-items: center; justify-content: center; padding: 2px; }
         .logo-sme img { max-width: 100%; max-height: 100%; object-fit: contain; }
@@ -41,7 +38,6 @@
         .txt-ceu { font-size: 7.5pt; font-weight: bold; }
         .txt-periodo { font-size: 6pt; border-top: 1px solid #000; margin-top: 1px; padding-top: 1px; }
 
-        /* 2. NOME E IDADE (COR DE FUNDO DINÂMICA) */
         .faixa-nome {
             height: 2.2cm;
             display: flex; align-items: center; justify-content: center;
@@ -51,24 +47,20 @@
             text-transform: uppercase;
         }
 
-        /* 3. RODAPÉ INFERIOR */
         .rodape { display: flex; height: 2.6cm; position: relative; }
         
         .bloco-esq { flex: 1; display: flex; flex-direction: column; border-right: 2px solid #000; }
         
-        /* Contatos */
         .contatos { display: flex; flex-direction: column; padding: 2px 4px; height: 1cm; border-bottom: 1px solid #000; }
         .linha-resp { display: flex; justify-content: space-between; font-size: 6pt; font-weight: bold; color: #555; }
         .linha-dados { display: flex; justify-content: space-between; font-size: 7pt; font-weight: bold; }
         
-        /* Ícones */
         .area-icones { display: flex; justify-content: space-between; padding: 2px 5px; height: 1.2cm; }
         .box-icone { display: flex; flex-direction: column; align-items: center; width: 22%; text-align: center;}
         .titulo-icone { font-size: 4.5pt; font-weight: bold; line-height: 1; margin-bottom: 1px;}
         .img-icone { height: 0.8cm; width: 0.8cm; border: 1px solid #000; }
         .img-icone img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* Faixa Vai Sozinho */
         .faixa-sozinho {
             height: 0.4cm; 
             display: flex; align-items: center; justify-content: center;
@@ -76,18 +68,15 @@
             border-top: 1px solid #000;
         }
 
-        /* Bloco Idade Gigante */
         .bloco-dir { width: 2cm; display: flex; align-items: center; justify-content: center; background: #fff; }
         .idade-gigante { font-size: 45pt; font-weight: 900; line-height: 1; letter-spacing: -2px; }
 
-        /* --- ESTILOS DO CRACHÁ DOS PAIS --- */
         .faixa-pais { background: #34495e; color: white; height: 1.2cm; display: flex; align-items: center; justify-content: center; font-size: 14pt; font-weight: 900; border-bottom: 2px solid #000; }
         .area-dados-pais { padding: 5px; flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 5px;}
         .d-box { border: 1px solid #ccc; padding: 3px 5px; border-radius: 4px;}
         .d-lbl { font-size: 6pt; color: #555; font-weight: bold;}
         .d-val { font-size: 10pt; font-weight: 900; text-transform: uppercase; }
 
-        /* UI da Tela */
         .barra-ferramentas { background: #fff; padding: 15px 25px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
         #area-bloqueada { text-align: center; margin-top: 100px; color: #dc3545; display: none; }
     </style>
@@ -117,12 +106,10 @@
         </div>
     </div>
 
-    <!-- ONDE OS CRACHÁS VÃO SURGIR -->
     <div id="containerCriancas" class="malha-impressao"></div>
     <div class="page-break no-print" id="quebraPagina" style="display: none;"></div>
     <div id="containerPais" class="malha-impressao"></div>
 
-    <!-- MOTOR FIREBASE INDEPENDENTE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
         import { getFirestore, collection, query, where, getDocs, getDoc, doc, writeBatch } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
@@ -143,6 +130,7 @@
         
         let ceuId = "";
         let nomeCeu = "CEU NÃO IDENTIFICADO";
+        let logoCeu = ""; // 🌟 Variável para guardar o logo do CEU
         let regrasSME = {};
         let filaImpressao = [];
 
@@ -165,11 +153,15 @@
 
         async function carregarDados() {
             try {
-                // 🔍 Buscar o Nome Oficial do CEU
+                // 🔍 Buscar o Nome Oficial e o Logo do CEU
                 if (ceuId !== "999999") {
                     const ceuSnap = await getDoc(doc(db, "unidades", String(ceuId)));
                     if (ceuSnap.exists()) {
                         nomeCeu = ceuSnap.data().nome_unidade;
+                        // 🌟 Puxa o link da imagem se existir
+                        if (ceuSnap.data().url_logo) {
+                            logoCeu = ceuSnap.data().url_logo;
+                        }
                     }
                 }
 
@@ -183,7 +175,7 @@
                     return;
                 }
 
-                // 2. Puxar a fila de crianças deste CEU
+                // 2. Puxar a fila de crianças
                 const qFila = query(
                     collection(db, "rf_inscricoes"), 
                     where("id_unidade", "==", String(ceuId)), 
@@ -220,27 +212,22 @@
 
             const validarImg = (img) => (img && img !== "") ? img : "";
             
-            let logoRender = LOGO_PADRAO; 
+            // 🌟 Define o logo: usa o do CEU se tiver, senão usa o da Prefeitura
+            let logoRender = (logoCeu && logoCeu !== "") ? logoCeu : LOGO_PADRAO; 
             let periodoRF = `${regrasSME.mes}/${regrasSME.ano}` || "FÉRIAS";
 
             filaImpressao.forEach(cri => {
-                // 🛠️ Tratamento dos Ícones baseados nas Regras Globais
                 const imgDieta = validarImg(cri.dieta_especial === 'SIM' ? regrasSME.dieta_sim : regrasSME.dieta_nao);
                 const imgRestImg = validarImg(cri.restricao_imagem === 'SIM' ? regrasSME.restricao_sim : regrasSME.restricao_nao);
                 const imgInclusao = validarImg(cri.inclusao === 'SIM' ? regrasSME.inclusao_sim : regrasSME.inclusao_nao);
                 const imgPiscina = validarImg(cri.piscina === 'SIM' ? regrasSME.piscina_sim : regrasSME.piscina_nao);
                 
-                // Vai sozinho?
                 const isSozinho = (cri.sozinho === 'SIM');
                 const textoSozinho = isSozinho ? "AUTORIZADO IR SOZINHO" : "NÃO PODE IR SOZINHO";
                 const corFaixaSoz = isSozinho ? regrasSME.cor_sozinho_sim : regrasSME.cor_sozinho_nao;
 
-                // Cor da Idade
                 let corIdade = regrasSME['c' + cri.idade] || '#e2e8f0'; 
 
-                // ==========================================
-                // 🧒 CRACHÁ DA CRIANÇA
-                // ==========================================
                 htmlCriancas += `
                 <div class="cracha">
                     <div class="cabecalho">
@@ -295,9 +282,6 @@
                     </div>
                 </div>`;
 
-                // ==========================================
-                // 👨‍👩‍👧 CRACHÁ DOS PAIS
-                // ==========================================
                 htmlPais += `
                 <div class="cracha">
                     <div class="cabecalho">

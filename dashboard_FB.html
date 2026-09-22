@@ -129,7 +129,7 @@
     <div id="mobile-overlay" class="mobile-overlay" onclick="window.alternarMenuLateral()"></div>
 
     <div class="sidebar">
-        <!-- LOGO DA UNIDADE FICA AQUI NO TOPO -->
+        <!-- LOGO DA UNIDADE / DRE FICA AQUI NO TOPO -->
         <div class="sidebar-header">
             <span class="material-symbols-outlined text-primary" id="dash-icone-padrao" style="font-size: 24px; font-variation-settings: 'FILL' 1;">account_balance</span>
             <img id="dash-img-logo" src="" alt="Logo" style="display: none; max-width: 140px; max-height: 35px; object-fit: contain;">
@@ -386,7 +386,7 @@
         };
 
         // ==========================================
-        // O MOTOR DO MENU DINÂMICO
+        // O MOTOR DO MENU DINÂMICO VAZADO
         // ==========================================
         async function carregarMenuDinamico(perfisUsuario) {
             try {
@@ -454,7 +454,7 @@
         }
 
         // ==========================================
-        // INICIALIZAÇÃO FIREBASE E CARREGAMENTO
+        // INICIALIZAÇÃO E BUSCA CASCATA UNIDADES/DRE/SME
         // ==========================================
         async function inicializarDashboard() {
             try {
@@ -491,32 +491,59 @@
 
                 document.getElementById('lbl-rf').innerText = rfLogado;
 
-                // BUSCA DO NOME DA UNIDADE E LOGO
+                // 🌟 O BUSCADOR EM CASCATA DE PERFIL
                 try {
                     if (!idUnidade) { idUnidade = "000000"; }
-                    
+                    let idLimpo = String(idUnidade).trim();
                     let dadosUnidade = null;
-                    const docRef = doc(db, "unidades", idUnidade);
-                    const docSnap = await getDoc(docRef);
+                    let nomeParaExibir = "";
 
+                    let docSnap = await getDoc(doc(db, "unidades", idLimpo));
                     if (docSnap.exists()) {
                         dadosUnidade = docSnap.data();
+                        nomeParaExibir = dadosUnidade.nome_unidade;
                     } else {
-                        const unidadesRef = collection(db, "unidades");
-                        let q = query(unidadesRef, where("id_unidade", "==", idUnidade));
-                        let snap = await getDocs(q);
-                        
-                        if (snap.empty) {
-                            q = query(unidadesRef, where("id_unidade", "==", Number(idUnidade)));
-                            snap = await getDocs(q);
+                        docSnap = await getDoc(doc(db, "regionais", idLimpo));
+                        if (docSnap.exists()) {
+                            dadosUnidade = docSnap.data();
+                            nomeParaExibir = dadosUnidade.nome_regional;
+                        } else {
+                            docSnap = await getDoc(doc(db, "secretarias", idLimpo));
+                            if (docSnap.exists()) {
+                                dadosUnidade = docSnap.data();
+                                nomeParaExibir = dadosUnidade.nome_secretaria;
+                            } else if (idLimpo === "000000") {
+                                nomeParaExibir = "SME GLOBAL / TI";
+                            }
                         }
-                        if (!snap.empty) dadosUnidade = snap.docs[0].data();
                     }
 
-                    if (dadosUnidade) {
-                        document.getElementById('lbl-ceu').innerText = `${idUnidade} - ${dadosUnidade.nome_unidade.toUpperCase()}`;
-                        
-                        if (dadosUnidade.url_logo) {
+                    // Fallback para imports antigos caso getDoc falhe
+                    if (!nomeParaExibir) {
+                        const colecoes = [
+                            { col: "unidades", campoNome: "nome_unidade", idKey: "id_unidade" },
+                            { col: "regionais", campoNome: "nome_regional", idKey: "id_regional" },
+                            { col: "secretarias", campoNome: "nome_secretaria", idKey: "id_secretaria" }
+                        ];
+
+                        for (let c of colecoes) {
+                            if (nomeParaExibir) break;
+                            let q = query(collection(db, c.col), where(c.idKey, "==", idLimpo));
+                            let snap = await getDocs(q);
+                            if (snap.empty && !isNaN(Number(idLimpo))) {
+                                q = query(collection(db, c.col), where(c.idKey, "==", Number(idLimpo)));
+                                snap = await getDocs(q);
+                            }
+                            if (!snap.empty) {
+                                dadosUnidade = snap.docs[0].data();
+                                nomeParaExibir = dadosUnidade[c.campoNome];
+                            }
+                        }
+                    }
+
+                    if (nomeParaExibir) {
+                        document.getElementById('lbl-ceu').innerText = `${idLimpo} - ${nomeParaExibir.toUpperCase()}`;
+                        if (dadosUnidade && dadosUnidade.url_logo) {
                             const imgDash = document.getElementById('dash-img-logo');
                             const iconePadrao = document.getElementById('dash-icone-padrao');
                             iconePadrao.style.display = 'none';
@@ -524,10 +551,10 @@
                             imgDash.style.display = 'block';
                         }
                     } else {
-                        document.getElementById('lbl-ceu').innerText = `${idUnidade} - UNIDADE NÃO IDENTIFICADA`;
+                        document.getElementById('lbl-ceu').innerText = `${idLimpo} - NÃO IDENTIFICADO`;
                     }
                 } catch (erro) {
-                    document.getElementById('lbl-ceu').innerText = "ERRO AO CARREGAR NOME DA UNIDADE";
+                    document.getElementById('lbl-ceu').innerText = "ERRO AO CARREGAR IDENTIFICAÇÃO";
                 }
 
                 await carregarMenuDinamico(perfisUsuario);

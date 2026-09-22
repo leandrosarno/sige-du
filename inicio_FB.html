@@ -20,7 +20,6 @@
         .bg-tarde { background-color: #fef7e0; color: #b06000; }
         .bg-noite { background-color: #f1f3f4; color: #202124; }
 
-        /* 🌟 O SEGREDO AQUI: Flexbox ao invés de Grid impede o esticamento automático */
         .cards-container { 
             display: flex; 
             flex-wrap: wrap; 
@@ -28,14 +27,13 @@
             align-items: flex-start;
         }
         
-        /* 🌟 CARTÃO COMPACTO E FIXO */
         .stat-card {
             background: #ffffff; border: 1px solid #e3e3e3; border-radius: 16px;
             padding: 24px; text-align: left; box-shadow: none;
             transition: background 0.2s; 
             display: flex; flex-direction: column; justify-content: center;
-            width: 280px; /* Tamanho pequeno e fixo */
-            flex: 0 0 auto; /* Impede que ele "engorde" na tela */
+            width: 280px; 
+            flex: 0 0 auto; 
         }
         .stat-card:hover { background: #f8f9fa; }
         
@@ -88,7 +86,6 @@
                 <h3><i class="fas fa-tv"></i> Acessar</h3>
             </div>
 
-            <!-- CARTÃO ATIVO: RECREIO NAS FÉRIAS -->
             <div class="stat-card">
                 <h6>Recreio nas Férias (Inscrições)</h6>
                 <h3 id="tot-recreio" class="skeleton">0</h3>
@@ -97,7 +94,6 @@
         </div>
     </div>
 
-    <!-- MOTOR FIREBASE UNIVERSAL -->
     <script type="module">
         import { db } from './firebase_config.js';
         import { collection, query, where, getCountFromServer, getDocs } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";

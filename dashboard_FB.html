@@ -9,7 +9,6 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <!-- Referência ao config.js do Google Sheets foi removida -->
     
     <style>
         body {
@@ -142,7 +141,6 @@
                         RF: Carregando...
                     </a>
                 </div>
-                <!-- O nome simples do usuário restaurado na Topbar -->
                 <div id="lbl-nome-usuario" style="font-size: 11px; color: #6c757d; font-weight: 600; margin-top: 2px;">
                     Funcionário
                 </div>
@@ -536,6 +534,7 @@
                 await carregarMenuDinamico(perfisUsuario);
 
                 // CONTROLE DA TELA INICIAL (IFRAME)
+                // 🌟 A REGRA DO 404 FOI REMOVIDA AQUI! 🌟
                 if (isProfessor && !isUnidade && !isAdmin && !isDRE && !isSME) {
                     const sidebar = document.querySelector('.sidebar');
                     if (sidebar) sidebar.style.display = 'none';
@@ -548,10 +547,8 @@
                     
                     document.body.style.backgroundColor = '#f0f2f5';
                     document.getElementById('frame-filho').src = "ChamadaOnline.html";
-
-                } else if (!isUnidade && !isAdmin && (isDRE || isSME)) {
-                    document.getElementById('frame-filho').src = "PainelDRE.html";
                 } else {
+                    // Todos os outros usuários (SME, DRE, ADMIN, CEU) acessam o mesmo Dashboard Inteligente!
                     document.getElementById('frame-filho').src = "inicio_FB.html"; 
                 }
 

@@ -8,7 +8,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="config.js"></script>
     <style>
         body { font-family: 'Nunito', sans-serif; background-color: #f4f7f6; padding: 20px; color: #2c3e50; }
         .page-title { color: #f39c12; font-weight: 800; display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
@@ -27,177 +26,247 @@
         .btn-salvar { background: linear-gradient(135deg, #2ecc71, #27ae60); color: white; font-weight: 800; padding: 15px; border-radius: 10px; border: none; width: 100%; font-size: 18px; transition: 0.3s; }
         .btn-salvar:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(46, 204, 113, 0.4); color: white;}
         .btn-salvar:disabled { background: #95a5a6; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        #area-bloqueada { text-align: center; margin-top: 100px; color: #dc3545; display: none; }
     </style>
 </head>
 <body>
 
-    <h3 class="page-title"><i class="fas fa-sun"></i> Cadastro - Recreio nas Férias</h3>
-
-    <div class="card-form">
-        <div class="card-title"><i class="fas fa-child text-primary"></i> 1. Dados da Criança</div>
-        <div class="row g-3">
-            <div class="col-md-9">
-                <label>Nome Completo *</label>
-                <input type="text" id="nome" class="form-control" placeholder="Nome da criança" required>
-            </div>
-            <div class="col-md-3">
-                <label>Idade *</label>
-                <input type="number" id="idade" class="form-control" placeholder="Ex: 8" required>
-            </div>
-            <div class="col-md-12 mt-3">
-                <label class="text-primary"><i class="fas fa-home"></i> Criança de Abrigo?</label>
-                <input type="text" id="abrigo" class="form-control" placeholder="Se SIM, digite o nome do abrigo. Se NÃO, deixe em branco.">
-            </div>
-        </div>
+    <div id="area-bloqueada">
+        <i class="fas fa-lock" style="font-size: 80px;"></i>
+        <h1 style="font-weight: 900; margin-top: 20px;">ACESSO RESTRITO</h1>
+        <p>Apenas funcionários lotados em unidades CEU podem realizar matrículas no sistema.</p>
     </div>
 
-    <div class="card-form card-orange">
-        <div class="card-title"><i class="fas fa-address-book text-warning"></i> 2. Responsáveis e Contatos</div>
-        <div class="row g-3">
-            <div class="col-md-6">
-                <label>Responsável Legal *</label>
-                <input type="text" id="responsavel" class="form-control" placeholder="Nome do pai/mãe/responsável" required>
-            </div>
-            <div class="col-md-6">
-                <label>Telefone do Responsável *</label>
-                <input type="text" id="telefoneResp" class="form-control" placeholder="(11) 99999-9999" required>
-            </div>
-            <div class="col-md-6">
-                <label>Telefone de Emergência (Opcional)</label>
-                <input type="text" id="telContato" class="form-control" placeholder="(11) 99999-9999">
-            </div>
-            <div class="col-md-6">
-                <label>Falar com (Emergência)</label>
-                <input type="text" id="contatoCom" class="form-control" placeholder="Ex: Avó Maria">
+    <div id="area-sistema" style="display: none;">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3 class="page-title mb-0"><i class="fas fa-sun"></i> Cadastro - Recreio nas Férias</h3>
+            <span class="badge bg-primary" id="tag-unidade" style="font-size: 14px;">CEU</span>
+        </div>
+
+        <div class="card-form">
+            <div class="card-title"><i class="fas fa-child text-primary"></i> 1. Dados da Criança</div>
+            <div class="row g-3">
+                <div class="col-md-9">
+                    <label>Nome Completo *</label>
+                    <input type="text" id="nome" class="form-control text-uppercase" placeholder="Nome da criança" required>
+                </div>
+                <div class="col-md-3">
+                    <label>Idade *</label>
+                    <input type="number" id="idade" class="form-control" placeholder="Ex: 8" required>
+                </div>
+                <div class="col-md-12 mt-3">
+                    <label class="text-primary"><i class="fas fa-home"></i> Criança de Abrigo?</label>
+                    <input type="text" id="abrigo" class="form-control text-uppercase" placeholder="Se SIM, digite o nome do abrigo. Se NÃO, deixe em branco.">
+                </div>
             </div>
         </div>
+
+        <div class="card-form card-orange">
+            <div class="card-title"><i class="fas fa-address-book text-warning"></i> 2. Responsáveis e Contatos</div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label>Responsável Legal *</label>
+                    <input type="text" id="responsavel" class="form-control text-uppercase" placeholder="Nome do pai/mãe/responsável" required>
+                </div>
+                <div class="col-md-6">
+                    <label>Telefone do Responsável *</label>
+                    <input type="text" id="telefoneResp" class="form-control" placeholder="(11) 99999-9999" required>
+                </div>
+                <div class="col-md-6">
+                    <label>Telefone de Emergência (Opcional)</label>
+                    <input type="text" id="telContato" class="form-control" placeholder="(11) 99999-9999">
+                </div>
+                <div class="col-md-6">
+                    <label>Falar com (Emergência)</label>
+                    <input type="text" id="contatoCom" class="form-control text-uppercase" placeholder="Ex: Avó Maria">
+                </div>
+            </div>
+        </div>
+
+        <div class="card-form card-green">
+            <div class="card-title"><i class="fas fa-heartbeat text-success"></i> 3. Saúde e Autorizações</div>
+            
+            <div class="row g-4 mb-4">
+                <div class="col-md-4">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="piscina">
+                        <label class="form-check-label text-primary" for="piscina">🏊‍♂️ Autoriza Piscina?</label>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="vaiSozinho">
+                        <label class="form-check-label" for="vaiSozinho">🚶‍♂️ Vai Sozinho?</label>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="restricaoImagem">
+                        <label class="form-check-label text-danger" for="restricaoImagem">🚫 Restrição Imagem?</label>
+                    </div>
+                </div>
+                <div class="col-md-4 mt-4">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="dietaEspecial">
+                        <label class="form-check-label text-warning" for="dietaEspecial">🍎 Dieta Especial?</label>
+                    </div>
+                </div>
+                <div class="col-md-4 mt-4">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="inclusao">
+                        <label class="form-check-label text-info" for="inclusao">🤝 Criança de Inclusão?</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-md-12">
+                    <label>Observações Gerais / Detalhes de Saúde</label>
+                    <textarea id="observacao" class="form-control" rows="2" placeholder="Qual a dieta? Qual a inclusão? Remédios?"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <button id="btnSalvar" class="btn-salvar"><i class="fas fa-save"></i> Efetivar Matrícula no Recreio</button>
     </div>
 
-    <div class="card-form card-green">
-        <div class="card-title"><i class="fas fa-heartbeat text-success"></i> 3. Saúde e Autorizações</div>
-        
-        <div class="row g-4 mb-4">
-            <div class="col-md-4">
-                <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="piscina">
-                    <label class="form-check-label text-primary" for="piscina">🏊‍♂️ Autoriza Piscina?</label>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="vaiSozinho">
-                    <label class="form-check-label" for="vaiSozinho">🚶‍♂️ Vai Sozinho?</label>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="restricaoImagem">
-                    <label class="form-check-label text-danger" for="restricaoImagem">🚫 Restrição Imagem?</label>
-                </div>
-            </div>
-            <div class="col-md-4 mt-4">
-                <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="dietaEspecial">
-                    <label class="form-check-label text-warning" for="dietaEspecial">🍎 Dieta Especial?</label>
-                </div>
-            </div>
-            <div class="col-md-4 mt-4">
-                <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="inclusao">
-                    <label class="form-check-label text-info" for="inclusao">🤝 Criança de Inclusão?</label>
-                </div>
-            </div>
-        </div>
+    <!-- MOTOR FIREBASE COM ALOCAÇÃO INTELIGENTE DE TURMAS (IDADE + LETRA) -->
+    <script type="module">
+        import { db } from './firebase_config.js';
+        import { collection, addDoc, doc, getDoc, query, where, getCountFromServer } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
-        <div class="row g-3">
-            <div class="col-md-12">
-                <label>Observações Gerais / Detalhes de Saúde</label>
-                <textarea id="observacao" class="form-control" rows="2" placeholder="Qual a dieta? Qual a inclusão? Remédios?"></textarea>
-            </div>
-        </div>
-    </div>
+        let ceuId = "";
+        let ceuNome = "";
 
-    <button id="btnSalvar" class="btn-salvar" onclick="salvarMatricula()"><i class="fas fa-save"></i> Efetivar Matrícula no Recreio</button>
+        window.onload = function() {
+            ceuId = localStorage.getItem('sig_id_unidade') || "";
+            ceuNome = localStorage.getItem('sig_nome_unidade') || "CEU Desconhecido";
 
-    <script>
-        async function salvarMatricula() {
-            const idPlanilha = localStorage.getItem('ceu_planilha_id');
-            if (!idPlanilha) {
-                Swal.fire('Erro', 'O Banco de Dados do CEU não está conectado!', 'error');
-                return;
+            // Se for SME/DRE testando, permite o teste, mas num ambiente real o ideal é que loguem como uma unidade
+            if (!ceuId || ceuId === "000000") {
+                if (localStorage.getItem('sig_nivel_acesso')?.includes('ADMIN')) {
+                    ceuId = "999999"; 
+                    ceuNome = "CEU TESTE ADMIN";
+                } else {
+                    document.getElementById('area-bloqueada').style.display = 'block';
+                    return;
+                }
             }
 
-            const nome = document.getElementById('nome').value.trim();
-            const idade = document.getElementById('idade').value;
-            const responsavel = document.getElementById('responsavel').value.trim();
+            document.getElementById('tag-unidade').innerText = ceuNome;
+            document.getElementById('area-sistema').style.display = 'block';
+
+            document.getElementById('btnSalvar').addEventListener('click', salvarMatricula);
+        };
+
+        async function salvarMatricula() {
+            const nome = document.getElementById('nome').value.trim().toUpperCase();
+            const idade = parseInt(document.getElementById('idade').value);
+            const responsavel = document.getElementById('responsavel').value.trim().toUpperCase();
             const telefoneResp = document.getElementById('telefoneResp').value.trim();
 
-            if (!nome || !idade || !responsavel || !telefoneResp) {
+            if (!nome || isNaN(idade) || !responsavel || !telefoneResp) {
                 Swal.fire('Atenção!', 'Preencha o Nome, Idade, Responsável e Telefone!', 'warning');
                 return;
             }
 
-            // 🛡️ Prepara e junta as informações de emergência na caixa de Observação
-            let obsFinal = document.getElementById('observacao').value.trim();
-            const telEmergencia = document.getElementById('telContato').value.trim();
-            const contatoEmerg = document.getElementById('contatoCom').value.trim();
-            
-            if (telEmergencia || contatoEmerg) {
-                obsFinal += ` [Emergência: ${contatoEmerg} - ${telEmergencia}]`;
-            }
-
-            // 🌟 O PACOTE DE DADOS AGORA FALA A MESMA LÍNGUA DO SERVIDOR
-            const dadosMatricula = {
-                idPlanilha: idPlanilha,
-                nome: nome,
-                idade: idade,
-                abrigo: document.getElementById('abrigo').value.trim(),
-                resp: responsavel,       // Traduzido de responsavel para resp
-                tel: telefoneResp,       // Traduzido de telefoneResp para tel
-                obs: obsFinal,           // Observações consolidadadas
-                imprimir: "SIM",         // Já vai pra fila de crachás por padrão
-                
-                // Os Checkboxes convertidos para "SIM" ou "NÃO" com os nomes exatos do Servidor
-                piscina: document.getElementById('piscina').checked ? "SIM" : "NÃO",
-                sozinho: document.getElementById('vaiSozinho').checked ? "SIM" : "NÃO",
-                restImg: document.getElementById('restricaoImagem').checked ? "SIM" : "NÃO",
-                dieta: document.getElementById('dietaEspecial').checked ? "SIM" : "NÃO",
-                inclusao: document.getElementById('inclusao').checked ? "SIM" : "NÃO"
-            };
-
             const btn = document.getElementById('btnSalvar');
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando e Calculando Turma...';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analisando Regras SME e Gerando Turma...';
             btn.disabled = true;
 
-            const pacote = { acao: "salvarCriancaRecreio", dados: dadosMatricula };
-
             try {
-                // Aqui ele pega o API_URL universal do config.js
-                const respostaRaw = await fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) });
-                const resposta = await respostaRaw.json();
-
-                btn.innerHTML = '<i class="fas fa-save"></i> Efetivar Matrícula no Recreio';
-                btn.disabled = false;
-
-                if (resposta.sucesso || resposta.status === "sucesso") {
-                    Swal.fire({
-                        title: 'Matriculado!',
-                        html: `A criança foi salva com sucesso!<br><br>
-                               <div style="font-size: 22px; color: #2980b9; font-weight: bold; background: #ebf5fb; padding: 15px; border-radius: 10px;">
-                                 👉 TURMA: ${resposta.turma}<br>
-                                 <span style="font-size: 14px; color: #7f8c8d;">ID: ${resposta.id}</span>
-                               </div>`,
-                        icon: 'success',
-                        confirmButtonColor: '#2ecc71'
-                    });
-                    limparFormulario();
-                } else {
-                    Swal.fire('Erro ao Salvar', resposta.erro || resposta.mensagem, 'error');
+                // 1. LER AS REGRAS MATRIZ DA SME
+                const regrasSnap = await getDoc(doc(db, "configuracoes", "regras_rf"));
+                let max4e5 = 20; let max6a14 = 35; 
+                
+                if (regrasSnap.exists()) {
+                    let r = regrasSnap.data();
+                    max4e5 = parseInt(r.max4e5) || 20;
+                    max6a14 = parseInt(r.max6a14) || 35;
                 }
+
+                // 2. DEFINIR O LIMITE DE ALUNOS COM BASE NA IDADE
+                let limiteTurma = 35;
+                if (idade >= 0 && idade <= 3) {
+                    limiteTurma = 15; // Padrão seguro para bebês/minigrupo
+                } else if (idade >= 4 && idade <= 5) {
+                    limiteTurma = max4e5;
+                } else {
+                    limiteTurma = max6a14;
+                }
+
+                // 3. CONTAR QUANTAS CRIANÇAS DAQUELA IDADE EXATA JÁ ESTÃO NO CEU
+                const qContagem = query(
+                    collection(db, "rf_inscricoes"),
+                    where("id_unidade", "==", String(ceuId)),
+                    where("idade", "==", idade)
+                );
+                
+                const contagemSnap = await getCountFromServer(qContagem);
+                const qtdAtual = contagemSnap.data().count;
+
+                // 4. CALCULAR A LETRA DA TURMA (A, B, C...)
+                // Ex: Se o limite é 35 e temos 35 crianças (0 a 34), o próximo (35) vai para B.
+                let indexLetra = Math.floor(qtdAtual / limiteTurma);
+                // 65 é o código ASCII para a letra 'A'
+                let letraTurma = String.fromCharCode(65 + indexLetra); 
+                let nomeTurmaAlocada = `${idade}${letraTurma}`; // Ex: 4A, 8B, 10C
+
+                // 5. PREPARAR DADOS DE EMERGÊNCIA
+                let obsFinal = document.getElementById('observacao').value.trim();
+                const telEmergencia = document.getElementById('telContato').value.trim();
+                const contatoEmerg = document.getElementById('contatoCom').value.trim().toUpperCase();
+                
+                if (telEmergencia || contatoEmerg) {
+                    obsFinal += ` [Emergência: ${contatoEmerg} - ${telEmergencia}]`;
+                }
+
+                // 6. MONTAR O DOCUMENTO PARA O FIREBASE
+                const dadosMatricula = {
+                    id_unidade: String(ceuId),
+                    nome_unidade: ceuNome,
+                    nome_crianca: nome,
+                    idade: idade,
+                    turma: nomeTurmaAlocada, // A mágica exata que você pediu!
+                    abrigo: document.getElementById('abrigo').value.trim().toUpperCase(),
+                    resp: responsavel,
+                    tel: telefoneResp,
+                    obs: obsFinal,
+                    imprimir: "SIM", // Vai para a fila de crachás
+                    
+                    piscina: document.getElementById('piscina').checked ? "SIM" : "NÃO",
+                    sozinho: document.getElementById('vaiSozinho').checked ? "SIM" : "NÃO",
+                    restricao_imagem: document.getElementById('restricaoImagem').checked ? "SIM" : "NÃO",
+                    dieta_especial: document.getElementById('dietaEspecial').checked ? "SIM" : "NÃO",
+                    inclusao: document.getElementById('inclusao').checked ? "SIM" : "NÃO",
+                    
+                    data_matricula: new Date().toISOString(),
+                    usuario_cadastro: localStorage.getItem('sig_nome') || "Funcionário"
+                };
+
+                // 7. SALVAR NO BANCO
+                const docRef = await addDoc(collection(db, "rf_inscricoes"), dadosMatricula);
+
+                Swal.fire({
+                    title: 'Matriculado!',
+                    html: `A criança foi cadastrada e alocada com sucesso!<br><br>
+                           <div style="font-size: 28px; color: #e67e22; font-weight: 900; background: #fdf2e9; padding: 15px; border-radius: 10px; text-transform: uppercase;">
+                             👉 TURMA ${nomeTurmaAlocada}<br>
+                             <span style="font-size: 13px; color: #7f8c8d; font-weight: bold; text-transform: none;">Inscrição número ${qtdAtual + 1} para esta idade.</span>
+                           </div>`,
+                    icon: 'success',
+                    confirmButtonColor: '#2ecc71'
+                });
+
+                limparFormulario();
+
             } catch (error) {
+                console.error("Erro ao salvar matrícula:", error);
+                Swal.fire('Falha na Conexão', 'Não foi possível salvar os dados no servidor. Verifique a internet.', 'error');
+            } finally {
                 btn.innerHTML = '<i class="fas fa-save"></i> Efetivar Matrícula no Recreio';
                 btn.disabled = false;
-                Swal.fire('Falha na Conexão', 'Não foi possível enviar os dados ao servidor.', 'error');
             }
         }
 

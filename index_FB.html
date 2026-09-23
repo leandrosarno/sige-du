@@ -32,53 +32,63 @@
             font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
         }
 
+        /* 🌟 CAIXA DE LOGIN ESTILO GOOGLE WORKSPACE */
         .login-box { 
             background: var(--surface); 
-            width: 320px; 
-            padding: 32px 28px; 
+            width: 100%; 
+            max-width: 420px; /* Mais larga e imponente */
+            padding: 40px; 
             border: 1px solid var(--border); 
-            box-shadow: 0 4px 20px rgba(0,0,0,0.04); 
-            border-radius: 24px; 
+            box-shadow: 0 4px 24px rgba(0,0,0,0.06); 
+            border-radius: 28px; /* Cantos ultra suaves */
             box-sizing: border-box;
+            margin: 20px;
         }
 
         .login-header { 
             text-align: center; 
-            border-bottom: 1px solid var(--border); 
-            margin-bottom: 20px; 
-            padding-bottom: 16px; 
+            margin-bottom: 24px; /* Sem linha divisória, visual mais limpo */
         }
         
+        /* 🌟 LOGO MUITO MAIOR E EM DESTAQUE */
         #logoSistema { 
-            max-width: 140px; 
-            max-height: 60px; 
+            width: 100%;
+            max-width: 220px; 
+            max-height: 90px; 
             object-fit: contain; 
-            margin-bottom: 12px; 
+            margin-bottom: 16px; 
             display: none; 
             margin-left: auto; 
             margin-right: auto; 
         }
         
         #iconePadrao { 
-            font-size: 36px; 
+            font-size: 48px; 
             color: var(--primary); 
             font-variation-settings: 'FILL' 1;
+            margin-bottom: 8px;
         }
 
-        .login-header h3 { font-weight: 600; margin: 8px 0 4px 0; font-size: 16px; color: var(--text-main); letter-spacing: -0.3px;}
-        .login-header p { margin: 0; color: var(--text-muted); font-size: 11px; font-weight: 500;}
+        .login-header h3 { 
+            font-weight: 400; 
+            margin: 0; 
+            font-size: 22px; 
+            color: var(--text-main); 
+            letter-spacing: -0.5px;
+        }
         
-        .form-group { margin-bottom: 16px; }
-        .form-label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;}
+        /* 🌟 CAMPOS MAIS JUNTOS E HARMÔNICOS */
+        .form-group { margin-bottom: 14px; }
+        .form-label { display: block; font-weight: 600; margin-bottom: 4px; font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;}
         
         .form-control { 
             width: 100%; 
-            padding: 10px 14px; 
+            padding: 12px 16px; 
             border: 1px solid var(--border); 
             border-radius: 12px; 
-            font-size: 13px; 
+            font-size: 14px; 
             box-sizing: border-box; 
-            background-color: #fafafa;
+            background-color: #ffffff;
             color: var(--text-main);
             transition: all 0.2s ease;
             font-family: inherit;
@@ -86,58 +96,60 @@
         .form-control:focus { 
             outline: none; 
             border-color: var(--primary); 
-            background-color: #ffffff;
-            box-shadow: 0 0 0 3px rgba(11, 87, 208, 0.1);
+            box-shadow: 0 0 0 2px rgba(11, 87, 208, 0.15);
         }
+        .form-control::placeholder { color: #8e918f; }
 
+        /* BOTÃO PÍLULA ESTILO GOOGLE */
         .btn-login { 
             background-color: var(--primary); 
             color: white; 
             border: none; 
             width: 100%; 
-            padding: 10px; 
+            padding: 12px; 
             font-weight: 600; 
-            font-size: 13px; 
+            font-size: 14px; 
             cursor: pointer; 
-            margin-top: 8px; 
+            margin-top: 12px; 
             border-radius: 50px; 
             transition: 0.2s; 
         }
-        .btn-login:hover { background-color: #0842a0; box-shadow: 0 2px 6px rgba(11, 87, 208, 0.2); }
+        .btn-login:hover { background-color: #0842a0; box-shadow: 0 2px 8px rgba(11, 87, 208, 0.25); }
         
         .link-senha { 
             display: block; 
             text-align: center; 
-            margin-top: 16px; 
+            margin-top: 20px; 
             color: var(--primary); 
             text-decoration: none; 
             cursor: pointer; 
-            font-size: 11px; 
+            font-size: 12px; 
             font-weight: 600;
         }
         .link-senha:hover { text-decoration: underline; color: #0842a0; }
         
+        /* SWEETALERT DESIGN */
         div:where(.swal2-container) div:where(.swal2-popup) { 
-            width: 320px !important; 
+            width: 340px !important; 
             padding: 24px !important; 
             border-radius: 24px !important; 
             border: none !important; 
             box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important; 
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif !important; 
         }
-        div:where(.swal2-container) h2:where(.swal2-title) { font-size: 16px !important; font-weight: 600 !important; color: var(--text-main) !important; margin: 0 0 8px 0 !important; }
-        div:where(.swal2-container) div:where(.swal2-html-container) { font-size: 13px !important; color: var(--text-muted) !important; margin: 8px 0 20px 0 !important; }
+        div:where(.swal2-container) h2:where(.swal2-title) { font-size: 18px !important; font-weight: 600 !important; color: var(--text-main) !important; margin: 0 0 8px 0 !important; }
+        div:where(.swal2-container) div:where(.swal2-html-container) { font-size: 14px !important; color: var(--text-muted) !important; margin: 8px 0 20px 0 !important; }
         div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm { 
             border-radius: 50px !important; 
-            font-size: 13px !important; 
+            font-size: 14px !important; 
             font-weight: 600 !important; 
-            padding: 8px 24px !important; 
+            padding: 10px 24px !important; 
             width: auto !important; 
             background-color: var(--primary) !important; 
             border: none !important; 
         }
         div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm:hover { background-color: #0842a0 !important; }
-        div:where(.swal2-container) .swal2-icon { transform: scale(0.6) !important; margin: 0 auto 10px auto !important; }
+        div:where(.swal2-container) .swal2-icon { transform: scale(0.7) !important; margin: 0 auto 16px auto !important; }
     </style>
 </head>
 <body>
@@ -146,7 +158,6 @@
             <img id="logoSistema" src="" alt="Logo do Sistema">
             <span id="iconePadrao" class="material-symbols-outlined">admin_panel_settings</span>
             <h3 id="tituloSistema">Carregando...</h3>
-            <p>Acesso Restrito ao Sistema</p>
         </div>
         <form id="formLogin" onsubmit="event.preventDefault(); window.fazerLogin();">
             <div class="form-group">
@@ -158,12 +169,12 @@
                 <input type="text" class="form-control" id="rf_usuario" placeholder="Apenas números" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
             </div>
             <div class="form-group">
-                <label class="form-label">Senha</label>
-                <input type="password" class="form-control" id="senha_usuario" placeholder="******" required>
+                <label class="form-label">Senha de Acesso</label>
+                <input type="password" class="form-control" id="senha_usuario" placeholder="••••••" required>
             </div>
-            <button type="submit" class="btn-login">CONECTAR</button>
+            <button type="submit" class="btn-login">Acessar Sistema</button>
         </form>
-        <a class="link-senha" onclick="window.recuperarSenha()">Esqueci minha senha</a>
+        <a class="link-senha" onclick="window.recuperarSenha()">Esqueceu sua senha?</a>
     </div>
 
     <script type="module">
@@ -176,27 +187,23 @@
             projectId: "sig-edu",
             storageBucket: "sig-edu.firebasestorage.app",
             messagingSenderId: "233239725278",
-            appId: "1:233239725278:web:809b9c42feacd99175ee4f",
-            measurementId: "G-E5LLYGW7DN"
+            appId: "1:233239725278:web:809b9c42feacd99175ee4f"
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Limpa resíduos de acessos anteriores
         localStorage.clear();
 
-        // MÁGICA 1: Busca o nome do sistema ou define um padrão seguro
         async function carregarConfiguracoes() {
             try {
                 const configRef = collection(db, "configuracoes");
                 const configSnapshot = await getDocs(configRef);
                 
-                let nomeEncontrado = "SIG-EDU Central"; // Nome garantido caso não ache no Firebase
+                let nomeEncontrado = "SIG-EDU Central"; 
                 let logoEncontrada = null;
                 
                 if (!configSnapshot.empty) {
-                    // Vasculha todos os documentos em busca do nome e da logo
                     configSnapshot.forEach((doc) => {
                         const dados = doc.data();
                         if (dados.nomeSistema) nomeEncontrado = dados.nomeSistema;
@@ -204,11 +211,9 @@
                     });
                 }
                 
-                // Aplica o nome
                 document.getElementById('tituloSistema').innerText = nomeEncontrado;
                 document.title = "Login - " + nomeEncontrado;
                 
-                // Aplica o logo (se existir)
                 if (logoEncontrada) {
                     const imgLogo = document.getElementById('logoSistema');
                     imgLogo.src = logoEncontrada;
@@ -231,13 +236,13 @@
             const senha = document.getElementById('senha_usuario').value.trim();
 
             if(!unidade || !rf || !senha) {
-                Swal.fire({ icon: 'warning', title: 'Atenção', text: 'Preencha todos os campos.' });
+                Swal.fire({ icon: 'warning', title: 'Atenção', text: 'Por favor, preencha todos os campos.' });
                 return;
             }
 
             Swal.fire({
-                title: 'A validar acessos...',
-                text: 'Consultando servidor.',
+                title: 'Validando...',
+                text: 'Conectando ao servidor seguro.',
                 allowOutsideClick: false,
                 didOpen: () => { Swal.showLoading(); }
             });
@@ -268,11 +273,10 @@
                 });
 
                 if (!usuarioValido) {
-                    Swal.fire({ icon: 'error', title: 'Acesso Negado', text: 'Senha incorreta.' });
+                    Swal.fire({ icon: 'error', title: 'Acesso Negado', text: 'A senha informada está incorreta.' });
                     return;
                 }
 
-                // Guardando as Chaves Estrangeiras no bolso do navegador
                 localStorage.setItem('sig_rf', dadosUsuario.rf_usuario); 
                 localStorage.setItem('sig_id_unidade', dadosUsuario.id_unidade);
                 localStorage.setItem('sig_nivel_acesso', dadosUsuario.id_nivel_acesso);
@@ -280,7 +284,6 @@
                 localStorage.setItem('sig_email', dadosUsuario.email_usuario || "");
                 localStorage.setItem('sig_foto', dadosUsuario.url_foto || "");
                 
-                // Redireciona para o Painel de Controle
                 window.location.href = "dashboard_FB.html";
 
             } catch (erro) {
@@ -291,10 +294,10 @@
 
         window.recuperarSenha = function() {
             Swal.fire({
-                title: 'Recuperar Acesso',
-                text: 'Contate o Administrador de TI da sua Regional para solicitar uma nova credencial.',
-                icon: 'warning',
-                confirmButtonText: 'ENTENDIDO'
+                title: 'Recuperação de Senha',
+                text: 'Por favor, contate o Administrador de TI da sua Regional para solicitar uma nova credencial de acesso.',
+                icon: 'info',
+                confirmButtonText: 'Entendido'
             });
         };
     </script>

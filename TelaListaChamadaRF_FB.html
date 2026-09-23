@@ -347,7 +347,7 @@
             <head>
                 <title>${tipoDoc} - ${nomeCeuAtivo}</title>
                 <style>
-                    /* Zera margem do navegador e cria uma FOLHA virtual à prova de falhas */
+                    /* 🌟 MÁGICA DE IMPRESSÃO APRIMORADA: Ignora margem do navegador e usa tamanho auto! */
                     @page { size: A4 ${orientacao}; margin: 0 !important; }
                     body { font-family: Arial, sans-serif; margin: 0; padding: 0; color: #000; background: #e0e0e0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
                     
@@ -362,10 +362,18 @@
                         page-break-after: always;
                     }
 
+                    /* Na hora de imprimir, ele zera a largura e altura forçada para não gerar página extra! */
                     @media print {
-                        body { background: white; margin: 0; }
-                        .folha { margin: 0; box-shadow: none; border: none; }
-                        .folha:last-child { page-break-after: auto; }
+                        body { background: white; margin: 0; padding: 0; }
+                        .folha { 
+                            margin: 0 !important; 
+                            box-shadow: none !important; 
+                            border: none !important; 
+                            width: auto !important; 
+                            min-height: 0 !important; 
+                            height: auto !important;
+                        }
+                        .folha:last-child { page-break-after: auto !important; }
                     }
 
                     /* ESTILOS PADRÃO */
@@ -381,7 +389,7 @@
                     /* 🌟 ESTILOS ESPECÍFICOS DA NOVA CHAMADA */
                     .titulo-edicao { text-align: center; font-size: 14pt; font-weight: 900; margin-bottom: 8px; text-transform: uppercase; }
                     
-                    /* 🌟 SEM BORDA COMO SOLICITADO */
+                    /* 🌟 SEM BORDA NO CABEÇALHO TRIPLO */
                     .cabecalho-triplo { display: flex; justify-content: space-between; align-items: center; border: none; padding: 5px 10px; margin-bottom: 10px; }
                     
                     .col-logo { width: 33%; display: flex; align-items: center; gap: 12px; }
@@ -565,7 +573,7 @@
         }
 
         // ==========================================
-        // 🚌🎭 AGENDA UNIFICADA DRE E AUTORIZAÇÕES
+        // 🚌🎭 AGENDA UNIFICADA DRE E AUTORIZAÇÕES (MARGENS BLINDADAS)
         // ==========================================
         function normalizarData(str) {
             if (!str) return null;
@@ -691,8 +699,7 @@
             diasDoPrograma.forEach((dia, index) => {
                 semanaAtualArray.push(dia);
                 if (dia.dataObj.getDay() === 6 || index === diasDoPrograma.length - 1) {
-                    htmlTabelas += `
-                        <div class="folha">
+                    htmlTabelas += `<div class="folha">
                         <div class="cabecalho-pagina">
                             <h1>CRONOGRAMA DE EVENTOS E PASSEIOS</h1>
                             <h2>${nomeCeuAtivo} | ${globalMesAnoPrograma}</h2>
@@ -754,6 +761,13 @@
                         @page { size: A4 landscape; margin: 0 !important; }
                         body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; color: #1e293b; background: #e0e0e0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;}
                         .folha { width: 297mm; min-height: 210mm; padding: 15mm; box-sizing: border-box; margin: 10mm auto; background: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.2); page-break-after: always; }
+                        
+                        @media print { 
+                            body { background: #fff; margin: 0; padding: 0; } 
+                            .folha { margin: 0 !important; border: none !important; box-shadow: none !important; width: auto !important; min-height: 0 !important; height: auto !important; } 
+                            .folha:last-child { page-break-after: auto !important; } 
+                        }
+
                         .cabecalho-pagina { text-align: center; margin-bottom: 20px; }
                         .cabecalho-pagina h1 { margin: 0; font-size: 22px; color: #0f172a; font-weight: 900;}
                         .cabecalho-pagina h2 { margin: 5px 0 0 0; font-size: 16px; color: #0b57d0; text-transform: uppercase; border-bottom: 2px solid #e3e3e3; padding-bottom: 10px; display: inline-block;}
@@ -769,7 +783,6 @@
                         .text-atracao { color: #86198f;}
                         .card-linha { margin-bottom: 3px; color: #444746; }
                         .card-vazio { text-align: center; font-style: italic; color: #94a3b8; font-size: 12px; margin-top: 20px; }
-                        @media print { body { background: #fff; } .folha { margin: 0; border: none; box-shadow: none; } .folha:last-child { page-break-after: auto; } }
                     </style>
                 </head>
                 <body>
@@ -791,6 +804,13 @@
                 @page { size: A4 portrait; margin: 0 !important; }
                 body { font-family: Arial, sans-serif; margin: 0; padding: 0; color: #1f1f1f; background: #e0e0e0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;}
                 .folha { width: 210mm; min-height: 297mm; padding: 15mm 10mm; box-sizing: border-box; margin: 10mm auto; background: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.2); page-break-after: always; }
+                
+                @media print { 
+                    body { background: #fff; margin: 0; padding: 0; } 
+                    .folha { margin: 0 !important; border: none !important; box-shadow: none !important; width: auto !important; min-height: 0 !important; height: auto !important; } 
+                    .folha:last-child { page-break-after: auto !important; } 
+                }
+
                 h2 { text-align: center; color: #1f1f1f; font-size: 16px; text-transform: uppercase; margin-bottom: 10px; margin-top: 5px;}
                 table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 12px; }
                 th, td { border: 1px solid #cbd5e1; padding: 8px; text-align: left; }
@@ -803,7 +823,6 @@
                 .campo-flex { flex-grow: 1; white-space: nowrap; }
                 .auth-assinatura { text-align: center; margin-top: 10px; }
                 .auth-assinatura-linha { border-top: 1px solid #000; width: 50%; margin: 0 auto; padding-top: 2px; font-size: 9px;}
-                @media print { body { background: #fff; } .folha { margin: 0; border: none; box-shadow: none; } .folha:last-child { page-break-after: auto; } }
             </style></head><body>
             
             <div class="folha">

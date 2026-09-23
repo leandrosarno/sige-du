@@ -74,7 +74,7 @@
                 <optgroup label="Listagens por Turma">
                     <option value="CHAMADA">Lista de Chamada Oficial (Dias Úteis)</option>
                     <option value="PORTA">Listagem para a Porta da Sala</option>
-                    <option value="ASSINATURA">Listagem para Assinatura dos Pais</option>
+                    <option value="ASSINATURA">Entrega de Crachás (Assinatura dos Pais)</option>
                 </optgroup>
                 <optgroup label="Listagens Especiais (Todas as Turmas Juntas)">
                     <option value="INCLUSAO">Crianças de Inclusão</option>
@@ -347,7 +347,7 @@
             <head>
                 <title>${tipoDoc} - ${nomeCeuAtivo}</title>
                 <style>
-                    /* 🌟 MÁGICA DE IMPRESSÃO APRIMORADA: Ignora margem do navegador e usa tamanho auto! */
+                    /* MÁGICA DE IMPRESSÃO APRIMORADA */
                     @page { size: A4 ${orientacao}; margin: 0 !important; }
                     body { font-family: Arial, sans-serif; margin: 0; padding: 0; color: #000; background: #e0e0e0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
                     
@@ -362,49 +362,38 @@
                         page-break-after: always;
                     }
 
-                    /* Na hora de imprimir, ele zera a largura e altura forçada para não gerar página extra! */
                     @media print {
                         body { background: white; margin: 0; padding: 0; }
-                        .folha { 
-                            margin: 0 !important; 
-                            box-shadow: none !important; 
-                            border: none !important; 
-                            width: auto !important; 
-                            min-height: 0 !important; 
-                            height: auto !important;
-                        }
+                        .folha { margin: 0 !important; box-shadow: none !important; border: none !important; width: auto !important; min-height: 0 !important; height: auto !important; }
                         .folha:last-child { page-break-after: auto !important; }
                     }
 
-                    /* ESTILOS PADRÃO */
-                    .cabecalho { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
-                    .cabecalho h2 { margin: 0; font-size: 18px; text-transform: uppercase; }
-                    .cabecalho h3 { margin: 5px 0 0 0; font-size: 14px; font-weight: normal; }
+                    /* ESTILOS DA TABELA PADRÃO */
                     table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 11px; }
                     th, td { border: 1px solid #000; padding: 6px; text-align: left; }
                     th { background-color: #f0f0f0; font-weight: bold; text-align: center;}
                     .text-center { text-align: center; }
                     .nome-porta { font-size: 24px; font-weight: bold; text-transform: uppercase; padding: 12px; }
                     
-                    /* 🌟 ESTILOS ESPECÍFICOS DA NOVA CHAMADA */
+                    /* 🌟 CABEÇALHO TRIPLO (AGORA EM TODOS OS RELATÓRIOS) */
                     .titulo-edicao { text-align: center; font-size: 14pt; font-weight: 900; margin-bottom: 8px; text-transform: uppercase; }
-                    
-                    /* 🌟 SEM BORDA NO CABEÇALHO TRIPLO */
                     .cabecalho-triplo { display: flex; justify-content: space-between; align-items: center; border: none; padding: 5px 10px; margin-bottom: 10px; }
                     
                     .col-logo { width: 33%; display: flex; align-items: center; gap: 12px; }
                     .col-logo img { max-height: 45px; max-width: 140px; object-fit: contain; }
                     .col-logo span { font-weight: 900; font-size: 11pt; line-height: 1.1; }
                     
-                    /* TAMANHO 5PT DO RESPONSÁVEL */
+                    /* O Centro Flexível (Assinatura na Chamada ou Título nas outras) */
                     .col-resp { width: 33%; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding-bottom: 2px; }
                     .linha-assinatura { border-bottom: 1px solid #000; width: 90%; height: 20px; }
                     .lbl-assinatura { font-size: 5pt; font-weight: bold; margin-top: 2px; text-transform: uppercase; }
                     
                     .col-turma { width: 33%; text-align: right; font-weight: 900; font-size: 22pt; padding-right: 5px; }
                     
+                    /* Sub Cabeçalho Chamada */
                     .sub-cabecalho { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 8px; font-size: 8pt; font-weight: bold; }
                     
+                    /* Tabela Específica da Chamada */
                     table.tabela-presenca { width: 100%; border-collapse: collapse; border: 2px solid #000; font-size: 9.5pt; table-layout: fixed; }
                     table.tabela-presenca th, table.tabela-presenca td { border: 1px solid #000; text-align: center; vertical-align: middle; padding: 4px; }
                     table.tabela-presenca th { background-color: #f0f0f0; font-weight: bold; }
@@ -423,10 +412,16 @@
             if (ehEspecial) {
                 htmlBody += `
                     <div class="folha">
-                        <div class="cabecalho">
-                            <h2>RELATÓRIO: ${tipoDoc}</h2>
-                            <h3>${nomeCeuAtivo.toUpperCase()} | RECREIO NAS FÉRIAS - ${periodoRF}</h3>
+                        <div class="titulo-edicao">RELATÓRIO: ${tipoDoc}</div>
+                        
+                        <div class="cabecalho-triplo">
+                            <div class="col-logo"><img src="${logoRender}"><span>${nomeCeuAtivo.toUpperCase()}</span></div>
+                            <div class="col-resp" style="justify-content: center; padding-bottom: 0;">
+                                <span style="font-size: 10pt; font-weight: bold; text-align: center;">RECREIO NAS FÉRIAS<br>${periodoRF}</span>
+                            </div>
+                            <div class="col-turma"></div> <!-- Vazio nas listas gerais -->
                         </div>
+                        
                         <table>
                             <thead>
                                 <tr>
@@ -463,9 +458,7 @@
                     let dataFim = new Date(regrasSME.diaFim + "T00:00:00");
                     while(dataAtual <= dataFim) {
                         if (dataAtual.getDay() !== 0 && dataAtual.getDay() !== 6) {
-                            // 🌟 AGORA FORMATA APENAS O DIA (DD)
                             let diaF = ("0" + dataAtual.getDate()).slice(-2);
-                            
                             headersDias += `<th class="col-dia">${diaF}</th>`;
                             colsDias += `<td class="col-dia"></td>`;
                             totalDiasEncontrados++;
@@ -487,10 +480,10 @@
                     htmlBody += `<div class="folha">`;
                     
                     if (tipoDoc === "CHAMADA") {
+                        // 🌟 LISTA DE CHAMADA MANTIDA INTACTA (Apenas bordas removidas no CSS geral)
                         htmlBody += `
                             <div class="titulo-edicao">RECREIO NAS FÉRIAS EDIÇÃO: ${periodoRF}</div>
                             
-                            <!-- CABEÇALHO SEM BORDA -->
                             <div class="cabecalho-triplo">
                                 <div class="col-logo"><img src="${logoRender}"><span>${nomeCeuAtivo.toUpperCase()}</span></div>
                                 <div class="col-resp">
@@ -536,11 +529,18 @@
                         htmlBody += `</tbody></table>`;
                     } 
                     else {
-                        let tituloDoc = tipoDoc === 'ASSINATURA' ? 'CONTROLE DE ENTRADA E SAÍDA' : 'LISTAGEM DA PORTA DA SALA';
+                        // 🌟 LISTA DE PORTA E ASSINATURA COM O NOVO CABEÇALHO TRIPLO
+                        let tituloDoc = tipoDoc === 'ASSINATURA' ? 'ENTREGA DE CRACHÁS' : 'LISTAGEM DA PORTA DA SALA';
+                        
                         htmlBody += `
-                            <div class="cabecalho">
-                                <h2>${tituloDoc}</h2>
-                                <h3>${nomeCeuAtivo.toUpperCase()} | TURMA: <b>${nomeTurma}</b> | RECREIO NAS FÉRIAS - ${periodoRF}</h3>
+                            <div class="titulo-edicao">${tituloDoc}</div>
+                            
+                            <div class="cabecalho-triplo">
+                                <div class="col-logo"><img src="${logoRender}"><span>${nomeCeuAtivo.toUpperCase()}</span></div>
+                                <div class="col-resp" style="justify-content: center; padding-bottom: 0;">
+                                    <span style="font-size: 10pt; font-weight: bold; text-align: center;">RECREIO NAS FÉRIAS<br>${periodoRF}</span>
+                                </div>
+                                <div class="col-turma">TURMA: ${nomeTurma}</div>
                             </div>
                         `;
 
@@ -554,8 +554,9 @@
                             htmlBody += `</tbody></table>`;
                         } 
                         else if (tipoDoc === "ASSINATURA") {
+                            // 🌟 COLUNAS DA ASSINATURA AJUSTADAS CONFORME SOLICITADO
                             htmlBody += `<table>
-                                <thead><tr><th style="width: 5%;">Nº</th><th style="width: 45%; text-align: left;">Nome da Criança</th><th style="width: 25%;">Assinatura Entrada</th><th style="width: 25%;">Assinatura Saída</th></tr></thead>
+                                <thead><tr><th style="width: 5%;">Nº</th><th style="width: 50%; text-align: left;">Nome da Criança</th><th style="width: 15%;">Data</th><th style="width: 30%;">Assinatura</th></tr></thead>
                                 <tbody>`;
                             alunosDaTurma.forEach((c, i) => {
                                 htmlBody += `<tr><td class="text-center">${i + 1}</td><td><b>${c.nome_crianca}</b><br><small>Resp: ${c.resp} (${c.tel})</small></td><td></td><td></td></tr>`;
@@ -573,7 +574,7 @@
         }
 
         // ==========================================
-        // 🚌🎭 AGENDA UNIFICADA DRE E AUTORIZAÇÕES (MARGENS BLINDADAS)
+        // 🚌🎭 AGENDA UNIFICADA DRE E AUTORIZAÇÕES
         // ==========================================
         function normalizarData(str) {
             if (!str) return null;
@@ -699,7 +700,8 @@
             diasDoPrograma.forEach((dia, index) => {
                 semanaAtualArray.push(dia);
                 if (dia.dataObj.getDay() === 6 || index === diasDoPrograma.length - 1) {
-                    htmlTabelas += `<div class="folha">
+                    htmlTabelas += `
+                        <div class="folha">
                         <div class="cabecalho-pagina">
                             <h1>CRONOGRAMA DE EVENTOS E PASSEIOS</h1>
                             <h2>${nomeCeuAtivo} | ${globalMesAnoPrograma}</h2>

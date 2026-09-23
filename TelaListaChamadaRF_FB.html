@@ -6,6 +6,7 @@
     <title>Central de Impressão - Recreio nas Férias</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- ÍCONES VAZADOS E FINOS -->
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
@@ -261,7 +262,7 @@
         }
 
         // ==========================================
-        // 🖨️ MOTOR GERAL DE IMPRESSÃO (MARGENS BLINDADAS)
+        // 🖨️ MOTOR GERAL DE IMPRESSÃO
         // ==========================================
         window.processarGeracao = async function() {
             const tipoDoc = document.getElementById('selectTipoDoc').value;
@@ -346,7 +347,7 @@
             <head>
                 <title>${tipoDoc} - ${nomeCeuAtivo}</title>
                 <style>
-                    /* 🌟 MÁGICA: Zera margem do navegador e cria uma FOLHA virtual à prova de falhas */
+                    /* Zera margem do navegador e cria uma FOLHA virtual à prova de falhas */
                     @page { size: A4 ${orientacao}; margin: 0 !important; }
                     body { font-family: Arial, sans-serif; margin: 0; padding: 0; color: #000; background: #e0e0e0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
                     
@@ -379,12 +380,15 @@
                     
                     /* 🌟 ESTILOS ESPECÍFICOS DA NOVA CHAMADA */
                     .titulo-edicao { text-align: center; font-size: 14pt; font-weight: 900; margin-bottom: 8px; text-transform: uppercase; }
-                    .cabecalho-triplo { display: flex; justify-content: space-between; align-items: center; border: 2px solid #000; padding: 10px 15px; margin-bottom: 5px; border-radius: 4px; }
+                    
+                    /* 🌟 SEM BORDA COMO SOLICITADO */
+                    .cabecalho-triplo { display: flex; justify-content: space-between; align-items: center; border: none; padding: 5px 10px; margin-bottom: 10px; }
+                    
                     .col-logo { width: 33%; display: flex; align-items: center; gap: 12px; }
                     .col-logo img { max-height: 45px; max-width: 140px; object-fit: contain; }
                     .col-logo span { font-weight: 900; font-size: 11pt; line-height: 1.1; }
                     
-                    /* TAMANHO 5PT DO RESPONSÁVEL AQUI */
+                    /* TAMANHO 5PT DO RESPONSÁVEL */
                     .col-resp { width: 33%; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding-bottom: 2px; }
                     .linha-assinatura { border-bottom: 1px solid #000; width: 90%; height: 20px; }
                     .lbl-assinatura { font-size: 5pt; font-weight: bold; margin-top: 2px; text-transform: uppercase; }
@@ -451,7 +455,9 @@
                     let dataFim = new Date(regrasSME.diaFim + "T00:00:00");
                     while(dataAtual <= dataFim) {
                         if (dataAtual.getDay() !== 0 && dataAtual.getDay() !== 6) {
-                            let diaF = ("0" + dataAtual.getDate()).slice(-2) + "/" + ("0" + (dataAtual.getMonth() + 1)).slice(-2);
+                            // 🌟 AGORA FORMATA APENAS O DIA (DD)
+                            let diaF = ("0" + dataAtual.getDate()).slice(-2);
+                            
                             headersDias += `<th class="col-dia">${diaF}</th>`;
                             colsDias += `<td class="col-dia"></td>`;
                             totalDiasEncontrados++;
@@ -475,6 +481,8 @@
                     if (tipoDoc === "CHAMADA") {
                         htmlBody += `
                             <div class="titulo-edicao">RECREIO NAS FÉRIAS EDIÇÃO: ${periodoRF}</div>
+                            
+                            <!-- CABEÇALHO SEM BORDA -->
                             <div class="cabecalho-triplo">
                                 <div class="col-logo"><img src="${logoRender}"><span>${nomeCeuAtivo.toUpperCase()}</span></div>
                                 <div class="col-resp">
@@ -483,6 +491,7 @@
                                 </div>
                                 <div class="col-turma">TURMA: ${nomeTurma}</div>
                             </div>
+                            
                             <div class="sub-cabecalho">
                                 <span>Gerado em: ${dataStr}</span>
                                 <span>LEGENDA: VS = Vai Sozinho | RI = Restrição Imagem | PI = Piscina | DE = Dieta Especial | IN = Inclusão</span>
@@ -547,7 +556,7 @@
                         }
                     }
 
-                    htmlBody += `</div>`; // Fecha a folha
+                    htmlBody += `</div>`; 
                 });
             }
 
@@ -682,7 +691,8 @@
             diasDoPrograma.forEach((dia, index) => {
                 semanaAtualArray.push(dia);
                 if (dia.dataObj.getDay() === 6 || index === diasDoPrograma.length - 1) {
-                    htmlTabelas += `<div class="folha">
+                    htmlTabelas += `
+                        <div class="folha">
                         <div class="cabecalho-pagina">
                             <h1>CRONOGRAMA DE EVENTOS E PASSEIOS</h1>
                             <h2>${nomeCeuAtivo} | ${globalMesAnoPrograma}</h2>
@@ -742,7 +752,7 @@
                     <title>Cronograma ${nomeCeuAtivo}</title>
                     <style>
                         @page { size: A4 landscape; margin: 0 !important; }
-                        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; color: #1e293b; background: #e0e0e0; }
+                        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; color: #1e293b; background: #e0e0e0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;}
                         .folha { width: 297mm; min-height: 210mm; padding: 15mm; box-sizing: border-box; margin: 10mm auto; background: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.2); page-break-after: always; }
                         .cabecalho-pagina { text-align: center; margin-bottom: 20px; }
                         .cabecalho-pagina h1 { margin: 0; font-size: 22px; color: #0f172a; font-weight: 900;}
@@ -751,6 +761,7 @@
                         .tabela-cronograma th { background: #f8f9fa; color: #1f1f1f; padding: 12px; border: 2px solid #cbd5e1; text-align: center; text-transform: uppercase; line-height: 1.2; }
                         .tabela-cronograma td { border: 2px solid #cbd5e1; padding: 10px; background: #ffffff; }
                         .card-evento { padding: 10px; border-radius: 4px; margin-bottom: 10px; font-size: 11px; }
+                        .card-evento:last-child { margin-bottom: 0; }
                         .card-passeio { background: #f0fdf4; border-left: 5px solid #146c2e; }
                         .card-atracao { background: #fdf4ff; border-left: 5px solid #86198f; }
                         .card-titulo { font-weight: bold; font-size: 12.5px; margin-bottom: 5px; border-bottom: 1px dashed #cbd5e1; padding-bottom: 3px; text-transform: uppercase;}
@@ -778,7 +789,7 @@
             
             let html = `<html><head><style>
                 @page { size: A4 portrait; margin: 0 !important; }
-                body { font-family: Arial, sans-serif; margin: 0; padding: 0; color: #1f1f1f; background: #e0e0e0;}
+                body { font-family: Arial, sans-serif; margin: 0; padding: 0; color: #1f1f1f; background: #e0e0e0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;}
                 .folha { width: 210mm; min-height: 297mm; padding: 15mm 10mm; box-sizing: border-box; margin: 10mm auto; background: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.2); page-break-after: always; }
                 h2 { text-align: center; color: #1f1f1f; font-size: 16px; text-transform: uppercase; margin-bottom: 10px; margin-top: 5px;}
                 table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 12px; }

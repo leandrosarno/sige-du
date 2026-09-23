@@ -26,67 +26,93 @@
             margin: 0; 
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
             color: var(--text-main); 
+            padding: 15px;
+            box-sizing: border-box;
         }
 
         .material-symbols-outlined {
             font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
         }
 
-        /* 🌟 CAIXA DE LOGIN ESTILO GOOGLE WORKSPACE */
-        .login-box { 
-            background: var(--surface); 
-            width: 100%; 
-            max-width: 420px; /* Mais larga e imponente */
-            padding: 40px; 
-            border: 1px solid var(--border); 
-            box-shadow: 0 4px 24px rgba(0,0,0,0.06); 
-            border-radius: 28px; /* Cantos ultra suaves */
-            box-sizing: border-box;
-            margin: 20px;
+        /* 🌟 CARTÃO HORIZONTAL AINDA MAIS COMPACTO */
+        .login-wrapper {
+            display: flex;
+            flex-direction: row;
+            background: var(--surface);
+            width: 100%;
+            max-width: 620px; /* Largura reduzida para aproximar os elementos */
+            border-radius: 20px; /* Bordas ligeiramente menores para acompanhar o tamanho reduzido */
+            box-shadow: 0 8px 32px rgba(0,0,0,0.06);
+            overflow: hidden; 
+            border: 1px solid var(--border);
         }
 
-        .login-header { 
-            text-align: center; 
-            margin-bottom: 24px; /* Sem linha divisória, visual mais limpo */
+        /* 🌟 LADO ESQUERDO: O LOGO CONTINUA GIGANTE */
+        .login-left {
+            flex: 1.2;
+            background-color: #f8f9fa; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px; /* Menos espaço ocioso nas bordas */
+            border-right: 1px solid var(--border);
         }
-        
-        /* 🌟 LOGO MUITO MAIOR E EM DESTAQUE */
+
         #logoSistema { 
             width: 100%;
-            max-width: 220px; 
-            max-height: 90px; 
+            max-width: 280px; /* Limite mantido para o logo ficar enorme */
+            max-height: 140px; /* Limite mantido */
             object-fit: contain; 
-            margin-bottom: 16px; 
             display: none; 
-            margin-left: auto; 
-            margin-right: auto; 
-        }
-        
-        #iconePadrao { 
-            font-size: 48px; 
-            color: var(--primary); 
-            font-variation-settings: 'FILL' 1;
-            margin-bottom: 8px;
         }
 
-        .login-header h3 { 
-            font-weight: 400; 
-            margin: 0; 
-            font-size: 22px; 
-            color: var(--text-main); 
-            letter-spacing: -0.5px;
+        #iconePadrao { 
+            font-size: 56px; 
+            color: var(--primary); 
+            font-variation-settings: 'FILL' 1;
         }
-        
-        /* 🌟 CAMPOS MAIS JUNTOS E HARMÔNICOS */
-        .form-group { margin-bottom: 14px; }
-        .form-label { display: block; font-weight: 600; margin-bottom: 4px; font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;}
+
+        /* 🌟 LADO DIREITO: FORMULÁRIO OTIMIZADO E FINO */
+        .login-right {
+            flex: 1;
+            padding: 28px 32px; /* Margens internas reduzidas */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .login-right-header {
+            margin-bottom: 16px; /* Mais colado aos campos */
+            text-align: center;
+        }
+        .login-right-header h3 {
+            margin: 0;
+            font-size: 16px; /* Fonte reduzida para ficar harmônico */
+            font-weight: 600;
+            color: var(--text-main);
+            letter-spacing: -0.3px;
+        }
+        .login-right-header p {
+            margin: 2px 0 0 0;
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        /* 🌟 ESPAÇOS MENORES E FONTES ENTRE 12 E 14 */
+        .form-group { margin-bottom: 10px; } /* Menos espaço entre as caixas */
+        .form-label { display: block; font-weight: 600; margin-bottom: 2px; font-size: 11px; color: var(--text-muted); }
         
         .form-control { 
             width: 100%; 
-            padding: 12px 16px; 
+            padding: 8px 12px; /* Caixas mais finas na altura */
             border: 1px solid var(--border); 
-            border-radius: 12px; 
-            font-size: 14px; 
+            border-radius: 8px; /* Cantos dos campos mais sutis */
+            font-size: 12px; /* 🌟 Fonte exata de 12px pedida */
+            height: 34px; /* Trava a altura do campo */
             box-sizing: border-box; 
             background-color: #ffffff;
             color: var(--text-main);
@@ -100,17 +126,17 @@
         }
         .form-control::placeholder { color: #8e918f; }
 
-        /* BOTÃO PÍLULA ESTILO GOOGLE */
         .btn-login { 
             background-color: var(--primary); 
             color: white; 
             border: none; 
             width: 100%; 
-            padding: 12px; 
+            padding: 8px; /* Botão mais fino */
+            height: 36px;
             font-weight: 600; 
-            font-size: 14px; 
+            font-size: 13px; /* 🌟 Fonte 13px no botão */
             cursor: pointer; 
-            margin-top: 12px; 
+            margin-top: 10px; 
             border-radius: 50px; 
             transition: 0.2s; 
         }
@@ -119,62 +145,74 @@
         .link-senha { 
             display: block; 
             text-align: center; 
-            margin-top: 20px; 
+            margin-top: 12px; 
             color: var(--primary); 
             text-decoration: none; 
             cursor: pointer; 
-            font-size: 12px; 
+            font-size: 12px; /* 🌟 Fonte 12px no link */
             font-weight: 600;
         }
         .link-senha:hover { text-decoration: underline; color: #0842a0; }
+
+        /* 📱 RESPONSIVIDADE PARA CELULAR */
+        @media (max-width: 768px) {
+            .login-wrapper {
+                flex-direction: column;
+                max-width: 320px;
+            }
+            .login-left {
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+                padding: 20px;
+            }
+            .login-right {
+                padding: 24px;
+            }
+            #logoSistema { max-height: 80px; }
+        }
         
-        /* SWEETALERT DESIGN */
-        div:where(.swal2-container) div:where(.swal2-popup) { 
-            width: 340px !important; 
-            padding: 24px !important; 
-            border-radius: 24px !important; 
-            border: none !important; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important; 
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif !important; 
-        }
-        div:where(.swal2-container) h2:where(.swal2-title) { font-size: 18px !important; font-weight: 600 !important; color: var(--text-main) !important; margin: 0 0 8px 0 !important; }
-        div:where(.swal2-container) div:where(.swal2-html-container) { font-size: 14px !important; color: var(--text-muted) !important; margin: 8px 0 20px 0 !important; }
-        div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm { 
-            border-radius: 50px !important; 
-            font-size: 14px !important; 
-            font-weight: 600 !important; 
-            padding: 10px 24px !important; 
-            width: auto !important; 
-            background-color: var(--primary) !important; 
-            border: none !important; 
-        }
+        /* SWEETALERT DESIGN (INALTERADO) */
+        div:where(.swal2-container) div:where(.swal2-popup) { width: 320px !important; padding: 24px !important; border-radius: 20px !important; border: none !important; box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif !important; }
+        div:where(.swal2-container) h2:where(.swal2-title) { font-size: 16px !important; font-weight: 600 !important; color: var(--text-main) !important; margin: 0 0 8px 0 !important; }
+        div:where(.swal2-container) div:where(.swal2-html-container) { font-size: 13px !important; color: var(--text-muted) !important; margin: 8px 0 20px 0 !important; }
+        div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm { border-radius: 50px !important; font-size: 13px !important; font-weight: 600 !important; padding: 8px 24px !important; width: auto !important; background-color: var(--primary) !important; border: none !important; }
         div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm:hover { background-color: #0842a0 !important; }
-        div:where(.swal2-container) .swal2-icon { transform: scale(0.7) !important; margin: 0 auto 16px auto !important; }
+        div:where(.swal2-container) .swal2-icon { transform: scale(0.6) !important; margin: 0 auto 10px auto !important; }
     </style>
 </head>
 <body>
-    <div class="login-box">
-        <div class="login-header">
+    
+    <div class="login-wrapper">
+        <!-- LADO ESQUERDO: LOGOTIPO INTACTO -->
+        <div class="login-left">
             <img id="logoSistema" src="" alt="Logo do Sistema">
             <span id="iconePadrao" class="material-symbols-outlined">admin_panel_settings</span>
-            <h3 id="tituloSistema">Carregando...</h3>
         </div>
-        <form id="formLogin" onsubmit="event.preventDefault(); window.fazerLogin();">
-            <div class="form-group">
-                <label class="form-label">Código EOL da Unidade</label>
-                <input type="text" class="form-control" id="id_unidade" placeholder="Ex: 700038" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
+
+        <!-- LADO DIREITO: FORMULÁRIO COMPACTO -->
+        <div class="login-right">
+            <div class="login-right-header">
+                <h3>Acesso Restrito</h3>
+                <p>Identifique-se para continuar</p>
             </div>
-            <div class="form-group">
-                <label class="form-label">RF do Servidor</label>
-                <input type="text" class="form-control" id="rf_usuario" placeholder="Apenas números" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Senha de Acesso</label>
-                <input type="password" class="form-control" id="senha_usuario" placeholder="••••••" required>
-            </div>
-            <button type="submit" class="btn-login">Acessar Sistema</button>
-        </form>
-        <a class="link-senha" onclick="window.recuperarSenha()">Esqueceu sua senha?</a>
+            
+            <form id="formLogin" onsubmit="event.preventDefault(); window.fazerLogin();">
+                <div class="form-group">
+                    <label class="form-label">Código EOL da Unidade</label>
+                    <input type="text" class="form-control" id="id_unidade" placeholder="Ex: 700038" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">RF do Servidor</label>
+                    <input type="text" class="form-control" id="rf_usuario" placeholder="Apenas números" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Senha de Acesso</label>
+                    <input type="password" class="form-control" id="senha_usuario" placeholder="••••••" required>
+                </div>
+                <button type="submit" class="btn-login">Entrar</button>
+            </form>
+            <a class="link-senha" onclick="window.recuperarSenha()">Esqueceu sua senha?</a>
+        </div>
     </div>
 
     <script type="module">
@@ -200,19 +238,18 @@
                 const configRef = collection(db, "configuracoes");
                 const configSnapshot = await getDocs(configRef);
                 
-                let nomeEncontrado = "SIG-EDU Central"; 
                 let logoEncontrada = null;
+                let nomeParaTituloAba = "SIG-EDU Central";
                 
                 if (!configSnapshot.empty) {
                     configSnapshot.forEach((doc) => {
                         const dados = doc.data();
-                        if (dados.nomeSistema) nomeEncontrado = dados.nomeSistema;
                         if (dados.logoUrl) logoEncontrada = dados.logoUrl;
+                        if (dados.nomeSistema) nomeParaTituloAba = dados.nomeSistema;
                     });
                 }
                 
-                document.getElementById('tituloSistema').innerText = nomeEncontrado;
-                document.title = "Login - " + nomeEncontrado;
+                document.title = "Login - " + nomeParaTituloAba;
                 
                 if (logoEncontrada) {
                     const imgLogo = document.getElementById('logoSistema');
@@ -223,8 +260,7 @@
                 
             } catch (erro) {
                 console.error("Erro ao carregar configurações do Firebase:", erro);
-                document.getElementById('tituloSistema').innerText = "SIG-EDU Central";
-                document.title = "Login - SIG-EDU Central";
+                document.title = "Login - Sistema CEU";
             }
         }
 

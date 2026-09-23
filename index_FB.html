@@ -2,49 +2,153 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Sistema</title>
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- ÍCONES VAZADOS E FINOS -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         :root {
-            --google-blue: #1a73e8;
-            --bg-color: #f0f2f5;
-            --border-color: #dadce0;
+            --primary: #0b57d0;
+            --bg-color: #f0f4f9;
+            --surface: #ffffff;
+            --border: #e3e3e3;
+            --text-main: #1f1f1f;
+            --text-muted: #444746;
         }
-        body { background-color: var(--bg-color); display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 10px; color: #333; }
-        .login-box { background: #fff; width: 280px; padding: 20px; border: 1px solid var(--border-color); border-top: 4px solid var(--google-blue); box-shadow: 2px 2px 10px rgba(0,0,0,0.15); border-radius: 0; }
-        .login-header { text-align: center; border-bottom: 1px solid #eee; margin-bottom: 15px; padding-bottom: 10px; }
+
+        body { 
+            background-color: var(--bg-color); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100vh; 
+            margin: 0; 
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
+            color: var(--text-main); 
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+
+        /* O NOVO CARTÃO MINIMALISTA */
+        .login-box { 
+            background: var(--surface); 
+            width: 320px; /* Tamanho compacto e elegante */
+            padding: 32px 28px; 
+            border: 1px solid var(--border); 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.04); 
+            border-radius: 24px; /* Cantos bem arredondados */
+            box-sizing: border-box;
+        }
+
+        .login-header { 
+            text-align: center; 
+            border-bottom: 1px solid var(--border); 
+            margin-bottom: 20px; 
+            padding-bottom: 16px; 
+        }
         
-        /* Ajuste para o logo se encaixar bem */
-        #logoSistema { max-width: 120px; max-height: 80px; object-fit: contain; margin-bottom: 10px; display: none; margin-left: auto; margin-right: auto; }
+        #logoSistema { 
+            max-width: 140px; 
+            max-height: 60px; 
+            object-fit: contain; 
+            margin-bottom: 12px; 
+            display: none; 
+            margin-left: auto; 
+            margin-right: auto; 
+        }
         
-        .login-header span { font-size: 32px; color: var(--google-blue); }
-        .login-header h3 { font-weight: bold; margin: 5px 0 2px 0; font-size: 13px; }
-        .login-header p { margin: 0; color: #666; font-size: 9px; }
-        .form-group { margin-bottom: 10px; }
-        .form-label { display: block; font-weight: bold; margin-bottom: 3px; font-size: 10px; }
-        .form-control { width: 100%; padding: 4px 6px; border: 1px solid #aaa; border-radius: 0; font-size: 10px; box-sizing: border-box; height: 22px; }
-        .form-control:focus { outline: none; border-color: var(--google-blue); }
-        .btn-login { background-color: var(--google-blue); color: white; border: 1px solid #0d47a1; width: 100%; padding: 4px; font-weight: bold; font-size: 10px; cursor: pointer; margin-top: 10px; height: 24px; border-radius: 0; }
-        .btn-login:hover { background-color: #1557b0; }
-        .link-senha { display: block; text-align: center; margin-top: 12px; color: var(--google-blue); text-decoration: underline; cursor: pointer; font-size: 9px; }
-        .link-senha:hover { color: #0d47a1; }
+        #iconePadrao { 
+            font-size: 36px; 
+            color: var(--primary); 
+            font-variation-settings: 'FILL' 1;
+        }
+
+        .login-header h3 { font-weight: 600; margin: 8px 0 4px 0; font-size: 16px; color: var(--text-main); letter-spacing: -0.3px;}
+        .login-header p { margin: 0; color: var(--text-muted); font-size: 11px; font-weight: 500;}
         
-        /* SWEETALERT DESIGN CORPORATIVO */
-        div:where(.swal2-container) div:where(.swal2-popup) { width: 280px !important; padding: 20px !important; border-radius: 0 !important; border: 1px solid var(--border-color) !important; border-top: 4px solid var(--google-blue) !important; box-shadow: 2px 2px 10px rgba(0,0,0,0.15) !important; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important; }
-        div:where(.swal2-container) h2:where(.swal2-title) { font-size: 11px !important; font-weight: bold !important; color: #333 !important; margin: 0 0 5px 0 !important; }
-        div:where(.swal2-container) div:where(.swal2-html-container) { font-size: 10px !important; color: #666 !important; margin: 5px 0 15px 0 !important; }
-        div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm { border-radius: 0 !important; font-size: 10px !important; font-weight: bold !important; padding: 4px !important; width: 100% !important; height: 24px !important; background-color: var(--google-blue) !important; border: 1px solid #0d47a1 !important; }
-        div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm:hover { background-color: #1557b0 !important; }
-        div:where(.swal2-container) .swal2-icon { transform: scale(0.5) !important; margin: 0 auto 5px auto !important; }
+        .form-group { margin-bottom: 16px; }
+        .form-label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;}
+        
+        /* CAMPOS DE TEXTO SUAVES */
+        .form-control { 
+            width: 100%; 
+            padding: 10px 14px; 
+            border: 1px solid var(--border); 
+            border-radius: 12px; 
+            font-size: 13px; 
+            box-sizing: border-box; 
+            background-color: #fafafa;
+            color: var(--text-main);
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+        .form-control:focus { 
+            outline: none; 
+            border-color: var(--primary); 
+            background-color: #ffffff;
+            box-shadow: 0 0 0 3px rgba(11, 87, 208, 0.1);
+        }
+
+        /* BOTÃO PÍLULA */
+        .btn-login { 
+            background-color: var(--primary); 
+            color: white; 
+            border: none; 
+            width: 100%; 
+            padding: 10px; 
+            font-weight: 600; 
+            font-size: 13px; 
+            cursor: pointer; 
+            margin-top: 8px; 
+            border-radius: 50px; 
+            transition: 0.2s; 
+        }
+        .btn-login:hover { background-color: #0842a0; box-shadow: 0 2px 6px rgba(11, 87, 208, 0.2); }
+        
+        .link-senha { 
+            display: block; 
+            text-align: center; 
+            margin-top: 16px; 
+            color: var(--primary); 
+            text-decoration: none; 
+            cursor: pointer; 
+            font-size: 11px; 
+            font-weight: 600;
+        }
+        .link-senha:hover { text-decoration: underline; color: #0842a0; }
+        
+        /* 🌟 SWEETALERT - AGORA COM DESIGN ARREDONDADO (MATERIAL 3) */
+        div:where(.swal2-container) div:where(.swal2-popup) { 
+            width: 320px !important; 
+            padding: 24px !important; 
+            border-radius: 24px !important; /* Arredondado igual ao login */
+            border: none !important; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important; 
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif !important; 
+        }
+        div:where(.swal2-container) h2:where(.swal2-title) { font-size: 16px !important; font-weight: 600 !important; color: var(--text-main) !important; margin: 0 0 8px 0 !important; }
+        div:where(.swal2-container) div:where(.swal2-html-container) { font-size: 13px !important; color: var(--text-muted) !important; margin: 8px 0 20px 0 !important; }
+        div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm { 
+            border-radius: 50px !important; /* Pílula */
+            font-size: 13px !important; 
+            font-weight: 600 !important; 
+            padding: 8px 24px !important; 
+            width: auto !important; 
+            background-color: var(--primary) !important; 
+            border: none !important; 
+        }
+        div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm:hover { background-color: #0842a0 !important; }
+        div:where(.swal2-container) .swal2-icon { transform: scale(0.6) !important; margin: 0 auto 10px auto !important; }
     </style>
 </head>
 <body>
     <div class="login-box">
         <div class="login-header">
-            <!-- Novos IDs para injetar o Logo e o Nome do Sistema -->
             <img id="logoSistema" src="" alt="Logo do Sistema">
-            <span id="iconePadrao" class="material-icons">admin_panel_settings</span>
+            <span id="iconePadrao" class="material-symbols-outlined">admin_panel_settings</span>
             <h3 id="tituloSistema">Carregando...</h3>
             <p>Acesso Restrito ao Sistema</p>
         </div>
@@ -93,7 +197,6 @@
                 const configSnapshot = await getDocs(configRef);
                 
                 if (!configSnapshot.empty) {
-                    // Pega o primeiro documento encontrado na coleção
                     const dadosConfig = configSnapshot.docs[0].data();
                     
                     if (dadosConfig.nomeSistema) {
@@ -105,7 +208,6 @@
                         const imgLogo = document.getElementById('logoSistema');
                         imgLogo.src = dadosConfig.logoUrl;
                         imgLogo.style.display = 'block';
-                        // Esconde o ícone padrão de cadeado/escudo se tivermos um logo
                         document.getElementById('iconePadrao').style.display = 'none'; 
                     }
                 } else {
@@ -117,7 +219,6 @@
             }
         }
 
-        // Executa a busca de configurações assim que o script é lido
         carregarConfiguracoes();
 
         window.fazerLogin = async function() {

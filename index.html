@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal SIGEDU</title>
-    <!-- Fonte minimalista e elegante -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -20,7 +19,7 @@
             min-height: 100vh;
             color: #374151;
             
-            /* FUNDO TECNOLÓGICO FEITO EM CÓDIGO */
+            /* FUNDO TECNOLÓGICO */
             background-color: #FAFAFA;
             background-image: 
                 radial-gradient(at 0% 0%, rgba(37, 99, 235, 0.12) 0px, transparent 50%),
@@ -33,57 +32,56 @@
         
         .portal-card {
             background: rgba(255, 255, 255, 0.92);
-            padding: 1rem 1rem;
+            padding: 2rem 2rem;
             border-radius: 1.25rem;
             box-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.08), 0 10px 20px -5px rgba(0, 0, 0, 0.04);
             border: 1px solid rgba(255, 255, 255, 1);
             text-align: center;
-            max-width: 380px; 
+            max-width: 600px; /* Alargado para caber as 2 colunas confortavelmente */
             width: 90%;
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
         }
         
         .sigedu-logo {
-            max-width: 200px; 
+            max-width: 180px; 
             height: auto;
-            margin-bottom: 0rem;
-        }
-        
-        h1 {
-            margin-top: 0;
-            font-size: 1.3rem;
-            font-weight: 600;
-            color: #111827;
-            margin-bottom: 0rem;
-            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
         }
         
         p {
-            color: #6B7280;
-            font-size: 0.9rem;
-            margin-bottom: 0.5rem;
-            font-weight: 300;
+            color: #4B5563;
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+            font-weight: 500;
         }
         
+        /* ESTRUTURA EM GRADE (GRID) PARA 4 BOTÕES */
         .botoes-container {
-            display: flex;
-            flex-direction: column;
-            gap: 0.7rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* Duas colunas iguais */
+            gap: 1rem; /* Espaço entre os botões */
+        }
+
+        /* RESPONSIVIDADE: Muda para 1 coluna em telas de celulares */
+        @media (max-width: 550px) {
+            .botoes-container {
+                grid-template-columns: 1fr;
+            }
         }
         
-        /* NOVA ESTRUTURA PARA TODOS OS BOTÕES TEREM 2 LINHAS */
         .btn {
             text-decoration: none;
-            padding: 0.5rem 0.5rem;
+            padding: 0.85rem 0.5rem;
             border-radius: 0.75rem;
             transition: all 0.3s ease;
             display: flex;
-            flex-direction: column; /* Empilha o texto */
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 0rem; /* Espaço entre título e subtítulo */
+            gap: 0.25rem;
             background-color: #FFFFFF;
+            height: 100%; /* Mantém todos os botões com a mesma altura */
         }
         
         .btn-top {
@@ -91,20 +89,21 @@
             align-items: center;
             gap: 0.5rem;
             font-weight: 600;
-            font-size: 1rem;
+            font-size: 0.95rem;
         }
         
         .btn-sub {
             font-size: 0.75rem;
             font-weight: 400;
-            opacity: 0.7;
+            opacity: 0.8;
             text-align: center;
+            line-height: 1.2;
         }
 
         .icon {
-            width: 15px;
-            height: 15px;
-            stroke-width: 2;
+            width: 18px;
+            height: 18px;
+            stroke-width: 1.5;
             fill: none;
             stroke: currentColor;
             stroke-linecap: round;
@@ -112,7 +111,7 @@
             flex-shrink: 0;
         }
         
-        /* Cores Específicas: Novo Sistema */
+        /* 1. Novo Sistema (Azul) */
         .btn-novo {
             color: #2563EB;
             border: 1px solid #2563EB;
@@ -124,18 +123,18 @@
             box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
         }
         
-        /* Cores Específicas: Antigo Sistema */
+        /* 2. Antigo Sistema (Cinza Escuro) */
         .btn-antigo {
             color: #4B5563;
             border: 1px solid #4B5563;
         }
         .btn-antigo:hover {
-            background-color: #AEAFB1; /* #F3F4F6 */
+            background-color: #4B5563;
             color: #FFFFFF;
             transform: translateY(-2px);
         }
 
-        /* Cores Específicas: RACT */
+        /* 3. RACT (Teal/Verde-azulado) */
         .btn-ract {
             color: #0D9488;
             border: 1px solid #0D9488;
@@ -147,12 +146,24 @@
             box-shadow: 0 4px 12px rgba(13, 148, 136, 0.2);
         }
 
+        /* 4. NOVA COR: Agenda para TV (Roxo) */
+        .btn-agenda {
+            color: #7C3AED;
+            border: 1px solid #7C3AED;
+        }
+        .btn-agenda:hover {
+            background-color: #7C3AED;
+            color: #FFFFFF;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2);
+        }
+
         .ract-footer {
-            margin-top: 2rem;
+            margin-top: 2.5rem;
             padding-top: 1.5rem;
             border-top: 1px solid #E5E7EB;
             color: #6B7280;
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             font-weight: 300;
             line-height: 1.6;
             letter-spacing: 0.02em;
@@ -166,45 +177,54 @@
 <body>
 
     <div class="portal-card">
-        <!-- Seu logotipo -->
+        <!-- Logotipo -->
         <img src="https://github.com/leandrosarno/sige-du/blob/main/images/Emblema_moderno_e_elegante_de_educa%C3%A7%C3%A3o-removebg-preview.png?raw=true" alt="Logo SIGEDU" class="sigedu-logo">
         
-        <p><b>Selecione o ambiente desejado</b></p><br>
+        <p>Selecione o ambiente desejado</p>
         
         <div class="botoes-container">
-            <!-- Botão Novo Sistema -->
+            <!-- 1. Botão Novo Sistema -->
             <a href="index_FB.html" target="_blank" class="btn btn-novo">
                 <div class="btn-top">
                     <svg class="icon" viewBox="0 0 24 24"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2l.5-.5m15-15c-2.92 0-6.11 1.76-8.52 4.17-2.6 2.6-4.5 6.42-3.77 9.07l.6.6c2.65.73 6.47-1.17 9.07-3.77 2.41-2.41 4.17-5.6 4.17-8.52 0-.27 0-.54-.15-.69C18.66 4.15 18.27 4 18 4z"></path></svg>
-                    Acessar Novo Sistema
+                    Novo Sistema
                 </div>
                 <div class="btn-sub">Recreio nas Férias</div>
             </a>
             
-            <!-- Botão Antigo Sistema -->
+            <!-- 2. Botão Antigo Sistema -->
             <a href="https://script.google.com/macros/s/AKfycbwKts8WbT02uwYqZ-Ihtv6H-fCazTx9AWh4nz2yfLxeGLR4zET6aAx3YgkhdTaRZHr9/exec" target="_blank" class="btn btn-antigo">
                 <div class="btn-top">
                     <svg class="icon" viewBox="0 0 24 24"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg>
-                    Sistema de Carteirinhas
+                    Carteirinhas
                 </div>
                 <div class="btn-sub">uso do CEU Caminho do Mar</div>
             </a>
 
-            <!-- Botão RACT -->
+            <!-- 3. Botão RACT -->
             <a href="https://ract-ten.vercel.app/" target="_blank" class="btn btn-ract">
                 <div class="btn-top">
                     <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="3"></circle><line x1="12" y1="2" x2="12" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line></svg>
-                    Visite o portal RACT
+                    Portal RACT
                 </div>
                 <div class="btn-sub">Radar Autônomo de Ciências e Tecnologia</div>
             </a>
+
+            <!-- 4. Botão AGENDA PARA TV (Com Ícone de Monitor) -->
+            <a href="https://script.google.com/a/macros/edu.sme.prefeitura.sp.gov.br/s/AKfycbw7ET48v8CPd01fbO2t4DE_z-Us8PzsXDfjgSVMLVHEmbJBJFcSTwzdycbT-p-un3Eo-A/exec" target="_blank" class="btn btn-agenda">
+                <div class="btn-top">
+                    <svg class="icon" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect><polyline points="17 2 12 7 7 2"></polyline></svg>
+                    Agenda para TV
+                </div>
+                <div class="btn-sub">horários e aulas do CEU Caminho do Mar</div>
+            </a>
         </div>
 
-        <!-- O seu rodapé -->
+        <!-- Rodapé -->
         <div class="ract-footer">
             <strong>Sistema Integrado de Gestão Educacional</strong><br>
             Democratizando o Conhecimento - RACT-TEN<br>
-            <i>Criado por Leandro Sarno com tecnologia Google Cloud PRO</i>
+            <i>Criado por Leandro Sarno com tecnologia Google Gemini PRO</i>
         </div>
     </div>
 

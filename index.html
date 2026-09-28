@@ -14,672 +14,199 @@
             margin: 0;
             padding: 0;
             font-family: 'Inter', sans-serif;
-            background-color: #FAFAFA; /* Fundo quase branco, super leve */
             display: flex;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
             color: #374151;
+            
+            /* FUNDO TECNOLÓGICO FEITO EM CÓDIGO */
+            background-color: #FAFAFA;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(37, 99, 235, 0.12) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(13, 148, 136, 0.12) 0px, transparent 50%),
+                linear-gradient(rgba(203, 213, 225, 0.4) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(203, 213, 225, 0.4) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+            background-position: center;
         }
         
         .portal-card {
-            background: #FFFFFF;
-            padding: 2.5rem 2rem;
-            border-radius: 1rem;
-            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.03); /* Sombra quase invisível */
-            border: 1px solid #F3F4F6;
+            background: rgba(255, 255, 255, 0.92);
+            padding: 1rem 1rem;
+            border-radius: 1.25rem;
+            box-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.08), 0 10px 20px -5px rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(255, 255, 255, 1);
             text-align: center;
-            max-width: 360px; /* Cartão mais estreito e delicado */
+            max-width: 380px; 
             width: 90%;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
         }
         
         .sigedu-logo {
-            max-width: 140px; /* Logo em tamanho menor e sofisticado */
+            max-width: 450px; 
             height: auto;
-            margin-bottom: 1.5rem;
+            margin-bottom: 0rem;
         }
         
         h1 {
             margin-top: 0;
-            font-size: 1.25rem;
+            font-size: 1.3rem;
             font-weight: 600;
             color: #111827;
-            margin-bottom: 0.25rem;
+            margin-bottom: 0rem;
             letter-spacing: -0.02em;
         }
         
         p {
             color: #6B7280;
-            font-size: 0.85rem;
-            margin-bottom: 2rem;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
             font-weight: 300;
         }
         
         .botoes-container {
             display: flex;
             flex-direction: column;
-            gap: 0.85rem;
+            gap: 0.7rem;
         }
         
+        /* NOVA ESTRUTURA PARA TODOS OS BOTÕES TEREM 2 LINHAS */
         .btn {
             text-decoration: none;
-            padding: 0.75rem 1rem;
-            border-radius: 0.5rem;
-            font-weight: 500;
-            font-size: 0.9rem;
-            transition: all 0.2s ease;
+            padding: 0.5rem 0.5rem;
+            border-radius: 0.75rem;
+            transition: all 0.3s ease;
             display: flex;
+            flex-direction: column; /* Empilha o texto */
             align-items: center;
             justify-content: center;
-            gap: 0.75rem;
-            background-color: transparent; /* Fundo vazado */
+            gap: 0rem; /* Espaço entre título e subtítulo */
+            background-color: #FFFFFF;
         }
         
+        .btn-top {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        
+        .btn-sub {
+            font-size: 0.75rem;
+            font-weight: 400;
+            opacity: 0.7;
+            text-align: center;
+        }
+
         .icon {
-            width: 18px;
-            height: 18px;
-            stroke-width: 1.5;
+            width: 15px;
+            height: 15px;
+            stroke-width: 2;
             fill: none;
             stroke: currentColor;
             stroke-linecap: round;
             stroke-linejoin: round;
+            flex-shrink: 0;
         }
         
-        /* Botão Novo Sistema (Azul Vazado) */
+        /* Cores Específicas: Novo Sistema */
         .btn-novo {
             color: #2563EB;
             border: 1px solid #2563EB;
         }
         .btn-novo:hover {
-            background-color: rgba(37, 99, 235, 0.05); /* Fundo sutil ao passar o mouse */
+            background-color: #2563EB;
+            color: #FFFFFF;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
         }
         
-        /* Botão Antigo Sistema (Cinza Vazado) */
+        /* Cores Específicas: Antigo Sistema */
         .btn-antigo {
             color: #4B5563;
-            border: 1px solid #D1D5DB;
+            border: 1px solid #4B5563;
         }
         .btn-antigo:hover {
-            background-color: rgba(75, 85, 99, 0.05);
+            background-color: #AEAFB1; /* #F3F4F6 */
+            color: #FFFFFF;
+            transform: translateY(-2px);
         }
 
-        /* Botão RACT (Teal Vazado) */
+        /* Cores Específicas: RACT */
         .btn-ract {
             color: #0D9488;
             border: 1px solid #0D9488;
         }
         .btn-ract:hover {
-            background-color: rgba(13, 148, 136, 0.05);
+            background-color: #0D9488;
+            color: #FFFFFF;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(13, 148, 136, 0.2);
         }
 
         .ract-footer {
             margin-top: 2rem;
             padding-top: 1.5rem;
-            border-top: 1px solid #F3F4F6;
-            color: #9CA3AF;
-            font-size: 0.75rem;
+            border-top: 1px solid #E5E7EB;
+            color: #6B7280;
+            font-size: 0.7rem;
             font-weight: 300;
+            line-height: 1.6;
             letter-spacing: 0.02em;
+        }
+        .ract-footer strong {
+            font-weight: 500;
+            color: #4B5563;
         }
     </style>
 </head>
 <body>
 
     <div class="portal-card">
-        <!-- Seu logotipo carregado diretamente -->
+        <!-- Seu logotipo -->
         <img src="https://i.postimg.cc/QFr9yLr4/sigedu-logo.png" alt="Logo SIGEDU" class="sigedu-logo">
         
-        <h1>Portal de Acesso</h1>
-        <p>Selecione o ambiente desejado</p>
+        <p><b>Selecione o ambiente desejado</b></p><br>
         
         <div class="botoes-container">
             <!-- Botão Novo Sistema -->
             <a href="index_FB.html" target="_blank" class="btn btn-novo">
-                <!-- Ícone Foguete -->
-                <svg class="icon" viewBox="0 0 24 24"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2l.5-.5m15-15c-2.92 0-6.11 1.76-8.52 4.17-2.6 2.6-4.5 6.42-3.77 9.07l.6.6c2.65.73 6.47-1.17 9.07-3.77 2.41-2.41 4.17-5.6 4.17-8.52 0-.27 0-.54-.15-.69C18.66 4.15 18.27 4 18 4z"></path></svg>
-                Acessar Novo Sistema
+                <div class="btn-top">
+                    <svg class="icon" viewBox="0 0 24 24"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2l.5-.5m15-15c-2.92 0-6.11 1.76-8.52 4.17-2.6 2.6-4.5 6.42-3.77 9.07l.6.6c2.65.73 6.47-1.17 9.07-3.77 2.41-2.41 4.17-5.6 4.17-8.52 0-.27 0-.54-.15-.69C18.66 4.15 18.27 4 18 4z"></path></svg>
+                    Acessar Novo Sistema
+                </div>
+                <div class="btn-sub">Recreio nas Férias</div>
             </a>
             
             <!-- Botão Antigo Sistema -->
             <a href="https://script.google.com/macros/s/AKfycbwKts8WbT02uwYqZ-Ihtv6H-fCazTx9AWh4nz2yfLxeGLR4zET6aAx3YgkhdTaRZHr9/exec" target="_blank" class="btn btn-antigo">
-                <!-- Ícone Chave -->
-                <svg class="icon" viewBox="0 0 24 24"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg>
-                Sistema de Carteirinhas <br>
-                <i>exclusivo CEU Caminho do Mar</i>
+                <div class="btn-top">
+                    <svg class="icon" viewBox="0 0 24 24"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg>
+                    Sistema de Carteirinhas
+                </div>
+                <div class="btn-sub">uso do CEU Caminho do Mar</div>
             </a>
 
             <!-- Botão RACT -->
             <a href="https://ract-ten.vercel.app/" target="_blank" class="btn btn-ract">
-                <!-- Ícone Radar/Olho -->
-                <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="3"></circle><line x1="12" y1="2" x2="12" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line></svg>
-                Visite o portal RACT <br>
-                Radar Autônomo de Ciências e Tecnologia
+                <div class="btn-top">
+                    <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="3"></circle><line x1="12" y1="2" x2="12" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line></svg>
+                    Visite o portal RACT
+                </div>
+                <div class="btn-sub">Radar Autônomo de Ciências e Tecnologia</div>
             </a>
         </div>
 
+        <!-- O seu rodapé -->
         <div class="ract-footer">
-            Sistema de Integrado Gestão Educacional
-            Democratizando o Conhecimento - RACT-TEN
-            Criado por Leandro Sarno
+            <strong>Sistema Integrado de Gestão Educacional</strong><br>
+            Democratizando o Conhecimento - RACT-TEN<br>
+            <i>Criado por Leandro Sarno com tecnologia Google Cloud módulo: PRO</i>
         </div>
     </div>
 
-</body>
-</html>
-
-
-
-<!--
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <title>Redirecionando...</title>
-    <!-- O número 0 indica que o redirecionamento é imediato -->
-<!--    <meta http-equiv="refresh" content="0; url=https://script.google.com/a/edu.sme.prefeitura.sp.gov.br/macros/s/AKfycbwKts8WbT02uwYqZ-Ihtv6H-fCazTx9AWh4nz2yfLxeGLR4zET6aAx3YgkhdTaRZHr9/exec">
-</head>
-<body>
-    <p>Se você não for redirecionado automaticamente, <a href="https://script.google.com/a/edu.sme.prefeitura.sp.gov.br/macros/s/AKfycbwKts8WbT02uwYqZ-Ihtv6H-fCazTx9AWh4nz2yfLxeGLR4zET6aAx3YgkhdTaRZHr9/exec">clique aqui</a>.</p>
-</body>
-</html>
--->
-<!--
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIG-EDU - Login</title>
-    
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-    <meta http-equiv="Pragma" content="no-cache" />
-    <meta http-equiv="Expires" content="0" />
-    
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="config.js"></script>
-    
-    <style>
-        :root { --cor-primaria: #0d6efd; --cor-fundo: #f4f7f6; }
-        body { background-color: var(--cor-fundo); display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .login-card { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
-        .login-header { text-align: center; margin-bottom: 30px; }
-        .login-header span { font-size: 50px; color: var(--cor-primaria); }
-        .login-header h3 { font-weight: 700; color: #333; margin-top: 10px; }
-        .btn-login { background-color: var(--cor-primaria); border: none; width: 100%; padding: 12px; font-weight: bold; font-size: 16px; margin-top: 20px; }
-        .btn-login:hover { background-color: #0b5ed7; }
-        .form-control { padding: 12px; border-radius: 8px; }
-    </style>
-</head>
-<body>
-
-    <div class="login-card">
-        <div class="login-header" id="box-logo">
-            <span class="material-icons" id="icone-padrao" style="font-size: 75px; color: var(--cor-primaria);">account_balance</span>
-            <img id="img-logo" src="" alt="Logo do Sistema" style="display: none; width: 100%; height: 120px; object-fit: contain; margin: 0 auto 15px auto;">
-            <h3 id="titulo-sistema">A carregar...</h3>
-            <p class="text-muted">Acesso Restrito</p>
-        </div>
-
-        <form id="formLogin" onsubmit="event.preventDefault(); fazerLogin();">
-            <div class="mb-3">
-                <label class="form-label fw-bold">Código EOL da Unidade</label>
-                <input type="number" class="form-control" id="id_ceu" placeholder="Ex: 123456" required>
-            </div>
-            <div class="mb-3">
-                <label class="form-label fw-bold">RF do Funcionário</label>
-                <input type="number" class="form-control" id="rf_usuario" placeholder="Apenas números" required>
-            </div>
-            <div class="mb-3">
-                <label class="form-label fw-bold">Senha de Acesso</label>
-                <input type="password" class="form-control" id="senha_usuario" placeholder="Sua senha" required>
-            </div>
-            
-            <button type="submit" class="btn btn-primary btn-login" id="btn-entrar">ENTRAR</button>
-        </form>
-    </div>
-
-    <script>
-        // ==========================================
-        // LOGO: O HEADER VOLTOU PARA A COMUNICAÇÃO PERFEITA
-        // ==========================================
-        window.onload = function() {
-            localStorage.clear();
-
-            fetch(API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({ acao: "obterConfiguracoes", dados: {} })
-            })
-            .then(res => res.json())
-            .then(retorno => {
-                if(retorno.status === "sucesso") {
-                    document.getElementById('titulo-sistema').innerText = retorno.dados.nomeSistema;
-                    localStorage.setItem('ceu_nome_sistema', retorno.dados.nomeSistema);
-                    
-                    if (retorno.dados.logoUrl) {
-                        localStorage.setItem('ceu_logo_sistema', retorno.dados.logoUrl);
-                        document.getElementById('icone-padrao').style.display = 'none';
-                        const img = document.getElementById('img-logo');
-                        img.src = retorno.dados.logoUrl;
-                        
-                        if(retorno.dados.tamanhoLogo) {
-                            img.style.height = retorno.dados.tamanhoLogo; 
-                            localStorage.setItem('ceu_tamanho_logo', retorno.dados.tamanhoLogo); 
-                        }
-                        img.style.display = 'block';
-                    }
-                }
-            })
-            .catch(erro => console.error("Aviso: Falha ao puxar a Logo.", erro));
-        };
-
-        // ==========================================
-        // O MOTOR BLINDADO DE LOGIN COM HEADERS
-        // ==========================================
-        function fazerLogin() {
-            const ceu = document.getElementById('id_ceu').value.trim();
-            const rf = document.getElementById('rf_usuario').value.trim();
-            const senha = document.getElementById('senha_usuario').value.trim();
-
-            if(!ceu || !rf || !senha) {
-                Swal.fire('Atenção', 'Preencha todos os campos.', 'warning');
-                return;
-            }
-
-            Swal.fire({
-                title: 'A validar acessos...',
-                text: 'A comunicar com o servidor central.',
-                allowOutsideClick: false,
-                didOpen: () => { Swal.showLoading(); }
-            });
-
-            fetch(API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({ 
-                    acao: "validarLogin", 
-                    dados: { id_ceu: ceu, rf_usuario: rf, senha_usuario: senha } 
-                })
-            })
-            .then(resposta => {
-                if (!resposta.ok) throw new Error("Erro de servidor (HTTP " + resposta.status + ")");
-                return resposta.json();
-            })
-            .then(retorno => {
-                if (retorno.status === "primeiro_acesso") {
-                    tratarPrimeiroAcesso(retorno.mensagem, retorno.dados_usuario);
-                } 
-                else if (retorno.status === "sucesso") {
-                    
-                    localStorage.setItem('ceu_codigo_eol', ceu);
-                    localStorage.setItem('ceu_rf_logado', rf); 
-                    
-                    localStorage.setItem('ceu_planilha_id', retorno.token.id_planilha_banco);
-                    localStorage.setItem('ceu_nome', retorno.token.nome_ceu);
-                    localStorage.setItem('ceu_nome_especifico', retorno.token.nome_ceu);
-                    localStorage.setItem('ceu_nome_usuario', retorno.token.nome_usuario);
-                    
-                    if(retorno.token.logo_ceu) localStorage.setItem('ceu_logo', retorno.token.logo_ceu);
-                    if(retorno.token.foto_usuario) localStorage.setItem('ceu_foto_usuario', retorno.token.foto_usuario);
-                    
-                    localStorage.setItem('ceu_perfil', retorno.token.perfil_usuario); 
-                    
-                    // 🚀 O REDIRECIONAMENTO CORRIGIDO: Joga direto para o admin.html!
-                    window.location.href = "dashboard.html"; 
-                }
-                else {
-                    Swal.fire('Acesso Negado', retorno.mensagem || retorno.erro || 'Credenciais inválidas.', 'error');
-                }
-            })
-            .catch(erro => {
-                Swal.fire('Erro de Comunicação', 'Falha ao ligar ao servidor do Google. Tente novamente.', 'error');
-                console.error("Erro fatal no Fetch de Login: ", erro);
-            });
-        }
-
-        // ==========================================
-        // PRIMEIRO ACESSO
-        // ==========================================
-        function tratarPrimeiroAcesso(mensagemDoServidor, dadosUsuario) {
-            Swal.fire({
-                title: '🔒 Primeiro Acesso',
-                text: mensagemDoServidor,
-                icon: 'info',
-                html: `
-                    <div style="text-align: left; font-size: 14px;">
-                        <label class="mt-2 fw-bold">Nova Senha:</label>
-                        <input type="password" id="swal-nova-senha" class="swal2-input" placeholder="Mínimo 8 caracteres">
-                        <label class="mt-2 fw-bold">Confirmar Nova Senha:</label>
-                        <input type="password" id="swal-conf-senha" class="swal2-input" placeholder="Repita a senha">
-                    </div>
-                `,
-                confirmButtonText: 'Gravar Nova Senha',
-                confirmButtonColor: '#198754',
-                allowOutsideClick: false,
-                preConfirm: () => {
-                    const s1 = document.getElementById('swal-nova-senha').value;
-                    const s2 = document.getElementById('swal-conf-senha').value;
-                    if (s1 !== s2) { Swal.showValidationMessage('As senhas não conferem!'); return false; }
-                    if (!/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,12}$/.test(s1)) {
-                        Swal.showValidationMessage('A senha é muito fraca!'); return false;
-                    }
-                    return s1;
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    enviarNovaSenha(dadosUsuario.rf, dadosUsuario.ceu, result.value);
-                }
-            });
-        }
-
-        function enviarNovaSenha(rf, ceu, novaSenha) {
-            Swal.fire({ title: 'A gravar...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
-            
-            fetch(API_URL, { 
-                method: 'POST', 
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({ acao: "alterarSenhaPrimeiroAcesso", dados: { rf: rf, ceu: ceu, novaSenha: novaSenha } }) 
-            })
-            .then(resp => resp.json())
-            .then(retorno => {
-                if(retorno.status === "sucesso") {
-                    Swal.fire('Sucesso!', retorno.mensagem, 'success').then(() => { document.getElementById('senha_usuario').value = ''; });
-                } else {
-                    Swal.fire('Erro', retorno.mensagem, 'error');
-                }
-            });
-        }
-    </script>
-</body>
-</html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<!--
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <title>SIG-EDU - Login</title>
-    
-    <!-- Bloqueadores de Cache para garantir sempre a versão mais recente -->
-<!--    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-    <meta http-equiv="Pragma" content="no-cache" />
-    <meta http-equiv="Expires" content="0" />
-    
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="config.js"></script>
-    <style>
-        :root { --cor-primaria: #0d6efd; --cor-fundo: #f4f7f6; }
-        body { background-color: var(--cor-fundo); display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .login-card { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
-        .login-header { text-align: center; margin-bottom: 30px; }
-        .login-header span { font-size: 50px; color: var(--cor-primaria); }
-        .login-header h3 { font-weight: 700; color: #333; margin-top: 10px; }
-        .btn-login { background-color: var(--cor-primaria); border: none; width: 100%; padding: 12px; font-weight: bold; font-size: 16px; margin-top: 20px; }
-        .btn-login:hover { background-color: #0b5ed7; }
-        .form-control { padding: 12px; border-radius: 8px; }
-    </style>
-</head>
-<body>
-
-    <div class="login-card">
-        <div class="login-header" id="box-logo">
-            <span class="material-icons" id="icone-padrao" style="font-size: 75px; color: var(--cor-primaria);">account_balance</span>
-            <img id="img-logo" src="" alt="Logo do Sistema" style="display: none; width: 100%; height: 120px; object-fit: contain; margin: 0 auto 15px auto;">
-            <h3 id="titulo-sistema">A carregar...</h3>
-            <p class="text-muted">Acesso Restrito</p>
-        </div>
-
-        <!-- 🛡️ TRAVA INFALÍVEL PARA NÃO PISCAR -->
-<!--        <form id="formLogin" onsubmit="event.preventDefault(); fazerLogin();">
-            <div class="mb-3">
-                <label class="form-label fw-bold">Código EOL da Unidade</label>
-                <input type="number" class="form-control" id="id_ceu" placeholder="Ex: 123456" required>
-            </div>
-            <div class="mb-3">
-                <label class="form-label fw-bold">RF do Funcionário</label>
-                <input type="number" class="form-control" id="rf_usuario" placeholder="Apenas números" required>
-            </div>
-            <div class="mb-3">
-                <label class="form-label fw-bold">Senha de Acesso</label>
-                <input type="password" class="form-control" id="senha_usuario" placeholder="Sua senha" required>
-            </div>
-            
-            <!-- Botão Submit faz a Tecla ENTER funcionar --> 
-<!--            <button type="submit" class="btn btn-primary btn-login" id="btn-entrar">ENTRAR</button>
-        </form>
-    </div>
-
-    <script>
-        // ==========================================
-        // 🔗 LIGAÇÃO COM A API DO GOOGLE SHEETS
-        // ==========================================
-/*        const API_URL = "https://script.google.com/macros/s/AKfycbxbwSw8M2Lj6wlYK2MX5cOTu6R0fMVJ5xfA74z20vsbwK6slju34YSCkp5MS24p1d-H/exec";  */
-
-        window.onload = function() {
-            localStorage.clear(); // Limpa sujeiras antigas de outros logins na máquina da escola
-
-            // ==========================================
-            // LOGO: Carrega as configs sem travar a tela
-            // ==========================================
-            fetch(API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({ acao: "obterConfiguracoes", dados: {} })
-            })
-            .then(res => res.json())
-            .then(retorno => {
-                if(retorno.status === "sucesso") {
-                    document.getElementById('titulo-sistema').innerText = retorno.dados.nomeSistema;
-                    localStorage.setItem('ceu_nome_sistema', retorno.dados.nomeSistema);
-                    
-                    if (retorno.dados.logoUrl) {
-                        localStorage.setItem('ceu_logo_sistema', retorno.dados.logoUrl);
-                        document.getElementById('icone-padrao').style.display = 'none';
-                        const img = document.getElementById('img-logo');
-                        img.src = retorno.dados.logoUrl;
-                        
-                        if(retorno.dados.tamanhoLogo) {
-                            img.style.height = retorno.dados.tamanhoLogo; 
-                            localStorage.setItem('ceu_tamanho_logo', retorno.dados.tamanhoLogo); 
-                        }
-                        img.style.display = 'block';
-                    }
-                }
-            })
-            .catch(erro => console.error("Aviso: Falha ao puxar a Logo. Sistema continua rodando."));
-        };
-
-        // ==========================================
-        // O MOTOR BLINDADO DE LOGIN
-        // ==========================================
-        function fazerLogin() {
-            const ceu = document.getElementById('id_ceu').value.trim();
-            const rf = document.getElementById('rf_usuario').value.trim();
-            const senha = document.getElementById('senha_usuario').value.trim();
-
-            if(!ceu || !rf || !senha) {
-                Swal.fire('Atenção', 'Preencha todos os campos.', 'warning');
-                return;
-            }
-
-            Swal.fire({
-                title: 'A validar acessos...',
-                text: 'A comunicar com o servidor central.',
-                allowOutsideClick: false,
-                didOpen: () => { Swal.showLoading(); }
-            });
-
-            // 🛡️ O TRUQUE MÁGICO DO CONTENT-TYPE
-            fetch(API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({ 
-                    acao: "validarLogin", 
-                    dados: { id_ceu: ceu, rf_usuario: rf, senha_usuario: senha } 
-                })
-            })
-            .then(resposta => {
-                if (!resposta.ok) throw new Error("Erro de servidor (HTTP " + resposta.status + ")");
-                return resposta.json();
-            })
-            .then(retorno => {
-                if (retorno.status === "primeiro_acesso") {
-                    tratarPrimeiroAcesso(retorno.mensagem, retorno.dados_usuario);
-                } 
-                else if (retorno.status === "sucesso") {
-                    
-                    // 🎉 A MÁGICA SALVADORA DO SISTEMA - Todas as mochilas sendo preenchidas!
-                    localStorage.setItem('ceu_codigo_eol', ceu);
-                    localStorage.setItem('ceu_rf_logado', rf); 
-                    
-                    localStorage.setItem('ceu_planilha_id', retorno.token.id_planilha_banco);
-                    localStorage.setItem('ceu_nome', retorno.token.nome_ceu);
-                    localStorage.setItem('ceu_nome_especifico', retorno.token.nome_ceu);
-                    localStorage.setItem('ceu_nome_usuario', retorno.token.nome_usuario);
-                    
-                    // Salva a Foto e a Logo se elas existirem na planilha
-                    if(retorno.token.logo_ceu) localStorage.setItem('ceu_logo', retorno.token.logo_ceu);
-                    if(retorno.token.foto_usuario) localStorage.setItem('ceu_foto_usuario', retorno.token.foto_usuario);
-                    
-                    // 🌟 A ESTRELA DO SHOW: O nosso Perfil para identificar a DRE!
-                    localStorage.setItem('ceu_perfil', retorno.token.perfil_usuario); 
-                    
-/*                    Swal.fire('Bem-vindo!', retorno.mensagem, 'success').then(() => { 
-                        window.location.href = "dashboard.html"; 
-                    }); 
-                } 
-                    localStorage.setItem('ceu_perfil', retorno.token.perfil_usuario); */
-                    
-                    // 🚀 LOGIN EXPRESSO: Removemos o Modal. Joga direto para o Dashboard!
-                    window.location.href = "dashboard.html"; 
-                }
-                    
-                else {
-                    Swal.fire('Acesso Negado', retorno.mensagem || retorno.erro || 'Credenciais inválidas.', 'error');
-                }
-            })
-            .catch(erro => {
-                Swal.fire('Erro de Comunicação', 'Falha ao ligar ao servidor do Google. Tente novamente.', 'error');
-                console.error("Erro fatal no Fetch de Login: ", erro);
-            });
-        }
-
-        // ==========================================
-        // PRIMEIRO ACESSO
-        // ==========================================
-        function tratarPrimeiroAcesso(mensagemDoServidor, dadosUsuario) {
-            Swal.fire({
-                title: '🔒 Primeiro Acesso',
-                text: mensagemDoServidor,
-                icon: 'info',
-                html: `
-                    <div style="text-align: left; font-size: 14px;">
-                        <label class="mt-2 fw-bold">Nova Senha:</label>
-                        <input type="password" id="swal-nova-senha" class="swal2-input" placeholder="Mínimo 8 caracteres">
-                        <label class="mt-2 fw-bold">Confirmar Nova Senha:</label>
-                        <input type="password" id="swal-conf-senha" class="swal2-input" placeholder="Repita a senha">
-                    </div>
-                `,
-                confirmButtonText: 'Gravar Nova Senha',
-                confirmButtonColor: '#198754',
-                allowOutsideClick: false,
-                preConfirm: () => {
-                    const s1 = document.getElementById('swal-nova-senha').value;
-                    const s2 = document.getElementById('swal-conf-senha').value;
-                    if (s1 !== s2) { Swal.showValidationMessage('As senhas não conferem!'); return false; }
-                    if (!/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,12}$/.test(s1)) {
-                        Swal.showValidationMessage('A senha é muito fraca!'); return false;
-                    }
-                    return s1;
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    enviarNovaSenha(dadosUsuario.rf, dadosUsuario.ceu, result.value);
-                }
-            });
-        }
-
-        function enviarNovaSenha(rf, ceu, novaSenha) {
-            Swal.fire({ title: 'A gravar...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
-            
-            fetch(API_URL, { 
-                method: 'POST', 
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({ acao: "alterarSenhaPrimeiroAcesso", dados: { rf: rf, ceu: ceu, novaSenha: novaSenha } }) 
-            })
-            .then(resp => resp.json())
-            .then(retorno => {
-                if(retorno.status === "sucesso") {
-                    Swal.fire('Sucesso!', retorno.mensagem, 'success').then(() => { document.getElementById('senha_usuario').value = ''; });
-                } else {
-                    Swal.fire('Erro', retorno.mensagem, 'error');
-                }
-            });
-        }
-    </script>
 </body>
 </html>

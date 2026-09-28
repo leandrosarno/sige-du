@@ -59,12 +59,12 @@
         /* ESTRUTURA EM GRADE (GRID) PARA 4 BOTÕES */
         .botoes-container {
             display: grid;
-            grid-template-columns: 1fr 1fr; /* Duas colunas iguais */
-            gap: 1rem; /* Espaço entre os botões */
+            grid-template-columns: 6fr 6fr; /* Duas colunas iguais */
+            gap: 3rem; /* Espaço entre os botões */
         }
 
         /* RESPONSIVIDADE: Muda para 1 coluna em telas de celulares */
-        @media (max-width: 550px) {
+        @media (max-width: 500px) {
             .botoes-container {
                 grid-template-columns: 1fr;
             }

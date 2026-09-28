@@ -3,177 +3,165 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal SIGEDU - Acesso Unificado</title>
+    <title>Portal SIGEDU</title>
+    <!-- Fonte minimalista e elegante -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700&family=Newsreader:wght@600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     
     <style>
         body {
             margin: 0;
             padding: 0;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #F8FAFC;
+            font-family: 'Inter', sans-serif;
+            background-color: #FAFAFA; /* Fundo quase branco, super leve */
             display: flex;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-            color: #0F172A;
-            /* Background suave inspirado no RACT */
-            background-image: radial-gradient(at 10% 10%, rgba(37, 99, 235, 0.05) 0px, transparent 50%), radial-gradient(at 90% 90%, rgba(20, 184, 166, 0.05) 0px, transparent 50%);
+            color: #374151;
         }
+        
         .portal-card {
             background: #FFFFFF;
-            padding: 3rem;
-            border-radius: 2rem;
-            box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.08), 0 10px 15px -8px rgba(0, 0, 0, 0.02);
+            padding: 2.5rem 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.03); /* Sombra quase invisível */
+            border: 1px solid #F3F4F6;
             text-align: center;
-            max-width: 450px;
+            max-width: 360px; /* Cartão mais estreito e delicado */
             width: 90%;
-            border: 1px solid rgba(226, 232, 240, 0.5);
         }
+        
         .sigedu-logo {
-            max-width: 180px;
+            max-width: 140px; /* Logo em tamanho menor e sofisticado */
             height: auto;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
         }
+        
         h1 {
             margin-top: 0;
-            font-size: 1.75rem;
-            font-weight: 700;
-            color: #1E293B;
-            margin-bottom: 0.5rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 0.25rem;
             letter-spacing: -0.02em;
         }
+        
         p {
-            color: #64748B;
-            font-size: 1rem;
-            margin-bottom: 2.5rem;
+            color: #6B7280;
+            font-size: 0.85rem;
+            margin-bottom: 2rem;
+            font-weight: 300;
         }
+        
         .botoes-container {
             display: flex;
             flex-direction: column;
-            gap: 1.25rem;
+            gap: 0.85rem;
         }
+        
         .btn {
             text-decoration: none;
-            padding: 1.25rem;
-            border-radius: 1rem;
-            font-weight: 600;
-            font-size: 1.05rem;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            overflow: hidden;
-        }
-        .btn-novo {
-            background-color: #2563EB;
-            color: #FFFFFF;
-            box-shadow: 0 6px 10px -1px rgba(37, 99, 235, 0.25);
-        }
-        .btn-novo:hover {
-            background-color: #1D4ED8;
-            transform: translateY(-3px);
-            box-shadow: 0 12px 20px -4px rgba(37, 99, 235, 0.4);
-        }
-        .btn-antigo {
-            background-color: #334155;
-            color: #FFFFFF;
-            box-shadow: 0 6px 10px -1px rgba(51, 65, 85, 0.25);
-        }
-        .btn-antigo:hover {
-            background-color: #1E293B;
-            transform: translateY(-3px);
-            box-shadow: 0 12px 20px -4px rgba(51, 65, 85, 0.4);
-        }
-        .btn-ract {
-            background-color: #14B8A6; /* Cor Teal do RACT */
-            color: #FFFFFF;
-            box-shadow: 0 6px 10px -1px rgba(20, 184, 166, 0.25);
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
             font-size: 0.9rem;
-        }
-        .btn-ract:hover {
-            background-color: #0F766E;
-            transform: translateY(-3px);
-            box-shadow: 0 12px 20px -4px rgba(20, 184, 166, 0.4);
-        }
-        /* Efeito de curiosidade no botão RACT */
-        .btn-ract::after {
-            content: '👀';
-            margin-left: 0.75rem;
-            font-size: 1.2rem;
-            transition: transform 0.3s;
-        }
-        .btn-ract:hover::after {
-            transform: scale(1.2) rotate(10deg);
-        }
-        .ract-footer {
-            margin-top: 3rem;
-            padding-top: 2rem;
-            border-top: 1px solid #E2E8F0;
-            color: #94A3B8;
-            font-size: 0.85rem;
+            transition: all 0.2s ease;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 0.75rem;
+            background-color: transparent; /* Fundo vazado */
         }
-        .ract-logo-small {
-            width: 24px;
-            height: 24px;
+        
+        .icon {
+            width: 18px;
+            height: 18px;
+            stroke-width: 1.5;
+            fill: none;
+            stroke: currentColor;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        
+        /* Botão Novo Sistema (Azul Vazado) */
+        .btn-novo {
+            color: #2563EB;
+            border: 1px solid #2563EB;
+        }
+        .btn-novo:hover {
+            background-color: rgba(37, 99, 235, 0.05); /* Fundo sutil ao passar o mouse */
+        }
+        
+        /* Botão Antigo Sistema (Cinza Vazado) */
+        .btn-antigo {
+            color: #4B5563;
+            border: 1px solid #D1D5DB;
+        }
+        .btn-antigo:hover {
+            background-color: rgba(75, 85, 99, 0.05);
+        }
+
+        /* Botão RACT (Teal Vazado) */
+        .btn-ract {
+            color: #0D9488;
+            border: 1px solid #0D9488;
+        }
+        .btn-ract:hover {
+            background-color: rgba(13, 148, 136, 0.05);
+        }
+
+        .ract-footer {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #F3F4F6;
+            color: #9CA3AF;
+            font-size: 0.75rem;
+            font-weight: 300;
+            letter-spacing: 0.02em;
         }
     </style>
 </head>
 <body>
 
     <div class="portal-card">
-        <!-- Logo SIGEDU enviado -->
+        <!-- Seu logotipo carregado diretamente -->
         <img src="https://i.postimg.cc/QFr9yLr4/sigedu-logo.png" alt="Logo SIGEDU" class="sigedu-logo">
         
-        <h1>PORTAL SIGEDU</h1>
-        <p>Selecione o sistema que deseja acessar:</p>
+        <h1>Portal de Acesso</h1>
+        <p>Selecione o ambiente desejado</p>
         
         <div class="botoes-container">
-            <!-- Botão Novo Sistema (Azul) -->
+            <!-- Botão Novo Sistema -->
             <a href="index_FB.html" class="btn btn-novo">
+                <!-- Ícone Foguete -->
+                <svg class="icon" viewBox="0 0 24 24"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2l.5-.5m15-15c-2.92 0-6.11 1.76-8.52 4.17-2.6 2.6-4.5 6.42-3.77 9.07l.6.6c2.65.73 6.47-1.17 9.07-3.77 2.41-2.41 4.17-5.6 4.17-8.52 0-.27 0-.54-.15-.69C18.66 4.15 18.27 4 18 4z"></path></svg>
                 Acessar Novo Sistema
             </a>
             
-            <!-- Botão Antigo Sistema (Cinza) -->
+            <!-- Botão Antigo Sistema -->
             <a href="carteirinhas.html" class="btn btn-antigo">
-                Sistema de Carteirinhas (Antigo)
+                <!-- Ícone Chave -->
+                <svg class="icon" viewBox="0 0 24 24"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg>
+                Sistema de Carteirinhas
             </a>
 
-            <!-- Botão RACT (Teal) -->
+            <!-- Botão RACT -->
             <a href="https://ract-ten.vercel.app/" target="_blank" class="btn btn-ract">
-                Visite nosso portal RACT
-                (Radar Autônomo de Ciências e Tecnologia)
+                <!-- Ícone Radar/Olho -->
+                <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="3"></circle><line x1="12" y1="2" x2="12" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line></svg>
+                Visite o portal RACT
             </a>
         </div>
 
         <div class="ract-footer">
-            <!-- Logo RACT estilizado em CSS ou imagem -->
-            <svg class="ract-logo-small" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="50" cy="50" r="48" stroke="#94A3B8" stroke-width="4"/>
-                <circle cx="50" cy="50" r="20" fill="#94A3B8"/>
-                <path d="M50 10V30" stroke="#94A3B8" stroke-width="4" stroke-linecap="round"/>
-                <path d="M50 70V90" stroke="#94A3B8" stroke-width="4" stroke-linecap="round"/>
-                <path d="M10 50H30" stroke="#94A3B8" stroke-width="4" stroke-linecap="round"/>
-                <path d="M70 50H90" stroke="#94A3B8" stroke-width="4" stroke-linecap="round"/>
-            </svg>
+            Democratizando o Conhecimento - RACT-TEN
         </div>
     </div>
 
 </body>
 </html>
-
-
-
 
 
 

@@ -303,9 +303,22 @@
             modalInstancia.show();
         };
 
-        window.salvarUnidade = async function() {
+    window.salvarUnidade = async function() {
             const idDigitado = document.getElementById('txt-id').value.trim();
             const nomeDigitado = document.getElementById('txt-nome').value.trim().toUpperCase();
+            
+            // Pega o link que o usuário colou
+            let logoOriginal = document.getElementById('txt-logo').value.trim();
+            let logoFinal = logoOriginal;
+
+            // 🌟 O MÁGICO CONVERSOR DE LINKS DO DRIVE
+            if (logoOriginal.includes("drive.google.com")) {
+                const match = logoOriginal.match(/(?:id=|file\/d\/|d\/)([^&\/]+)/);
+                if (match && match[1]) {
+                    // Transforma o link sujo do drive num link perfeito para imagens
+                    logoFinal = "https://drive.google.com/thumbnail?id=" + match[1] + "&sz=w800";
+                }
+            }
 
             if (!idDigitado || !nomeDigitado) {
                 Swal.fire('Atenção', 'O Código EOL e o Nome são obrigatórios!', 'warning');
@@ -317,7 +330,6 @@
             try {
                 const docRef = doc(db, "unidades", idDigitado);
                 
-                // Grava TODOS os 11 campos que você solicitou
                 await setDoc(docRef, {
                     ID: idDigitado,
                     nome_unidade: nomeDigitado,
@@ -329,7 +341,7 @@
                     telefone_whatsapp: document.getElementById('txt-tel-whats').value.trim(),
                     id_regional: document.getElementById('txt-regional').value.trim(),
                     tipo_acesso: document.getElementById('txt-tipo-acesso').value.toUpperCase(),
-                    url_logo: document.getElementById('txt-logo').value.trim()
+                    url_logo: logoFinal // 🌟 Agora salva o link já convertido e pronto para uso!
                 }, { merge: true });
 
                 modalInstancia.hide();

@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Passeios DRE - SIG EDU</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <style>
+        body { background-color: #f0f4f9; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; padding: 24px; color: #1f1f1f; }
+        .admin-card { background: #ffffff; border: none; border-radius: 16px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); margin-bottom: 24px; }
+        .header-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
+        .header-title { display: flex; align-items: center; gap: 10px; font-size: 22px; font-weight: 600; color: #0b57d0; margin: 0; }
+        .btn-custom { border-radius: 50px; padding: 8px 20px; font-weight: 500; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; }
+        .btn-primary-custom { background-color: #0b57d0; color: white; border: none; }
+        .btn-primary-custom:hover { background-color: #0842a0; color: white; }
+        .table-custom { margin-top: 10px; font-size: 14px; }
+        .table-custom thead th { background-color: #f8f9fa; color: #444746; font-weight: 600; border-bottom: 2px solid #e3e3e3; padding: 12px; }
+        .table-custom tbody td { padding: 12px; vertical-align: middle; border-bottom: 1px solid #f0f0f0; }
+        .table-custom tbody tr:hover { background-color: #f8f9fa; }
+        .action-icon { cursor: pointer; color: #747775; transition: 0.2s; padding: 5px; border-radius: 50%; }
+        .action-icon:hover { background-color: #e3e3e3; color: #1f1f1f; }
+        .icon-edit:hover { color: #0b57d0; background-color: #e8f0fe; }
+        .icon-delete:hover { color: #ba1a1a; background-color: #fce8e8; }
+        .section-title { font-size: 14px; color: #0b57d0; font-weight: 700; margin-top: 15px; margin-bottom: 10px; border-bottom: 1px solid #e3e3e3; padding-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px;}
+        .lista-ceus { max-height: 150px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 8px; padding: 10px; background: #f8f9fa; }
+        .lista-ceus label { font-size: 13px; font-weight: 500; display: block; margin-bottom: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="container-fluid p-0 animate__animated animate__fadeIn">
+        <div class="admin-card">
+            <div class="header-actions">
+                <h1 class="header-title">
+                    <span class="material-symbols-outlined" style="font-size: 28px;">directions_bus</span>
+                    Gestão de Passeios
+                </h1>
+                <div class="no-print">
+                    <button class="btn-custom btn-primary-custom" onclick="abrirModalNovo()">
+                        <span class="material-symbols-outlined" style="font-size: 18px;">add</span> Novo Passeio
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-custom">
+                    <thead>
+                        <tr>
+                            <th style="width: 120px;">Data</th>
+                            <th>Passeio / Evento</th>
+                            <th>Destino</th>
+                            <th>Público Alvo</th>
+                            <th style="width: 100px; text-align: center;">Vagas</th>
+                            <th class="no-print" style="width: 100px; text-align: center;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabela-passeios">
+                        <tr><td colspan="6" class="text-center text-muted py-4"><div class="spinner-border spinner-border-sm me-2"></div>Carregando dados...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE CADASTRO/EDIÇÃO PASSEIOS -->
+    <div class="modal fade" id="modalPasseio" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content" style="border-radius: 16px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+                <div class="modal-header" style="border-bottom: 1px solid #f0f0f0; padding: 20px 24px;">
+                    <h5 class="modal-title" id="modalTitulo" style="font-weight: 600; color: #1f1f1f;">Cadastrar Passeio</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" style="padding: 24px; max-height: 70vh; overflow-y: auto;">
+                    <form id="formPasseio">
+                        <input type="hidden" id="txt-id">
+                        
+                        <div class="section-title">Dados do Evento</div>
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label" style="font-size: 13px; font-weight: 500;">Data do Passeio *</label>
+                                <input type="date" class="form-control" id="txt-data" required style="border-radius: 8px;">
+                            </div>
+                            <div class="col-md-9 mb-3">
+                                <label class="form-label" style="font-size: 13px; font-weight: 500;">Nome do Passeio / Evento *</label>
+                                <input type="text" class="form-control" id="txt-passeio" placeholder="Ex: Visita ao Museu do Ipiranga" required style="border-radius: 8px; text-transform: uppercase;">
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label" style="font-size: 13px; font-weight: 500;">Destino / Endereço *</label>
+                                <input type="text" class="form-control" id="txt-destino" placeholder="Ex: Parque Ibirapuera - Portão 3" required style="border-radius: 8px; text-transform: uppercase;">
+                            </div>
+                        </div>
+
+                        <div class="section-title">Horários e Público</div>
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label" style="font-size: 13px; font-weight: 500;">Horário no Local</label>
+                                <input type="text" class="form-control" id="txt-horario-evento" placeholder="Ex: 14h às 16h" style="border-radius: 8px;">
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label" style="font-size: 13px; font-weight: 500;">Saída do CEU</label>
+                                <input type="time" class="form-control" id="txt-saida" style="border-radius: 8px;">
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label" style="font-size: 13px; font-weight: 500;">Retorno Previsto</label>
+                                <input type="time" class="form-control" id="txt-chegada" style="border-radius: 8px;">
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label" style="font-size: 13px; font-weight: 500;">Qtd. Vagas *</label>
+                                <input type="number" class="form-control" id="txt-vagas" placeholder="Ex: 40" required style="border-radius: 8px;">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label" style="font-size: 13px; font-weight: 500;">Faixa Etária / Público</label>
+                                <input type="text" class="form-control" id="txt-faixa" placeholder="Ex: 06 a 14 anos" style="border-radius: 8px; text-transform: uppercase;">
+                            </div>
+                        </div>
+
+                        <div class="section-title">CEUs Participantes</div>
+                        <div class="mb-3">
+                            <label class="form-label" style="font-size: 13px; font-weight: 500;">Selecione os polos que participarão deste passeio:</label>
+                            <div class="lista-ceus" id="container-ceus">
+                                <!-- Preenchido dinamicamente com o Firebase -->
+                                <div class="text-muted text-center"><small>Carregando unidades...</small></div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer" style="border-top: 1px solid #f0f0f0; padding: 16px 24px;">
+                    <button type="button" class="btn-custom btn-outline-custom" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn-custom btn-primary-custom" onclick="salvarPasseio()">Salvar Passeio</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+        import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCpCXxJbD8dPXkT7mcoz4qK8Wjt7WTRwFA",
+            authDomain: "sig-edu.firebaseapp.com",
+            projectId: "sig-edu",
+            storageBucket: "sig-edu.firebasestorage.app",
+            messagingSenderId: "233239725278",
+            appId: "1:233239725278:web:809b9c42feacd99175ee4f"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        
+        let modalInstancia = null;
+        let cachePasseios = {};
+        let listaCEUsGlobais = [];
+
+        window.onload = async function() {
+            modalInstancia = new bootstrap.Modal(document.getElementById('modalPasseio'));
+            await carregarCEUsDoBanco();
+            carregarTabela();
+        };
+
+        // 🌟 Busca os CEUs que você cadastrou no painel de administração!
+        async function carregarCEUsDoBanco() {
+            try {
+                const snap = await getDocs(collection(db, "unidades"));
+                listaCEUsGlobais = [];
+                snap.forEach(doc => {
+                    let d = doc.data();
+                    listaCEUsGlobais.push({ id: d.ID || doc.id, nome: d.nome_unidade || d.nome || "SEM NOME" });
+                });
+                listaCEUsGlobais.sort((a,b) => a.nome.localeCompare(b.nome));
+
+                let htmlCEUs = "";
+                listaCEUsGlobais.forEach(ceu => {
+                    htmlCEUs += `<label><input type="checkbox" name="chk-ceu" value="${ceu.id}" data-nome="${ceu.nome}"> ${ceu.id} - ${ceu.nome}</label>`;
+                });
+                document.getElementById('container-ceus').innerHTML = htmlCEUs;
+            } catch (e) {
+                document.getElementById('container-ceus').innerHTML = "<span class='text-danger'>Erro ao carregar CEUs.</span>";
+            }
+        }
+
+        window.carregarTabela = async function() {
+            const tbody = document.getElementById('tabela-passeios');
+            try {
+                const querySnapshot = await getDocs(collection(db, "dre_passeios"));
+                let html = "";
+                let lista = [];
+                cachePasseios = {};
+
+                querySnapshot.forEach((doc) => {
+                    const dados = doc.data();
+                    dados.idBanco = doc.id;
+                    cachePasseios[doc.id] = dados;
+                    lista.push(dados);
+                });
+
+                lista.sort((a, b) => new Date(b.dataPasseio) - new Date(a.dataPasseio));
+
+                if(lista.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">Nenhum passeio cadastrado.</td></tr>`;
+                    return;
+                }
+
+                lista.forEach(item => {
+                    // Formata a data de YYYY-MM-DD para DD/MM/YYYY
+                    let dtArray = item.dataPasseio ? item.dataPasseio.split('-') : [];
+                    let dtShow = dtArray.length === 3 ? `${dtArray[2]}/${dtArray[1]}/${dtArray[0]}` : item.dataPasseio;
+                    
+                    html += `
+                        <tr>
+                            <td><strong style="color: #0b57d0;">${dtShow}</strong></td>
+                            <td style="font-weight: 500; color: #1f1f1f;">${item.passeio}</td>
+                            <td>${item.destino}</td>
+                            <td>${item.faixa}</td>
+                            <td class="text-center"><strong>${item.vagas}</strong></td>
+                            <td class="text-center no-print">
+                                <span class="material-symbols-outlined action-icon icon-edit" onclick="window.abrirModalEditar('${item.idBanco}')" title="Editar">edit</span>
+                                <span class="material-symbols-outlined action-icon icon-delete" onclick="window.confirmarExclusao('${item.idBanco}', '${item.passeio.replace(/'/g, "\\'")}')" title="Excluir">delete</span>
+                            </td>
+                        </tr>
+                    `;
+                });
+                tbody.innerHTML = html;
+            } catch (error) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">Erro ao carregar os passeios.</td></tr>`;
+            }
+        }
+
+        window.abrirModalNovo = function() {
+            document.getElementById('formPasseio').reset();
+            document.getElementById('txt-id').value = "PASS-" + new Date().getTime();
+            document.getElementById('modalTitulo').innerText = "Cadastrar Novo Passeio";
+            modalInstancia.show();
+        };
+
+        window.abrirModalEditar = function(idBanco) {
+            document.getElementById('formPasseio').reset();
+            document.getElementById('modalTitulo').innerText = "Editar Passeio";
+            
+            const dados = cachePasseios[idBanco];
+            document.getElementById('txt-id').value = idBanco;
+            document.getElementById('txt-data').value = dados.dataPasseio || "";
+            document.getElementById('txt-passeio').value = dados.passeio || "";
+            document.getElementById('txt-destino').value = dados.destino || "";
+            document.getElementById('txt-horario-evento').value = dados.horarioEvento || "";
+            document.getElementById('txt-saida').value = dados.saidaCeu || "";
+            document.getElementById('txt-chegada').value = dados.chegadaCeu || "";
+            document.getElementById('txt-vagas').value = dados.vagas || "";
+            document.getElementById('txt-faixa').value = dados.faixa || "";
+
+            // Marca os checkboxes dos CEUs salvos
+            const checkboxes = document.querySelectorAll('input[name="chk-ceu"]');
+            let ceusSalvos = dados.ceus_selecionados || []; // Array de IDs salvos
+            checkboxes.forEach(chk => {
+                if (ceusSalvos.includes(chk.value)) { chk.checked = true; }
+            });
+            
+            modalInstancia.show();
+        };
+
+        window.salvarPasseio = async function() {
+            const idGerado = document.getElementById('txt-id').value;
+            const dataPasseio = document.getElementById('txt-data').value;
+            const passeio = document.getElementById('txt-passeio').value.trim().toUpperCase();
+
+            if (!dataPasseio || !passeio) {
+                Swal.fire('Atenção', 'A Data e o Nome do Passeio são obrigatórios!', 'warning');
+                return;
+            }
+
+            // Pega os CEUs que foram marcados no Modal
+            let ceusMarcados = [];
+            let nomesMarcados = [];
+            document.querySelectorAll('input[name="chk-ceu"]:checked').forEach(chk => {
+                ceusMarcados.push(chk.value);
+                nomesMarcados.push(chk.getAttribute('data-nome'));
+            });
+
+            Swal.fire({ title: 'Salvando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+
+            try {
+                const docRef = doc(db, "dre_passeios", idGerado);
+                await setDoc(docRef, {
+                    dataPasseio: dataPasseio,
+                    passeio: passeio,
+                    destino: document.getElementById('txt-destino').value.trim().toUpperCase(),
+                    horarioEvento: document.getElementById('txt-horario-evento').value.trim(),
+                    saidaCeu: document.getElementById('txt-saida').value.trim(),
+                    chegadaCeu: document.getElementById('txt-chegada').value.trim(),
+                    vagas: document.getElementById('txt-vagas').value.trim(),
+                    faixa: document.getElementById('txt-faixa').value.trim().toUpperCase(),
+                    ceus_selecionados: ceusMarcados, // Salva o Array de IDs
+                    ceus_nomes: nomesMarcados // Salva os Nomes para facilitar a leitura futura
+                }, { merge: true });
+
+                modalInstancia.hide();
+                Swal.fire('Sucesso!', 'O passeio foi salvo com sucesso.', 'success');
+                carregarTabela();
+            } catch (error) {
+                Swal.fire('Erro', 'Ocorreu um erro ao salvar: ' + error.message, 'error');
+            }
+        };
+
+        window.confirmarExclusao = function(idBanco, nome) {
+            Swal.fire({
+                title: 'Tem certeza?',
+                html: `Deseja excluir o passeio <br><strong>${nome}</strong>?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ba1a1a',
+                cancelButtonColor: '#747775',
+                confirmButtonText: 'Sim, Excluir',
+                cancelButtonText: 'Cancelar'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({ title: 'Excluindo...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+                    try {
+                        await deleteDoc(doc(db, "dre_passeios", idBanco));
+                        Swal.fire('Excluído!', 'Passeio removido.', 'success');
+                        carregarTabela();
+                    } catch (error) {
+                        Swal.fire('Erro', 'Não foi possível excluir: ' + error.message, 'error');
+                    }
+                }
+            });
+        };
+    </script>
+</body>
+</html>

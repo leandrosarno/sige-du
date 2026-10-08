@@ -280,7 +280,7 @@
             atracoes: []
         };
 
-        window.onload = async function() {
+    window.onload = async function() {
             // TRAVA DE SEGURANÇA PADRÃO
             let perfisUsuario = ["UNIDADE"];
             try {
@@ -292,7 +292,8 @@
                 } else perfisUsuario = cru.split(',').map(p => p.trim().toUpperCase());
             } catch (e) { perfisUsuario = ["UNIDADE"]; }
 
-            const temAcessoGlobal = perfisUsuario.some(p => ['ADMIN', 'SME', 'DRE'].includes(p));
+            // 🌟 CORREÇÃO 1: Adicionamos os perfis das unidades na lista de permissão
+            const temAcessoGlobal = perfisUsuario.some(p => ['ADMIN', 'SME', 'DRE', 'CEU', 'UNIDADE', 'GESTOR'].includes(p));
 
             if (!temAcessoGlobal) {
                 document.getElementById('area-bloqueada').style.display = 'block';
@@ -300,7 +301,6 @@
             }
 
             eolLogado = localStorage.getItem('sig_id_unidade') || "";
-            // SME ou TI(000000) tem visão irrestrita de todas as unidades
             visaoGlobal = perfisUsuario.includes('SME') || (perfisUsuario.includes('ADMIN') && eolLogado === '000000');
 
             document.getElementById('area-restrita').style.display = 'block';
@@ -381,13 +381,17 @@
             document.querySelectorAll('.combo-datas').forEach(el => el.innerHTML = optionsHtml);
         }
 
-        function montarBotoesCEU() {
+    function montarBotoesCEU() {
             let botoesHtml = "";
-            // Filtro rígido com base no id_regional (dreEol) gravado na coleção unidades
-            let ceusPermitidos = globais.ceus.filter(c => visaoGlobal || String(c.dreEol).trim() === String(eolLogado).trim());
+            // 🌟 CORREÇÃO 2: Permite que o CEU veja seu próprio ID além do ID da DRE
+            let ceusPermitidos = globais.ceus.filter(c => 
+                visaoGlobal || 
+                String(c.dreEol).trim() === String(eolLogado).trim() || 
+                String(c.eol).trim() === String(eolLogado).trim()
+            );
             
             if (ceusPermitidos.length === 0) {
-                botoesHtml = "<span class='text-muted small'>Nenhum CEU vinculado encontrado para sua DRE.</span>";
+                botoesHtml = "<span class='text-muted small'>Nenhum CEU vinculado encontrado para sua unidade.</span>";
             } else {
                 ceusPermitidos.forEach(ceu => {
                     botoesHtml += `<button class="btn-ceu" onclick="adicionarEol('${ceu.eol}')">${ceu.nome.replace("CEU ", "")}</button>`;
@@ -493,12 +497,15 @@
             } catch(e) { Swal.fire('Erro', 'Falha ao salvar atração.', 'error'); }
         };
 
-        // ==========================================
-        // 📋 RENDERIZAÇÃO DAS TABELAS (FILTRO APLICADO)
-        // ==========================================
-        function renderizarTabelas() {
-            // Cria a lista dos EOLs de CEUs que a DRE atual pode ver
-            let eolsDestaDre = globais.ceus.filter(c => visaoGlobal || String(c.dreEol).trim() === String(eolLogado).trim()).map(c => String(c.eol).trim());
+
+        
+    function renderizarTabelas() {
+            // 🌟 CORREÇÃO 3: Filtro corrigido também para a renderização das tabelas
+            let eolsDestaDre = globais.ceus.filter(c => 
+                visaoGlobal || 
+                String(c.dreEol).trim() === String(eolLogado).trim() || 
+                String(c.eol).trim() === String(eolLogado).trim()
+            ).map(c => String(c.eol).trim());
 
             // --- TABELA PASSEIOS ---
             let tbP = document.getElementById('p_corpo_tabela');

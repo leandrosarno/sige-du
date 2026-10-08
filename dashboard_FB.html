@@ -511,11 +511,11 @@
 
                     if (!nomeParaExibir) {
                         const colecoes = [
-                            { col: "unidades", campoNome: "nome_unidade", idKey: "id_unidade" },
+                            { col: "unidades", campoNome: "nome_unidade", idKey: "ID" },
                             { col: "regionais", campoNome: "nome_regional", idKey: "id_regional" },
                             { col: "secretarias", campoNome: "nome_secretaria", idKey: "id_secretaria" }
                         ];
-
+                        
                         for (let c of colecoes) {
                             if (nomeParaExibir) break;
                             let q = query(collection(db, c.col), where(c.idKey, "==", idLimpo));

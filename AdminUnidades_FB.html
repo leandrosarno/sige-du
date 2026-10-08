@@ -40,7 +40,8 @@
         .icon-edit:hover { color: #0b57d0; background-color: #e8f0fe; }
         .icon-delete:hover { color: #ba1a1a; background-color: #fce8e8; }
 
-        /* Esconder botões na hora da impressão */
+        .section-title { font-size: 14px; color: #0b57d0; font-weight: 700; margin-top: 15px; margin-bottom: 10px; border-bottom: 1px solid #e3e3e3; padding-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px;}
+
         @media print {
             .no-print, .btn-custom, .action-icon { display: none !important; }
             body { background-color: #fff; padding: 0; }
@@ -74,40 +75,97 @@
                             <th style="width: 80px; text-align: center;">Logo</th>
                             <th style="width: 120px;">Código EOL</th>
                             <th>Nome da Unidade</th>
+                            <th>Telefone (Fixo)</th>
                             <th class="no-print" style="width: 100px; text-align: center;">Ações</th>
                         </tr>
                     </thead>
                     <tbody id="tabela-unidades">
-                        <tr><td colspan="4" class="text-center text-muted py-4"><div class="spinner-border spinner-border-sm me-2"></div>Carregando dados...</td></tr>
+                        <tr><td colspan="5" class="text-center text-muted py-4"><div class="spinner-border spinner-border-sm me-2"></div>Carregando dados...</td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <!-- MODAL DE CADASTRO/EDIÇÃO -->
+    <!-- MODAL DE CADASTRO/EDIÇÃO (Tamanho LG para suportar os novos campos) -->
     <div class="modal fade" id="modalUnidade" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content" style="border-radius: 16px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
                 <div class="modal-header" style="border-bottom: 1px solid #f0f0f0; padding: 20px 24px;">
                     <h5 class="modal-title" id="modalTitulo" style="font-weight: 600; color: #1f1f1f;">Cadastrar Unidade</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body" style="padding: 24px;">
+                <div class="modal-body" style="padding: 24px; max-height: 70vh; overflow-y: auto;">
                     <form id="formUnidade">
-                        <div class="mb-3">
-                            <label class="form-label" style="font-size: 13px; font-weight: 500; color: #444746;">Código EOL (ID) *</label>
-                            <input type="text" class="form-control" id="txt-id" placeholder="Ex: 700039" required style="border-radius: 8px;">
-                            <small class="text-muted" style="font-size: 11px;">O ID não pode ser alterado depois de salvo.</small>
+                        
+                        <!-- IDENTIFICAÇÃO -->
+                        <div class="section-title">Identificação</div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label" style="font-size: 13px; font-weight: 500;">Código EOL (ID) *</label>
+                                <input type="text" class="form-control" id="txt-id" placeholder="Ex: 700039" required style="border-radius: 8px;">
+                            </div>
+                            <div class="col-md-8 mb-3">
+                                <label class="form-label" style="font-size: 13px; font-weight: 500;">Nome da Unidade *</label>
+                                <input type="text" class="form-control" id="txt-nome" placeholder="Ex: Caminho do Mar" required style="border-radius: 8px; text-transform: uppercase;">
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label" style="font-size: 13px; font-weight: 500; color: #444746;">Nome do CEU *</label>
-                            <input type="text" class="form-control" id="txt-nome" placeholder="Ex: Caminho do Mar" required style="border-radius: 8px; text-transform: uppercase;">
+
+                        <!-- ENDEREÇO -->
+                        <div class="section-title">Endereço</div>
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label" style="font-size: 13px; font-weight: 500;">CEP</label>
+                                <input type="text" class="form-control" id="txt-cep" placeholder="00000-000" style="border-radius: 8px;">
+                            </div>
+                            <div class="col-md-7 mb-3">
+                                <label class="form-label" style="font-size: 13px; font-weight: 500;">Logradouro</label>
+                                <input type="text" class="form-control" id="txt-logradouro" placeholder="Av. Eng. Armando de Arruda Pereira" style="border-radius: 8px; text-transform: uppercase;">
+                            </div>
+                            <div class="col-md-2 mb-3">
+                                <label class="form-label" style="font-size: 13px; font-weight: 500;">Nº</label>
+                                <input type="text" class="form-control" id="txt-numero" placeholder="5241" style="border-radius: 8px;">
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label" style="font-size: 13px; font-weight: 500;">Bairro</label>
+                                <input type="text" class="form-control" id="txt-bairro" placeholder="Vila do Encontro" style="border-radius: 8px; text-transform: uppercase;">
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label" style="font-size: 13px; font-weight: 500; color: #444746;">URL do Logotipo</label>
-                            <input type="url" class="form-control" id="txt-logo" placeholder="Cole o link da imagem (Drive, Imgur, etc)" style="border-radius: 8px;">
+
+                        <!-- CONTATO -->
+                        <div class="section-title">Contato e Mídia</div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label" style="font-size: 13px; font-weight: 500;">Telefone Fixo</label>
+                                <input type="text" class="form-control" id="txt-tel-fixo" placeholder="(11) 3396-0000" style="border-radius: 8px;">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label" style="font-size: 13px; font-weight: 500;">WhatsApp</label>
+                                <input type="text" class="form-control" id="txt-tel-whats" placeholder="(11) 90000-0000" style="border-radius: 8px;">
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label" style="font-size: 13px; font-weight: 500;">URL do Logotipo</label>
+                                <input type="url" class="form-control" id="txt-logo" placeholder="Cole o link da imagem (Drive, etc)" style="border-radius: 8px;">
+                            </div>
                         </div>
+
+                        <!-- ADMINISTRATIVO -->
+                        <div class="section-title">Dados Administrativos</div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label" style="font-size: 13px; font-weight: 500;">ID Regional (DRE)</label>
+                                <input type="text" class="form-control" id="txt-regional" placeholder="Código EOL da DRE Responsável" style="border-radius: 8px;">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label" style="font-size: 13px; font-weight: 500;">Tipo de Acesso</label>
+                                <select class="form-select" id="txt-tipo-acesso" style="border-radius: 8px;">
+                                    <option value="CEU">CEU</option>
+                                    <option value="DRE">DRE</option>
+                                    <option value="SME">SME</option>
+                                </select>
+                            </div>
+                        </div>
+
                     </form>
                 </div>
                 <div class="modal-footer" style="border-top: 1px solid #f0f0f0; padding: 16px 24px;">
@@ -139,6 +197,9 @@
         
         let modalInstancia = null;
         let modoEdicao = false;
+        
+        // 🌟 Memória do Sistema: Guarda os dados de todas as unidades para carregar na edição
+        let unidadesCarregadas = {};
 
         window.onload = function() {
             modalInstancia = new bootstrap.Modal(document.getElementById('modalUnidade'));
@@ -151,22 +212,26 @@
                 const querySnapshot = await getDocs(collection(db, "unidades"));
                 let html = "";
                 let lista = [];
+                
+                unidadesCarregadas = {}; // Zera o cache
 
                 querySnapshot.forEach((doc) => {
                     const dados = doc.data();
-                    // O radar do Firebase para pegar o nome e ID seja como ele estiver cadastrado
                     const eol = dados.ID || dados.id_unidade || doc.id;
                     const nome = dados.nome_unidade || dados.nome || dados.nome_ceu || "SEM NOME";
                     const logo = dados.url_logo || dados.logo || "https://via.placeholder.com/150/f0f4f9/0b57d0?text=CEU";
+                    const telefone = dados.telefone_fixo || "-";
 
-                    lista.push({ eol, nome, logo });
+                    // Guarda a unidade completa no cache
+                    unidadesCarregadas[eol] = dados;
+
+                    lista.push({ eol, nome, logo, telefone });
                 });
 
-                // Ordena por nome em ordem alfabética
                 lista.sort((a, b) => a.nome.localeCompare(b.nome));
 
                 if(lista.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-4">Nenhuma unidade cadastrada.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">Nenhuma unidade cadastrada.</td></tr>`;
                     return;
                 }
 
@@ -176,8 +241,9 @@
                             <td class="text-center"><img src="${item.logo}" class="img-thumbnail-ceu" alt="Logo"></td>
                             <td><strong style="color: #0b57d0;">${item.eol}</strong></td>
                             <td style="font-weight: 500; color: #1f1f1f;">${item.nome.toUpperCase()}</td>
+                            <td style="color: #444746;">${item.telefone}</td>
                             <td class="text-center no-print">
-                                <span class="material-symbols-outlined action-icon icon-edit" onclick="window.abrirModalEditar('${item.eol}', '${item.nome.replace(/'/g, "\\'")}', '${item.logo}')" title="Editar">edit</span>
+                                <span class="material-symbols-outlined action-icon icon-edit" onclick="window.abrirModalEditar('${item.eol}')" title="Editar">edit</span>
                                 <span class="material-symbols-outlined action-icon icon-delete" onclick="window.confirmarExclusao('${item.eol}', '${item.nome.replace(/'/g, "\\'")}')" title="Excluir">delete</span>
                             </td>
                         </tr>
@@ -186,7 +252,7 @@
 
                 tbody.innerHTML = html;
             } catch (error) {
-                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-danger py-4">Erro ao carregar os dados.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4">Erro ao carregar os dados.</td></tr>`;
                 console.error("Erro Firebase:", error);
             }
         }
@@ -194,22 +260,45 @@
         window.abrirModalNovo = function() {
             modoEdicao = false;
             document.getElementById('modalTitulo').innerText = "Cadastrar Nova Unidade";
+            
+            // Limpa todos os campos
             document.getElementById('txt-id').value = "";
             document.getElementById('txt-id').disabled = false;
             document.getElementById('txt-nome').value = "";
+            document.getElementById('txt-cep').value = "";
+            document.getElementById('txt-logradouro').value = "";
+            document.getElementById('txt-numero').value = "";
+            document.getElementById('txt-bairro').value = "";
+            document.getElementById('txt-tel-fixo').value = "";
+            document.getElementById('txt-tel-whats').value = "";
+            document.getElementById('txt-regional').value = "";
+            document.getElementById('txt-tipo-acesso').value = "CEU";
             document.getElementById('txt-logo').value = "";
+            
             modalInstancia.show();
         };
 
-        window.abrirModalEditar = function(eol, nome, logo) {
+        window.abrirModalEditar = function(eol) {
             modoEdicao = true;
             document.getElementById('modalTitulo').innerText = "Editar Unidade";
-            document.getElementById('txt-id').value = eol;
-            document.getElementById('txt-id').disabled = true; // O ID não pode mudar na edição
-            document.getElementById('txt-nome').value = nome;
             
-            // Se for o placeholder, limpa o campo
-            document.getElementById('txt-logo').value = logo.includes("via.placeholder") ? "" : logo;
+            // Puxa os dados completos da Memória Cache
+            const dados = unidadesCarregadas[eol];
+
+            document.getElementById('txt-id').value = eol;
+            document.getElementById('txt-id').disabled = true; // ID não muda
+            document.getElementById('txt-nome').value = dados.nome_unidade || dados.nome || dados.nome_ceu || "";
+            document.getElementById('txt-cep').value = dados.endereco_cep || "";
+            document.getElementById('txt-logradouro').value = dados.endereco_logradouro || "";
+            document.getElementById('txt-numero').value = dados.endereco_numero || "";
+            document.getElementById('txt-bairro').value = dados.endereco_bairro || "";
+            document.getElementById('txt-tel-fixo').value = dados.telefone_fixo || "";
+            document.getElementById('txt-tel-whats').value = dados.telefone_whatsapp || "";
+            document.getElementById('txt-regional').value = dados.id_regional || "";
+            document.getElementById('txt-tipo-acesso').value = dados.tipo_acesso || "CEU";
+            
+            let logoAtual = dados.url_logo || dados.logo || "";
+            document.getElementById('txt-logo').value = logoAtual.includes("via.placeholder") ? "" : logoAtual;
             
             modalInstancia.show();
         };
@@ -217,7 +306,6 @@
         window.salvarUnidade = async function() {
             const idDigitado = document.getElementById('txt-id').value.trim();
             const nomeDigitado = document.getElementById('txt-nome').value.trim().toUpperCase();
-            const logoDigitado = document.getElementById('txt-logo').value.trim();
 
             if (!idDigitado || !nomeDigitado) {
                 Swal.fire('Atenção', 'O Código EOL e o Nome são obrigatórios!', 'warning');
@@ -227,18 +315,26 @@
             Swal.fire({ title: 'Salvando...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
 
             try {
-                // Salva na coleção "unidades", usando o ID digitado como nome do documento para facilitar
                 const docRef = doc(db, "unidades", idDigitado);
                 
+                // Grava TODOS os 11 campos que você solicitou
                 await setDoc(docRef, {
                     ID: idDigitado,
                     nome_unidade: nomeDigitado,
-                    url_logo: logoDigitado
-                }, { merge: true }); // Merge garante que não apague outros campos que possam existir
+                    endereco_cep: document.getElementById('txt-cep').value.trim(),
+                    endereco_logradouro: document.getElementById('txt-logradouro').value.trim().toUpperCase(),
+                    endereco_numero: document.getElementById('txt-numero').value.trim(),
+                    endereco_bairro: document.getElementById('txt-bairro').value.trim().toUpperCase(),
+                    telefone_fixo: document.getElementById('txt-tel-fixo').value.trim(),
+                    telefone_whatsapp: document.getElementById('txt-tel-whats').value.trim(),
+                    id_regional: document.getElementById('txt-regional').value.trim(),
+                    tipo_acesso: document.getElementById('txt-tipo-acesso').value.toUpperCase(),
+                    url_logo: document.getElementById('txt-logo').value.trim()
+                }, { merge: true });
 
                 modalInstancia.hide();
                 Swal.fire('Sucesso!', 'A unidade foi salva com sucesso.', 'success');
-                carregarTabela(); // Recarrega a tabela na hora
+                carregarTabela();
             } catch (error) {
                 Swal.fire('Erro', 'Ocorreu um erro ao salvar: ' + error.message, 'error');
             }

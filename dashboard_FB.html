@@ -492,17 +492,18 @@
                     let docSnap = await getDoc(doc(db, "unidades", idLimpo));
                     if (docSnap.exists()) {
                         dadosUnidade = docSnap.data();
-                        nomeParaExibir = dadosUnidade.nome_unidade;
+                        // 🌟 MÁGICA: Agora ele aceita nome_unidade, nome ou nome_ceu
+                        nomeParaExibir = dadosUnidade.nome_unidade || dadosUnidade.nome || dadosUnidade.nome_ceu;
                     } else {
                         docSnap = await getDoc(doc(db, "regionais", idLimpo));
                         if (docSnap.exists()) {
                             dadosUnidade = docSnap.data();
-                            nomeParaExibir = dadosUnidade.nome_regional;
+                            nomeParaExibir = dadosUnidade.nome_regional || dadosUnidade.nome;
                         } else {
                             docSnap = await getDoc(doc(db, "secretarias", idLimpo));
                             if (docSnap.exists()) {
                                 dadosUnidade = docSnap.data();
-                                nomeParaExibir = dadosUnidade.nome_secretaria;
+                                nomeParaExibir = dadosUnidade.nome_secretaria || dadosUnidade.nome;
                             } else if (idLimpo === "000000") {
                                 nomeParaExibir = "SME GLOBAL / TI";
                             }
@@ -511,7 +512,8 @@
 
                     if (!nomeParaExibir) {
                         const colecoes = [
-                            { col: "unidades", campoNome: "nome_unidade", idKey: "Document_ID" },
+                            { col: "unidades", campoNome: "nome_unidade", idKey: "ID" },
+                            { col: "unidades", campoNome: "nome", idKey: "ID" }, // 🌟 Se não achar nome_unidade, tenta "nome"
                             { col: "regionais", campoNome: "nome_regional", idKey: "id_regional" },
                             { col: "secretarias", campoNome: "nome_secretaria", idKey: "id_secretaria" }
                         ];

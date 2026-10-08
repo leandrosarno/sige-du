@@ -489,61 +489,71 @@
                     let dadosUnidade = null;
                     let nomeParaExibir = "";
 
-                    let docSnap = await getDoc(doc(db, "unidades", idLimpo));
-                    if (docSnap.exists()) {
-                        dadosUnidade = docSnap.data();
-                        // 🌟 MÁGICA: Agora ele aceita nome_unidade, nome ou nome_ceu
-                        nomeParaExibir = dadosUnidade.nome_unidade || dadosUnidade.nome || dadosUnidade.nome_ceu;
-                    } else {
-                        docSnap = await getDoc(doc(db, "regionais", idLimpo));
+                    // 🚀 RADAR BLINDADO 1: Tenta achar o documento direto pelo nome/ID da pasta principal
+                    const colecoesRaiz = ["unidades", "regionais", "secretarias", "ceus"];
+                    for (let col of colecoesRaiz) {
+                        if (nomeParaExibir) break;
+                        let docSnap = await getDoc(doc(db, col, idLimpo));
                         if (docSnap.exists()) {
                             dadosUnidade = docSnap.data();
-                            nomeParaExibir = dadosUnidade.nome_regional || dadosUnidade.nome;
-                        } else {
-                            docSnap = await getDoc(doc(db, "secretarias", idLimpo));
-                            if (docSnap.exists()) {
-                                dadosUnidade = docSnap.data();
-                                nomeParaExibir = dadosUnidade.nome_secretaria || dadosUnidade.nome;
-                            } else if (idLimpo === "000000") {
-                                nomeParaExibir = "SME GLOBAL / TI";
-                            }
+                            nomeParaExibir = dadosUnidade.nome_unidade || dadosUnidade.nome_ceu || dadosUnidade.nome || dadosUnidade.nome_regional || dadosUnidade.nome_secretaria;
                         }
                     }
 
+                    // 🚀 RADAR BLINDADO 2: Se não achou, vasculha todos os campos dentro de todos os documentos
                     if (!nomeParaExibir) {
-                        const colecoes = [
-                            { col: "unidades", campoNome: "nome_unidade", idKey: "ID" },
-                            { col: "unidades", campoNome: "nome", idKey: "ID" }, // 🌟 Se não achar nome_unidade, tenta "nome"
-                            { col: "regionais", campoNome: "nome_regional", idKey: "id_regional" },
-                            { col: "secretarias", campoNome: "nome_secretaria", idKey: "id_secretaria" }
-                        ];
-                        
-                        for (let c of colecoes) {
-                            if (nomeParaExibir) break;
-                            let q = query(collection(db, c.col), where(c.idKey, "==", idLimpo));
-                            let snap = await getDocs(q);
-                            if (snap.empty && !isNaN(Number(idLimpo))) {
-                                q = query(collection(db, c.col), where(c.idKey, "==", Number(idLimpo)));
-                                snap = await getDocs(q);
-                            }
-                            if (!snap.empty) {
-                                dadosUnidade = snap.docs[0].data();
-                                nomeParaExibir = dadosUnidade[c.campoNome];
+                        if (idLimpo === "000000") {
+                            nomeParaExibir = "SME GLOBAL / TI";
+                        } else {
+                            const camposDeId = ["ID", "id_unidade", "id_ceu", "eol", "id"];
+                            const camposDeNome = ["nome_unidade", "nome_ceu", "nome", "nome_regional", "nome_secretaria", "titulo"];
+                            
+                            for (let col of colecoesRaiz) {
+                                if (nomeParaExibir) break;
+                                for (let campoId of camposDeId) {
+                                    if (nomeParaExibir) break;
+                                    try {
+                                        // Tenta buscar como Texto (String)
+                                        let q = query(collection(db, col), where(campoId, "==", idLimpo));
+                                        let snap = await getDocs(q);
+                                        
+                                        // Se não achar, tenta buscar como Número
+                                        if (snap.empty && !isNaN(Number(idLimpo))) {
+                                            q = query(collection(db, col), where(campoId, "==", Number(idLimpo)));
+                                            snap = await getDocs(q);
+                                        }
+                                        
+                                        if (!snap.empty) {
+                                            dadosUnidade = snap.docs[0].data();
+                                            for (let campoNome of camposDeNome) {
+                                                if (dadosUnidade[campoNome]) {
+                                                    nomeParaExibir = dadosUnidade[campoNome];
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    } catch (e) {}
+                                }
                             }
                         }
                     }
 
+                    // 🎨 PINTA A TELA COM O RESULTADO ENCONTRADO
                     if (nomeParaExibir) {
                         document.getElementById('lbl-ceu').innerText = `${idLimpo} - ${nomeParaExibir.toUpperCase()}`;
-                        if (dadosUnidade && dadosUnidade.url_logo) {
+                        
+                        // Busca a logo em várias gavetas possíveis
+                        let linkLogo = dadosUnidade.url_logo || dadosUnidade.logo || dadosUnidade.imagem;
+                        if (linkLogo) {
                             const imgDash = document.getElementById('dash-img-logo');
                             const iconePadrao = document.getElementById('dash-icone-padrao');
                             iconePadrao.style.display = 'none';
-                            imgDash.src = dadosUnidade.url_logo;
+                            imgDash.src = linkLogo;
                             imgDash.style.display = 'block';
                         }
                     } else {
-                        document.getElementById('lbl-ceu').innerText = `${idLimpo} - NÃO IDENTIFICADO`;
+                        // ⚠️ AVISO DEFINITIVO: Se o radar não achar, o problema é no banco de dados!
+                        document.getElementById('lbl-ceu').innerText = `${idLimpo} - NÃO CADASTRADO NO FIREBASE`;
                     }
                 } catch (erro) {
                     document.getElementById('lbl-ceu').innerText = "ERRO AO CARREGAR IDENTIFICAÇÃO";

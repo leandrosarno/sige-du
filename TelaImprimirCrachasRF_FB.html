@@ -90,6 +90,7 @@
     </div>
 
     <div class="container-fluid no-print mt-3" id="area-sistema" style="display: none;">
+        
         <div class="barra-ferramentas">
             <div>
                 <h4 class="m-0 text-primary fw-bold"><i class="fas fa-id-badge"></i> Motor de Impressão</h4>
@@ -104,6 +105,27 @@
                 </button>
             </div>
         </div>
+
+        <!-- 🌟 NOVA BARRA DE FILTROS -->
+        <div id="area-filtros" class="barra-ferramentas" style="display: none; padding: 12px 25px;">
+            <div class="d-flex w-100 gap-4">
+                <div style="flex: 1;">
+                    <label style="font-size: 11px; font-weight: bold; color: #64748b; margin-bottom: 4px; display: block;">TIPO DE CRACHÁ</label>
+                    <select id="filtroTipo" class="form-select fw-bold text-primary" onchange="window.aplicarFiltrosImpressao()" style="font-size: 14px;">
+                        <option value="AMBOS">Crianças e Responsáveis</option>
+                        <option value="CRIANCAS">Somente Crianças</option>
+                        <option value="PAIS">Somente Responsáveis</option>
+                    </select>
+                </div>
+                <div style="flex: 1;">
+                    <label style="font-size: 11px; font-weight: bold; color: #64748b; margin-bottom: 4px; display: block;">FILTRAR POR TURMA</label>
+                    <select id="filtroTurma" class="form-select fw-bold text-primary" onchange="window.aplicarFiltrosImpressao()" style="font-size: 14px;">
+                        <option value="TODAS">Todas as Turmas (Fila Completa)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <div id="containerCriancas" class="malha-impressao"></div>
@@ -114,13 +136,14 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
         import { getFirestore, collection, query, where, getDocs, getDoc, doc, writeBatch } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
+        // ⚠️ COLOQUE AQUI AS SUAS CHAVES VERDADEIRAS DO FIREBASE!
         const firebaseConfig = {
-            apiKey: "AIzaSyCpCXxJbD8dPXkT7mcoz4qK8Wjt7WTRwFA",
+            apiKey: "SUA_API_KEY_AQUI",
             authDomain: "sig-edu.firebaseapp.com",
             projectId: "sig-edu",
             storageBucket: "sig-edu.firebasestorage.app",
-            messagingSenderId: "233239725278",
-            appId: "1:233239725278:web:809b9c42feacd99175ee4f"
+            messagingSenderId: "SUA_SENDER_ID",
+            appId: "SEU_APP_ID"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -130,7 +153,7 @@
         
         let ceuId = "";
         let nomeCeu = "CEU NÃO IDENTIFICADO";
-        let logoCeu = ""; // 🌟 Variável para guardar o logo do CEU
+        let logoCeu = ""; 
         let regrasSME = {};
         let filaImpressao = [];
 
@@ -153,29 +176,25 @@
 
         async function carregarDados() {
             try {
-                // 🔍 Buscar o Nome Oficial e o Logo do CEU
                 if (ceuId !== "999999") {
                     const ceuSnap = await getDoc(doc(db, "unidades", String(ceuId)));
                     if (ceuSnap.exists()) {
                         nomeCeu = ceuSnap.data().nome_unidade;
-                        // 🌟 Puxa o link da imagem se existir
                         if (ceuSnap.data().url_logo) {
                             logoCeu = ceuSnap.data().url_logo;
                         }
                     }
                 }
 
-                // 1. Puxar as Regras da SME
                 const regrasSnap = await getDoc(doc(db, "configuracoes", "regras_rf"));
                 if (regrasSnap.exists()) {
                     regrasSME = regrasSnap.data();
                 } else {
                     document.getElementById('statusFila').innerText = "Regras do Programa não encontradas.";
-                    Swal.fire('Atenção', 'A SME ainda não configurou as regras (cores, ícones, etc).', 'warning');
+                    Swal.fire('Atenção', 'A SME ainda não configurou as regras.', 'warning');
                     return;
                 }
 
-                // 2. Puxar a fila de crianças
                 const qFila = query(
                     collection(db, "rf_inscricoes"), 
                     where("id_unidade", "==", String(ceuId)), 
@@ -188,8 +207,20 @@
                 });
 
                 if (filaImpressao.length > 0) {
+                    // 🌟 PREENCHER O FILTRO DE TURMAS
+                    const selectTurma = document.getElementById('filtroTurma');
+                    let turmasSet = new Set();
+                    filaImpressao.forEach(c => turmasSet.add(c.turma ? c.turma.toUpperCase() : "SEM TURMA"));
+                    let turmasOrdenadas = Array.from(turmasSet).sort();
+                    turmasOrdenadas.forEach(t => {
+                        let opt = document.createElement('option');
+                        opt.value = t; opt.text = t;
+                        selectTurma.appendChild(opt);
+                    });
+
+                    document.getElementById('area-filtros').style.display = 'flex';
                     renderizarCrachas();
-                    document.getElementById('statusFila').innerText = `${filaImpressao.length} crachás prontos para impressão!`;
+                    
                     document.getElementById('btnImprimir').disabled = false;
                     document.getElementById('btnLimpar').disabled = false;
                 } else {
@@ -198,25 +229,39 @@
                 }
 
             } catch (error) {
-                console.error("Erro na carga de impressão:", error);
                 document.getElementById('statusFila').innerText = "Falha na conexão com o servidor.";
                 Swal.fire('Erro', 'Falha ao buscar os dados no Firebase.', 'error');
             }
         }
 
+        // 🌟 FUNÇÃO QUE O HTML CHAMA QUANDO UM FILTRO É ALTERADO
+        window.aplicarFiltrosImpressao = function() {
+            renderizarCrachas();
+        };
+
         function renderizarCrachas() {
             const divCriancas = document.getElementById('containerCriancas');
             const divPais = document.getElementById('containerPais');
+            const quebraPagina = document.getElementById('quebraPagina');
+            
+            const tipoFiltro = document.getElementById('filtroTipo').value;
+            const turmaFiltro = document.getElementById('filtroTurma').value;
+
             let htmlCriancas = '';
             let htmlPais = '';
 
             const validarImg = (img) => (img && img !== "") ? img : "";
-            
-            // 🌟 Define o logo: usa o do CEU se tiver, senão usa o da Prefeitura
             let logoRender = (logoCeu && logoCeu !== "") ? logoCeu : LOGO_PADRAO; 
             let periodoRF = `${regrasSME.mes}/${regrasSME.ano}` || "FÉRIAS";
 
-            filaImpressao.forEach(cri => {
+            // 🌟 APLICAÇÃO DO FILTRO DE TURMAS ANTES DE RENDERIZAR
+            let filaFiltrada = filaImpressao.filter(cri => {
+                let turmaCrianca = cri.turma ? cri.turma.toUpperCase() : "SEM TURMA";
+                if (turmaFiltro !== "TODAS" && turmaCrianca !== turmaFiltro) return false;
+                return true;
+            });
+
+            filaFiltrada.forEach(cri => {
                 const imgDieta = validarImg(cri.dieta_especial === 'SIM' ? regrasSME.dieta_sim : regrasSME.dieta_nao);
                 const imgRestImg = validarImg(cri.restricao_imagem === 'SIM' ? regrasSME.restricao_sim : regrasSME.restricao_nao);
                 const imgInclusao = validarImg(cri.inclusao === 'SIM' ? regrasSME.inclusao_sim : regrasSME.inclusao_nao);
@@ -228,98 +273,109 @@
 
                 let corIdade = regrasSME['c' + cri.idade] || '#e2e8f0'; 
 
-                htmlCriancas += `
-                <div class="cracha">
-                    <div class="cabecalho">
-                        <div class="logo-sme"><img src="${logoRender}"></div>
-                        <div class="textos-cabecalho">
-                            <div class="txt-sme">SECRETARIA MUNICIPAL DE EDUCAÇÃO</div>
-                            <div class="txt-ceu">${nomeCeu.toUpperCase()}</div>
-                            <div class="txt-periodo">${periodoRF.toUpperCase()}</div>
+                // 🌟 CONTROLA A EXIBIÇÃO DAS CRIANÇAS
+                if (tipoFiltro === "AMBOS" || tipoFiltro === "CRIANCAS") {
+                    htmlCriancas += `
+                    <div class="cracha">
+                        <div class="cabecalho">
+                            <div class="logo-sme"><img src="${logoRender}"></div>
+                            <div class="textos-cabecalho">
+                                <div class="txt-sme">SECRETARIA MUNICIPAL DE EDUCAÇÃO</div>
+                                <div class="txt-ceu">${nomeCeu.toUpperCase()}</div>
+                                <div class="txt-periodo">${periodoRF.toUpperCase()}</div>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div class="faixa-nome" style="background-color: ${corIdade};">
-                        ${cri.nome_crianca}
-                    </div>
-                    
-                    <div class="rodape">
-                        <div class="bloco-esq">
-                            <div class="contatos">
-                                <div class="linha-resp"><span>RESPONSÁVEL</span><span>TELEFONE</span></div>
-                                <div class="linha-dados">
-                                    <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 65%;">${cri.resp || '-'}</span>
-                                    <span>${cri.tel || '-'}</span>
+                        
+                        <div class="faixa-nome" style="background-color: ${corIdade};">
+                            ${cri.nome_crianca}
+                        </div>
+                        
+                        <div class="rodape">
+                            <div class="bloco-esq">
+                                <div class="contatos">
+                                    <div class="linha-resp"><span>RESPONSÁVEL</span><span>TELEFONE</span></div>
+                                    <div class="linha-dados">
+                                        <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 65%;">${cri.resp || '-'}</span>
+                                        <span>${cri.tel || '-'}</span>
+                                    </div>
                                 </div>
-                            </div>
-                            
-                            <div class="area-icones">
-                                <div class="box-icone">
-                                    <div class="titulo-icone">DIETA<br>ESPECIAL</div>
-                                    <div class="img-icone">${imgDieta ? `<img src="${imgDieta}">` : ''}</div>
+                                
+                                <div class="area-icones">
+                                    <div class="box-icone">
+                                        <div class="titulo-icone">DIETA<br>ESPECIAL</div>
+                                        <div class="img-icone">${imgDieta ? `<img src="${imgDieta}">` : ''}</div>
+                                    </div>
+                                    <div class="box-icone">
+                                        <div class="titulo-icone">RESTR.<br>IMAGEM</div>
+                                        <div class="img-icone">${imgRestImg ? `<img src="${imgRestImg}">` : ''}</div>
+                                    </div>
+                                    <div class="box-icone">
+                                        <div class="titulo-icone"><br>INCLUSÃO</div>
+                                        <div class="img-icone">${imgInclusao ? `<img src="${imgInclusao}">` : ''}</div>
+                                    </div>
+                                    <div class="box-icone">
+                                        <div class="titulo-icone"><br>PISCINA</div>
+                                        <div class="img-icone">${imgPiscina ? `<img src="${imgPiscina}">` : ''}</div>
+                                    </div>
                                 </div>
-                                <div class="box-icone">
-                                    <div class="titulo-icone">RESTR.<br>IMAGEM</div>
-                                    <div class="img-icone">${imgRestImg ? `<img src="${imgRestImg}">` : ''}</div>
-                                </div>
-                                <div class="box-icone">
-                                    <div class="titulo-icone"><br>INCLUSÃO</div>
-                                    <div class="img-icone">${imgInclusao ? `<img src="${imgInclusao}">` : ''}</div>
-                                </div>
-                                <div class="box-icone">
-                                    <div class="titulo-icone"><br>PISCINA</div>
-                                    <div class="img-icone">${imgPiscina ? `<img src="${imgPiscina}">` : ''}</div>
-                                </div>
-                            </div>
 
-                            <div class="faixa-sozinho" style="background-color: ${corFaixaSoz};">
-                                ${textoSozinho}
+                                <div class="faixa-sozinho" style="background-color: ${corFaixaSoz};">
+                                    ${textoSozinho}
+                                </div>
+                            </div>
+                            <div class="bloco-dir">
+                                <div class="idade-gigante">${cri.idade}</div>
                             </div>
                         </div>
-                        <div class="bloco-dir">
-                            <div class="idade-gigante">${cri.idade}</div>
-                        </div>
-                    </div>
-                </div>`;
+                    </div>`;
+                }
 
-                htmlPais += `
-                <div class="cracha">
-                    <div class="cabecalho">
-                        <div class="logo-sme"><img src="${logoRender}"></div>
-                        <div class="textos-cabecalho">
-                            <div class="txt-sme">SECRETARIA MUNICIPAL DE EDUCAÇÃO</div>
-                            <div class="txt-ceu">${nomeCeu.toUpperCase()}</div>
-                            <div class="txt-periodo">${periodoRF.toUpperCase()}</div>
-                        </div>
-                    </div>
-                    
-                    <div class="faixa-pais">CRACHÁ DO RESPONSÁVEL</div>
-                    
-                    <div class="area-dados-pais">
-                        <div class="d-box">
-                            <div class="d-lbl">NOME DA CRIANÇA</div>
-                            <div class="d-val">${cri.nome_crianca}</div>
-                        </div>
-                        <div style="display: flex; gap: 5px;">
-                            <div class="d-box" style="flex: 1;">
-                                <div class="d-lbl">NOME DO RESPONSÁVEL</div>
-                                <div class="d-val" style="font-size: 9pt;">${cri.resp || '-'}</div>
-                            </div>
-                            <div class="d-box" style="width: 2.2cm; text-align: center;">
-                                <div class="d-lbl">IDADE</div>
-                                <div class="d-val" style="font-size: 11pt;">${cri.idade} ANOS</div>
+                // 🌟 CONTROLA A EXIBIÇÃO DOS PAIS
+                if (tipoFiltro === "AMBOS" || tipoFiltro === "PAIS") {
+                    htmlPais += `
+                    <div class="cracha">
+                        <div class="cabecalho">
+                            <div class="logo-sme"><img src="${logoRender}"></div>
+                            <div class="textos-cabecalho">
+                                <div class="txt-sme">SECRETARIA MUNICIPAL DE EDUCAÇÃO</div>
+                                <div class="txt-ceu">${nomeCeu.toUpperCase()}</div>
+                                <div class="txt-periodo">${periodoRF.toUpperCase()}</div>
                             </div>
                         </div>
-                    </div>
-                </div>`;
+                        
+                        <div class="faixa-pais">CRACHÁ DO RESPONSÁVEL</div>
+                        
+                        <div class="area-dados-pais">
+                            <div class="d-box">
+                                <div class="d-lbl">NOME DA CRIANÇA</div>
+                                <div class="d-val">${cri.nome_crianca}</div>
+                            </div>
+                            <div style="display: flex; gap: 5px;">
+                                <div class="d-box" style="flex: 1;">
+                                    <div class="d-lbl">NOME DO RESPONSÁVEL</div>
+                                    <div class="d-val" style="font-size: 9pt;">${cri.resp || '-'}</div>
+                                </div>
+                                <div class="d-box" style="width: 2.2cm; text-align: center;">
+                                    <div class="d-lbl">IDADE</div>
+                                    <div class="d-val" style="font-size: 11pt;">${cri.idade} ANOS</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+                }
             });
 
             divCriancas.innerHTML = htmlCriancas;
             divPais.innerHTML = htmlPais;
             
-            if (filaImpressao.length > 0) {
-                document.getElementById('quebraPagina').style.display = 'block';
+            // 🌟 CONTROLA A QUEBRA DE PÁGINA ENTRE CRIANÇAS E PAIS
+            if (filaFiltrada.length > 0 && tipoFiltro === "AMBOS") {
+                quebraPagina.style.display = 'block';
+            } else {
+                quebraPagina.style.display = 'none';
             }
+
+            document.getElementById('statusFila').innerText = `${filaFiltrada.length} crachás prontos para impressão!`;
         }
 
         window.limparFila = async function() {
@@ -352,7 +408,6 @@
                     .then(() => { location.reload(); });
                     
                 } catch(e) {
-                    console.error("Erro no batch update:", e);
                     Swal.fire('Erro', 'Falha ao processar a limpeza no banco.', 'error');
                     btn.innerHTML = '<i class="fas fa-trash-alt"></i> Limpar Fila';
                     btn.disabled = false;

@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal do Aluno - CEU</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body { 
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            height: 100vh; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            margin: 0;
+        }
+        
+        .login-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            overflow: hidden;
+            width: 100%;
+            max-width: 450px;
+            position: relative;
+        }
+
+        .login-header {
+            background: linear-gradient(135deg, #0d6efd, #6f42c1);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        .logo-placeholder {
+            width: 80px;
+            height: 80px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px auto;
+            font-size: 35px;
+            border: 2px solid rgba(255,255,255,0.5);
+        }
+
+        .login-body {
+            padding: 40px 30px;
+        }
+
+        .form-floating > label {
+            color: #6c757d;
+        }
+
+        .form-control:focus {
+            border-color: #6f42c1;
+            box-shadow: 0 0 0 0.25rem rgba(111, 66, 193, 0.25);
+        }
+
+        .btn-entrar {
+            background: linear-gradient(135deg, #0d6efd, #6f42c1);
+            border: none;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 16px;
+            width: 100%;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(111, 66, 193, 0.2);
+        }
+
+        .btn-entrar:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(111, 66, 193, 0.3);
+            color: white;
+        }
+
+        .btn-entrar:disabled {
+            background: #adb5bd;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .icon-eye {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #6c757d;
+            z-index: 10;
+        }
+
+        .primeiro-acesso-hint {
+            font-size: 13px;
+            color: #6c757d;
+            text-align: center;
+            margin-top: 20px;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px dashed #dee2e6;
+        }
+
+        /* Animação de Loading */
+        #loadingOverlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            z-index: 999;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        
+        <!-- Tela de Carregamento Sobreposta -->
+        <div id="loadingOverlay">
+            <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;"></div>
+            <h5 class="mt-3 text-primary fw-bold">Autenticando...</h5>
+            <p class="text-muted small">Consultando o banco de dados do CEU</p>
+        </div>
+
+        <div class="login-header">
+            <div class="logo-placeholder">
+                <i class="fas fa-user-graduate"></i>
+            </div>
+            <h3 class="fw-bold mb-0">Portal do Aluno</h3>
+            <p class="mb-0 opacity-75 small text-uppercase mt-1">CEU Caminho do Mar</p>
+        </div>
+
+        <div class="login-body">
+            <form id="formLogin">
+                
+                <!-- Campo CPF -->
+                <div class="form-floating mb-4">
+                    <input type="text" class="form-control fw-bold" id="cpfAluno" placeholder="000.000.000-00" required maxlength="14" autocomplete="off">
+                    <label for="cpfAluno"><i class="fas fa-id-card me-2"></i>Digite seu CPF</label>
+                </div>
+
+                <!-- Campo Senha (Inicialmente escondido, mostra Data de Nascimento para o primeiro acesso) -->
+                <div id="areaSenhaPadrao" style="display: none;">
+                    <div class="form-floating mb-4 position-relative">
+                        <input type="password" class="form-control fw-bold" id="senhaAluno" placeholder="Sua Senha">
+                        <label for="senhaAluno"><i class="fas fa-lock me-2"></i>Sua Senha</label>
+                        <i class="fas fa-eye icon-eye" id="toggleSenha" onclick="mostrarOcultarSenha('senhaAluno', 'toggleSenha')"></i>
+                    </div>
+                </div>
+
+                <!-- Campo Primeiro Acesso (Data de Nascimento) -->
+                <div id="areaPrimeiroAcesso">
+                    <div class="form-floating mb-3">
+                        <input type="date" class="form-control fw-bold text-center" id="dataNascAluno" required>
+                        <label for="dataNascAluno"><i class="fas fa-calendar-alt me-2"></i>Data de Nascimento</label>
+                    </div>
+                    <div class="primeiro-acesso-hint">
+                        <i class="fas fa-info-circle text-primary me-1"></i>
+                        <strong>Primeiro acesso?</strong> Utilize sua data de nascimento para entrar. Você criará uma senha segura no próximo passo.
+                    </div>
+                </div>
+
+                <!-- Link Alternar Modo -->
+                <div class="text-end mb-4 mt-2">
+                    <a href="#" id="btnAlternarModo" class="text-decoration-none small fw-bold" style="color: #6f42c1;" onclick="alternarModoLogin()">
+                        Já tenho uma senha cadastrada
+                    </a>
+                </div>
+
+                <button type="button" id="btnAcessar" class="btn-entrar" onclick="fazerLogin()">
+                    <i class="fas fa-sign-in-alt me-2"></i> ACESSAR MEU PORTAL
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // --- 🔗 URL DO SEU BACK-END NO GOOGLE APPS SCRIPT ---
+        // Substitua esta URL pelo link gerado na sua Implantação do code.gs
+        const API_URL = "SUA_URL_DO_WEB_APP_AQUI"; 
+
+        // Variável de controle visual
+        let modoPrimeiroAcesso = true;
+
+        // --- Máscara de CPF Dinâmica ---
+        document.getElementById("cpfAluno").addEventListener("input", function(e) {
+            let v = e.target.value.replace(/\D/g, '');
+            v = v.replace(/(\d{3})(\d)/, '$1.$2');
+            v = v.replace(/(\d{3})(\d)/, '$1.$2');
+            v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+            e.target.value = v;
+        });
+
+        // --- Função Mostrar/Ocultar Senha ---
+        function mostrarOcultarSenha(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (input.type === "password") {
+                input.type = "text";
+                icon.classList.remove("fa-eye");
+                icon.classList.add("fa-eye-slash");
+            } else {
+                input.type = "password";
+                icon.classList.remove("fa-eye-slash");
+                icon.classList.add("fa-eye");
+            }
+        }
+
+        // --- Alternar visual entre Data de Nascimento e Senha ---
+        function alternarModoLogin() {
+            modoPrimeiroAcesso = !modoPrimeiroAcesso;
+            const areaPrimeiroAcesso = document.getElementById('areaPrimeiroAcesso');
+            const areaSenhaPadrao = document.getElementById('areaSenhaPadrao');
+            const btnAlternar = document.getElementById('btnAlternarModo');
+            
+            if (modoPrimeiroAcesso) {
+                areaPrimeiroAcesso.style.display = "block";
+                areaSenhaPadrao.style.display = "none";
+                btnAlternar.innerText = "Já tenho uma senha cadastrada";
+                document.getElementById('senhaAluno').value = ""; // Limpa a senha
+            } else {
+                areaPrimeiroAcesso.style.display = "none";
+                areaSenhaPadrao.style.display = "block";
+                btnAlternar.innerText = "Voltar para o Primeiro Acesso (Data Nasc.)";
+                document.getElementById('dataNascAluno').value = ""; // Limpa a data
+            }
+        }
+
+        // --- Motor de Login ---
+        async function fazerLogin() {
+            const cpf = document.getElementById("cpfAluno").value.replace(/\D/g, ''); // Limpa pontuação
+            const overlay = document.getElementById("loadingOverlay");
+            
+            // 1. Validação local básica
+            if (cpf.length !== 11) {
+                Swal.fire('Opa!', 'Por favor, digite um CPF válido com 11 números.', 'warning');
+                return;
+            }
+
+            let pacoteEnvio = { acao: "loginAlunoPortal", dados: { cpf: cpf } };
+
+            if (modoPrimeiroAcesso) {
+                const dataNasc = document.getElementById("dataNascAluno").value;
+                if (!dataNasc) { Swal.fire('Opa!', 'Preencha sua data de nascimento.', 'warning'); return; }
+                pacoteEnvio.dados.dataNascimento = dataNasc;
+                pacoteEnvio.dados.tipoLogin = "PRIMEIRO_ACESSO";
+            } else {
+                const senha = document.getElementById("senhaAluno").value;
+                if (!senha) { Swal.fire('Opa!', 'Digite sua senha.', 'warning'); return; }
+                pacoteEnvio.dados.senha = senha;
+                pacoteEnvio.dados.tipoLogin = "SENHA_PADRAO";
+            }
+
+            // 2. Chama o Servidor (code.gs)
+            overlay.style.display = "flex"; // Liga o loading giratório
+
+            try {
+                // Aqui a mágica da API acontece!
+                // const resRaw = await fetch(API_URL, { method: 'POST', body: JSON.stringify(pacoteEnvio) });
+                // const res = await resRaw.json();
+                
+                // SIMULAÇÃO TEMPORÁRIA (Para você testar o visual no GitHub enquanto não ligamos a API)
+                setTimeout(() => {
+                    overlay.style.display = "none";
+                    Swal.fire({
+                        title: 'Tudo pronto!',
+                        text: 'A conexão visual está perfeita. Agora falta ligarmos os motores no servidor!',
+                        icon: 'success',
+                        confirmButtonColor: '#0d6efd'
+                    });
+                }, 2000);
+
+                /* --- O CÓDIGO REAL FICARÁ ASSIM: ---
+                if (res.status === "sucesso") {
+                    // Guarda o Token seguro e redireciona para o Dashboard do Aluno
+                    localStorage.setItem('portalCeuToken', res.token);
+                    localStorage.setItem('portalCeuAluno', JSON.stringify(res.aluno));
+                    window.location.href = "dashboard_aluno.html"; 
+                } else if (res.status === "exige_nova_senha") {
+                    // Abre tela forçando criar senha nova
+                    abrirModalNovaSenha(cpf);
+                } else {
+                    Swal.fire('Acesso Negado', res.mensagem, 'error');
+                }
+                */
+
+            } catch (erro) {
+                overlay.style.display = "none";
+                Swal.fire('Erro de Conexão', 'Não foi possível conectar com o banco de dados do CEU.', 'error');
+            }
+        }
+    </script>
+</body>
+</html>

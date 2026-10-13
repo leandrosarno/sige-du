@@ -289,7 +289,7 @@
                     // Abre tela forçando criar senha nova
                     abrirModalNovaSenha(cpf);
                 } else {
-                    Swal.fire('Acesso Negado', res.mensagem, 'error');
+                    Swal.fire('Acesso Negado', res.erro || res.mensagem, 'error');
                 }
 
             } catch (erro) {
@@ -354,7 +354,7 @@
                         window.location.href = "painel_aluno.html"; 
                     });
                 } else {
-                    Swal.fire('Erro', res.mensagem, 'error');
+                    Swal.fire('Erro', res.erro || res.mensagem, 'error');
                 }
             } catch (err) {
                 overlay.style.display = "none";

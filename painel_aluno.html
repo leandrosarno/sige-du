@@ -8,28 +8,88 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        body { background-color: #f4f7f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding-bottom: 40px; }
+        body { background-color: #f4f7f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding-bottom: 40px; overflow-x: hidden; }
         
         .navbar-custom { background: linear-gradient(135deg, #0d6efd, #6f42c1); padding: 15px 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
         .navbar-brand { color: white; font-weight: 800; font-size: 22px; display: flex; align-items: center; gap: 10px; }
         .btn-sair { background: rgba(255,255,255,0.2); color: white; border: none; border-radius: 8px; padding: 8px 15px; font-weight: bold; transition: 0.3s; }
         .btn-sair:hover { background: rgba(255,255,255,0.3); color: white; }
 
-        .welcome-card { background: white; border-radius: 15px; padding: 25px; margin-top: 30px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 20px; border-left: 5px solid #0d6efd; }
-        
-        .avatar-circle { width: 80px; height: 80px; background: #e0e7ff; color: #0d6efd; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 35px; font-weight: bold; overflow: hidden; flex-shrink: 0;}
+        .welcome-card { background: white; border-radius: 15px; padding: 20px; margin-top: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 20px; border-left: 5px solid #0d6efd; }
+        .avatar-circle { width: 70px; height: 70px; background: #e0e7ff; color: #0d6efd; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: bold; overflow: hidden; flex-shrink: 0;}
         .foto-aluno { width: 100%; height: 100%; object-fit: cover; }
         
         .aviso-secretaria { background: #fff3cd; border-left: 5px solid #ffc107; border-radius: 10px; padding: 20px; margin-top: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        
-        /* Badges de Carteirinhas */
-        .badge-cart { border-radius: 12px; padding: 15px; display: flex; align-items: center; gap: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-left: 5px solid; background: white; height: 100%;}
-        .bc-geral { border-left-color: #0d6efd; }
-        .bc-raia { border-left-color: #0dcaf0; }
-        .bc-academia { border-left-color: #fd7e14; }
-        .icon-cart { font-size: 30px; }
 
-        /* Estilo dos Cards de Matrícula (Novidade!) */
+        /* =========================================
+           🪪 CARTEIRINHA VIRTUAL (CELULAR) 
+           ========================================= */
+        .carrossel-carteirinhas {
+            display: flex;
+            overflow-x: auto;
+            gap: 15px;
+            padding: 10px 5px 20px 5px;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        /* Esconde a barra de rolagem mas mantém a função */
+        .carrossel-carteirinhas::-webkit-scrollbar { display: none; }
+        .carrossel-carteirinhas { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .carteirinha-virtual {
+            min-width: 320px;
+            width: 100%;
+            max-width: 380px;
+            height: 200px;
+            border-radius: 16px;
+            padding: 18px;
+            color: white;
+            position: relative;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+            scroll-snap-align: center;
+            flex-shrink: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        .cv-bg-geral { background: linear-gradient(135deg, #0d6efd, #6f42c1); }
+        .cv-bg-raia { background: linear-gradient(135deg, #0dcaf0, #055160); }
+        .cv-bg-academia { background: linear-gradient(135deg, #fd7e14, #854000); }
+
+        .cv-marca-dagua {
+            position: absolute;
+            top: -10px;
+            right: -20px;
+            font-size: 130px;
+            opacity: 0.1;
+            z-index: 0;
+        }
+        
+        .cv-conteudo { position: relative; z-index: 1; width: 100%; height: 100%; }
+        
+        .cv-topo { display: flex; justify-content: space-between; align-items: flex-start; }
+        .cv-logo-texto { font-size: 15px; font-weight: 900; line-height: 1.1; text-transform: uppercase; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); }
+        .cv-logo-sub { font-size: 9px; opacity: 0.9; }
+        
+        .cv-meio { display: flex; gap: 15px; margin-top: 15px; align-items: flex-end;}
+        .cv-foto { width: 75px; height: 100px; border-radius: 8px; object-fit: cover; border: 2px solid rgba(255,255,255,0.8); box-shadow: 0 4px 8px rgba(0,0,0,0.2); background: #e2e8f0;}
+        
+        .cv-dados-bloco { display: flex; flex-direction: column; margin-bottom: 5px;}
+        .cv-label { font-size: 9px; text-transform: uppercase; opacity: 0.8; letter-spacing: 1px; }
+        .cv-valor { font-size: 14px; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); }
+        .cv-valor-grande { font-size: 22px; font-weight: 900; letter-spacing: 1px; text-shadow: 1px 1px 3px rgba(0,0,0,0.3);}
+        
+        .cv-rodape { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 10px; }
+        .cv-nome { font-size: 15px; font-weight: 800; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 65%; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); }
+        
+        /* O Relógio Anti-Fraude */
+        .cv-live-clock { font-size: 10px; font-family: monospace; background: rgba(0,0,0,0.4); padding: 4px 8px; border-radius: 20px; display: flex; align-items: center; gap: 5px; animation: pulse 1.5s infinite; border: 1px solid rgba(255,255,255,0.2);}
+        @keyframes pulse { 0% { opacity: 0.8; box-shadow: 0 0 0 rgba(255,255,255,0); } 50% { opacity: 1; box-shadow: 0 0 8px rgba(255,255,255,0.6); } 100% { opacity: 0.8; box-shadow: 0 0 0 rgba(255,255,255,0); } }
+
+        /* Estilo dos Cards de Matrícula */
         .card-matricula { border-radius: 15px; overflow: hidden; box-shadow: 0 6px 15px rgba(0,0,0,0.06); transition: 0.3s; background: white; border: 1px solid #e2e8f0; height: 100%;}
         .card-matricula:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
         .matricula-header { background: linear-gradient(135deg, #0d6efd, #6f42c1); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
@@ -37,13 +97,9 @@
         .info-row { display: flex; align-items: center; margin-bottom: 12px; }
         .info-icon { background: #f8fafc; color: #6f42c1; width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; margin-right: 15px; }
 
-        .card-doc { background: white; border-radius: 15px; padding: 25px; margin-top: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); text-align: center; transition: 0.3s; border: 1px solid #e2e8f0; }
-        .card-doc:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+        .card-doc { background: white; border-radius: 15px; padding: 25px; margin-top: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); text-align: center; border: 1px solid #e2e8f0; }
         .doc-icon { font-size: 40px; color: #6f42c1; margin-bottom: 15px; }
-        
         .btn-upload { background: #0d6efd; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; width: 100%; margin-top: 15px; transition: 0.3s; }
-        .btn-upload:hover { background: #0b5ed7; }
-        
         .file-input-wrapper { position: relative; overflow: hidden; display: inline-block; width: 100%; }
         .file-input-wrapper input[type=file] { font-size: 100px; position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer; height: 100%; }
         .uploading-overlay { display: none; margin-top: 10px; color: #0d6efd; font-weight: bold; font-size: 14px; }
@@ -59,16 +115,15 @@
 
     <div class="container" style="max-width: 900px;">
         
-        <!-- Cartão de Boas Vindas com FOTO -->
+        <!-- Cartão de Boas Vindas -->
         <div class="welcome-card">
             <div class="avatar-circle">
                 <i class="fas fa-user" id="iconAvatarDefault"></i>
                 <img id="imgFotoAluno" class="foto-aluno" src="" style="display: none;" alt="Minha Foto">
             </div>
             <div>
-                <h4 class="mb-1 fw-bold text-dark" id="txtNomeAluno">Carregando...</h4>
-                <p class="mb-0 text-muted">
-                    <strong>Prontuário:</strong> <span id="txtProntuario" class="badge bg-secondary">---</span> | 
+                <h5 class="mb-1 fw-bold text-dark" id="txtNomeAluno">Carregando...</h5>
+                <p class="mb-0 text-muted" style="font-size: 14px;">
                     <strong>Cód EOL:</strong> <span id="txtEol" class="badge bg-primary">---</span>
                 </p>
             </div>
@@ -80,22 +135,22 @@
             <p class="mb-0 text-dark" id="txtAvisoSecretaria"></p>
         </div>
 
-        <!-- SEÇÃO: Turmas e Atividades (NOVIDADE!) -->
-        <h5 class="fw-bold mt-5 mb-3 text-secondary"><i class="fas fa-running me-2"></i>Minhas Turmas e Atividades</h5>
-        <div class="row" id="areaMatriculas">
-            <!-- Cards de Matrícula renderizados aqui -->
+        <!-- SEÇÃO: CARTEIRINHA DIGITAL VIRTUAL -->
+        <h5 class="fw-bold mt-4 mb-2 text-secondary"><i class="fas fa-mobile-alt me-2"></i>Acessos Físicos (Passe na Catraca)</h5>
+        <div class="carrossel-carteirinhas" id="areaCarteirinhas">
+            <!-- As carteirinhas virtuais serão desenhadas aqui -->
         </div>
+        <p class="text-muted small text-center" id="dicaCarrossel" style="display: none;">
+            <i class="fas fa-arrows-alt-h me-1"></i> Deslize para o lado para ver outros acessos
+        </p>
 
-        <!-- SEÇÃO: Acessos Físicos -->
-        <h5 class="fw-bold mt-5 mb-3 text-secondary"><i class="fas fa-address-card me-2"></i>Acessos Liberados (Catraca)</h5>
-        <div class="row" id="areaCarteirinhas">
-            <!-- Cards de Acesso renderizados aqui -->
-        </div>
+        <!-- SEÇÃO: Turmas e Atividades -->
+        <h5 class="fw-bold mt-5 mb-3 text-secondary"><i class="fas fa-running me-2"></i>Minhas Turmas e Atividades</h5>
+        <div class="row" id="areaMatriculas"></div>
 
         <!-- SEÇÃO: Upload de Documentos -->
         <h5 class="fw-bold mt-5 mb-3 text-secondary"><i class="fas fa-folder-open me-2"></i>Envio de Documentos Pendentes</h5>
         <div class="row">
-            <!-- Upload do CIN -->
             <div class="col-md-6">
                 <div class="card-doc">
                     <i class="fas fa-id-card doc-icon"></i>
@@ -113,7 +168,6 @@
                 </div>
             </div>
 
-            <!-- Upload do Comprovante -->
             <div class="col-md-6">
                 <div class="card-doc">
                     <i class="fas fa-map-marked-alt doc-icon text-primary"></i>
@@ -141,6 +195,9 @@
         const token = localStorage.getItem('portalCeuToken');
         const alunoJSON = localStorage.getItem('portalCeuAluno');
         let alunoLogado = {};
+        
+        // Placeholder se o aluno estiver sem foto na planilha
+        const FOTO_PADRAO = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2394a3b8'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E";
 
         window.onload = function() {
             if (!token || !alunoJSON) {
@@ -150,33 +207,120 @@
 
             alunoLogado = JSON.parse(alunoJSON);
             
-            // 1. Preenche Cabeçalho
-            document.getElementById('txtNomeAluno').innerText = alunoLogado.nome;
-            document.getElementById('txtProntuario').innerText = alunoLogado.prontuario || "Pendente";
+            // Preenche dados do topo
+            document.getElementById('txtNomeAluno').innerText = abreviarNome(alunoLogado.nome);
             document.getElementById('txtEol').innerText = alunoLogado.eol || "Pendente";
 
-            // 2. Foto
             if (alunoLogado.foto && alunoLogado.foto !== "") {
                 document.getElementById('imgFotoAluno').src = alunoLogado.foto;
                 document.getElementById('imgFotoAluno').style.display = "block";
                 document.getElementById('iconAvatarDefault').style.display = "none";
             }
 
-            // 3. Avisos
             if (alunoLogado.avisos && alunoLogado.avisos.trim() !== "") {
                 document.getElementById('txtAvisoSecretaria').innerText = alunoLogado.avisos;
                 document.getElementById('blocoAvisos').style.display = "block";
             }
 
-            // 4. Montar Telas Dinâmicas
-            montarCardsCarteirinhas();
+            montarCarteirinhasVirtuais();
             montarCardsMatriculas();
+            iniciarRelogioAntiFraude();
         };
 
-        // --- Renderiza as MATRÍCULAS (Aulas Ativas) ---
+        function abreviarNome(nomeCompleto) {
+            let partes = String(nomeCompleto).trim().split(" ");
+            if (partes.length <= 2) return nomeCompleto; 
+            let nomeFinal = partes[0] + " ";
+            for (let i = 1; i < partes.length - 1; i++) {
+                if (partes[i].length > 3) nomeFinal += partes[i][0] + ". ";
+                else nomeFinal += partes[i] + " ";
+            }
+            nomeFinal += partes[partes.length - 1]; 
+            return nomeFinal;
+        }
+
+        // --- RENDERIZAR AS CARTEIRINHAS VIRTUAIS ---
+        function montarCarteirinhasVirtuais() {
+            let htmlCart = "";
+            let cartCount = 0;
+            let fotoPronta = (alunoLogado.foto && alunoLogado.foto !== "") ? alunoLogado.foto : FOTO_PADRAO;
+            let nomeCortado = abreviarNome(alunoLogado.nome);
+            let prontuario = alunoLogado.prontuario || "Pendente";
+
+            // Molde Universal de HTML do Cartão
+            const gerarCartao = (classeBg, icone, titulo) => `
+                <div class="carteirinha-virtual ${classeBg}">
+                    <i class="fas ${icone} cv-marca-dagua"></i>
+                    <div class="cv-conteudo">
+                        <div class="cv-topo">
+                            <div>
+                                <div class="cv-logo-texto">CEU CAMINHO DO MAR</div>
+                                <div class="cv-logo-sub">Identificação Digital Oficial</div>
+                            </div>
+                            <div class="cv-live-clock">
+                                <i class="fas fa-shield-alt text-success"></i> <span class="relogio-digital">00:00:00</span>
+                            </div>
+                        </div>
+                        <div class="cv-meio">
+                            <img src="${fotoPronta}" class="cv-foto" onerror="this.src='${FOTO_PADRAO}'">
+                            <div style="display: flex; flex-direction: column; gap: 8px;">
+                                <div class="cv-dados-bloco">
+                                    <span class="cv-label">PRONTUÁRIO</span>
+                                    <span class="cv-valor-grande">${prontuario}</span>
+                                </div>
+                                <div class="cv-dados-bloco">
+                                    <span class="cv-label">PROJETO LIBERADO</span>
+                                    <span class="cv-valor"><i class="fas ${icone} me-1"></i> ${titulo}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="cv-rodape">
+                            <div class="cv-nome">${nomeCortado}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            if (alunoLogado.carteirinhas) {
+                if (alunoLogado.carteirinhas.usoGeral) {
+                    htmlCart += gerarCartao("cv-bg-geral", "fa-id-card", "USO GERAL");
+                    cartCount++;
+                }
+                if (alunoLogado.carteirinhas.raiaLivre) {
+                    htmlCart += gerarCartao("cv-bg-raia", "fa-swimmer", "RAIA LIVRE");
+                    cartCount++;
+                }
+                if (alunoLogado.carteirinhas.academia) {
+                    htmlCart += gerarCartao("cv-bg-academia", "fa-dumbbell", "ACADEMIA LIVRE");
+                    cartCount++;
+                }
+            }
+
+            if (cartCount === 0) {
+                htmlCart = `
+                <div class="w-100 alert alert-secondary border-0 bg-white shadow-sm mb-0">
+                    <i class="fas fa-info-circle me-2"></i> Você não possui emissões de carteirinhas pendentes ou ativas.
+                </div>`;
+            } else if (cartCount > 1) {
+                document.getElementById('dicaCarrossel').style.display = "block";
+            }
+
+            document.getElementById('areaCarteirinhas').innerHTML = htmlCart;
+        }
+
+        // --- RELÓGIO ANTI-FRAUDE ---
+        function iniciarRelogioAntiFraude() {
+            setInterval(() => {
+                const agora = new Date();
+                const horaFomatada = agora.toLocaleTimeString('pt-BR');
+                const relogios = document.querySelectorAll('.relogio-digital');
+                relogios.forEach(r => r.innerText = horaFomatada);
+            }, 1000);
+        }
+
+        // --- RENDERIZAR MATRÍCULAS ---
         function montarCardsMatriculas() {
             let htmlMat = "";
-            
             if (alunoLogado.matriculas && alunoLogado.matriculas.length > 0) {
                 alunoLogado.matriculas.forEach(mat => {
                     htmlMat += `
@@ -189,24 +333,15 @@
                             <div class="matricula-body">
                                 <div class="info-row">
                                     <div class="info-icon"><i class="fas fa-calendar-alt text-primary"></i></div>
-                                    <div>
-                                        <h6 class="mb-0 fw-bold text-dark">${mat.diaHorario}</h6>
-                                        <small class="text-muted">Dia e Horário</small>
-                                    </div>
+                                    <div><h6 class="mb-0 fw-bold text-dark">${mat.diaHorario}</h6><small class="text-muted">Dia e Horário</small></div>
                                 </div>
                                 <div class="info-row">
                                     <div class="info-icon"><i class="fas fa-user-tie text-info"></i></div>
-                                    <div>
-                                        <h6 class="mb-0 fw-bold text-dark">${mat.professor}</h6>
-                                        <small class="text-muted">Professor(a)</small>
-                                    </div>
+                                    <div><h6 class="mb-0 fw-bold text-dark">${mat.professor}</h6><small class="text-muted">Professor(a)</small></div>
                                 </div>
                                 <div class="info-row mb-0">
                                     <div class="info-icon"><i class="fas fa-map-marker-alt text-danger"></i></div>
-                                    <div>
-                                        <h6 class="mb-0 fw-bold text-dark">${mat.espaco}</h6>
-                                        <small class="text-muted">Espaço / Local</small>
-                                    </div>
+                                    <div><h6 class="mb-0 fw-bold text-dark">${mat.espaco}</h6><small class="text-muted">Espaço / Local</small></div>
                                 </div>
                             </div>
                         </div>
@@ -225,64 +360,6 @@
             document.getElementById('areaMatriculas').innerHTML = htmlMat;
         }
 
-        // --- Renderiza as CARTEIRINHAS (Acesso Físico) ---
-        function montarCardsCarteirinhas() {
-            let htmlCart = "";
-            let temAcesso = false;
-
-            if (alunoLogado.carteirinhas) {
-                if (alunoLogado.carteirinhas.usoGeral) {
-                    htmlCart += `
-                    <div class="col-md-4 mb-3">
-                        <div class="badge-cart bc-geral">
-                            <i class="fas fa-id-badge icon-cart text-primary"></i>
-                            <div>
-                                <h6 class="mb-0 fw-bold">Uso Geral</h6>
-                                <small class="text-success fw-bold"><i class="fas fa-check-circle"></i> Liberado</small>
-                            </div>
-                        </div>
-                    </div>`;
-                    temAcesso = true;
-                }
-                if (alunoLogado.carteirinhas.raiaLivre) {
-                    htmlCart += `
-                    <div class="col-md-4 mb-3">
-                        <div class="badge-cart bc-raia">
-                            <i class="fas fa-swimmer icon-cart text-info"></i>
-                            <div>
-                                <h6 class="mb-0 fw-bold">Raia Livre</h6>
-                                <small class="text-success fw-bold"><i class="fas fa-check-circle"></i> Liberado</small>
-                            </div>
-                        </div>
-                    </div>`;
-                    temAcesso = true;
-                }
-                if (alunoLogado.carteirinhas.academia) {
-                    htmlCart += `
-                    <div class="col-md-4 mb-3">
-                        <div class="badge-cart bc-academia">
-                            <i class="fas fa-dumbbell icon-cart text-warning"></i>
-                            <div>
-                                <h6 class="mb-0 fw-bold">Academia Livre</h6>
-                                <small class="text-success fw-bold"><i class="fas fa-check-circle"></i> Liberado</small>
-                            </div>
-                        </div>
-                    </div>`;
-                    temAcesso = true;
-                }
-            }
-
-            if (!temAcesso) {
-                htmlCart = `
-                <div class="col-12">
-                    <div class="alert alert-secondary border-0 bg-white shadow-sm">
-                        <i class="fas fa-info-circle me-2"></i> Você não possui emissões de carteirinhas de acesso físico pendentes na secretaria no momento.
-                    </div>
-                </div>`;
-            }
-            document.getElementById('areaCarteirinhas').innerHTML = htmlCart;
-        }
-
         function fazerLogoff() {
             localStorage.removeItem('portalCeuToken');
             localStorage.removeItem('portalCeuAluno');
@@ -291,18 +368,15 @@
 
         // --- SISTEMA DE UPLOAD ---
         let base64Temp = {}; 
-
         function processarArquivo(inputId, btnId, txtNameId) {
             const input = document.getElementById(inputId);
             const btn = document.getElementById(btnId);
             const txt = document.getElementById(txtNameId);
             const file = input.files[0];
-
             if (file) {
                 if(file.size > 5242880){
                     Swal.fire('Aviso', 'Arquivo muito grande. Limite de 5MB.', 'warning');
-                    input.value = "";
-                    return;
+                    input.value = ""; return;
                 }
                 txt.innerHTML = `<i class="fas fa-check-circle me-1"></i> Selecionado: ${file.name}`;
                 btn.disabled = false;
@@ -319,31 +393,21 @@
             const btn = document.getElementById(inputId === 'arquivoCin' ? 'btnCin' : 'btnComp');
             const loading = document.getElementById(inputId === 'arquivoCin' ? 'loadingCin' : 'loadingComp');
             
-            btn.style.display = 'none';
-            loading.style.display = 'block';
+            btn.style.display = 'none'; loading.style.display = 'block';
 
-            let pacote = {
-                acao: "uploadDocumentoPortal",
-                dados: { cpf: alunoLogado.cpf, tipoDoc: tipoDoc, arquivoBase64: base64Temp[inputId].dadosBase64, nomeArquivo: base64Temp[inputId].nome, mimeType: base64Temp[inputId].tipo }
-            };
+            let pacote = { acao: "uploadDocumentoPortal", dados: { cpf: alunoLogado.cpf, tipoDoc: tipoDoc, arquivoBase64: base64Temp[inputId].dadosBase64, nomeArquivo: base64Temp[inputId].nome, mimeType: base64Temp[inputId].tipo } };
 
             try {
                 const resRaw = await fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) });
                 const res = await resRaw.json();
-
                 if (res.status === "sucesso") {
                     Swal.fire('Pronto!', `Seu ${tipoDoc} foi enviado com sucesso!`, 'success');
                     document.getElementById(inputId === 'arquivoCin' ? 'txtNomeCin' : 'txtNomeComp').innerHTML = `<i class="fas fa-star text-warning"></i> Enviado ao CEU!`;
                 } else {
                     Swal.fire('Erro', res.erro || res.mensagem, 'error');
                 }
-            } catch (err) {
-                Swal.fire('Erro', 'Falha na conexão.', 'error');
-            } finally {
-                btn.style.display = 'block';
-                btn.disabled = true; 
-                loading.style.display = 'none';
-            }
+            } catch (err) { Swal.fire('Erro', 'Falha na conexão.', 'error'); } 
+            finally { btn.style.display = 'block'; btn.disabled = true; loading.style.display = 'none'; }
         }
     </script>
 </body>

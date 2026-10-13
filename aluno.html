@@ -7,6 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="config.js"></script>
     <style>
         body { 
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); 
@@ -184,10 +185,6 @@
     </div>
 
     <script>
-        // --- 🔗 URL DO SEU BACK-END NO GOOGLE APPS SCRIPT ---
-        // Substitua esta URL pelo link gerado na sua Implantação do code.gs
-        const API_URL = "https://script.google.com/macros/s/AKfycbwKts8WbT02uwYqZ-Ihtv6H-fCazTx9AWh4nz2yfLxeGLR4zET6aAx3YgkhdTaRZHr9/exec"; 
-
         // Variável de controle visual
         let modoPrimeiroAcesso = true;
 
@@ -260,42 +257,106 @@
                 pacoteEnvio.dados.tipoLogin = "SENHA_PADRAO";
             }
 
-            // 2. Chama o Servidor (code.gs)
-            overlay.style.display = "flex"; // Liga o loading giratório
+            // 2. Chama o Servidor (code.gs do seu config.js)
+            overlay.style.display = "flex";
 
             try {
-                // Aqui a mágica da API acontece!
-                // const resRaw = await fetch(API_URL, { method: 'POST', body: JSON.stringify(pacoteEnvio) });
-                // const res = await resRaw.json();
+                const resRaw = await fetch(API_URL, { method: 'POST', body: JSON.stringify(pacoteEnvio) });
+                const res = await resRaw.json();
                 
-                // SIMULAÇÃO TEMPORÁRIA (Para você testar o visual no GitHub enquanto não ligamos a API)
-                setTimeout(() => {
-                    overlay.style.display = "none";
-                    Swal.fire({
-                        title: 'Tudo pronto!',
-                        text: 'A conexão visual está perfeita. Agora falta ligarmos os motores no servidor!',
-                        icon: 'success',
-                        confirmButtonColor: '#0d6efd'
-                    });
-                }, 2000);
+                overlay.style.display = "none";
 
-                /* --- O CÓDIGO REAL FICARÁ ASSIM: ---
                 if (res.status === "sucesso") {
-                    // Guarda o Token seguro e redireciona para o Dashboard do Aluno
+                    // Guarda o Token seguro e as info do aluno
                     localStorage.setItem('portalCeuToken', res.token);
                     localStorage.setItem('portalCeuAluno', JSON.stringify(res.aluno));
-                    window.location.href = "dashboard_aluno.html"; 
+                    
+                    // Sucesso no acesso: Redireciona para o Painel! 
+                    // (Você criará o painel_aluno.html no Github depois)
+                    Swal.fire({
+                        title: 'Bem-vindo(a)!',
+                        text: `Olá, ${res.aluno.nome}. Acessando seu portal...`,
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.href = "painel_aluno.html"; 
+                    });
+                    
                 } else if (res.status === "exige_nova_senha") {
                     // Abre tela forçando criar senha nova
                     abrirModalNovaSenha(cpf);
                 } else {
                     Swal.fire('Acesso Negado', res.mensagem, 'error');
                 }
-                */
 
             } catch (erro) {
                 overlay.style.display = "none";
                 Swal.fire('Erro de Conexão', 'Não foi possível conectar com o banco de dados do CEU.', 'error');
+            }
+        }
+
+        // --- Fluxo Criar Senha no 1º Acesso ---
+        function abrirModalNovaSenha(cpfAlunoValidado) {
+            Swal.fire({
+                title: '<i class="fas fa-key text-primary mb-3"></i><br>Crie sua Senha Definitiva',
+                html: `
+                    <p class="text-muted small mb-3">Sua identidade foi confirmada! Agora crie uma senha para seus próximos acessos ao portal.</p>
+                    <input type="password" id="novaSenha1" class="swal2-input" placeholder="Digite uma senha forte" style="font-size: 16px;">
+                    <input type="password" id="novaSenha2" class="swal2-input" placeholder="Repita a senha" style="font-size: 16px;">
+                `,
+                confirmButtonText: 'Gravar Minha Senha',
+                confirmButtonColor: '#0d6efd',
+                allowOutsideClick: false,
+                preConfirm: () => {
+                    const s1 = document.getElementById('novaSenha1').value;
+                    const s2 = document.getElementById('novaSenha2').value;
+                    if (!s1 || !s2) { Swal.showValidationMessage('Preencha os dois campos!'); return false; }
+                    if (s1 !== s2) { Swal.showValidationMessage('As senhas não são iguais!'); return false; }
+                    if (s1.length < 4) { Swal.showValidationMessage('A senha deve ter no mínimo 4 caracteres'); return false; }
+                    return s1;
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    gravarNovaSenhaNoServidor(cpfAlunoValidado, result.value);
+                }
+            });
+        }
+
+        async function gravarNovaSenhaNoServidor(cpf, novaSenha) {
+            const overlay = document.getElementById("loadingOverlay");
+            overlay.style.display = "flex";
+            
+            try {
+                let pacote = { 
+                    acao: "salvarNovaSenhaPortal", 
+                    dados: { cpf: cpf, novaSenha: novaSenha } 
+                };
+                
+                const resRaw = await fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) });
+                const res = await resRaw.json();
+                
+                overlay.style.display = "none";
+
+                if (res.status === "sucesso") {
+                    localStorage.setItem('portalCeuToken', res.token);
+                    localStorage.setItem('portalCeuAluno', JSON.stringify(res.aluno));
+                    
+                    Swal.fire({
+                        title: 'Senha Criada!',
+                        text: 'Tudo pronto. Redirecionando para o seu portal...',
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.href = "painel_aluno.html"; 
+                    });
+                } else {
+                    Swal.fire('Erro', res.mensagem, 'error');
+                }
+            } catch (err) {
+                overlay.style.display = "none";
+                Swal.fire('Erro', 'Não foi possível salvar a nova senha.', 'error');
             }
         }
     </script>

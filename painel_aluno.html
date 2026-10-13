@@ -16,10 +16,20 @@
         .btn-sair:hover { background: rgba(255,255,255,0.3); color: white; }
 
         .welcome-card { background: white; border-radius: 15px; padding: 25px; margin-top: 30px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 20px; border-left: 5px solid #0d6efd; }
-        .avatar-circle { width: 70px; height: 70px; background: #e0e7ff; color: #0d6efd; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: bold; }
+        
+        /* Ajuste do Avatar/Foto */
+        .avatar-circle { width: 80px; height: 80px; background: #e0e7ff; color: #0d6efd; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 35px; font-weight: bold; overflow: hidden; flex-shrink: 0;}
+        .foto-aluno { width: 100%; height: 100%; object-fit: cover; }
         
         .aviso-secretaria { background: #fff3cd; border-left: 5px solid #ffc107; border-radius: 10px; padding: 20px; margin-top: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         
+        /* Badges de Carteirinhas */
+        .badge-cart { border-radius: 12px; padding: 15px; display: flex; align-items: center; gap: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-left: 5px solid; background: white; height: 100%;}
+        .bc-geral { border-left-color: #0d6efd; }
+        .bc-raia { border-left-color: #0dcaf0; }
+        .bc-academia { border-left-color: #fd7e14; }
+        .icon-cart { font-size: 30px; }
+
         .card-doc { background: white; border-radius: 15px; padding: 25px; margin-top: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); text-align: center; transition: 0.3s; border: 1px solid #e2e8f0; }
         .card-doc:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
         .doc-icon { font-size: 40px; color: #6f42c1; margin-bottom: 15px; }
@@ -29,8 +39,6 @@
         
         .file-input-wrapper { position: relative; overflow: hidden; display: inline-block; width: 100%; }
         .file-input-wrapper input[type=file] { font-size: 100px; position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer; height: 100%; }
-
-        /* Loading de Upload */
         .uploading-overlay { display: none; margin-top: 10px; color: #0d6efd; font-weight: bold; font-size: 14px; }
     </style>
 </head>
@@ -44,25 +52,35 @@
 
     <div class="container" style="max-width: 900px;">
         
-        <!-- Cartão de Boas Vindas -->
+        <!-- Cartão de Boas Vindas com FOTO -->
         <div class="welcome-card">
-            <div class="avatar-circle"><i class="fas fa-user"></i></div>
+            <div class="avatar-circle">
+                <i class="fas fa-user" id="iconAvatarDefault"></i>
+                <img id="imgFotoAluno" class="foto-aluno" src="" style="display: none;" alt="Minha Foto">
+            </div>
             <div>
                 <h4 class="mb-1 fw-bold text-dark" id="txtNomeAluno">Carregando...</h4>
                 <p class="mb-0 text-muted">
-                    <strong>Prontuário:</strong> <span id="txtProntuario">---</span> | 
-                    <strong>Cód EOL:</strong> <span id="txtEol">---</span>
+                    <strong>Prontuário:</strong> <span id="txtProntuario" class="badge bg-secondary">---</span> | 
+                    <strong>Cód EOL:</strong> <span id="txtEol" class="badge bg-primary">---</span>
                 </p>
             </div>
         </div>
 
-        <!-- Alerta da Secretaria (Só aparece se tiver recado) -->
+        <!-- Alerta da Secretaria -->
         <div class="aviso-secretaria" id="blocoAvisos" style="display: none;">
             <h5 class="fw-bold text-warning-emphasis mb-2"><i class="fas fa-exclamation-triangle me-2"></i>Recado da Secretaria</h5>
             <p class="mb-0 text-dark" id="txtAvisoSecretaria"></p>
         </div>
 
-        <h5 class="fw-bold mt-5 mb-3 text-secondary"><i class="fas fa-folder-open me-2"></i>Central de Documentos</h5>
+        <!-- SEÇÃO: Minhas Carteirinhas (Atividades e Acessos) -->
+        <h5 class="fw-bold mt-5 mb-3 text-secondary"><i class="fas fa-address-card me-2"></i>Meus Acessos Liberados</h5>
+        <div class="row" id="areaCarteirinhas">
+            <!-- Os cards das carteirinhas serão injetados aqui via Javascript -->
+        </div>
+
+        <!-- SEÇÃO: Upload de Documentos -->
+        <h5 class="fw-bold mt-5 mb-3 text-secondary"><i class="fas fa-folder-open me-2"></i>Envio de Documentos Pendentes</h5>
         
         <div class="row">
             <!-- Upload do CIN -->
@@ -70,7 +88,7 @@
                 <div class="card-doc">
                     <i class="fas fa-id-card doc-icon"></i>
                     <h5 class="fw-bold">Documento de Identidade</h5>
-                    <p class="text-muted small mb-3">Envie uma foto ou PDF do seu RG, CNH ou CIN (frente e verso legíveis).</p>
+                    <p class="text-muted small mb-3">Envie uma foto ou PDF do seu RG, CNH ou CIN.</p>
                     
                     <div class="file-input-wrapper">
                         <button class="btn btn-outline-primary w-100 fw-bold"><i class="fas fa-search me-2"></i>Escolher Arquivo</button>
@@ -81,7 +99,7 @@
                     <button class="btn-upload" id="btnCin" onclick="enviarDocumento('arquivoCin', 'CIN')" disabled>
                         <i class="fas fa-cloud-upload-alt me-2"></i>ENVIAR IDENTIDADE
                     </button>
-                    <div class="uploading-overlay" id="loadingCin"><i class="fas fa-spinner fa-spin me-2"></i>Enviando para o Drive...</div>
+                    <div class="uploading-overlay" id="loadingCin"><i class="fas fa-spinner fa-spin me-2"></i>Enviando para o sistema...</div>
                 </div>
             </div>
 
@@ -90,7 +108,7 @@
                 <div class="card-doc">
                     <i class="fas fa-map-marked-alt doc-icon text-primary"></i>
                     <h5 class="fw-bold">Comprovante de Endereço</h5>
-                    <p class="text-muted small mb-3">Envie conta de luz, água ou telefone atualizada (máximo 3 meses).</p>
+                    <p class="text-muted small mb-3">Envie conta de luz, água ou telefone atualizada.</p>
                     
                     <div class="file-input-wrapper">
                         <button class="btn btn-outline-primary w-100 fw-bold"><i class="fas fa-search me-2"></i>Escolher Arquivo</button>
@@ -101,7 +119,7 @@
                     <button class="btn-upload" id="btnComp" onclick="enviarDocumento('arquivoComp', 'COMPROVANTE')" disabled>
                         <i class="fas fa-cloud-upload-alt me-2"></i>ENVIAR COMPROVANTE
                     </button>
-                    <div class="uploading-overlay" id="loadingComp"><i class="fas fa-spinner fa-spin me-2"></i>Enviando para o Drive...</div>
+                    <div class="uploading-overlay" id="loadingComp"><i class="fas fa-spinner fa-spin me-2"></i>Enviando para o sistema...</div>
                 </div>
             </div>
         </div>
@@ -109,16 +127,14 @@
     </div>
 
     <script>
-        // --- 🔗 COLE AQUI A URL DO SEU APPS SCRIPT ---
+        // --- 🔗 COLE AQUI A URL DO SEU APPS SCRIPT (A mesma do aluno.html) ---
         const API_URL = "https://script.google.com/macros/s/AKfycbwKts8WbT02uwYqZ-Ihtv6H-fCazTx9AWh4nz2yfLxeGLR4zET6aAx3YgkhdTaRZHr9/exec"; 
 
-        // Recupera os dados do aluno salvos no momento do login
         const token = localStorage.getItem('portalCeuToken');
         const alunoJSON = localStorage.getItem('portalCeuAluno');
         let alunoLogado = {};
 
         window.onload = function() {
-            // Proteção de Rota: Se não tem token, joga de volta pro login
             if (!token || !alunoJSON) {
                 window.location.href = "aluno.html";
                 return;
@@ -126,17 +142,85 @@
 
             alunoLogado = JSON.parse(alunoJSON);
             
-            // Preenche os dados na tela
+            // 1. Preenche Nome, EOL e Prontuário
             document.getElementById('txtNomeAluno').innerText = alunoLogado.nome;
             document.getElementById('txtProntuario').innerText = alunoLogado.prontuario || "Pendente";
             document.getElementById('txtEol').innerText = alunoLogado.eol || "Pendente";
 
-            // Exibe aviso da secretaria se existir (Aviso vem da Coluna X)
+            // 2. Tenta exibir a Foto
+            if (alunoLogado.foto && alunoLogado.foto !== "") {
+                document.getElementById('imgFotoAluno').src = alunoLogado.foto;
+                document.getElementById('imgFotoAluno').style.display = "block";
+                document.getElementById('iconAvatarDefault').style.display = "none";
+            }
+
+            // 3. Exibe aviso da secretaria se existir
             if (alunoLogado.avisos && alunoLogado.avisos.trim() !== "") {
                 document.getElementById('txtAvisoSecretaria').innerText = alunoLogado.avisos;
                 document.getElementById('blocoAvisos').style.display = "block";
             }
+
+            // 4. Monta os Cards de Acesso/Carteirinhas Dinamicamente
+            montarCardsCarteirinhas();
         };
+
+        function montarCardsCarteirinhas() {
+            let htmlCart = "";
+            let temAcesso = false;
+
+            if (alunoLogado.carteirinhas) {
+                if (alunoLogado.carteirinhas.usoGeral) {
+                    htmlCart += `
+                    <div class="col-md-4 mb-3">
+                        <div class="badge-cart bc-geral">
+                            <i class="fas fa-id-badge icon-cart text-primary"></i>
+                            <div>
+                                <h6 class="mb-0 fw-bold">Uso Geral</h6>
+                                <small class="text-success fw-bold"><i class="fas fa-check-circle"></i> Ativo</small>
+                            </div>
+                        </div>
+                    </div>`;
+                    temAcesso = true;
+                }
+                if (alunoLogado.carteirinhas.raiaLivre) {
+                    htmlCart += `
+                    <div class="col-md-4 mb-3">
+                        <div class="badge-cart bc-raia">
+                            <i class="fas fa-swimmer icon-cart text-info"></i>
+                            <div>
+                                <h6 class="mb-0 fw-bold">Raia Livre</h6>
+                                <small class="text-success fw-bold"><i class="fas fa-check-circle"></i> Ativa</small>
+                            </div>
+                        </div>
+                    </div>`;
+                    temAcesso = true;
+                }
+                if (alunoLogado.carteirinhas.academia) {
+                    htmlCart += `
+                    <div class="col-md-4 mb-3">
+                        <div class="badge-cart bc-academia">
+                            <i class="fas fa-dumbbell icon-cart text-warning"></i>
+                            <div>
+                                <h6 class="mb-0 fw-bold">Academia</h6>
+                                <small class="text-success fw-bold"><i class="fas fa-check-circle"></i> Ativa</small>
+                            </div>
+                        </div>
+                    </div>`;
+                    temAcesso = true;
+                }
+            }
+
+            if (!temAcesso) {
+                htmlCart = `
+                <div class="col-12">
+                    <div class="alert alert-secondary border-0 bg-white shadow-sm">
+                        <i class="fas fa-info-circle me-2"></i> Você não possui atividades ou carteirinhas ativas no momento.
+                    </div>
+                </div>`;
+            }
+
+            document.getElementById('areaCarteirinhas').innerHTML = htmlCart;
+        }
 
         function fazerLogoff() {
             localStorage.removeItem('portalCeuToken');
@@ -145,7 +229,7 @@
         }
 
         // --- SISTEMA DE UPLOAD ---
-        let base64Temp = {}; // Guarda o Base64 dos arquivos antes de enviar
+        let base64Temp = {}; 
 
         function processarArquivo(inputId, btnId, txtNameId) {
             const input = document.getElementById(inputId);
@@ -154,23 +238,16 @@
             const file = input.files[0];
 
             if (file) {
-                // Checa o tamanho (Limite 5MB para não travar o Apps Script)
                 if(file.size > 5242880){
-                    Swal.fire('Aviso', 'O arquivo é muito grande. O limite é 5MB.', 'warning');
+                    Swal.fire('Aviso', 'Arquivo muito grande. Limite de 5MB.', 'warning');
                     input.value = "";
                     return;
                 }
-
                 txt.innerHTML = `<i class="fas fa-check-circle me-1"></i> Selecionado: ${file.name}`;
                 btn.disabled = false;
-
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    base64Temp[inputId] = {
-                        dadosBase64: e.target.result,
-                        nome: file.name,
-                        tipo: file.type
-                    };
+                    base64Temp[inputId] = { dadosBase64: e.target.result, nome: file.name, tipo: file.type };
                 };
                 reader.readAsDataURL(file);
             }
@@ -178,7 +255,6 @@
 
         async function enviarDocumento(inputId, tipoDoc) {
             if (!base64Temp[inputId]) return;
-
             const btn = document.getElementById(inputId === 'arquivoCin' ? 'btnCin' : 'btnComp');
             const loading = document.getElementById(inputId === 'arquivoCin' ? 'loadingCin' : 'loadingComp');
             
@@ -202,15 +278,15 @@
 
                 if (res.status === "sucesso") {
                     Swal.fire('Pronto!', `Seu ${tipoDoc} foi enviado com sucesso!`, 'success');
-                    document.getElementById(inputId === 'arquivoCin' ? 'txtNomeCin' : 'txtNomeComp').innerHTML = `<i class="fas fa-star text-warning"></i> Enviado e gravado no sistema!`;
+                    document.getElementById(inputId === 'arquivoCin' ? 'txtNomeCin' : 'txtNomeComp').innerHTML = `<i class="fas fa-star text-warning"></i> Enviado ao CEU!`;
                 } else {
                     Swal.fire('Erro', res.erro || res.mensagem, 'error');
                 }
             } catch (err) {
-                Swal.fire('Erro', 'Falha na conexão ao enviar documento.', 'error');
+                Swal.fire('Erro', 'Falha na conexão.', 'error');
             } finally {
                 btn.style.display = 'block';
-                btn.disabled = true; // Desativa para não mandar duplo
+                btn.disabled = true; 
                 loading.style.display = 'none';
             }
         }

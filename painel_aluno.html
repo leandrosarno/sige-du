@@ -17,7 +17,6 @@
 
         .welcome-card { background: white; border-radius: 15px; padding: 25px; margin-top: 30px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 20px; border-left: 5px solid #0d6efd; }
         
-        /* Ajuste do Avatar/Foto */
         .avatar-circle { width: 80px; height: 80px; background: #e0e7ff; color: #0d6efd; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 35px; font-weight: bold; overflow: hidden; flex-shrink: 0;}
         .foto-aluno { width: 100%; height: 100%; object-fit: cover; }
         
@@ -29,6 +28,14 @@
         .bc-raia { border-left-color: #0dcaf0; }
         .bc-academia { border-left-color: #fd7e14; }
         .icon-cart { font-size: 30px; }
+
+        /* Estilo dos Cards de Matrícula (Novidade!) */
+        .card-matricula { border-radius: 15px; overflow: hidden; box-shadow: 0 6px 15px rgba(0,0,0,0.06); transition: 0.3s; background: white; border: 1px solid #e2e8f0; height: 100%;}
+        .card-matricula:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .matricula-header { background: linear-gradient(135deg, #0d6efd, #6f42c1); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .matricula-body { padding: 20px; }
+        .info-row { display: flex; align-items: center; margin-bottom: 12px; }
+        .info-icon { background: #f8fafc; color: #6f42c1; width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; margin-right: 15px; }
 
         .card-doc { background: white; border-radius: 15px; padding: 25px; margin-top: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); text-align: center; transition: 0.3s; border: 1px solid #e2e8f0; }
         .card-doc:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
@@ -73,15 +80,20 @@
             <p class="mb-0 text-dark" id="txtAvisoSecretaria"></p>
         </div>
 
-        <!-- SEÇÃO: Minhas Carteirinhas (Atividades e Acessos) -->
-        <h5 class="fw-bold mt-5 mb-3 text-secondary"><i class="fas fa-address-card me-2"></i>Meus Acessos Liberados</h5>
+        <!-- SEÇÃO: Turmas e Atividades (NOVIDADE!) -->
+        <h5 class="fw-bold mt-5 mb-3 text-secondary"><i class="fas fa-running me-2"></i>Minhas Turmas e Atividades</h5>
+        <div class="row" id="areaMatriculas">
+            <!-- Cards de Matrícula renderizados aqui -->
+        </div>
+
+        <!-- SEÇÃO: Acessos Físicos -->
+        <h5 class="fw-bold mt-5 mb-3 text-secondary"><i class="fas fa-address-card me-2"></i>Acessos Liberados (Catraca)</h5>
         <div class="row" id="areaCarteirinhas">
-            <!-- Os cards das carteirinhas serão injetados aqui via Javascript -->
+            <!-- Cards de Acesso renderizados aqui -->
         </div>
 
         <!-- SEÇÃO: Upload de Documentos -->
         <h5 class="fw-bold mt-5 mb-3 text-secondary"><i class="fas fa-folder-open me-2"></i>Envio de Documentos Pendentes</h5>
-        
         <div class="row">
             <!-- Upload do CIN -->
             <div class="col-md-6">
@@ -89,13 +101,11 @@
                     <i class="fas fa-id-card doc-icon"></i>
                     <h5 class="fw-bold">Documento de Identidade</h5>
                     <p class="text-muted small mb-3">Envie uma foto ou PDF do seu RG, CNH ou CIN.</p>
-                    
                     <div class="file-input-wrapper">
                         <button class="btn btn-outline-primary w-100 fw-bold"><i class="fas fa-search me-2"></i>Escolher Arquivo</button>
                         <input type="file" id="arquivoCin" accept="image/*,application/pdf" onchange="processarArquivo('arquivoCin', 'btnCin', 'txtNomeCin')">
                     </div>
                     <div id="txtNomeCin" class="text-success small mt-2 fw-bold" style="min-height: 20px;"></div>
-                    
                     <button class="btn-upload" id="btnCin" onclick="enviarDocumento('arquivoCin', 'CIN')" disabled>
                         <i class="fas fa-cloud-upload-alt me-2"></i>ENVIAR IDENTIDADE
                     </button>
@@ -109,13 +119,11 @@
                     <i class="fas fa-map-marked-alt doc-icon text-primary"></i>
                     <h5 class="fw-bold">Comprovante de Endereço</h5>
                     <p class="text-muted small mb-3">Envie conta de luz, água ou telefone atualizada.</p>
-                    
                     <div class="file-input-wrapper">
                         <button class="btn btn-outline-primary w-100 fw-bold"><i class="fas fa-search me-2"></i>Escolher Arquivo</button>
                         <input type="file" id="arquivoComp" accept="image/*,application/pdf" onchange="processarArquivo('arquivoComp', 'btnComp', 'txtNomeComp')">
                     </div>
                     <div id="txtNomeComp" class="text-success small mt-2 fw-bold" style="min-height: 20px;"></div>
-
                     <button class="btn-upload" id="btnComp" onclick="enviarDocumento('arquivoComp', 'COMPROVANTE')" disabled>
                         <i class="fas fa-cloud-upload-alt me-2"></i>ENVIAR COMPROVANTE
                     </button>
@@ -142,28 +150,82 @@
 
             alunoLogado = JSON.parse(alunoJSON);
             
-            // 1. Preenche Nome, EOL e Prontuário
+            // 1. Preenche Cabeçalho
             document.getElementById('txtNomeAluno').innerText = alunoLogado.nome;
             document.getElementById('txtProntuario').innerText = alunoLogado.prontuario || "Pendente";
             document.getElementById('txtEol').innerText = alunoLogado.eol || "Pendente";
 
-            // 2. Tenta exibir a Foto
+            // 2. Foto
             if (alunoLogado.foto && alunoLogado.foto !== "") {
                 document.getElementById('imgFotoAluno').src = alunoLogado.foto;
                 document.getElementById('imgFotoAluno').style.display = "block";
                 document.getElementById('iconAvatarDefault').style.display = "none";
             }
 
-            // 3. Exibe aviso da secretaria se existir
+            // 3. Avisos
             if (alunoLogado.avisos && alunoLogado.avisos.trim() !== "") {
                 document.getElementById('txtAvisoSecretaria').innerText = alunoLogado.avisos;
                 document.getElementById('blocoAvisos').style.display = "block";
             }
 
-            // 4. Monta os Cards de Acesso/Carteirinhas Dinamicamente
+            // 4. Montar Telas Dinâmicas
             montarCardsCarteirinhas();
+            montarCardsMatriculas();
         };
 
+        // --- Renderiza as MATRÍCULAS (Aulas Ativas) ---
+        function montarCardsMatriculas() {
+            let htmlMat = "";
+            
+            if (alunoLogado.matriculas && alunoLogado.matriculas.length > 0) {
+                alunoLogado.matriculas.forEach(mat => {
+                    htmlMat += `
+                    <div class="col-md-6 mb-4">
+                        <div class="card-matricula">
+                            <div class="matricula-header">
+                                <h5 class="mb-0 fw-bold text-truncate" title="${mat.modalidade}"><i class="fas fa-chalkboard-teacher me-2"></i>${mat.modalidade}</h5>
+                                <span class="badge bg-light text-primary fw-bold">Cód: ${mat.codigoTurma}</span>
+                            </div>
+                            <div class="matricula-body">
+                                <div class="info-row">
+                                    <div class="info-icon"><i class="fas fa-calendar-alt text-primary"></i></div>
+                                    <div>
+                                        <h6 class="mb-0 fw-bold text-dark">${mat.diaHorario}</h6>
+                                        <small class="text-muted">Dia e Horário</small>
+                                    </div>
+                                </div>
+                                <div class="info-row">
+                                    <div class="info-icon"><i class="fas fa-user-tie text-info"></i></div>
+                                    <div>
+                                        <h6 class="mb-0 fw-bold text-dark">${mat.professor}</h6>
+                                        <small class="text-muted">Professor(a)</small>
+                                    </div>
+                                </div>
+                                <div class="info-row mb-0">
+                                    <div class="info-icon"><i class="fas fa-map-marker-alt text-danger"></i></div>
+                                    <div>
+                                        <h6 class="mb-0 fw-bold text-dark">${mat.espaco}</h6>
+                                        <small class="text-muted">Espaço / Local</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+                });
+            } else {
+                htmlMat = `
+                <div class="col-12">
+                    <div class="alert alert-light border shadow-sm text-center p-4" style="border-radius: 15px;">
+                        <i class="fas fa-clipboard-list text-muted mb-3" style="font-size: 40px;"></i>
+                        <h6 class="fw-bold text-secondary">Nenhuma matrícula registrada</h6>
+                        <p class="text-muted small mb-0">Você não possui atividades ou as informações estão sendo atualizadas pela secretaria.</p>
+                    </div>
+                </div>`;
+            }
+            document.getElementById('areaMatriculas').innerHTML = htmlMat;
+        }
+
+        // --- Renderiza as CARTEIRINHAS (Acesso Físico) ---
         function montarCardsCarteirinhas() {
             let htmlCart = "";
             let temAcesso = false;
@@ -176,7 +238,7 @@
                             <i class="fas fa-id-badge icon-cart text-primary"></i>
                             <div>
                                 <h6 class="mb-0 fw-bold">Uso Geral</h6>
-                                <small class="text-success fw-bold"><i class="fas fa-check-circle"></i> Ativo</small>
+                                <small class="text-success fw-bold"><i class="fas fa-check-circle"></i> Liberado</small>
                             </div>
                         </div>
                     </div>`;
@@ -189,7 +251,7 @@
                             <i class="fas fa-swimmer icon-cart text-info"></i>
                             <div>
                                 <h6 class="mb-0 fw-bold">Raia Livre</h6>
-                                <small class="text-success fw-bold"><i class="fas fa-check-circle"></i> Ativa</small>
+                                <small class="text-success fw-bold"><i class="fas fa-check-circle"></i> Liberado</small>
                             </div>
                         </div>
                     </div>`;
@@ -201,8 +263,8 @@
                         <div class="badge-cart bc-academia">
                             <i class="fas fa-dumbbell icon-cart text-warning"></i>
                             <div>
-                                <h6 class="mb-0 fw-bold">Academia</h6>
-                                <small class="text-success fw-bold"><i class="fas fa-check-circle"></i> Ativa</small>
+                                <h6 class="mb-0 fw-bold">Academia Livre</h6>
+                                <small class="text-success fw-bold"><i class="fas fa-check-circle"></i> Liberado</small>
                             </div>
                         </div>
                     </div>`;
@@ -214,11 +276,10 @@
                 htmlCart = `
                 <div class="col-12">
                     <div class="alert alert-secondary border-0 bg-white shadow-sm">
-                        <i class="fas fa-info-circle me-2"></i> Você não possui atividades ou carteirinhas ativas no momento.
+                        <i class="fas fa-info-circle me-2"></i> Você não possui emissões de carteirinhas de acesso físico pendentes na secretaria no momento.
                     </div>
                 </div>`;
             }
-
             document.getElementById('areaCarteirinhas').innerHTML = htmlCart;
         }
 
@@ -263,13 +324,7 @@
 
             let pacote = {
                 acao: "uploadDocumentoPortal",
-                dados: {
-                    cpf: alunoLogado.cpf,
-                    tipoDoc: tipoDoc,
-                    arquivoBase64: base64Temp[inputId].dadosBase64,
-                    nomeArquivo: base64Temp[inputId].nome,
-                    mimeType: base64Temp[inputId].tipo
-                }
+                dados: { cpf: alunoLogado.cpf, tipoDoc: tipoDoc, arquivoBase64: base64Temp[inputId].dadosBase64, nomeArquivo: base64Temp[inputId].nome, mimeType: base64Temp[inputId].tipo }
             };
 
             try {

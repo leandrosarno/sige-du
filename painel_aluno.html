@@ -19,73 +19,36 @@
         .avatar-circle { width: 70px; height: 70px; background: #e0e7ff; color: #0d6efd; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: bold; overflow: hidden; flex-shrink: 0;}
         .foto-aluno { width: 100%; height: 100%; object-fit: cover; }
         
+        /* NOVIDADE: Card de Dados Pessoais */
+        .card-dados { background: white; border-radius: 15px; padding: 20px 25px; margin-top: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
+        .texto-dado { color: #1e293b; font-weight: 700; font-size: 15px; }
+        .label-dado { color: #64748b; font-size: 11px; text-transform: uppercase; font-weight: bold; margin-bottom: 2px; display: block; }
+        .msg-discreta { background: #f8fafc; color: #64748b; font-size: 12px; padding: 12px 15px; border-radius: 8px; border: 1px dashed #cbd5e1; display: flex; align-items: flex-start; gap: 10px; line-height: 1.4; }
+
         .aviso-secretaria { background: #fff3cd; border-left: 5px solid #ffc107; border-radius: 10px; padding: 20px; margin-top: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
 
-        /* =========================================
-           🪪 CARTEIRINHA VIRTUAL (CELULAR) 
-           ========================================= */
-        .carrossel-carteirinhas {
-            display: flex;
-            overflow-x: auto;
-            gap: 15px;
-            padding: 10px 5px 20px 5px;
-            scroll-snap-type: x mandatory;
-            -webkit-overflow-scrolling: touch;
-        }
-        
-        /* Esconde a barra de rolagem mas mantém a função */
+        /* CARTEIRINHA VIRTUAL (CELULAR) */
+        .carrossel-carteirinhas { display: flex; overflow-x: auto; gap: 15px; padding: 10px 5px 20px 5px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; -ms-overflow-style: none; scrollbar-width: none; }
         .carrossel-carteirinhas::-webkit-scrollbar { display: none; }
-        .carrossel-carteirinhas { -ms-overflow-style: none; scrollbar-width: none; }
-
-        .carteirinha-virtual {
-            min-width: 320px;
-            width: 100%;
-            max-width: 380px;
-            height: 200px;
-            border-radius: 16px;
-            padding: 18px;
-            color: white;
-            position: relative;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
-            scroll-snap-align: center;
-            flex-shrink: 0;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-        
+        .carteirinha-virtual { min-width: 320px; width: 100%; max-width: 380px; height: 200px; border-radius: 16px; padding: 18px; color: white; position: relative; box-shadow: 0 10px 20px rgba(0,0,0,0.15); scroll-snap-align: center; flex-shrink: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; }
         .cv-bg-geral { background: linear-gradient(135deg, #0d6efd, #6f42c1); }
         .cv-bg-raia { background: linear-gradient(135deg, #0dcaf0, #055160); }
         .cv-bg-academia { background: linear-gradient(135deg, #fd7e14, #854000); }
-
-        .cv-marca-dagua {
-            position: absolute;
-            top: -10px;
-            right: -20px;
-            font-size: 130px;
-            opacity: 0.1;
-            z-index: 0;
-        }
-        
+        .cv-marca-dagua { position: absolute; top: -10px; right: -20px; font-size: 130px; opacity: 0.1; z-index: 0; }
         .cv-conteudo { position: relative; z-index: 1; width: 100%; height: 100%; }
-        
         .cv-topo { display: flex; justify-content: space-between; align-items: flex-start; }
         .cv-logo-texto { font-size: 15px; font-weight: 900; line-height: 1.1; text-transform: uppercase; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); }
         .cv-logo-sub { font-size: 9px; opacity: 0.9; }
-        
         .cv-meio { display: flex; gap: 15px; margin-top: 15px; align-items: flex-end;}
         .cv-foto { width: 75px; height: 100px; border-radius: 8px; object-fit: cover; border: 2px solid rgba(255,255,255,0.8); box-shadow: 0 4px 8px rgba(0,0,0,0.2); background: #e2e8f0;}
-        
         .cv-dados-bloco { display: flex; flex-direction: column; margin-bottom: 5px;}
         .cv-label { font-size: 9px; text-transform: uppercase; opacity: 0.8; letter-spacing: 1px; }
         .cv-valor { font-size: 14px; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); }
         .cv-valor-grande { font-size: 22px; font-weight: 900; letter-spacing: 1px; text-shadow: 1px 1px 3px rgba(0,0,0,0.3);}
-        
         .cv-rodape { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 10px; }
         .cv-nome { font-size: 15px; font-weight: 800; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 65%; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); }
         
-        /* O Relógio Anti-Fraude */
+        /* Relógio Anti-Fraude */
         .cv-live-clock { font-size: 10px; font-family: monospace; background: rgba(0,0,0,0.4); padding: 4px 8px; border-radius: 20px; display: flex; align-items: center; gap: 5px; animation: pulse 1.5s infinite; border: 1px solid rgba(255,255,255,0.2);}
         @keyframes pulse { 0% { opacity: 0.8; box-shadow: 0 0 0 rgba(255,255,255,0); } 50% { opacity: 1; box-shadow: 0 0 8px rgba(255,255,255,0.6); } 100% { opacity: 0.8; box-shadow: 0 0 0 rgba(255,255,255,0); } }
 
@@ -107,7 +70,6 @@
 </head>
 <body>
 
-    <!-- Cabeçalho -->
     <nav class="navbar-custom d-flex justify-content-between align-items-center">
         <div class="navbar-brand"><i class="fas fa-school"></i> Portal do Munícipe</div>
         <button class="btn-sair" onclick="fazerLogoff()"><i class="fas fa-sign-out-alt me-2"></i>Sair</button>
@@ -129,6 +91,30 @@
             </div>
         </div>
 
+        <!-- SEÇÃO: MEUS DADOS PESSOAIS -->
+        <div class="card-dados">
+            <h6 class="fw-bold mb-3 text-secondary border-bottom pb-2"><i class="fas fa-id-badge me-2"></i>Meus Dados Pessoais</h6>
+            <div class="row">
+                <div class="col-md-4 col-sm-6 mb-3">
+                    <span class="label-dado">CPF</span>
+                    <span class="texto-dado" id="txtCpf">---</span>
+                </div>
+                <div class="col-md-4 col-sm-6 mb-3">
+                    <span class="label-dado">Data de Nascimento</span>
+                    <span class="texto-dado" id="txtNascimento">---</span>
+                </div>
+                <div class="col-md-4 col-sm-12 mb-3">
+                    <span class="label-dado">Telefone de Contato</span>
+                    <span class="texto-dado" id="txtTelefone">---</span>
+                </div>
+            </div>
+            
+            <div class="msg-discreta mt-2">
+                <i class="fas fa-info-circle text-primary mt-1" style="font-size: 16px;"></i> 
+                <span>Para atualizar seus dados de contato ou endereço, procure a secretaria do CEU de <strong>Segunda à Sexta, das 07h às 20h</strong>, ou aos <strong>Sábados, das 09h às 16h</strong>.</span>
+            </div>
+        </div>
+
         <!-- Alerta da Secretaria -->
         <div class="aviso-secretaria" id="blocoAvisos" style="display: none;">
             <h5 class="fw-bold text-warning-emphasis mb-2"><i class="fas fa-exclamation-triangle me-2"></i>Recado da Secretaria</h5>
@@ -136,10 +122,8 @@
         </div>
 
         <!-- SEÇÃO: CARTEIRINHA DIGITAL VIRTUAL -->
-        <h5 class="fw-bold mt-4 mb-2 text-secondary"><i class="fas fa-mobile-alt me-2"></i>Acessos Físicos (Passe na Catraca)</h5>
-        <div class="carrossel-carteirinhas" id="areaCarteirinhas">
-            <!-- As carteirinhas virtuais serão desenhadas aqui -->
-        </div>
+        <h5 class="fw-bold mt-5 mb-2 text-secondary"><i class="fas fa-mobile-alt me-2"></i>Acessos Físicos (Passe na Catraca)</h5>
+        <div class="carrossel-carteirinhas" id="areaCarteirinhas"></div>
         <p class="text-muted small text-center" id="dicaCarrossel" style="display: none;">
             <i class="fas fa-arrows-alt-h me-1"></i> Deslize para o lado para ver outros acessos
         </p>
@@ -189,14 +173,13 @@
     </div>
 
     <script>
-        // --- 🔗 COLE AQUI A URL DO SEU APPS SCRIPT (A mesma do aluno.html) ---
-        const API_URL = "https://script.google.com/macros/s/AKfycbwKts8WbT02uwYqZ-Ihtv6H-fCazTx9AWh4nz2yfLxeGLR4zET6aAx3YgkhdTaRZHr9/exec"; 
+        // --- 🔗 COLE AQUI A URL DO SEU APPS SCRIPT ---
+        const API_URL = "COLE_AQUI_A_URL_DO_EXEC"; 
 
         const token = localStorage.getItem('portalCeuToken');
         const alunoJSON = localStorage.getItem('portalCeuAluno');
         let alunoLogado = {};
         
-        // Placeholder se o aluno estiver sem foto na planilha
         const FOTO_PADRAO = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2394a3b8'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E";
 
         window.onload = function() {
@@ -205,11 +188,16 @@
                 return;
             }
 
+            // Precisamos garantir que o cache seja limpo para trazer os dados novos do servidor!
             alunoLogado = JSON.parse(alunoJSON);
             
-            // Preenche dados do topo
             document.getElementById('txtNomeAluno').innerText = abreviarNome(alunoLogado.nome);
             document.getElementById('txtEol').innerText = alunoLogado.eol || "Pendente";
+            
+            // Novos Dados Pessoais
+            document.getElementById('txtCpf').innerText = formatarCPF(alunoLogado.cpf || "---");
+            document.getElementById('txtNascimento').innerText = alunoLogado.nascimento || "---";
+            document.getElementById('txtTelefone').innerText = alunoLogado.telefone || "Não cadastrado";
 
             if (alunoLogado.foto && alunoLogado.foto !== "") {
                 document.getElementById('imgFotoAluno').src = alunoLogado.foto;
@@ -226,6 +214,12 @@
             montarCardsMatriculas();
             iniciarRelogioAntiFraude();
         };
+
+        function formatarCPF(cpf) {
+            cpf = cpf.replace(/\D/g, "");
+            if (cpf.length === 11) return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
+            return cpf;
+        }
 
         function abreviarNome(nomeCompleto) {
             let partes = String(nomeCompleto).trim().split(" ");
@@ -247,7 +241,6 @@
             let nomeCortado = abreviarNome(alunoLogado.nome);
             let prontuario = alunoLogado.prontuario || "Pendente";
 
-            // Molde Universal de HTML do Cartão
             const gerarCartao = (classeBg, icone, titulo) => `
                 <div class="carteirinha-virtual ${classeBg}">
                     <i class="fas ${icone} cv-marca-dagua"></i>
@@ -308,7 +301,6 @@
             document.getElementById('areaCarteirinhas').innerHTML = htmlCart;
         }
 
-        // --- RELÓGIO ANTI-FRAUDE ---
         function iniciarRelogioAntiFraude() {
             setInterval(() => {
                 const agora = new Date();

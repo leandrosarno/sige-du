@@ -19,13 +19,16 @@
         .avatar-circle { width: 70px; height: 70px; background: #e0e7ff; color: #0d6efd; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: bold; overflow: hidden; flex-shrink: 0;}
         .foto-aluno { width: 100%; height: 100%; object-fit: cover; }
         
-        /* NOVIDADE: Card de Dados Pessoais */
+        /* Card de Dados Pessoais */
         .card-dados { background: white; border-radius: 15px; padding: 20px 25px; margin-top: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
         .texto-dado { color: #1e293b; font-weight: 700; font-size: 15px; }
         .label-dado { color: #64748b; font-size: 11px; text-transform: uppercase; font-weight: bold; margin-bottom: 2px; display: block; }
-        .msg-discreta { background: #f8fafc; color: #64748b; font-size: 12px; padding: 12px 15px; border-radius: 8px; border: 1px dashed #cbd5e1; display: flex; align-items: flex-start; gap: 10px; line-height: 1.4; }
-
-        .aviso-secretaria { background: #fff3cd; border-left: 5px solid #ffc107; border-radius: 10px; padding: 20px; margin-top: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        
+        /* Mural de Avisos (Substitui os Uploads) */
+        .card-avisos { background: white; border-radius: 15px; padding: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
+        .aviso-positivo { display: flex; align-items: center; gap: 15px; color: #10b981; }
+        .aviso-alerta { display: flex; align-items: flex-start; gap: 15px; color: #b45309; background: #fffbeb; padding: 20px; border-radius: 12px; border-left: 5px solid #f59e0b; }
+        .msg-horario { background: #f8fafc; color: #64748b; font-size: 13px; padding: 12px 15px; border-radius: 8px; display: flex; align-items: center; gap: 10px; border: 1px dashed #cbd5e1; }
 
         /* CARTEIRINHA VIRTUAL (CELULAR) */
         .carrossel-carteirinhas { display: flex; overflow-x: auto; gap: 15px; padding: 10px 5px 20px 5px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; -ms-overflow-style: none; scrollbar-width: none; }
@@ -59,13 +62,6 @@
         .matricula-body { padding: 20px; }
         .info-row { display: flex; align-items: center; margin-bottom: 12px; }
         .info-icon { background: #f8fafc; color: #6f42c1; width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; margin-right: 15px; }
-
-        .card-doc { background: white; border-radius: 15px; padding: 25px; margin-top: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); text-align: center; border: 1px solid #e2e8f0; }
-        .doc-icon { font-size: 40px; color: #6f42c1; margin-bottom: 15px; }
-        .btn-upload { background: #0d6efd; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; width: 100%; margin-top: 15px; transition: 0.3s; }
-        .file-input-wrapper { position: relative; overflow: hidden; display: inline-block; width: 100%; }
-        .file-input-wrapper input[type=file] { font-size: 100px; position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer; height: 100%; }
-        .uploading-overlay { display: none; margin-top: 10px; color: #0d6efd; font-weight: bold; font-size: 14px; }
     </style>
 </head>
 <body>
@@ -84,6 +80,7 @@
                 <img id="imgFotoAluno" class="foto-aluno" src="" style="display: none;" alt="Minha Foto">
             </div>
             <div>
+                <!-- O nome completo vem aqui, sem abreviar -->
                 <h5 class="mb-1 fw-bold text-dark" id="txtNomeAluno">Carregando...</h5>
                 <p class="mb-0 text-muted" style="font-size: 14px;">
                     <strong>Cód EOL:</strong> <span id="txtEol" class="badge bg-primary">---</span>
@@ -108,17 +105,6 @@
                     <span class="texto-dado" id="txtTelefone">---</span>
                 </div>
             </div>
-            
-            <div class="msg-discreta mt-2">
-                <i class="fas fa-info-circle text-primary mt-1" style="font-size: 16px;"></i> 
-                <span>Para atualizar seus dados de contato ou endereço, procure a secretaria do CEU de <strong>Segunda à Sexta, das 07h às 20h</strong>, ou aos <strong>Sábados, das 09h às 16h</strong>.</span>
-            </div>
-        </div>
-
-        <!-- Alerta da Secretaria -->
-        <div class="aviso-secretaria" id="blocoAvisos" style="display: none;">
-            <h5 class="fw-bold text-warning-emphasis mb-2"><i class="fas fa-exclamation-triangle me-2"></i>Recado da Secretaria</h5>
-            <p class="mb-0 text-dark" id="txtAvisoSecretaria"></p>
         </div>
 
         <!-- SEÇÃO: CARTEIRINHA DIGITAL VIRTUAL -->
@@ -132,41 +118,18 @@
         <h5 class="fw-bold mt-5 mb-3 text-secondary"><i class="fas fa-running me-2"></i>Minhas Turmas e Atividades</h5>
         <div class="row" id="areaMatriculas"></div>
 
-        <!-- SEÇÃO: Upload de Documentos -->
-        <h5 class="fw-bold mt-5 mb-3 text-secondary"><i class="fas fa-folder-open me-2"></i>Envio de Documentos Pendentes</h5>
-        <div class="row">
-            <div class="col-md-6">
-                <div class="card-doc">
-                    <i class="fas fa-id-card doc-icon"></i>
-                    <h5 class="fw-bold">Documento de Identidade</h5>
-                    <p class="text-muted small mb-3">Envie uma foto ou PDF do seu RG, CNH ou CIN.</p>
-                    <div class="file-input-wrapper">
-                        <button class="btn btn-outline-primary w-100 fw-bold"><i class="fas fa-search me-2"></i>Escolher Arquivo</button>
-                        <input type="file" id="arquivoCin" accept="image/*,application/pdf" onchange="processarArquivo('arquivoCin', 'btnCin', 'txtNomeCin')">
-                    </div>
-                    <div id="txtNomeCin" class="text-success small mt-2 fw-bold" style="min-height: 20px;"></div>
-                    <button class="btn-upload" id="btnCin" onclick="enviarDocumento('arquivoCin', 'CIN')" disabled>
-                        <i class="fas fa-cloud-upload-alt me-2"></i>ENVIAR IDENTIDADE
-                    </button>
-                    <div class="uploading-overlay" id="loadingCin"><i class="fas fa-spinner fa-spin me-2"></i>Enviando para o sistema...</div>
-                </div>
+        <!-- SEÇÃO: MURAL DE AVISOS DA SECRETARIA (Substitui os Uploads) -->
+        <h5 class="fw-bold mt-5 mb-3 text-secondary"><i class="fas fa-bullhorn me-2"></i>Mural de Avisos da Secretaria</h5>
+        <div class="card-avisos mb-5">
+            <div id="avisoConteudo">
+                <!-- Javascript vai injetar o recado aqui -->
             </div>
-
-            <div class="col-md-6">
-                <div class="card-doc">
-                    <i class="fas fa-map-marked-alt doc-icon text-primary"></i>
-                    <h5 class="fw-bold">Comprovante de Endereço</h5>
-                    <p class="text-muted small mb-3">Envie conta de luz, água ou telefone atualizada.</p>
-                    <div class="file-input-wrapper">
-                        <button class="btn btn-outline-primary w-100 fw-bold"><i class="fas fa-search me-2"></i>Escolher Arquivo</button>
-                        <input type="file" id="arquivoComp" accept="image/*,application/pdf" onchange="processarArquivo('arquivoComp', 'btnComp', 'txtNomeComp')">
-                    </div>
-                    <div id="txtNomeComp" class="text-success small mt-2 fw-bold" style="min-height: 20px;"></div>
-                    <button class="btn-upload" id="btnComp" onclick="enviarDocumento('arquivoComp', 'COMPROVANTE')" disabled>
-                        <i class="fas fa-cloud-upload-alt me-2"></i>ENVIAR COMPROVANTE
-                    </button>
-                    <div class="uploading-overlay" id="loadingComp"><i class="fas fa-spinner fa-spin me-2"></i>Enviando para o sistema...</div>
-                </div>
+            
+            <hr class="mt-4 mb-3 border-secondary border-opacity-25">
+            
+            <div class="msg-horario">
+                <i class="fas fa-clock text-primary" style="font-size: 20px;"></i> 
+                <span>Para atualizar seus dados de contato, endereço, enviar documentos ou resolver pendências, compareça à secretaria do CEU de <strong>Segunda à Sexta, das 07h às 20h</strong>, ou aos <strong>Sábados, das 09h às 16h</strong>.</span>
             </div>
         </div>
 
@@ -188,30 +151,28 @@
                 return;
             }
 
-            // Precisamos garantir que o cache seja limpo para trazer os dados novos do servidor!
             alunoLogado = JSON.parse(alunoJSON);
             
-            document.getElementById('txtNomeAluno').innerText = abreviarNome(alunoLogado.nome);
+            // 1. Preenche Nome COMPLETO no Topo (Direto do banco, sem abreviar)
+            document.getElementById('txtNomeAluno').innerText = alunoLogado.nome;
             document.getElementById('txtEol').innerText = alunoLogado.eol || "Pendente";
             
-            // Novos Dados Pessoais
+            // 2. Dados Pessoais
             document.getElementById('txtCpf').innerText = formatarCPF(alunoLogado.cpf || "---");
             document.getElementById('txtNascimento').innerText = alunoLogado.nascimento || "---";
             document.getElementById('txtTelefone').innerText = alunoLogado.telefone || "Não cadastrado";
 
+            // 3. Foto
             if (alunoLogado.foto && alunoLogado.foto !== "") {
                 document.getElementById('imgFotoAluno').src = alunoLogado.foto;
                 document.getElementById('imgFotoAluno').style.display = "block";
                 document.getElementById('iconAvatarDefault').style.display = "none";
             }
 
-            if (alunoLogado.avisos && alunoLogado.avisos.trim() !== "") {
-                document.getElementById('txtAvisoSecretaria').innerText = alunoLogado.avisos;
-                document.getElementById('blocoAvisos').style.display = "block";
-            }
-
+            // 4. Montar Telas Dinâmicas
             montarCarteirinhasVirtuais();
             montarCardsMatriculas();
+            montarMuralAvisos();
             iniciarRelogioAntiFraude();
         };
 
@@ -221,6 +182,7 @@
             return cpf;
         }
 
+        // Função mantida para uso EXCLUSIVO nas carteirinhas virtuais
         function abreviarNome(nomeCompleto) {
             let partes = String(nomeCompleto).trim().split(" ");
             if (partes.length <= 2) return nomeCompleto; 
@@ -233,11 +195,40 @@
             return nomeFinal;
         }
 
+        // --- RENDERIZAR O MURAL DE AVISOS ---
+        function montarMuralAvisos() {
+            const areaAvisos = document.getElementById('avisoConteudo');
+            
+            if (alunoLogado.avisos && alunoLogado.avisos.trim() !== "") {
+                areaAvisos.innerHTML = `
+                    <div class="aviso-alerta">
+                        <i class="fas fa-exclamation-circle" style="font-size: 35px;"></i>
+                        <div>
+                            <h6 class="fw-bold mb-1">Aviso Importante</h6>
+                            <p class="mb-0 text-dark" style="font-size: 15px;">${alunoLogado.avisos}</p>
+                        </div>
+                    </div>
+                `;
+            } else {
+                areaAvisos.innerHTML = `
+                    <div class="aviso-positivo">
+                        <i class="fas fa-check-circle" style="font-size: 35px;"></i>
+                        <div>
+                            <h6 class="fw-bold mb-1">Tudo certo por aqui!</h6>
+                            <p class="mb-0 text-muted small">Você não tem nenhum recado ou pendência na secretaria do CEU no momento.</p>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
         // --- RENDERIZAR AS CARTEIRINHAS VIRTUAIS ---
         function montarCarteirinhasVirtuais() {
             let htmlCart = "";
             let cartCount = 0;
             let fotoPronta = (alunoLogado.foto && alunoLogado.foto !== "") ? alunoLogado.foto : FOTO_PADRAO;
+            
+            // Aqui chamamos o nome abreviado apenas para encaixar bonito no cartão
             let nomeCortado = abreviarNome(alunoLogado.nome);
             let prontuario = alunoLogado.prontuario || "Pendente";
 
@@ -356,50 +347,6 @@
             localStorage.removeItem('portalCeuToken');
             localStorage.removeItem('portalCeuAluno');
             window.location.href = "aluno.html";
-        }
-
-        // --- SISTEMA DE UPLOAD ---
-        let base64Temp = {}; 
-        function processarArquivo(inputId, btnId, txtNameId) {
-            const input = document.getElementById(inputId);
-            const btn = document.getElementById(btnId);
-            const txt = document.getElementById(txtNameId);
-            const file = input.files[0];
-            if (file) {
-                if(file.size > 5242880){
-                    Swal.fire('Aviso', 'Arquivo muito grande. Limite de 5MB.', 'warning');
-                    input.value = ""; return;
-                }
-                txt.innerHTML = `<i class="fas fa-check-circle me-1"></i> Selecionado: ${file.name}`;
-                btn.disabled = false;
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    base64Temp[inputId] = { dadosBase64: e.target.result, nome: file.name, tipo: file.type };
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        async function enviarDocumento(inputId, tipoDoc) {
-            if (!base64Temp[inputId]) return;
-            const btn = document.getElementById(inputId === 'arquivoCin' ? 'btnCin' : 'btnComp');
-            const loading = document.getElementById(inputId === 'arquivoCin' ? 'loadingCin' : 'loadingComp');
-            
-            btn.style.display = 'none'; loading.style.display = 'block';
-
-            let pacote = { acao: "uploadDocumentoPortal", dados: { cpf: alunoLogado.cpf, tipoDoc: tipoDoc, arquivoBase64: base64Temp[inputId].dadosBase64, nomeArquivo: base64Temp[inputId].nome, mimeType: base64Temp[inputId].tipo } };
-
-            try {
-                const resRaw = await fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) });
-                const res = await resRaw.json();
-                if (res.status === "sucesso") {
-                    Swal.fire('Pronto!', `Seu ${tipoDoc} foi enviado com sucesso!`, 'success');
-                    document.getElementById(inputId === 'arquivoCin' ? 'txtNomeCin' : 'txtNomeComp').innerHTML = `<i class="fas fa-star text-warning"></i> Enviado ao CEU!`;
-                } else {
-                    Swal.fire('Erro', res.erro || res.mensagem, 'error');
-                }
-            } catch (err) { Swal.fire('Erro', 'Falha na conexão.', 'error'); } 
-            finally { btn.style.display = 'block'; btn.disabled = true; loading.style.display = 'none'; }
         }
     </script>
 </body>

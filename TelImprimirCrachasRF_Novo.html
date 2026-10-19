@@ -15,406 +15,58 @@
             body { background: white; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             .no-print { display: none !important; }
             .page-break { page-break-before: always; }
-            .malha-impressao { gap: 4mm !important; } /* Pouco mais de respiro entre eles */
+            .malha-impressao { gap: 4mm !important; }
         }
 
         .malha-impressao { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; padding: 10px; }
 
-        /* =========================================
-           ✨ O NOVO VISUAL ARREDONDADO (PREMIUM)
-           ========================================= */
         .cracha {
             width: 9cm; height: 6cm; 
-            border: 2px solid #1a202c; /* Borda levemente mais cinza chumbo */
-            border-radius: 12px; /* 👈 BORDAS ARREDONDADAS! */
+            border: 2px solid #1a202c;
+            border-radius: 12px; 
             background: #fff;
             position: relative;
             box-sizing: border-box;
-            overflow: hidden; /* Corta as pontas do que vazar das bordas redondas */
+            overflow: hidden; 
             page-break-inside: avoid;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* Sombra que some na impressão */
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
         }
 
         .cabecalho { display: flex; height: 1.2cm; border-bottom: 2px solid #1a202c; background-color: #f8fafc;}
         .logo-sme { width: 1.5cm; border-right: 2px solid #1a202c; display: flex; align-items: center; justify-content: center; padding: 2px; }
         .logo-sme img { max-width: 90%; max-height: 90%; object-fit: contain; }
+        
         .textos-cabecalho { flex: 1; display: flex; flex-direction: column; justify-content: center; text-align: center; }
-        .txt-sme { font-size: 8pt; font-weight: 900; color: #1e293b; }
-        .txt-ceu { font-size: 7.5pt; font-weight: bold; color: #334155; }
-        .txt-periodo { font-size: 6pt; border-top: 1px solid #cbd5e1; margin-top: 1px; padding-top: 1px; color: #475569;}
+        .txt-sme { font-size: 7.5pt; font-weight: bold; color: #475569; }
+        /* 👈 NOME DO CEU MAIOR E ULTRA NEGRITO */
+        .txt-ceu { font-size: 9.5pt; font-weight: 900; color: #0f172a; letter-spacing: 0.5px; margin-top: 1px;}
+        .txt-periodo { font-size: 6pt; border-top: 1px solid #cbd5e1; margin-top: 2px; padding-top: 1px; color: #475569; font-weight: bold;}
 
         .faixa-nome {
-            height: 2.0cm; /* Reduzi levemente para dar espaço pra faixa de baixo */
+            height: 2.0cm; 
             display: flex; align-items: center; justify-content: center;
             border-bottom: 2px solid #1a202c;
             text-align: center; padding: 0 5px;
             font-size: 15pt; font-weight: 900; line-height: 1.1;
             text-transform: uppercase;
-            box-shadow: inset 0 -3px 5px rgba(0,0,0,0.05); /* Sombreado interno 3D */
-            text-shadow: 1px 1px 1px rgba(255,255,255,0.5); /* Leve brilho no texto */
+            box-shadow: inset 0 -3px 5px rgba(0,0,0,0.05); 
+            text-shadow: 1px 1px 1px rgba(255,255,255,0.5); 
         }
 
-        .rodape { display: flex; height: 2.2cm; position: relative; } /* Reduzi para encaixar a faixa nova */
+        .rodape { display: flex; height: 2.2cm; position: relative; } 
         
         .bloco-esq { flex: 1; display: flex; flex-direction: column; border-right: 2px solid #1a202c; }
         
-        .contatos { display: flex; flex-direction: column; padding: 2px 5px; height: 0.9cm; border-bottom: 1px solid #1a202c; background-color: #f8fafc;}
+        .contatos { display: flex; flex-direction: column; justify-content: center; padding: 2px 5px; height: 0.9cm; border-bottom: 1px solid #1a202c; background-color: #f8fafc;}
         .linha-resp { display: flex; justify-content: space-between; font-size: 6pt; font-weight: bold; color: #64748b; }
         .linha-dados { display: flex; justify-content: space-between; font-size: 7.5pt; font-weight: bold; color: #0f172a;}
         
-        .area-icones { display: flex; justify-content: space-between; padding: 2px 5px; height: 1.3cm; align-items: center;}
-        .box-icone { display: flex; flex-direction: column; align-items: center; width: 22%; text-align: center;}
-        .titulo-icone { font-size: 4pt; font-weight: bold; line-height: 1.1; margin-bottom: 2px; color: #475569;}
-        .img-icone { height: 0.85cm; width: 0.85cm; border: 1.5px solid #1a202c; border-radius: 4px; overflow: hidden; background: white;} /* Ícones com borda redonda! */
-        .img-icone img { width: 100%; height: 100%; object-fit: cover; }
+        /* 👈 ÍCONES MAIORES E SEM TEXTO/BORDA */
+        .area-icones { display: flex; justify-content: space-around; padding: 0 10px; height: 1.3cm; align-items: center;}
+        .box-icone { display: flex; justify-content: center; align-items: center; width: 22%;}
+        .img-icone { height: 1.1cm; width: 1.1cm; border: none; background: transparent; } /* Sem borda, tamanho expandido */
+        .img-icone img { width: 100%; height: 100%; object-fit: contain; } /* Contain evita que o ícone corte as pontas */
 
-        /* 👈 A FAIXA VAI SOZINHO (Mais grossa conforme pedido) */
         .faixa-sozinho {
-            height: 0.6cm; /* De 0.4 para 0.6cm (6 milímetros) */
-            display: flex; align-items: center; justify-content: center;
-            font-size: 7.5pt; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px;
-            border-top: 2px solid #1a202c; /* Borda mais forte */
-            /* A cor vem do JS */
-        }
-
-        .bloco-dir { width: 2.1cm; display: flex; align-items: center; justify-content: center; background: #fff; }
-        .idade-gigante { font-size: 46pt; font-weight: 900; line-height: 1; letter-spacing: -2px; color: #1e293b;}
-
-        /* Pais Arredondado também */
-        .faixa-pais { background: #1e293b; color: white; height: 1.2cm; display: flex; align-items: center; justify-content: center; font-size: 14pt; font-weight: 900; border-bottom: 2px solid #1a202c; letter-spacing: 1px;}
-        .area-dados-pais { padding: 6px; flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 6px;}
-        .d-box { border: 1.5px solid #cbd5e1; padding: 4px 6px; border-radius: 6px; background-color: #f8fafc;}
-        .d-lbl { font-size: 6.5pt; color: #64748b; font-weight: bold; letter-spacing: 0.5px;}
-        .d-val { font-size: 10.5pt; font-weight: 900; text-transform: uppercase; color: #0f172a;}
-
-        .barra-ferramentas { background: #fff; padding: 15px 25px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
-        #area-bloqueada { text-align: center; margin-top: 100px; color: #dc3545; display: none; }
-    </style>
-</head>
-<body>
-
-    <div id="area-bloqueada">
-        <i class="fas fa-lock" style="font-size: 80px;"></i>
-        <h1 style="font-weight: 900; margin-top: 20px;">ACESSO RESTRITO</h1>
-        <p>Apenas funcionários lotados em unidades CEU podem imprimir crachás da sua unidade.</p>
-    </div>
-
-    <div class="container-fluid no-print mt-3" id="area-sistema" style="display: none;">
-        
-        <div class="barra-ferramentas border-start border-4 border-info">
-            <div>
-                <h4 class="m-0 text-primary fw-bold"><i class="fas fa-id-badge"></i> Motor de Impressão (Versão Premium)</h4>
-                <small class="text-muted" id="statusFila">Buscando dados no Firebase e montando as regras da SME...</small>
-            </div>
-            <div>
-                <button class="btn btn-success fw-bold px-4 shadow-sm" onclick="window.print()" id="btnImprimir" disabled>
-                    <i class="fas fa-print"></i> Imprimir Crachás (A4)
-                </button>
-                <button class="btn btn-danger fw-bold ms-2 shadow-sm" onclick="limparFila()" id="btnLimpar" disabled>
-                    <i class="fas fa-trash-alt"></i> Limpar Fila
-                </button>
-            </div>
-        </div>
-
-        <div id="area-filtros" class="barra-ferramentas" style="display: none; padding: 12px 25px;">
-            <div class="d-flex w-100 gap-4">
-                <div style="flex: 1;">
-                    <label style="font-size: 11px; font-weight: bold; color: #64748b; margin-bottom: 4px; display: block;">TIPO DE CRACHÁ</label>
-                    <select id="filtroTipo" class="form-select fw-bold text-primary bg-light" onchange="window.aplicarFiltrosImpressao()" style="font-size: 14px;">
-                        <option value="AMBOS">Crianças e Responsáveis</option>
-                        <option value="CRIANCAS">Somente Crianças</option>
-                        <option value="PAIS">Somente Responsáveis</option>
-                    </select>
-                </div>
-                <div style="flex: 1;">
-                    <label style="font-size: 11px; font-weight: bold; color: #64748b; margin-bottom: 4px; display: block;">FILTRAR POR TURMA</label>
-                    <select id="filtroTurma" class="form-select fw-bold text-primary bg-light" onchange="window.aplicarFiltrosImpressao()" style="font-size: 14px;">
-                        <option value="TODAS">Todas as Turmas (Fila Completa)</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-
-    </div>
-
-    <div id="containerCriancas" class="malha-impressao"></div>
-    <div class="page-break no-print" id="quebraPagina" style="display: none;"></div>
-    <div id="containerPais" class="malha-impressao"></div>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
-        import { getFirestore, collection, query, where, getDocs, getDoc, doc, writeBatch } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
-
-        // ⚠️ COLOQUE AQUI AS SUAS CHAVES VERDADEIRAS DO FIREBASE!
-        const firebaseConfig = {
-            apiKey: "SUA_API_KEY_AQUI",
-            authDomain: "sig-edu.firebaseapp.com",
-            projectId: "sig-edu",
-            storageBucket: "sig-edu.firebasestorage.app",
-            messagingSenderId: "SUA_SENDER_ID",
-            appId: "SEU_APP_ID"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        const LOGO_PADRAO = "https://logodownload.org/wp-content/uploads/2014/11/prefeitura-sao-paulo-logo-1.png";
-        
-        let ceuId = "";
-        let nomeCeu = "CEU NÃO IDENTIFICADO";
-        let logoCeu = ""; 
-        let regrasSME = {};
-        let filaImpressao = [];
-
-        window.onload = async function() {
-            ceuId = localStorage.getItem('sig_id_unidade') || "";
-            
-            if (!ceuId || ceuId === "000000") {
-                if (localStorage.getItem('sig_nivel_acesso')?.includes('ADMIN')) {
-                    ceuId = "999999"; 
-                    nomeCeu = "CEU TESTE ADMIN";
-                } else {
-                    document.getElementById('area-bloqueada').style.display = 'block';
-                    return;
-                }
-            }
-
-            document.getElementById('area-sistema').style.display = 'block';
-            await carregarDados();
-        };
-
-        async function carregarDados() {
-            try {
-                if (ceuId !== "999999") {
-                    const ceuSnap = await getDoc(doc(db, "unidades", String(ceuId)));
-                    if (ceuSnap.exists()) {
-                        nomeCeu = ceuSnap.data().nome_unidade;
-                        if (ceuSnap.data().url_logo) {
-                            logoCeu = ceuSnap.data().url_logo;
-                        }
-                    }
-                }
-
-                const regrasSnap = await getDoc(doc(db, "configuracoes", "regras_rf"));
-                if (regrasSnap.exists()) {
-                    regrasSME = regrasSnap.data();
-                } else {
-                    document.getElementById('statusFila').innerText = "Regras do Programa não encontradas.";
-                    Swal.fire('Atenção', 'A SME ainda não configurou as regras.', 'warning');
-                    return;
-                }
-
-                const qFila = query(
-                    collection(db, "rf_inscricoes"), 
-                    where("id_unidade", "==", String(ceuId)), 
-                    where("imprimir", "==", "SIM")
-                );
-                
-                const filaSnap = await getDocs(qFila);
-                filaSnap.forEach(docCri => {
-                    filaImpressao.push({ id: docCri.id, ...docCri.data() });
-                });
-
-                if (filaImpressao.length > 0) {
-                    const selectTurma = document.getElementById('filtroTurma');
-                    let turmasSet = new Set();
-                    filaImpressao.forEach(c => turmasSet.add(c.turma ? c.turma.toUpperCase() : "SEM TURMA"));
-                    let turmasOrdenadas = Array.from(turmasSet).sort();
-                    turmasOrdenadas.forEach(t => {
-                        let opt = document.createElement('option');
-                        opt.value = t; opt.text = t;
-                        selectTurma.appendChild(opt);
-                    });
-
-                    document.getElementById('area-filtros').style.display = 'flex';
-                    renderizarCrachas();
-                    
-                    document.getElementById('btnImprimir').disabled = false;
-                    document.getElementById('btnLimpar').disabled = false;
-                    document.getElementById('statusFila').innerText = "Fila pronta para impressão!";
-                } else {
-                    document.getElementById('statusFila').innerText = "Fila de impressão vazia.";
-                    Swal.fire('Tudo limpo!', 'Não há crianças na fila de impressão deste CEU.', 'info');
-                }
-
-            } catch (error) {
-                document.getElementById('statusFila').innerText = "Falha na conexão com o servidor.";
-                Swal.fire('Erro', 'Falha ao buscar os dados no Firebase.', 'error');
-            }
-        }
-
-        window.aplicarFiltrosImpressao = function() {
-            renderizarCrachas();
-        };
-
-        function renderizarCrachas() {
-            const divCriancas = document.getElementById('containerCriancas');
-            const divPais = document.getElementById('containerPais');
-            const quebraPagina = document.getElementById('quebraPagina');
-            
-            const tipoFiltro = document.getElementById('filtroTipo').value;
-            const turmaFiltro = document.getElementById('filtroTurma').value;
-
-            let htmlCriancas = '';
-            let htmlPais = '';
-
-            const validarImg = (img) => (img && img !== "") ? img : "";
-            let logoRender = (logoCeu && logoCeu !== "") ? logoCeu : LOGO_PADRAO; 
-            let periodoRF = `${regrasSME.mes}/${regrasSME.ano}` || "FÉRIAS";
-
-            let filaFiltrada = filaImpressao.filter(cri => {
-                let turmaCrianca = cri.turma ? cri.turma.toUpperCase() : "SEM TURMA";
-                if (turmaFiltro !== "TODAS" && turmaCrianca !== turmaFiltro) return false;
-                return true;
-            });
-
-            filaFiltrada.forEach(cri => {
-                const imgDieta = validarImg(cri.dieta_especial === 'SIM' ? regrasSME.dieta_sim : regrasSME.dieta_nao);
-                const imgRestImg = validarImg(cri.restricao_imagem === 'SIM' ? regrasSME.restricao_sim : regrasSME.restricao_nao);
-                const imgInclusao = validarImg(cri.inclusao === 'SIM' ? regrasSME.inclusao_sim : regrasSME.inclusao_nao);
-                const imgPiscina = validarImg(cri.piscina === 'SIM' ? regrasSME.piscina_sim : regrasSME.piscina_nao);
-                
-                const isSozinho = (cri.sozinho === 'SIM');
-                const textoSozinho = isSozinho ? "AUTORIZADO IR SOZINHO" : "NÃO PODE IR SOZINHO";
-                const corFaixaSoz = isSozinho ? regrasSME.cor_sozinho_sim : regrasSME.cor_sozinho_nao;
-
-                let corIdade = regrasSME['c' + cri.idade] || '#e2e8f0'; 
-
-                if (tipoFiltro === "AMBOS" || tipoFiltro === "CRIANCAS") {
-                    htmlCriancas += `
-                    <div class="cracha">
-                        <div class="cabecalho">
-                            <div class="logo-sme"><img src="${logoRender}"></div>
-                            <div class="textos-cabecalho">
-                                <div class="txt-sme">SECRETARIA MUNICIPAL DE EDUCAÇÃO</div>
-                                <div class="txt-ceu">${nomeCeu.toUpperCase()}</div>
-                                <div class="txt-periodo">${periodoRF.toUpperCase()}</div>
-                            </div>
-                        </div>
-                        
-                        <div class="faixa-nome" style="background-color: ${corIdade};">
-                            ${cri.nome_crianca}
-                        </div>
-                        
-                        <div class="rodape">
-                            <div class="bloco-esq">
-                                <div class="contatos">
-                                    <div class="linha-resp"><span>RESPONSÁVEL</span><span>TELEFONE</span></div>
-                                    <div class="linha-dados">
-                                        <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 65%;">${cri.resp || '-'}</span>
-                                        <span>${cri.tel || '-'}</span>
-                                    </div>
-                                </div>
-                                
-                                <div class="area-icones">
-                                    <div class="box-icone">
-                                        <div class="titulo-icone">DIETA<br>ESPECIAL</div>
-                                        <div class="img-icone">${imgDieta ? `<img src="${imgDieta}">` : ''}</div>
-                                    </div>
-                                    <div class="box-icone">
-                                        <div class="titulo-icone">RESTR.<br>IMAGEM</div>
-                                        <div class="img-icone">${imgRestImg ? `<img src="${imgRestImg}">` : ''}</div>
-                                    </div>
-                                    <div class="box-icone">
-                                        <div class="titulo-icone"><br>INCLUSÃO</div>
-                                        <div class="img-icone">${imgInclusao ? `<img src="${imgInclusao}">` : ''}</div>
-                                    </div>
-                                    <div class="box-icone">
-                                        <div class="titulo-icone"><br>PISCINA</div>
-                                        <div class="img-icone">${imgPiscina ? `<img src="${imgPiscina}">` : ''}</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="bloco-dir">
-                                <div class="idade-gigante">${cri.idade}</div>
-                            </div>
-                        </div>
-                        <div class="faixa-sozinho" style="background-color: ${corFaixaSoz};">
-                            ${textoSozinho}
-                        </div>
-                    </div>`;
-                }
-
-                if (tipoFiltro === "AMBOS" || tipoFiltro === "PAIS") {
-                    htmlPais += `
-                    <div class="cracha">
-                        <div class="cabecalho">
-                            <div class="logo-sme"><img src="${logoRender}"></div>
-                            <div class="textos-cabecalho">
-                                <div class="txt-sme">SECRETARIA MUNICIPAL DE EDUCAÇÃO</div>
-                                <div class="txt-ceu">${nomeCeu.toUpperCase()}</div>
-                                <div class="txt-periodo">${periodoRF.toUpperCase()}</div>
-                            </div>
-                        </div>
-                        
-                        <div class="faixa-pais">CRACHÁ DO RESPONSÁVEL</div>
-                        
-                        <div class="area-dados-pais">
-                            <div class="d-box">
-                                <div class="d-lbl">NOME DA CRIANÇA</div>
-                                <div class="d-val">${cri.nome_crianca}</div>
-                            </div>
-                            <div style="display: flex; gap: 5px;">
-                                <div class="d-box" style="flex: 1;">
-                                    <div class="d-lbl">NOME DO RESPONSÁVEL</div>
-                                    <div class="d-val" style="font-size: 9pt;">${cri.resp || '-'}</div>
-                                </div>
-                                <div class="d-box" style="width: 2.2cm; text-align: center;">
-                                    <div class="d-lbl">IDADE</div>
-                                    <div class="d-val" style="font-size: 11pt;">${cri.idade} ANOS</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>`;
-                }
-            });
-
-            divCriancas.innerHTML = htmlCriancas;
-            divPais.innerHTML = htmlPais;
-            
-            if (filaFiltrada.length > 0 && tipoFiltro === "AMBOS") {
-                quebraPagina.style.display = 'block';
-            } else {
-                quebraPagina.style.display = 'none';
-            }
-        }
-
-        window.limparFila = async function() {
-            const confirmacao = await Swal.fire({
-                title: 'Tem certeza?',
-                text: "Isso removerá a marcação 'SIM' de todas as crianças na fila de impressão.",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#e74c3c',
-                cancelButtonColor: '#95a5a6',
-                confirmButtonText: 'Sim, limpar fila!'
-            });
-
-            if (confirmacao.isConfirmed) {
-                const btn = document.getElementById('btnLimpar');
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Limpando...';
-                btn.disabled = true;
-
-                try {
-                    const batch = writeBatch(db);
-                    
-                    filaImpressao.forEach(cri => {
-                        const ref = doc(db, "rf_inscricoes", cri.id);
-                        batch.update(ref, { imprimir: "NÃO" });
-                    });
-
-                    await batch.commit();
-
-                    Swal.fire('Fila Limpa!', 'Todos os status de impressão foram zerados com sucesso.', 'success')
-                    .then(() => { location.reload(); });
-                    
-                } catch(e) {
-                    Swal.fire('Erro', 'Falha ao processar a limpeza no banco.', 'error');
-                    btn.innerHTML = '<i class="fas fa-trash-alt"></i> Limpar Fila';
-                    btn.disabled = false;
-                }
-            }
-        };
-    </script>
-</body>
-</html>
+            height: 0.6cm; 
+            display: flex; align-items:

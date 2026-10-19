@@ -244,6 +244,21 @@
             renderizarCrachas();
         };
 
+            // Função que abrevia os nomes do meio
+            function abreviarNome(nomeCompleto) {
+                if (!nomeCompleto) return "";
+                let partes = String(nomeCompleto).trim().split(" ");
+                if (partes.length <= 2) return nomeCompleto; 
+                let nomeFinal = partes[0] + " ";
+                for (let i = 1; i < partes.length - 1; i++) {
+                    // Apenas abrevia palavras com mais de 3 letras (evita abreviar "de", "dos")
+                    if (partes[i].length > 3) nomeFinal += partes[i][0] + ". ";
+                    else nomeFinal += partes[i] + " ";
+                }
+                nomeFinal += partes[partes.length - 1]; 
+                return nomeFinal;
+            }
+        
         function renderizarCrachas() {
             const divCriancas = document.getElementById('containerCriancas');
             const divPais = document.getElementById('containerPais');
@@ -277,6 +292,9 @@
 
                 let corIdade = regrasSME['c' + cri.idade] || '#e2e8f0'; 
 
+                let nomeCriancaAbreviado = abreviarNome(cri.nome_crianca);
+
+                
                 if (tipoFiltro === "AMBOS" || tipoFiltro === "CRIANCAS") {
                     htmlCriancas += `
                     <div class="cracha">
@@ -288,11 +306,11 @@
                                 <div class="txt-periodo">${periodoRF.toUpperCase()}</div>
                             </div>
                         </div>
-                        
+
                         <div class="faixa-nome" style="background-color: ${corIdade};">
-                            ${cri.nome_crianca}
+                            ${nomeCriancaAbreviado}
                         </div>
-                        
+
                         <div class="rodape">
                             <div class="bloco-esq">
                                 <div class="contatos">
@@ -337,7 +355,7 @@
                         <div class="area-dados-pais">
                             <div class="d-box">
                                 <div class="d-lbl">NOME DA CRIANÇA</div>
-                                <div class="d-val">${cri.nome_crianca}</div>
+                                <div class="d-val">${nomeCriancaAbreviado}</div>
                             </div>
                             <div style="display: flex; gap: 5px;">
                                 <div class="d-box" style="flex: 1;">

@@ -157,27 +157,31 @@
             };
 
             try {
+                // 🛡️ A CORREÇÃO DE OURO ESTÁ AQUI: HEADERS E REDIRECT
                 const response = await fetch(API_URL, {
                     method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain;charset=utf-8', // Engana o CORS
+                    },
+                    redirect: 'follow', // Obrigatório para o Apps Script
                     body: JSON.stringify(pacote)
                 });
                 
                 const resultadoText = await response.text();
                 const res = JSON.parse(resultadoText);
                 
-                let dados = res.dados || res; // Tratamento de segurança para APIs envelopadas
+                let dados = res.dados || res; // Tratamento de segurança
 
                 if (dados.status === "sucesso") {
                     atualizarTela(dados);
                 } else {
-                    alert("Erro: " + (dados.erro || "Falha desconhecida."));
+                    alert("Erro do Servidor: " + (dados.erro || dados.mensagem || "Falha desconhecida."));
                 }
             } catch (err) {
                 console.error(err);
-                alert("Erro de conexão com a API.");
+                alert("Erro de conexão com a API. Verifique a internet e a URL da Nova Implantação.");
             } finally {
                 document.getElementById('loader').style.display = 'none';
-                document.getElementById('conteudoPainel').style.display = 'block';
             }
         }
 

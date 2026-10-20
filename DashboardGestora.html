@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel 3D - Gestão CEU CM</title>
+    <title>Painel 3D - Gestão de Matrículas</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800;900&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -61,10 +61,9 @@
 <body>
     <div class="container">
         <div class="top-bar">
-            <h1><i class="fas fa-cube me-2"></i> CEU CM Dashboard 3D</h1>
+            <h1><i class="fas fa-cube me-2"></i> Painel de Matrículas 3D</h1>
             <div class="filters">
-                <!-- ID fixo para teste, ou pode puxar do localStorage se preferir -->
-                <input type="hidden" id="idDoCeu" value="700039"> 
+                <!-- 💡 CAMPO DO ID DO CEU FOI REMOVIDO DAQUI -->
 
                 <select id="filtroAno" class="neu-select">
                     <option value="TODOS">Todos os Anos</option>
@@ -126,7 +125,7 @@
 
     <script>
         // ==========================================
-        // 🚨 COLOQUE SUA URL DA API AQUI
+        // 🚨 SUA URL DA API:
         // ==========================================
         const API_URL = "https://script.google.com/macros/s/AKfycbwKts8WbT02uwYqZ-Ihtv6H-fCazTx9AWh4nz2yfLxeGLR4zET6aAx3YgkhdTaRZHr9/exec";
 
@@ -140,37 +139,29 @@
             document.getElementById('conteudoPainel').style.display = 'none';
             document.getElementById('loader').style.display = 'block';
 
-            // ATENÇÃO: Tenta pegar o ID do CEU do localStorage. 
-            // Se não achar, usa o valor do campo hidden (ex: 700039 para teste)
-            let idPlanilhaCeu = localStorage.getItem('ceu_id_unidade');
-            if (!idPlanilhaCeu) {
-                idPlanilhaCeu = document.getElementById('idDoCeu').value;
-            }
-
+            // 💡 A ROTA ENXUTA (SEM O ID DO CEU, POIS O SERVIDOR JÁ SABE DE ONDE LER)
             const pacote = {
                 acao: "obterDadosDashboardGestora",
                 dados: {
-                    idCeu: idPlanilhaCeu,
                     ano: document.getElementById('filtroAno').value,
                     buscaLivre: document.getElementById('filtroBusca').value
                 }
             };
 
             try {
-                // 🛡️ A CORREÇÃO DE OURO ESTÁ AQUI: HEADERS E REDIRECT
                 const response = await fetch(API_URL, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'text/plain;charset=utf-8', // Engana o CORS
+                        'Content-Type': 'text/plain;charset=utf-8', 
                     },
-                    redirect: 'follow', // Obrigatório para o Apps Script
+                    redirect: 'follow', 
                     body: JSON.stringify(pacote)
                 });
                 
                 const resultadoText = await response.text();
                 const res = JSON.parse(resultadoText);
                 
-                let dados = res.dados || res; // Tratamento de segurança
+                let dados = res.dados || res; 
 
                 if (dados.status === "sucesso") {
                     atualizarTela(dados);
@@ -212,6 +203,8 @@
 
             desenharGraficoModalidades(dados.graficos.modalidades);
             desenharGraficoNucleos(dados.graficos.nucleos);
+            
+            document.getElementById('conteudoPainel').style.display = 'block';
         }
 
         const coresPremium = ['#3498db', '#9b59b6', '#e74c3c', '#f1c40f', '#2ecc71', '#e67e22', '#1abc9c', '#34495e'];

@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel de Matrículas</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=DM+Sans:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root{--bg:#eef1f8;--ink:#0f1b3d;--mut:#667090;--line:#dfe4f1;--card:#fff;--a:#2f5bff;--ok:#12b886}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:500 15px/1.5 'DM Sans',sans-serif;padding:28px 20px 60px}
+h1,h2,.num{font-family:'Bricolage Grotesque',sans-serif;letter-spacing:-.02em}
+.wrap{max-width:1320px;margin:auto}
+:focus-visible{outline:3px solid var(--a);outline-offset:2px}
+
+.bar{position:fixed;inset:0 0 auto;height:3px;background:linear-gradient(90deg,var(--a),var(--ok));transform:scaleX(0);transform-origin:left;transition:transform .3s;z-index:9}
+.bar.on{transform:scaleX(.85);transition:transform 4s cubic-bezier(.1,.8,.3,1)}
+
+header{display:flex;flex-wrap:wrap;gap:16px 24px;align-items:center;justify-content:space-between;margin-bottom:24px}
+.brand{display:flex;gap:14px;align-items:center}
+.logo{width:48px;height:48px;border-radius:14px;background:var(--ink);color:#fff;display:grid;place-items:center;font-size:20px}
+h1{margin:0;font-size:26px;font-weight:700;line-height:1.1}
+.brand p{margin:2px 0 0;color:var(--mut);font-size:13px}
+.tools{display:flex;gap:10px;flex-wrap:wrap;flex:1;justify-content:flex-end}
+.field{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:0 16px;height:52px;color:var(--mut);transition:.15s}
+.field:focus-within{border-color:var(--a);box-shadow:0 0 0 4px rgba(47,91,255,.15)}
+.field input,.field select{border:0;outline:0;background:none;color:var(--ink);font:600 15px 'DM Sans',sans-serif;height:100%}
+.busca{flex:1 1 320px;max-width:520px}
+.busca input{flex:1;min-width:0}
+.x{border:0;background:var(--bg);color:var(--mut);width:28px;height:28px;border-radius:50%;cursor:pointer}
+.btn{height:52px;border:0;border-radius:14px;padding:0 22px;background:var(--ink);color:#fff;font:700 14px 'DM Sans',sans-serif;cursor:pointer;display:flex;align-items:center;gap:8px;transition:.15s}
+.btn:hover{background:var(--a)}
+
+.aviso{background:#fff0f0;border:1px solid #ffc9c9;color:#c92a2a;padding:14px 18px;border-radius:14px;margin-bottom:20px;font-weight:600}
+#painel{transition:opacity .2s}
+#painel.is-loading{opacity:.5;pointer-events:none}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));background:var(--card);border:1px solid var(--line);border-radius:24px;margin-bottom:22px}
+.kpi{padding:24px 28px;display:flex;gap:16px;align-items:center}
+.kpi+.kpi{border-left:1px solid var(--line)}
+.kpi i{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;font-size:18px}
+.kpi small{display:block;color:var(--mut);font-weight:600;font-size:13px}
+.num{font-size:38px;font-weight:700;line-height:1.05}
+@media(max-width:700px){.kpi+.kpi{border-left:0;border-top:1px solid var(--line)}}
+
+.perfil{background:var(--ink);color:#fff;border-radius:24px;margin-bottom:22px;padding-bottom:6px}
+.p-top{display:flex;flex-wrap:wrap;align-items:center;gap:18px;padding:26px 28px}
+.p-top h2{margin:0;font-size:30px;font-weight:700;line-height:1.1}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.chip{background:rgba(255,255,255,.12);padding:4px 12px;border-radius:99px;font-size:13px;font-weight:600}
+.chip.hi{background:var(--ok);color:#06352a}
+.p-tab{background:var(--card);color:var(--ink);overflow-x:auto;margin:0 6px;border-radius:18px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;color:var(--mut);font-size:12.5px;font-weight:600;padding:14px 20px}
+td{padding:14px 20px;border-top:1px solid var(--line);white-space:nowrap}
+tbody tr:hover{background:#f6f8ff}
+.cod{color:var(--a);font-weight:700}
+.pill{background:#e8eeff;color:var(--a);padding:3px 10px;border-radius:8px;font-weight:600;font-size:13px}
+
+.grid{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:22px;align-items:start}
+@media(max-width:960px){.grid{grid-template-columns:1fr}}
+.col{display:grid;gap:22px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:26px}
+.card h2{margin:0 0 4px;font-size:19px;font-weight:700}
+.card>p{margin:0 0 18px;color:var(--mut);font-size:13px}
+.leg{display:flex;flex-wrap:wrap;gap:6px 16px;margin-bottom:14px;font-size:12.5px;font-weight:600}
+.leg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px}
+.scroll{max-height:540px;overflow-y:auto}
+.rk-list{list-style:none;margin:0;padding:0}
+.rk{display:flex;align-items:center;gap:12px;padding:10px;border-radius:14px;cursor:pointer;transition:.15s}
+.rk:hover{background:#f0f3ff}
+.rk-i{flex:1;min-width:0}
+.rk-i b{display:block;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rk-i small{color:var(--mut);font-size:12px}
+.tag{background:#e8eeff;color:var(--a);padding:3px 11px;border-radius:99px;font-weight:700;font-size:13px}
+.av{flex:none;width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:#e8eeff;color:var(--a);font-weight:700;font-size:14px}
+.perfil .av{width:64px;height:64px;font-size:22px;background:var(--a);color:#fff;border-radius:18px}
+.vazio{text-align:center;padding:50px;color:var(--mut)}
+.vazio i{font-size:30px;margin-bottom:10px;display:block}
+@media(prefers-reduced-motion:reduce){.bar,.bar.on{transition:none}}
+</style>
+</head>
+<body>
+<div class="bar" id="bar"></div>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="logo"><i class="fa-solid fa-layer-group"></i></div>
+      <div><h1>Painel de Matrículas</h1><p>Visão geral das turmas e consulta por aluno</p></div>
+    </div>
+    <div class="tools">
+      <label class="field"><i class="fa-regular fa-calendar"></i>
+        <select id="ano" aria-label="Ano">
+          <option value="TODOS">Todos os anos</option>
+          <option value="2026" selected>2026</option>
+          <option value="2025">2025</option>
+        </select>
+      </label>
+      <label class="field busca"><i class="fa-solid fa-magnifying-glass"></i>
+        <input id="busca" placeholder="Nome, prontuário ou EOL do aluno" autocomplete="off">
+        <button id="limpar" class="x" hidden title="Limpar busca" aria-label="Limpar busca"><i class="fa-solid fa-xmark"></i></button>
+      </label>
+      <button class="btn" onclick="carregarDados()"><i class="fa-solid fa-rotate"></i> Atualizar</button>
+    </div>
+  </header>
+
+  <div id="aviso" class="aviso" hidden></div>
+
+  <main id="painel" hidden>
+    <section class="kpis">
+      <div class="kpi"><i class="fa-solid fa-user-group" style="background:#e8eeff;color:var(--a)"></i><div><small>Alunos únicos</small><div class="num" id="k-alunos">0</div></div></div>
+      <div class="kpi"><i class="fa-solid fa-ticket" style="background:#dcf7ee;color:#0b8f68"></i><div><small>Total de matrículas</small><div class="num" id="k-mat">0</div></div></div>
+      <div class="kpi"><i class="fa-solid fa-chart-simple" style="background:#fff1d6;color:#b36b00"></i><div><small>Média por aluno</small><div class="num" id="k-media">0</div></div></div>
+    </section>
+
+    <section id="perfil" class="perfil" hidden>
+      <div class="p-top">
+        <div class="av" id="p-av"></div>
+        <div><h2 id="p-nome"></h2><div class="chips" id="p-chips"></div></div>
+      </div>
+      <div class="p-tab">
+        <table>
+          <thead><tr><th>Ano</th><th>Cód. da turma</th><th>Modalidade</th><th>Dia e horário</th><th>Núcleo</th></tr></thead>
+          <tbody id="p-corpo"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <div id="vazio" class="card vazio" hidden>
+      <i class="fa-regular fa-face-frown-open"></i>
+      <b>Nenhum resultado para essa busca.</b><br>Confira a grafia ou o código e o ano selecionado.
+    </div>
+
+    <div id="conteudo" class="grid">
+      <div class="col">
+        <section class="card">
+          <h2>Alunos por turma</h2>
+          <p>Quantidade de alunos em cada modalidade, com o código da turma e o horário.</p>
+          <div class="leg" id="legenda"></div>
+          <div class="scroll"><div id="t-box"><canvas id="c-turmas"></canvas></div></div>
+        </section>
+        <section class="card">
+          <h2>Matrículas por núcleo</h2>
+          <p>Distribuição das matrículas entre os núcleos.</p>
+          <div style="height:300px"><canvas id="c-nucleos"></canvas></div>
+        </section>
+      </div>
+      <aside class="card">
+        <h2 id="r-titulo"></h2>
+        <p id="r-sub"></p>
+        <ul class="rk-list" id="ranking"></ul>
+      </aside>
+    </div>
+  </main>
+</div>
+
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbwKts8WbT02uwYqZ-Ihtv6H-fCazTx9AWh4nz2yfLxeGLR4zET6aAx3YgkhdTaRZHr9/exec";
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const iniciais = n => String(n || '?').split(' ').filter(Boolean).slice(0, 2).map(p => p[0]).join('');
+const CORES = ['#2f5bff','#12b886','#f59f00','#ff6b6b','#7950f2','#15aabf','#e64980','#82c91e'];
+
+Chart.defaults.color = '#667090';
+Chart.defaults.font.family = "'DM Sans', sans-serif";
+Chart.defaults.font.weight = '600';
+
+// Escreve a quantidade de alunos na ponta de cada barra
+const valorNaBarra = { id: 'valorNaBarra', afterDatasetsDraw(c) {
+  const ctx = c.ctx; ctx.save(); ctx.fillStyle = '#0f1b3d'; ctx.font = "700 13px 'DM Sans'"; ctx.textBaseline = 'middle';
+  c.getDatasetMeta(0).data.forEach((b, i) => ctx.fillText(c.data.datasets[0].data[i], b.x + 8, b.y));
+  ctx.restore();
+}};
+
+let chT = null, chN = null, req = 0, timer = null;
+
+$('busca').addEventListener('input', () => { clearTimeout(timer); $('limpar').hidden = !$('busca').value; timer = setTimeout(carregarDados, 700); });
+$('busca').addEventListener('keydown', e => { if (e.key === 'Enter') { clearTimeout(timer); carregarDados(); } });
+$('ano').addEventListener('change', carregarDados);
+$('limpar').onclick = () => { $('busca').value = ''; carregarDados(); };
+$('ranking').addEventListener('click', e => {
+  const li = e.target.closest('[data-busca]');
+  if (li) { $('busca').value = li.dataset.busca; carregarDados(); }
+});
+window.onload = carregarDados;
+
+async function carregarDados() {
+  const id = ++req;
+  $('bar').classList.add('on');
+  $('painel').classList.add('is-loading');
+  $('limpar').hidden = !$('busca').value;
+  try {
+    const r = await fetch(API_URL, {
+      method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, redirect: 'follow',
+      body: JSON.stringify({ acao: 'obterDadosDashboardGestora', dados: { ano: $('ano').value, busca: $('busca').value } })
+    });
+    const res = JSON.parse(await r.text());
+    const d = res.dados || res;
+    if (id !== req) return;
+    if (d.status === 'sucesso') render(d); else erro(d.erro || d.mensagem || 'Falha desconhecida.');
+  } catch (e) {
+    console.error(e);
+    if (id === req) erro('Não foi possível conectar à API. Verifique a internet e a URL da implantação.');
+  } finally {
+    if (id === req) { $('bar').classList.remove('on'); $('painel').classList.remove('is-loading'); }
+  }
+}
+
+function erro(msg) { $('aviso').textContent = msg; $('aviso').hidden = false; }
+
+function render(d) {
+  $('aviso').hidden = true;
+  $('painel').hidden = false;
+  const vazio = d.kpis.totalMatriculas === 0;
+  $('vazio').hidden = !vazio;
+  $('conteudo').hidden = vazio;
+  num('k-alunos', d.kpis.totalAlunosUnicos);
+  num('k-mat', d.kpis.totalMatriculas);
+  $('k-media').textContent = d.kpis.mediaAtividades;
+  perfil(d.perfilAluno);
+  if (vazio) { $('perfil').hidden = true; return; }
+  ranking(d.top10);
+  graficoTurmas(d.graficos.turmas);
+  graficoNucleos(d.graficos.nucleos);
+}
+
+function perfil(p) {
+  $('perfil').hidden = !p;
+  if (!p) return;
+  const n = p.matriculas.length;
+  $('p-av').textContent = iniciais(p.nome);
+  $('p-nome').textContent = p.nome;
+  $('p-chips').innerHTML =
+    `<span class="chip">Prontuário ${esc(p.prontuario || 'sem registro')}</span>` +
+    `<span class="chip">EOL ${esc(p.eol || 'sem registro')}</span>` +
+    `<span class="chip hi">${n} ${n > 1 ? 'matrículas' : 'matrícula'}</span>`;
+  $('p-corpo').innerHTML = p.matriculas.map(m =>
+    `<tr><td>${esc(m.ano)}</td><td class="cod">${esc(m.turma)}</td><td>${esc(m.modalidade)}</td>` +
+    `<td><span class="pill">${esc(m.horario || 'Sem horário')}</span></td><td>${esc(m.nucleo)}</td></tr>`).join('');
+}
+
+function ranking(lista) {
+  const buscando = !!$('busca').value.trim();
+  $('r-titulo').textContent = buscando ? 'Alunos encontrados' : 'Top 10 alunos';
+  $('r-sub').textContent = buscando ? 'Clique em um aluno para ver as matrículas dele.' : 'Quem está em mais turmas.';
+  const medalhas = ['🥇', '🥈', '🥉'];
+  $('ranking').innerHTML = lista.map((a, i) =>
+    `<li class="rk" data-busca="${esc(a.busca)}"><div class="av">${!buscando && i < 3 ? medalhas[i] : esc(iniciais(a.nome))}</div>` +
+    `<div class="rk-i"><b>${esc(a.nome)}</b><small>Prontuário ${esc(a.prontuario || 'sem registro')}</small></div>` +
+    `<span class="tag">${a.qtd}</span></li>`).join('');
+}
+
+function graficoTurmas(t) {
+  const mods = [...new Set(t.map(x => x.modalidade))];
+  const cor = m => CORES[mods.indexOf(m) % CORES.length];
+  $('legenda').innerHTML = mods.map(m => `<span><i style="background:${cor(m)}"></i>${esc(m)}</span>`).join('');
+  $('t-box').style.height = Math.max(260, t.length * 52 + 30) + 'px';
+  if (chT) chT.destroy();
+  chT = new Chart($('c-turmas'), {
+    type: 'bar',
+    data: {
+      labels: t.map(x => [x.modalidade, `Turma ${x.codigo} – ${x.horario || 'sem horário'}`]),
+      datasets: [{ data: t.map(x => x.alunos), backgroundColor: t.map(x => cor(x.modalidade)), borderRadius: 8, barThickness: 22 }]
+    },
+    options: {
+      indexAxis: 'y', responsive: true, maintainAspectRatio: false, layout: { padding: { right: 36 } },
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => ` ${c.raw} ${c.raw > 1 ? 'alunos' : 'aluno'}` } } },
+      scales: {
+        x: { beginAtZero: true, grace: '8%', ticks: { precision: 0 }, grid: { color: '#e6eaf5' } },
+        y: { grid: { display: false }, ticks: { font: { size: 11 } } }
+      }
+    },
+    plugins: [valorNaBarra]
+  });
+}
+
+function graficoNucleos(n) {
+  if (chN) chN.destroy();
+  chN = new Chart($('c-nucleos'), {
+    type: 'bar',
+    data: { labels: n.labels, datasets: [{ data: n.data, backgroundColor: '#2f5bff', hoverBackgroundColor: '#12b886', borderRadius: 10, maxBarThickness: 38 }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => ` ${c.raw} ${c.raw > 1 ? 'matrículas' : 'matrícula'}` } } },
+      scales: { y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: '#e6eaf5' } }, x: { grid: { display: false } } }
+    }
+  });
+}
+
+function num(id, fim) {
+  const el = $(id); let n = 0;
+  const passo = Math.max(1, Math.ceil(fim / 25));
+  clearInterval(el._t);
+  el._t = setInterval(() => {
+    n = Math.min(fim, n + passo);
+    el.textContent = n.toLocaleString('pt-BR');
+    if (n >= fim) clearInterval(el._t);
+  }, 25);
+}
+</script>
+</body>
+</html>

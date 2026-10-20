@@ -29,7 +29,6 @@
         .neu-input, .neu-select { border: none; outline: none; background-color: var(--bg-color); padding: 12px 20px; border-radius: 12px; font-family: 'Nunito', sans-serif; font-weight: 600; color: var(--text-main); box-shadow: var(--shadow-inset); transition: 0.3s; }
         .neu-input:focus, .neu-select:focus { box-shadow: var(--shadow-light); }
 
-        /* Estilo para a caixa de Prontuário Exacto (Amarelinha) */
         .input-exato { background-color: #fff9c4 !important; font-weight: 800 !important; width: 180px; }
 
         .neu-btn { border: none; background-color: var(--bg-color); padding: 12px 25px; border-radius: 12px; font-family: 'Nunito', sans-serif; font-weight: 800; color: var(--accent); cursor: pointer; box-shadow: var(--shadow-light); transition: all 0.2s ease-in-out; display: flex; align-items: center; gap: 8px; }
@@ -49,14 +48,22 @@
         .chart-card h3 { margin: 0 0 20px 0; font-size: 18px; color: var(--text-main); font-weight: 800; }
         .chart-container { position: relative; width: 100%; flex-grow: 1; min-height: 300px; display: flex; justify-content: center; align-items: center;}
 
+        /* ESTILOS DA LISTA DE RANKING E DE MATRÍCULAS */
         .ranking-list { list-style: none; padding: 0; margin: 0; }
         .ranking-item { display: flex; align-items: center; justify-content: space-between; padding: 15px; border-radius: 15px; margin-bottom: 15px; box-shadow: var(--shadow-inset); transition: 0.2s; }
         .ranking-item:hover { box-shadow: var(--shadow-light); }
+        
         .rank-pos { font-size: 18px; font-weight: 900; color: #f39c12; width: 30px; text-align: center; }
         .rank-info { flex: 1; margin-left: 10px; }
         .rank-name { display: block; font-weight: 800; font-size: 14px; }
         .rank-pront { display: block; font-size: 11px; color: var(--text-light); font-weight: 600;}
         .rank-score { font-size: 18px; font-weight: 900; color: var(--accent); background: rgba(52, 152, 219, 0.1); padding: 5px 12px; border-radius: 8px;}
+
+        /* A NOVA TABELINHA 3D DE TURMAS */
+        .table-turmas { width: 100%; border-collapse: separate; border-spacing: 0 10px; }
+        .table-turmas th { text-align: left; padding: 10px; color: var(--text-light); font-size: 12px; text-transform: uppercase; border-bottom: 2px solid #ddd; }
+        .table-turmas td { padding: 15px 10px; background-color: var(--bg-color); box-shadow: var(--shadow-inset); border-radius: 10px; font-size: 13px; font-weight: 700; color: var(--text-main); margin-bottom: 10px; }
+        .td-turma { color: #f39c12 !important; font-weight: 900 !important; }
 
         #loader { display: none; text-align: center; padding: 50px; width: 100%; font-size: 20px; font-weight: 800; color: var(--accent); }
     </style>
@@ -72,7 +79,6 @@
                     <option value="2025">2025</option>
                 </select>
                 
-                <!-- 💡 CAIXA DUPLA DE BUSCA (Exata e Livre) -->
                 <input type="text" id="filtroProntuario" class="neu-input input-exato" placeholder="Prontuário/EOL Exato">
                 <input type="text" id="filtroBusca" class="neu-input" placeholder="Buscar Nome, Modalidade...">
                 
@@ -120,18 +126,34 @@
                         <div class="chart-container"><canvas id="graficoNucleos"></canvas></div>
                     </div>
                 </div>
-                <div class="chart-card">
-                    <h3><i class="fas fa-trophy" style="color: #f1c40f;"></i> Top 10 Alunos</h3>
+                
+                <!-- AQUI ACONTECE A MÁGICA DE ALTERNÂNCIA (RANKING vs. PERFIL ALUNO) -->
+                <div class="chart-card" id="cardRanking">
+                    <h3 id="tituloLateral"><i class="fas fa-trophy" style="color: #f1c40f;"></i> Top 10 Alunos</h3>
+                    
                     <ul class="ranking-list" id="listaRanking"></ul>
+                    
+                    <div id="areaPerfil" style="display: none; overflow-x: auto;">
+                        <table class="table-turmas">
+                            <thead>
+                                <tr>
+                                    <th>CÓD TURMA</th>
+                                    <th>MODALIDADE</th>
+                                    <th>DIA / HORÁRIO</th>
+                                    <th>NÚCLEO</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabelaTurmasAluno">
+                                <!-- Preenchido via JS -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // ==========================================
-        // 🚨 CONFIRME SE ESTA É A SUA URL CORRETA DA NOVA IMPLANTAÇÃO
-        // ==========================================
         const API_URL = "https://script.google.com/macros/s/AKfycbwKts8WbT02uwYqZ-Ihtv6H-fCazTx9AWh4nz2yfLxeGLR4zET6aAx3YgkhdTaRZHr9/exec";
 
         let chartModalidades = null;
@@ -143,7 +165,6 @@
             document.getElementById('conteudoPainel').style.display = 'none';
             document.getElementById('loader').style.display = 'block';
 
-            // 💡 PACOTE ENVIANDO AS DUAS BUSCAS SEPARADAS
             const pacote = {
                 acao: "obterDadosDashboardGestora",
                 dados: {
@@ -156,9 +177,7 @@
             try {
                 const response = await fetch(API_URL, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'text/plain;charset=utf-8', 
-                    },
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     redirect: 'follow', 
                     body: JSON.stringify(pacote)
                 });
@@ -186,25 +205,55 @@
             animarNumero('kpi-matriculas', dados.kpis.totalMatriculas);
             document.getElementById('kpi-media').innerText = dados.kpis.mediaAtividades;
 
-            const ul = document.getElementById('listaRanking');
-            ul.innerHTML = "";
-            dados.top10.forEach((aluno, index) => {
-                let iconeRank = `<span class="rank-pos">${index + 1}º</span>`;
-                if(index === 0) iconeRank = `<span class="rank-pos"><i class="fas fa-medal" style="color: #f1c40f; font-size:24px;"></i></span>`;
-                if(index === 1) iconeRank = `<span class="rank-pos"><i class="fas fa-medal" style="color: #bdc3c7; font-size:22px;"></i></span>`;
-                if(index === 2) iconeRank = `<span class="rank-pos"><i class="fas fa-medal" style="color: #cd7f32; font-size:20px;"></i></span>`;
+            // 💡 A INTELIGÊNCIA ARTIFICIAL DA TELA!
+            const ulRanking = document.getElementById('listaRanking');
+            const divPerfil = document.getElementById('areaPerfil');
+            const tituloLateral = document.getElementById('tituloLateral');
+            
+            if (dados.perfilAluno) {
+                // Se veio perfil de aluno único (busca exata)
+                ulRanking.style.display = 'none';
+                divPerfil.style.display = 'block';
+                tituloLateral.innerHTML = '<i class="fas fa-id-card" style="color: #3498db;"></i> Currículo de Matrículas';
+                
+                let tbody = document.getElementById('tabelaTurmasAluno');
+                tbody.innerHTML = "";
+                
+                dados.perfilAluno.forEach(mat => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td class="td-turma">${mat.turma}</td>
+                            <td>${mat.modalidade}</td>
+                            <td><span style="font-size: 11px; background: rgba(52, 152, 219, 0.1); padding: 5px; border-radius: 5px; color: #2980b9;">${mat.horario}</span></td>
+                            <td>${mat.nucleo}</td>
+                        </tr>
+                    `;
+                });
+            } else {
+                // Modo Normal: Exibe o Ranking 
+                ulRanking.style.display = 'block';
+                divPerfil.style.display = 'none';
+                tituloLateral.innerHTML = '<i class="fas fa-trophy" style="color: #f1c40f;"></i> Top 10 Alunos';
 
-                ul.innerHTML += `
-                    <li class="ranking-item">
-                        ${iconeRank}
-                        <div class="rank-info">
-                            <span class="rank-name">${aluno.nome}</span>
-                            <span class="rank-pront">Prontuário: ${aluno.prontuario || 'S/N'}</span>
-                        </div>
-                        <span class="rank-score">${aluno.qtd} <small style="font-size:10px;">Aulas</small></span>
-                    </li>
-                `;
-            });
+                ulRanking.innerHTML = "";
+                dados.top10.forEach((aluno, index) => {
+                    let iconeRank = `<span class="rank-pos">${index + 1}º</span>`;
+                    if(index === 0) iconeRank = `<span class="rank-pos"><i class="fas fa-medal" style="color: #f1c40f; font-size:24px;"></i></span>`;
+                    if(index === 1) iconeRank = `<span class="rank-pos"><i class="fas fa-medal" style="color: #bdc3c7; font-size:22px;"></i></span>`;
+                    if(index === 2) iconeRank = `<span class="rank-pos"><i class="fas fa-medal" style="color: #cd7f32; font-size:20px;"></i></span>`;
+
+                    ulRanking.innerHTML += `
+                        <li class="ranking-item">
+                            ${iconeRank}
+                            <div class="rank-info">
+                                <span class="rank-name">${aluno.nome}</span>
+                                <span class="rank-pront">Prontuário: ${aluno.prontuario || 'S/N'}</span>
+                            </div>
+                            <span class="rank-score">${aluno.qtd} <small style="font-size:10px;">Aulas</small></span>
+                        </li>
+                    `;
+                });
+            }
 
             desenharGraficoModalidades(dados.graficos.modalidades);
             desenharGraficoNucleos(dados.graficos.nucleos);

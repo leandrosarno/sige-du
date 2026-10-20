@@ -3,156 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Executivo 3D - Gestão CEU</title>
+    <title>Painel 3D - Gestão CEU CM</title>
     
-    <!-- Fontes e Ícones -->
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800;900&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <!-- Chart.js para os gráficos -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
-        /* 🎨 PALETA NEUMORFISMO (Glass + 3D Suave) */
         :root {
-            --bg-color: #e0e5ec; /* Cinza gelo base */
+            --bg-color: #e0e5ec;
             --text-main: #2c3e50;
             --text-light: #7f8c8d;
             --accent: #3498db;
-            /* Sombras 3D mágicas */
             --shadow-light: 9px 9px 16px rgb(163,177,198,0.6), -9px -9px 16px rgba(255,255,255, 0.5);
             --shadow-inset: inset 6px 6px 10px 0 rgba(163,177,198, 0.7), inset -6px -6px 10px 0 rgba(255,255,255, 0.8);
         }
 
-        body {
-            font-family: 'Nunito', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-        }
+        body { font-family: 'Nunito', sans-serif; background-color: var(--bg-color); color: var(--text-main); margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 1300px; }
 
-        .container {
-            width: 100%;
-            max-width: 1300px;
-        }
-
-        /* 🔘 CABEÇALHO E FILTROS */
-        .top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            padding: 20px 30px;
-            border-radius: 20px;
-            background-color: var(--bg-color);
-            box-shadow: var(--shadow-light);
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding: 20px 30px; border-radius: 20px; background-color: var(--bg-color); box-shadow: var(--shadow-light); flex-wrap: wrap; gap: 15px; }
         .top-bar h1 { margin: 0; font-weight: 900; font-size: 24px; color: var(--accent); letter-spacing: -0.5px; }
 
         .filters { display: flex; gap: 15px; flex-wrap: wrap; align-items: center;}
-        
-        .neu-input, .neu-select {
-            border: none;
-            outline: none;
-            background-color: var(--bg-color);
-            padding: 12px 20px;
-            border-radius: 12px;
-            font-family: 'Nunito', sans-serif;
-            font-weight: 600;
-            color: var(--text-main);
-            box-shadow: var(--shadow-inset);
-            min-width: 150px;
-            transition: 0.3s;
-        }
+        .neu-input, .neu-select { border: none; outline: none; background-color: var(--bg-color); padding: 12px 20px; border-radius: 12px; font-family: 'Nunito', sans-serif; font-weight: 600; color: var(--text-main); box-shadow: var(--shadow-inset); min-width: 150px; transition: 0.3s; }
         .neu-input:focus, .neu-select:focus { box-shadow: var(--shadow-light); }
 
-        .neu-btn {
-            border: none;
-            background-color: var(--bg-color);
-            padding: 12px 25px;
-            border-radius: 12px;
-            font-family: 'Nunito', sans-serif;
-            font-weight: 800;
-            color: var(--accent);
-            cursor: pointer;
-            box-shadow: var(--shadow-light);
-            transition: all 0.2s ease-in-out;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+        .neu-btn { border: none; background-color: var(--bg-color); padding: 12px 25px; border-radius: 12px; font-family: 'Nunito', sans-serif; font-weight: 800; color: var(--accent); cursor: pointer; box-shadow: var(--shadow-light); transition: all 0.2s ease-in-out; display: flex; align-items: center; gap: 8px; }
         .neu-btn:hover { color: #2980b9; transform: translateY(-2px); }
         .neu-btn:active { box-shadow: var(--shadow-inset); transform: translateY(0); }
 
-        /* 📊 KPIS (CARTÕES SUPERIORES) */
-        .kpi-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 25px;
-            margin-bottom: 35px;
-        }
-
-        .kpi-card {
-            background-color: var(--bg-color);
-            border-radius: 25px;
-            padding: 30px;
-            box-shadow: var(--shadow-light);
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .kpi-icon {
-            width: 70px;
-            height: 70px;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 28px;
-            color: var(--accent);
-            box-shadow: var(--shadow-inset);
-        }
-
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; margin-bottom: 35px; }
+        .kpi-card { background-color: var(--bg-color); border-radius: 25px; padding: 30px; box-shadow: var(--shadow-light); display: flex; align-items: center; gap: 20px; }
+        .kpi-icon { width: 70px; height: 70px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 28px; color: var(--accent); box-shadow: var(--shadow-inset); }
         .kpi-info h3 { margin: 0 0 5px 0; font-size: 14px; color: var(--text-light); text-transform: uppercase; font-weight: 800; }
         .kpi-info .value { margin: 0; font-size: 36px; font-weight: 900; line-height: 1; }
 
-        /* 📈 GRÁFICOS E RANKING (CONTEÚDO PRINCIPAL) */
-        .main-grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 30px;
-        }
+        .main-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 30px; }
         @media (max-width: 900px) { .main-grid { grid-template-columns: 1fr; } }
 
-        .chart-card {
-            background-color: var(--bg-color);
-            border-radius: 25px;
-            padding: 30px;
-            box-shadow: var(--shadow-light);
-            display: flex;
-            flex-direction: column;
-        }
+        .chart-card { background-color: var(--bg-color); border-radius: 25px; padding: 30px; box-shadow: var(--shadow-light); display: flex; flex-direction: column; }
         .chart-card h3 { margin: 0 0 20px 0; font-size: 18px; color: var(--text-main); font-weight: 800; }
         .chart-container { position: relative; width: 100%; flex-grow: 1; min-height: 300px; display: flex; justify-content: center; align-items: center;}
 
-        /* 🏆 PÓDIO (LEADERBOARD) */
         .ranking-list { list-style: none; padding: 0; margin: 0; }
-        .ranking-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 15px;
-            border-radius: 15px;
-            margin-bottom: 15px;
-            box-shadow: var(--shadow-inset);
-            transition: 0.2s;
-        }
+        .ranking-item { display: flex; align-items: center; justify-content: space-between; padding: 15px; border-radius: 15px; margin-bottom: 15px; box-shadow: var(--shadow-inset); transition: 0.2s; }
         .ranking-item:hover { box-shadow: var(--shadow-light); }
         .rank-pos { font-size: 18px; font-weight: 900; color: #f39c12; width: 30px; text-align: center; }
         .rank-info { flex: 1; margin-left: 10px; }
@@ -160,18 +55,17 @@
         .rank-pront { display: block; font-size: 11px; color: var(--text-light); font-weight: 600;}
         .rank-score { font-size: 18px; font-weight: 900; color: var(--accent); background: rgba(52, 152, 219, 0.1); padding: 5px 12px; border-radius: 8px;}
 
-        /* LOADER */
         #loader { display: none; text-align: center; padding: 50px; width: 100%; font-size: 20px; font-weight: 800; color: var(--accent); }
     </style>
 </head>
 <body>
-
     <div class="container">
-        
-        <!-- BARRA SUPERIOR -->
         <div class="top-bar">
-            <h1><i class="fas fa-cube me-2"></i> CEU Dashboard 3D</h1>
+            <h1><i class="fas fa-cube me-2"></i> CEU CM Dashboard 3D</h1>
             <div class="filters">
+                <!-- ID fixo para teste, ou pode puxar do localStorage se preferir -->
+                <input type="hidden" id="idDoCeu" value="700039"> 
+
                 <select id="filtroAno" class="neu-select">
                     <option value="TODOS">Todos os Anos</option>
                     <option value="2026" selected>2026</option>
@@ -187,7 +81,6 @@
         <div id="loader"><i class="fas fa-circle-notch fa-spin"></i> Processando dados em 3D...</div>
 
         <div id="conteudoPainel" style="display: none;">
-            <!-- KPIS SUPERIORES -->
             <div class="kpi-grid">
                 <div class="kpi-card">
                     <div class="kpi-icon"><i class="fas fa-users"></i></div>
@@ -212,34 +105,23 @@
                 </div>
             </div>
 
-            <!-- ÁREA PRINCIPAL -->
             <div class="main-grid">
-                <!-- GRÁFICOS (COLUNA LARGA) -->
                 <div style="display: flex; flex-direction: column; gap: 30px;">
                     <div class="chart-card">
                         <h3><i class="fas fa-dumbbell"></i> Matrículas por Modalidade</h3>
-                        <div class="chart-container">
-                            <canvas id="graficoModalidades"></canvas>
-                        </div>
+                        <div class="chart-container"><canvas id="graficoModalidades"></canvas></div>
                     </div>
                     <div class="chart-card">
                         <h3><i class="fas fa-map-marker-alt"></i> Distribuição por Núcleo</h3>
-                        <div class="chart-container">
-                            <canvas id="graficoNucleos"></canvas>
-                        </div>
+                        <div class="chart-container"><canvas id="graficoNucleos"></canvas></div>
                     </div>
                 </div>
-
-                <!-- PÓDIO (COLUNA ESTREITA) -->
                 <div class="chart-card">
-                    <h3><i class="fas fa-trophy" style="color: #f1c40f;"></i> Top 10 Alunos (Engajamento)</h3>
-                    <ul class="ranking-list" id="listaRanking">
-                        <!-- Itens injetados via JS -->
-                    </ul>
+                    <h3><i class="fas fa-trophy" style="color: #f1c40f;"></i> Top 10 Alunos</h3>
+                    <ul class="ranking-list" id="listaRanking"></ul>
                 </div>
             </div>
         </div>
-
     </div>
 
     <script>
@@ -247,25 +129,26 @@
         // 🚨 COLOQUE SUA URL DA API AQUI
         // ==========================================
         const API_URL = "https://script.google.com/macros/s/AKfycbwKts8WbT02uwYqZ-Ihtv6H-fCazTx9AWh4nz2yfLxeGLR4zET6aAx3YgkhdTaRZHr9/exec";
-        
+
         let chartModalidades = null;
         let chartNucleos = null;
 
-        // Ao abrir a tela, carrega automático
-        window.onload = function() {
-            carregarDados();
-        };
+        window.onload = function() { carregarDados(); };
 
+        // 🚀 O MOTOR GITHUB: USANDO O FETCH()
         async function carregarDados() {
             document.getElementById('conteudoPainel').style.display = 'none';
             document.getElementById('loader').style.display = 'block';
 
-            // ATENÇÃO: Pegando o ID do CEU que salvamos no Login (Lembra do config.js?)
-            // Se você não tiver o ID salvo ainda na sua máquina de teste, ele vai mandar a planilha testar o primeiro que achar
-            const idPlanilhaCeu = localStorage.getItem('ceu_id_unidade') || "777777"; // 777777 = DRE teste se falhar
+            // ATENÇÃO: Tenta pegar o ID do CEU do localStorage. 
+            // Se não achar, usa o valor do campo hidden (ex: 700039 para teste)
+            let idPlanilhaCeu = localStorage.getItem('ceu_id_unidade');
+            if (!idPlanilhaCeu) {
+                idPlanilhaCeu = document.getElementById('idDoCeu').value;
+            }
 
             const pacote = {
-                acao: "obterDadosDashboardGestora", // A função nova que colocamos no code.gs
+                acao: "obterDadosDashboardGestora",
                 dados: {
                     idCeu: idPlanilhaCeu,
                     ano: document.getElementById('filtroAno').value,
@@ -282,7 +165,7 @@
                 const resultadoText = await response.text();
                 const res = JSON.parse(resultadoText);
                 
-                let dados = res.dados || res; // Tratamento duplo
+                let dados = res.dados || res; // Tratamento de segurança para APIs envelopadas
 
                 if (dados.status === "sucesso") {
                     atualizarTela(dados);
@@ -299,12 +182,10 @@
         }
 
         function atualizarTela(dados) {
-            // 1. Atualiza KPIs
             animarNumero('kpi-alunos', dados.kpis.totalAlunosUnicos);
             animarNumero('kpi-matriculas', dados.kpis.totalMatriculas);
             document.getElementById('kpi-media').innerText = dados.kpis.mediaAtividades;
 
-            // 2. Atualiza Pódio (Top 10)
             const ul = document.getElementById('listaRanking');
             ul.innerHTML = "";
             dados.top10.forEach((aluno, index) => {
@@ -325,88 +206,40 @@
                 `;
             });
 
-            // 3. Atualiza Gráficos 3D (Neumorfismo)
             desenharGraficoModalidades(dados.graficos.modalidades);
             desenharGraficoNucleos(dados.graficos.nucleos);
         }
 
-        // ==========================================
-        // 🎨 DESENHO DOS GRÁFICOS (CHART.JS NEUMÓRFICO)
-        // ==========================================
-        
-        // Paleta de Cores Premium
         const coresPremium = ['#3498db', '#9b59b6', '#e74c3c', '#f1c40f', '#2ecc71', '#e67e22', '#1abc9c', '#34495e'];
 
         function desenharGraficoModalidades(dadosGrafico) {
             const ctx = document.getElementById('graficoModalidades').getContext('2d');
             if (chartModalidades) chartModalidades.destroy();
-
             chartModalidades = new Chart(ctx, {
                 type: 'doughnut',
-                data: {
-                    labels: dadosGrafico.labels,
-                    datasets: [{
-                        data: dadosGrafico.data,
-                        backgroundColor: coresPremium,
-                        borderWidth: 0, // Tira a borda para ficar mais "vidro"
-                        hoverOffset: 10
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '70%', // Faz o buraco do meio ser maior
-                    plugins: {
-                        legend: { position: 'right', labels: { font: { family: 'Nunito', weight: 'bold' } } }
-                    },
-                    layout: { padding: 20 }
-                }
+                data: { labels: dadosGrafico.labels, datasets: [{ data: dadosGrafico.data, backgroundColor: coresPremium, borderWidth: 0, hoverOffset: 10 }] },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'right', labels: { font: { family: 'Nunito', weight: 'bold' } } } }, layout: { padding: 20 } }
             });
         }
 
         function desenharGraficoNucleos(dadosGrafico) {
             const ctx = document.getElementById('graficoNucleos').getContext('2d');
             if (chartNucleos) chartNucleos.destroy();
-
             chartNucleos = new Chart(ctx, {
                 type: 'bar',
-                data: {
-                    labels: dadosGrafico.labels,
-                    datasets: [{
-                        label: 'Qtd de Matrículas',
-                        data: dadosGrafico.data,
-                        backgroundColor: '#3498db',
-                        borderRadius: 8, // Barras com ponta arredondada!
-                        barThickness: 30
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { beginAtZero: true, grid: { display: false } },
-                        x: { grid: { display: false }, ticks: { font: { family: 'Nunito', weight: 'bold' } } }
-                    }
-                }
+                data: { labels: dadosGrafico.labels, datasets: [{ label: 'Matrículas', data: dadosGrafico.data, backgroundColor: '#3498db', borderRadius: 8, barThickness: 30 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false }, ticks: { font: { family: 'Nunito', weight: 'bold' } } } } }
             });
         }
 
-        // ==========================================
-        // ⚡ EFEITOS ESPECIAIS
-        // ==========================================
         function animarNumero(idElemento, numeroFinal) {
             let elemento = document.getElementById(idElemento);
             let atual = 0;
-            let incremento = Math.ceil(numeroFinal / 30); // 30 quadros de animação
+            let incremento = Math.ceil(numeroFinal / 30); 
             if (numeroFinal === 0) { elemento.innerText = 0; return; }
-            
             let timer = setInterval(() => {
                 atual += incremento;
-                if (atual >= numeroFinal) {
-                    atual = numeroFinal;
-                    clearInterval(timer);
-                }
+                if (atual >= numeroFinal) { atual = numeroFinal; clearInterval(timer); }
                 elemento.innerText = atual.toLocaleString('pt-BR');
             }, 30);
         }

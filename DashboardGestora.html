@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel 3D - Gestão de Matrículas</title>
+    <title>Matrículas</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800;900&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -26,8 +26,11 @@
         .top-bar h1 { margin: 0; font-weight: 900; font-size: 24px; color: var(--accent); letter-spacing: -0.5px; }
 
         .filters { display: flex; gap: 15px; flex-wrap: wrap; align-items: center;}
-        .neu-input, .neu-select { border: none; outline: none; background-color: var(--bg-color); padding: 12px 20px; border-radius: 12px; font-family: 'Nunito', sans-serif; font-weight: 600; color: var(--text-main); box-shadow: var(--shadow-inset); min-width: 150px; transition: 0.3s; }
+        .neu-input, .neu-select { border: none; outline: none; background-color: var(--bg-color); padding: 12px 20px; border-radius: 12px; font-family: 'Nunito', sans-serif; font-weight: 600; color: var(--text-main); box-shadow: var(--shadow-inset); transition: 0.3s; }
         .neu-input:focus, .neu-select:focus { box-shadow: var(--shadow-light); }
+
+        /* Estilo para a caixa de Prontuário Exacto (Amarelinha) */
+        .input-exato { background-color: #fff9c4 !important; font-weight: 800 !important; width: 180px; }
 
         .neu-btn { border: none; background-color: var(--bg-color); padding: 12px 25px; border-radius: 12px; font-family: 'Nunito', sans-serif; font-weight: 800; color: var(--accent); cursor: pointer; box-shadow: var(--shadow-light); transition: all 0.2s ease-in-out; display: flex; align-items: center; gap: 8px; }
         .neu-btn:hover { color: #2980b9; transform: translateY(-2px); }
@@ -61,16 +64,18 @@
 <body>
     <div class="container">
         <div class="top-bar">
-            <h1><i class="fas fa-cube me-2"></i> Painel de Matrículas 3D</h1>
+            <h1><i class="fas fa-cube me-2"></i> Painel de Matrículas</h1>
             <div class="filters">
-                <!-- 💡 CAMPO DO ID DO CEU FOI REMOVIDO DAQUI -->
-
                 <select id="filtroAno" class="neu-select">
                     <option value="TODOS">Todos os Anos</option>
                     <option value="2026" selected>2026</option>
                     <option value="2025">2025</option>
                 </select>
-                <input type="text" id="filtroBusca" class="neu-input" placeholder="Buscar aluno, prontuário...">
+                
+                <!-- 💡 CAIXA DUPLA DE BUSCA (Exata e Livre) -->
+                <input type="text" id="filtroProntuario" class="neu-input input-exato" placeholder="Prontuário/EOL Exato">
+                <input type="text" id="filtroBusca" class="neu-input" placeholder="Buscar Nome, Modalidade...">
+                
                 <button class="neu-btn" onclick="carregarDados()">
                     <i class="fas fa-sync-alt"></i> Atualizar
                 </button>
@@ -125,7 +130,7 @@
 
     <script>
         // ==========================================
-        // 🚨 SUA URL DA API:
+        // 🚨 CONFIRME SE ESTA É A SUA URL CORRETA DA NOVA IMPLANTAÇÃO
         // ==========================================
         const API_URL = "https://script.google.com/macros/s/AKfycbwKts8WbT02uwYqZ-Ihtv6H-fCazTx9AWh4nz2yfLxeGLR4zET6aAx3YgkhdTaRZHr9/exec";
 
@@ -134,16 +139,16 @@
 
         window.onload = function() { carregarDados(); };
 
-        // 🚀 O MOTOR GITHUB: USANDO O FETCH()
         async function carregarDados() {
             document.getElementById('conteudoPainel').style.display = 'none';
             document.getElementById('loader').style.display = 'block';
 
-            // 💡 A ROTA ENXUTA (SEM O ID DO CEU, POIS O SERVIDOR JÁ SABE DE ONDE LER)
+            // 💡 PACOTE ENVIANDO AS DUAS BUSCAS SEPARADAS
             const pacote = {
                 acao: "obterDadosDashboardGestora",
                 dados: {
                     ano: document.getElementById('filtroAno').value,
+                    buscaProntuario: document.getElementById('filtroProntuario').value,
                     buscaLivre: document.getElementById('filtroBusca').value
                 }
             };

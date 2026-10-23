@@ -188,7 +188,7 @@ $('#f').onsubmit=e=>{
       faq=(await aba(CFG.abaFaq)).filter(r=>r[0]&&r[1]);
       $('#chips').innerHTML=faq.map(r=>`<button class="chip" data-tab="${esc(r[1])}">${esc(r[0])}</button>`).join('');
     }catch(e){return ERRO}
-    return `Olá! Eu sou o ${esc(CFG.nomeBot)} de ${esc(CFG.escola)}. Escolha uma opção abaixo ou digite sua dúvida.`;
+    return `Olá! Eu sou a Marina, a assistente virtual do ${esc(CFG.escola)}. Escolha uma opção abaixo ou digite sua dúvida.`;
   });
 })();
 </script>

@@ -120,8 +120,8 @@ const menu=()=>'<div class="row">'+faq.map(r=>`<button class="chip" data-tab="${
 const vazio='Ainda não há informações cadastradas nesta seção.';
 
 const R={
-  telefones:async n=>{const r=await aba(n);return r.length?'Estes são os nossos telefones e opções de atendimento:'+lista(r,x=>['Opção '+x[0],x[1]]):vazio},
-  secretaria:async n=>{const r=await aba(n);return r.length?'A secretaria atende nos seguintes dias e horários:'+lista(r):vazio},
+  telefones:async n=>{const r=await aba(n);return r.length?'Nosso PABX é 3396-5600 e estas são as nossas opções:'+lista(r,x=>['Opção '+x[0],x[1]]):vazio},
+  secretaria:async n=>{const r=await aba(n);return r.length?'A secretaria da Gestão atende nos seguintes dias e horários:'+lista(r):vazio},
   docs:async n=>{const r=await aba(n);return r.length?'Estes são os documentos disponíveis:'+lista(r):vazio},
   unidades:async n=>{const r=await aba(n);return r.length?'Conheça nossas unidades:'+r.map(x=>`<div class="card"><h4>${esc(x[0])}</h4><p>${esc(x[1])}</p><p>Atendimento: ${esc(x[2])}</p><p>Telefone: <a href="tel:${esc((x[3]||'').replace(/[^\d+]/g,''))}">${esc(x[3])}</a></p></div>`).join(''):vazio},
   turmas:async n=>{

@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro - Linha do Tempo Recreio nas Férias</title>
+    <style>
+        :root {
+            --primary: #0056b3;
+            --bg-color: #f4f7f6;
+            --box-bg: #ffffff;
+            --text: #333333;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text);
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            background-color: var(--box-bg);
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 600px;
+        }
+        h2 {
+            margin-top: 0;
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+        .form-group.hidden {
+            display: none;
+        }
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+        input, select, button {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1em;
+        }
+        .time-row {
+            display: flex;
+            gap: 10px;
+        }
+        .time-row .form-group {
+            flex: 1;
+        }
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #004494;
+        }
+        .loading {
+            font-size: 0.8em;
+            color: #666;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Cadastrar Atividade - Linha do Tempo</h2>
+    <form id="formTimeline">
+        
+        <div class="form-group">
+            <label for="data_atividade">Data do Evento</label>
+            <input type="date" id="data_atividade" required>
+        </div>
+
+        <div class="form-group">
+            <label for="turma">Turma <span class="loading" id="load_turma">(Carregando...)</span></label>
+            <select id="turma" required>
+                <option value="">Selecione uma turma...</option>
+                <!-- Preenchido dinamicamente via Firestore -->
+            </select>
+        </div>
+
+        <div class="time-row">
+            <div class="form-group">
+                <label for="hora_inicio">Horário de Início</label>
+                <select id="hora_inicio" required>
+                    <option value="">Início...</option>
+                    <option value="08:30">08:30</option>
+                    <option value="09:00">09:00</option>
+                    <option value="09:30">09:30</option>
+                    <option value="10:00">10:00</option>
+                    <option value="10:30">10:30</option>
+                    <option value="11:00">11:00</option>
+                    <option value="11:30">11:30</option>
+                    <option value="12:00">12:00</option>
+                    <option value="12:30">12:30</option>
+                    <option value="13:00">13:00</option>
+                    <option value="13:30">13:30</option>
+                    <option value="14:00">14:00</option>
+                    <option value="14:30">14:30</option>
+                    <option value="15:00">15:00</option>
+                    <option value="15:30">15:30</option>
+                    <option value="16:00">16:00</option>
+                    <option value="16:30">16:30</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="hora_fim">Horário de Término</label>
+                <select id="hora_fim" required>
+                    <option value="">Fim...</option>
+                    <option value="09:00">09:00</option>
+                    <option value="09:30">09:30</option>
+                    <option value="10:00">10:00</option>
+                    <option value="10:30">10:30</option>
+                    <option value="11:00">11:00</option>
+                    <option value="11:30">11:30</option>
+                    <option value="12:00">12:00</option>
+                    <option value="12:30">12:30</option>
+                    <option value="13:00">13:00</option>
+                    <option value="13:30">13:30</option>
+                    <option value="14:00">14:00</option>
+                    <option value="14:30">14:30</option>
+                    <option value="15:00">15:00</option>
+                    <option value="15:30">15:30</option>
+                    <option value="16:00">16:00</option>
+                    <option value="16:30">16:30</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="tipo_atividade">Tipo de Atividade</label>
+            <select id="tipo_atividade" required>
+                <option value="">Selecione o tipo...</option>
+                <option value="Chegada e Acolhimento">Chegada e Acolhimento</option>
+                <option value="Café">Café</option>
+                <option value="Almoço">Almoço</option>
+                <option value="Lanche">Lanche</option>
+                <option value="Evento Interno">Evento Interno (Atrações)</option>
+                <option value="Saída">Saída</option>
+                <option value="Outro">Outro (Atividade Livre)</option>
+            </select>
+        </div>
+
+        <!-- Bloco Dinâmico: Aparece para Café, Almoço ou Lanche -->
+        <div class="form-group hidden" id="box_refeicao">
+            <label for="predio_refeicao">Prédio da Refeição</label>
+            <input type="text" id="predio_refeicao" placeholder="Ex: CEI, EMEI, EMEF...">
+        </div>
+
+        <!-- Bloco Dinâmico: Aparece para Evento Interno -->
+        <div class="form-group hidden" id="box_evento">
+            <label for="evento_interno">Atração / Evento Interno <span class="loading" id="load_evento">(Carregando...)</span></label>
+            <select id="evento_interno">
+                <option value="">Selecione a atração...</option>
+                <!-- Preenchido dinamicamente via Firestore -->
+            </select>
+        </div>
+
+        <!-- Bloco Dinâmico: Aparece para Chegada, Saída ou Outros -->
+        <div class="form-group hidden" id="box_espaco">
+            <label for="espaco_atividade">Espaço / Descrição</label>
+            <input type="text" id="espaco_atividade" placeholder="Ex: Pátio, Quadra 1, Sala 4...">
+        </div>
+
+        <button type="submit">Salvar na Linha do Tempo</button>
+    </form>
+</div>
+
+<!-- Lógica Firebase e UI -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+    import { getFirestore, collection, getDocs, addDoc, query, where } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCpCXxJbD8dPXkT7mcoz4qK8Wjt7WTRwFA",
+        authDomain: "sig-edu.firebaseapp.com",
+        projectId: "sig-edu",
+        storageBucket: "sig-edu.firebasestorage.app",
+        messagingSenderId: "233239725278",
+        appId: "1:233239725278:web:809b9c42feacd99175ee4f",
+        measurementId: "G-E5LLYGW7DN"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Simulação do CEU logado (ajuste conforme seu sistema de login)
+    const ceuLogado = "CEU Caminho do Mar";
+
+    // 1. Carregar Turmas Dinamicamente
+    async function carregarTurmas() {
+        try {
+            const querySnapshot = await getDocs(collection(db, "rf_inscricoes"));
+            const turmasSet = new Set();
+            
+            // Extrai as turmas e usa o Set para evitar duplicidade
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                if (data.turma) {
+                    turmasSet.add(data.turma);
+                }
+            });
+
+            const comboTurma = document.getElementById('turma');
+            const turmasOrdenadas = Array.from(turmasSet).sort();
+            
+            turmasOrdenadas.forEach(turmaNome => {
+                const option = document.createElement('option');
+                option.value = turmaNome;
+                option.textContent = turmaNome;
+                comboTurma.appendChild(option);
+            });
+            document.getElementById('load_turma').style.display = 'none';
+        } catch (error) {
+            console.error("Erro ao carregar turmas:", error);
+            document.getElementById('load_turma').textContent = "(Erro ao carregar)";
+        }
+    }
+
+    // 2. Carregar Eventos Internos filtrados pelo CEU logado
+    async function carregarEventos() {
+        try {
+            const atracoesRef = collection(db, "rf_atracoes");
+            const q = query(atracoesRef, where("ceus", "==", ceuLogado));
+            const querySnapshot = await getDocs(q);
+            
+            const comboEvento = document.getElementById('evento_interno');
+            
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                const option = document.createElement('option');
+                option.value = doc.id; // Guarda o ID do documento
+                // Assumindo que a atração tem um campo 'nome' ou 'titulo'
+                option.textContent = data.nome || data.titulo || "Atração sem nome"; 
+                comboEvento.appendChild(option);
+            });
+            document.getElementById('load_evento').style.display = 'none';
+        } catch (error) {
+            console.error("Erro ao carregar atrações:", error);
+            document.getElementById('load_evento').textContent = "(Erro ao carregar)";
+        }
+    }
+
+    // 3. Lógica de UI - Exibir/Ocultar campos baseado no tipo de atividade
+    document.getElementById('tipo_atividade').addEventListener('change', function(e) {
+        const tipo = e.target.value;
+        const boxRefeicao = document.getElementById('box_refeicao');
+        const boxEvento = document.getElementById('box_evento');
+        const boxEspaco = document.getElementById('box_espaco');
+
+        // Esconde tudo primeiro
+        boxRefeicao.classList.add('hidden');
+        boxEvento.classList.add('hidden');
+        boxEspaco.classList.add('hidden');
+
+        // Remove a obrigatoriedade dos campos ocultos
+        document.getElementById('predio_refeicao').required = false;
+        document.getElementById('evento_interno').required = false;
+        document.getElementById('espaco_atividade').required = false;
+
+        // Mostra o bloco correto e torna o campo obrigatório
+        if (tipo === 'Café' || tipo === 'Almoço' || tipo === 'Lanche') {
+            boxRefeicao.classList.remove('hidden');
+            document.getElementById('predio_refeicao').required = true;
+        } else if (tipo === 'Evento Interno') {
+            boxEvento.classList.remove('hidden');
+            document.getElementById('evento_interno').required = true;
+        } else if (tipo !== '') {
+            boxEspaco.classList.remove('hidden');
+            document.getElementById('espaco_atividade').required = true;
+        }
+    });
+
+    // 4. Salvar os dados na nova coleção
+    document.getElementById('formTimeline').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const btnSubmit = document.querySelector('button[type="submit"]');
+        btnSubmit.textContent = "Salvando...";
+        btnSubmit.disabled = true;
+
+        const tipo = document.getElementById('tipo_atividade').value;
+        let detalhes = "";
+        let id_evento = null;
+
+        if (tipo === 'Café' || tipo === 'Almoço' || tipo === 'Lanche') {
+            detalhes = document.getElementById('predio_refeicao').value;
+        } else if (tipo === 'Evento Interno') {
+            const selectEvento = document.getElementById('evento_interno');
+            id_evento = selectEvento.value;
+            detalhes = selectEvento.options[selectEvento.selectedIndex].text;
+        } else {
+            detalhes = document.getElementById('espaco_atividade').value;
+        }
+
+        const novaAtividade = {
+            data: document.getElementById('data_atividade').value,
+            turma: document.getElementById('turma').value,
+            hora_inicio: document.getElementById('hora_inicio').value,
+            hora_fim: document.getElementById('hora_fim').value,
+            tipo_atividade: tipo,
+            espaco_detalhe: detalhes,
+            id_atracao: id_evento,
+            ceu_responsavel: ceuLogado,
+            criado_em: new Date()
+        };
+
+        try {
+            await addDoc(collection(db, "rf_linha_tempo"), novaAtividade);
+            alert("Atividade salva na linha do tempo com sucesso!");
+            document.getElementById('formTimeline').reset();
+            // Reseta a visibilidade das divs
+            document.getElementById('tipo_atividade').dispatchEvent(new Event('change'));
+        } catch (error) {
+            console.error("Erro ao salvar:", error);
+            alert("Erro ao salvar a atividade. Verifique o console.");
+        } finally {
+            btnSubmit.textContent = "Salvar na Linha do Tempo";
+            btnSubmit.disabled = false;
+        }
+    });
+
+    // Inicia os carregamentos ao abrir a tela
+    window.onload = () => {
+        carregarTurmas();
+        carregarEventos();
+    };
+</script>
+</body>
+</html>

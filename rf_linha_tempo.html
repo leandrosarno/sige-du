@@ -3,191 +3,200 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cadastro - Linha do Tempo Recreio nas Férias</title>
+    <title>Linha do Tempo - Recreio nas Férias</title>
     <style>
         :root {
             --primary: #0056b3;
             --bg-color: #f4f7f6;
             --box-bg: #ffffff;
             --text: #333333;
+            --border: #ccc;
         }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg-color);
             color: var(--text);
             padding: 20px;
-            display: flex;
-            justify-content: center;
         }
         .container {
             background-color: var(--box-bg);
             padding: 30px;
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 600px;
+            max-width: 900px;
+            margin: 0 auto;
         }
-        h2 {
-            margin-top: 0;
-            color: var(--primary);
-            border-bottom: 2px solid var(--primary);
-            padding-bottom: 10px;
+        h2 { color: var(--primary); border-bottom: 2px solid var(--primary); padding-bottom: 10px; }
+        
+        fieldset {
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: #fafafa;
         }
-        .form-group {
-            margin-bottom: 15px;
-            display: flex;
-            flex-direction: column;
+        legend { font-weight: bold; color: var(--primary); background: #fff; padding: 0 10px; border: 1px solid var(--border); border-radius: 4px; }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            align-items: center;
         }
-        .form-group.hidden {
-            display: none;
-        }
-        label {
-            font-weight: bold;
-            margin-bottom: 5px;
-            font-size: 0.9em;
-        }
-        input, select, button {
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 1em;
-        }
-        .time-row {
-            display: flex;
-            gap: 10px;
-        }
-        .time-row .form-group {
-            flex: 1;
-        }
+        .full-width { grid-column: 1 / -1; }
+        
+        label { font-weight: bold; font-size: 0.9em; display: block; margin-bottom: 5px; }
+        input, select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        
+        .botoes-acao { display: flex; gap: 15px; margin-top: 20px; }
         button {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-            margin-top: 10px;
-            transition: background-color 0.3s;
+            padding: 12px 20px; color: white; border: none; border-radius: 4px;
+            cursor: pointer; font-weight: bold; font-size: 1em; flex: 1;
         }
-        button:hover {
-            background-color: #004494;
-        }
-        .loading {
-            font-size: 0.8em;
-            color: #666;
-            font-style: italic;
+        .btn-salvar { background-color: #28a745; }
+        .btn-salvar:hover { background-color: #218838; }
+        .btn-imprimir { background-color: var(--primary); }
+        .btn-imprimir:hover { background-color: #004494; }
+
+        /* =========================================
+           CSS ESPECÍFICO PARA IMPRESSÃO A4 PAISAGEM
+           ========================================= */
+        #area_impressao { display: none; }
+        
+        @media print {
+            .no-print { display: none !important; }
+            #area_impressao { display: block !important; }
+            @page { size: A4 landscape; margin: 10mm; }
+            body { padding: 0; background-color: #fff; }
+            
+            .tabela-timeline {
+                width: 100%;
+                border-collapse: collapse;
+                page-break-after: always;
+                margin-bottom: 20px;
+                text-align: center;
+                font-family: Arial, sans-serif;
+            }
+            .tabela-timeline th, .tabela-timeline td {
+                border: 1px solid #000;
+                padding: 8px;
+                font-size: 12px;
+            }
+            .tabela-timeline th { background-color: #f0f0f0; font-weight: bold; }
+            .tabela-timeline td:first-child { font-weight: bold; width: 60px; background-color: #f9f9f9; }
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>Cadastrar Atividade - Linha do Tempo</h2>
+<!-- ÁREA DO FORMULÁRIO (Oculta na impressão) -->
+<div class="container no-print">
+    <h2>Montar Linha do Tempo Diária</h2>
     <form id="formTimeline">
         
-        <div class="form-group">
-            <label for="data_atividade">Data do Evento</label>
-            <input type="date" id="data_atividade" required>
-        </div>
-
-        <div class="form-group">
-            <label for="turma">Turma <span class="loading" id="load_turma">(Carregando...)</span></label>
-            <select id="turma" required>
-                <option value="">Selecione uma turma...</option>
-                <!-- Preenchido dinamicamente via Firestore -->
-            </select>
-        </div>
-
-        <div class="time-row">
-            <div class="form-group">
-                <label for="hora_inicio">Horário de Início</label>
-                <select id="hora_inicio" required>
-                    <option value="">Início...</option>
-                    <option value="08:30">08:30</option>
-                    <option value="09:00">09:00</option>
-                    <option value="09:30">09:30</option>
-                    <option value="10:00">10:00</option>
-                    <option value="10:30">10:30</option>
-                    <option value="11:00">11:00</option>
-                    <option value="11:30">11:30</option>
-                    <option value="12:00">12:00</option>
-                    <option value="12:30">12:30</option>
-                    <option value="13:00">13:00</option>
-                    <option value="13:30">13:30</option>
-                    <option value="14:00">14:00</option>
-                    <option value="14:30">14:30</option>
-                    <option value="15:00">15:00</option>
-                    <option value="15:30">15:30</option>
-                    <option value="16:00">16:00</option>
-                    <option value="16:30">16:30</option>
-                </select>
+        <div class="form-grid full-width" style="margin-bottom: 20px;">
+            <div>
+                <label>Data do Programa</label>
+                <input type="date" id="data_atividade" required>
             </div>
-            <div class="form-group">
-                <label for="hora_fim">Horário de Término</label>
-                <select id="hora_fim" required>
-                    <option value="">Fim...</option>
-                    <option value="09:00">09:00</option>
-                    <option value="09:30">09:30</option>
-                    <option value="10:00">10:00</option>
-                    <option value="10:30">10:30</option>
-                    <option value="11:00">11:00</option>
-                    <option value="11:30">11:30</option>
-                    <option value="12:00">12:00</option>
-                    <option value="12:30">12:30</option>
-                    <option value="13:00">13:00</option>
-                    <option value="13:30">13:30</option>
-                    <option value="14:00">14:00</option>
-                    <option value="14:30">14:30</option>
-                    <option value="15:00">15:00</option>
-                    <option value="15:30">15:30</option>
-                    <option value="16:00">16:00</option>
-                    <option value="16:30">16:30</option>
-                </select>
+            <div>
+                <label>Turma <span id="load_turma" style="font-size: 0.8em; color: gray;"></span></label>
+                <select id="turma" required><option value="">Selecione...</option></select>
             </div>
         </div>
 
-        <div class="form-group">
-            <label for="tipo_atividade">Tipo de Atividade</label>
-            <select id="tipo_atividade" required>
-                <option value="">Selecione o tipo...</option>
-                <option value="Chegada e Acolhimento">Chegada e Acolhimento</option>
-                <option value="Café">Café</option>
-                <option value="Almoço">Almoço</option>
-                <option value="Lanche">Lanche</option>
-                <option value="Evento Interno">Evento Interno (Atrações)</option>
-                <option value="Saída">Saída</option>
-                <option value="Outro">Outro (Atividade Livre)</option>
-            </select>
-        </div>
+        <fieldset>
+            <legend>1. Chegada e Acolhimento</legend>
+            <div class="form-grid">
+                <div>
+                    <label>Horário da Chegada</label>
+                    <select id="hora_chegada" class="hora-select"><option value="">Selecione...</option></select>
+                </div>
+            </div>
+        </fieldset>
 
-        <!-- Bloco Dinâmico: Aparece para Café, Almoço ou Lanche -->
-        <div class="form-group hidden" id="box_refeicao">
-            <label for="predio_refeicao">Prédio da Refeição</label>
-            <input type="text" id="predio_refeicao" placeholder="Ex: CEI, EMEI, EMEF...">
-        </div>
+        <fieldset>
+            <legend>2. Refeições (Informe o Prédio e o Horário)</legend>
+            <div class="form-grid">
+                <div>
+                    <label>Café (Prédio Ex: CEI, EMEI)</label>
+                    <input type="text" id="predio_cafe" placeholder="Onde será?">
+                </div>
+                <div>
+                    <label>Horário do Café</label>
+                    <select id="hora_cafe" class="hora-select"><option value="">Selecione...</option></select>
+                </div>
 
-        <!-- Bloco Dinâmico: Aparece para Evento Interno -->
-        <div class="form-group hidden" id="box_evento">
-            <label for="evento_interno">Atração / Evento Interno <span class="loading" id="load_evento">(Carregando...)</span></label>
-            <select id="evento_interno">
-                <option value="">Selecione a atração...</option>
-                <!-- Preenchido dinamicamente via Firestore -->
-            </select>
-        </div>
+                <div>
+                    <label>Almoço (Prédio Ex: CEI, EMEF)</label>
+                    <input type="text" id="predio_almoco" placeholder="Onde será?">
+                </div>
+                <div>
+                    <label>Horário do Almoço</label>
+                    <select id="hora_almoco" class="hora-select"><option value="">Selecione...</option></select>
+                </div>
 
-        <!-- Bloco Dinâmico: Aparece para Chegada, Saída ou Outros -->
-        <div class="form-group hidden" id="box_espaco">
-            <label for="espaco_atividade">Espaço / Descrição</label>
-            <input type="text" id="espaco_atividade" placeholder="Ex: Pátio, Quadra 1, Sala 4...">
-        </div>
+                <div>
+                    <label>Lanche (Prédio Ex: CEI, EMEF)</label>
+                    <input type="text" id="predio_lanche" placeholder="Onde será?">
+                </div>
+                <div>
+                    <label>Horário do Lanche</label>
+                    <select id="hora_lanche" class="hora-select"><option value="">Selecione...</option></select>
+                </div>
+            </div>
+        </fieldset>
 
-        <button type="submit">Salvar na Linha do Tempo</button>
+        <fieldset>
+            <legend>3. Atividade e Evento Interno</legend>
+            <div class="form-grid">
+                <div>
+                    <label>Atividade (Tipo/Descrição)</label>
+                    <input type="text" id="desc_atividade" placeholder="Ex: Gincana, Leitura...">
+                </div>
+                <div>
+                    <label>Espaço da Atividade</label>
+                    <input type="text" id="espaco_atividade" placeholder="Ex: Quadra, Sala 4...">
+                </div>
+                <div class="full-width">
+                    <label>Horário da Atividade</label>
+                    <select id="hora_atividade" class="hora-select" style="width: 50%;"><option value="">Selecione...</option></select>
+                </div>
+
+                <div style="margin-top: 15px;">
+                    <label>Evento Interno (Atração) <span id="load_evento" style="font-size: 0.8em; color: gray;"></span></label>
+                    <select id="evento_interno"><option value="">Selecione...</option></select>
+                </div>
+                <div style="margin-top: 15px;">
+                    <label>Horário do Evento</label>
+                    <select id="hora_evento" class="hora-select"><option value="">Selecione...</option></select>
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>4. Saída</legend>
+            <div class="form-grid">
+                <div>
+                    <label>Horário da Saída</label>
+                    <select id="hora_saida" class="hora-select"><option value="">Selecione...</option></select>
+                </div>
+            </div>
+        </fieldset>
+
+        <div class="botoes-acao">
+            <button type="submit" class="btn-salvar" id="btnSalvar">Salvar Cronograma da Turma</button>
+            <button type="button" class="btn-imprimir" id="btnImprimir">Gerar e Imprimir (A4)</button>
+        </div>
     </form>
 </div>
 
-<!-- Lógica Firebase e UI -->
+<!-- ÁREA DE IMPRESSÃO (Visível apenas ao imprimir) -->
+<div id="area_impressao"></div>
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
-    import { getFirestore, collection, getDocs, addDoc, query, where } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, setDoc, doc, query, where } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyCpCXxJbD8dPXkT7mcoz4qK8Wjt7WTRwFA",
@@ -201,148 +210,164 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-
-    // Simulação do CEU logado (ajuste conforme seu sistema de login)
     const ceuLogado = "CEU Caminho do Mar";
 
-    // 1. Carregar Turmas Dinamicamente
-    async function carregarTurmas() {
-        try {
-            const querySnapshot = await getDocs(collection(db, "rf_inscricoes"));
-            const turmasSet = new Set();
-            
-            // Extrai as turmas e usa o Set para evitar duplicidade
-            querySnapshot.forEach((doc) => {
-                const data = doc.data();
-                if (data.turma) {
-                    turmasSet.add(data.turma);
-                }
-            });
+    // Grade de horários padrão do Recreio nas Férias
+    const gradeHorarios = ['08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30'];
 
-            const comboTurma = document.getElementById('turma');
-            const turmasOrdenadas = Array.from(turmasSet).sort();
-            
-            turmasOrdenadas.forEach(turmaNome => {
-                const option = document.createElement('option');
-                option.value = turmaNome;
-                option.textContent = turmaNome;
-                comboTurma.appendChild(option);
-            });
-            document.getElementById('load_turma').style.display = 'none';
-        } catch (error) {
-            console.error("Erro ao carregar turmas:", error);
-            document.getElementById('load_turma').textContent = "(Erro ao carregar)";
-        }
-    }
-
-    // 2. Carregar Eventos Internos filtrados pelo CEU logado
-    async function carregarEventos() {
-        try {
-            const atracoesRef = collection(db, "rf_atracoes");
-            const q = query(atracoesRef, where("ceus", "==", ceuLogado));
-            const querySnapshot = await getDocs(q);
-            
-            const comboEvento = document.getElementById('evento_interno');
-            
-            querySnapshot.forEach((doc) => {
-                const data = doc.data();
-                const option = document.createElement('option');
-                option.value = doc.id; // Guarda o ID do documento
-                // Assumindo que a atração tem um campo 'nome' ou 'titulo'
-                option.textContent = data.nome || data.titulo || "Atração sem nome"; 
-                comboEvento.appendChild(option);
-            });
-            document.getElementById('load_evento').style.display = 'none';
-        } catch (error) {
-            console.error("Erro ao carregar atrações:", error);
-            document.getElementById('load_evento').textContent = "(Erro ao carregar)";
-        }
-    }
-
-    // 3. Lógica de UI - Exibir/Ocultar campos baseado no tipo de atividade
-    document.getElementById('tipo_atividade').addEventListener('change', function(e) {
-        const tipo = e.target.value;
-        const boxRefeicao = document.getElementById('box_refeicao');
-        const boxEvento = document.getElementById('box_evento');
-        const boxEspaco = document.getElementById('box_espaco');
-
-        // Esconde tudo primeiro
-        boxRefeicao.classList.add('hidden');
-        boxEvento.classList.add('hidden');
-        boxEspaco.classList.add('hidden');
-
-        // Remove a obrigatoriedade dos campos ocultos
-        document.getElementById('predio_refeicao').required = false;
-        document.getElementById('evento_interno').required = false;
-        document.getElementById('espaco_atividade').required = false;
-
-        // Mostra o bloco correto e torna o campo obrigatório
-        if (tipo === 'Café' || tipo === 'Almoço' || tipo === 'Lanche') {
-            boxRefeicao.classList.remove('hidden');
-            document.getElementById('predio_refeicao').required = true;
-        } else if (tipo === 'Evento Interno') {
-            boxEvento.classList.remove('hidden');
-            document.getElementById('evento_interno').required = true;
-        } else if (tipo !== '') {
-            boxEspaco.classList.remove('hidden');
-            document.getElementById('espaco_atividade').required = true;
-        }
+    // Preenche todos os combos de horário do formulário
+    document.querySelectorAll('.hora-select').forEach(select => {
+        gradeHorarios.forEach(h => {
+            const opt = document.createElement('option');
+            opt.value = h; opt.textContent = h;
+            select.appendChild(opt);
+        });
     });
 
-    // 4. Salvar os dados na nova coleção
+    // Carregar Turmas e Eventos
+    async function inicializarDados() {
+        try {
+            // Turmas
+            const snapTurmas = await getDocs(collection(db, "rf_inscricoes"));
+            const turmasSet = new Set();
+            snapTurmas.forEach(doc => { if (doc.data().turma) turmasSet.add(doc.data().turma); });
+            const comboTurma = document.getElementById('turma');
+            Array.from(turmasSet).sort().forEach(t => {
+                const opt = document.createElement('option'); opt.value = t; opt.textContent = t;
+                comboTurma.appendChild(opt);
+            });
+
+            // Eventos
+            const qEventos = query(collection(db, "rf_atracoes"), where("ceus", "==", ceuLogado));
+            const snapEventos = await getDocs(qEventos);
+            const comboEvento = document.getElementById('evento_interno');
+            snapEventos.forEach(doc => {
+                const opt = document.createElement('option'); 
+                opt.value = doc.data().nome || doc.data().titulo || "Atração"; 
+                opt.textContent = opt.value;
+                comboEvento.appendChild(opt);
+            });
+        } catch (error) {
+            console.error("Erro ao carregar:", error);
+        }
+    }
+
+    // SALVAR O CRONOGRAMA NO FIREBASE
     document.getElementById('formTimeline').addEventListener('submit', async function(e) {
         e.preventDefault();
+        const data = document.getElementById('data_atividade').value;
+        const turma = document.getElementById('turma').value;
+        if(!data || !turma) return alert("Selecione a Data e a Turma.");
 
-        const btnSubmit = document.querySelector('button[type="submit"]');
-        btnSubmit.textContent = "Salvando...";
-        btnSubmit.disabled = true;
-
-        const tipo = document.getElementById('tipo_atividade').value;
-        let detalhes = "";
-        let id_evento = null;
-
-        if (tipo === 'Café' || tipo === 'Almoço' || tipo === 'Lanche') {
-            detalhes = document.getElementById('predio_refeicao').value;
-        } else if (tipo === 'Evento Interno') {
-            const selectEvento = document.getElementById('evento_interno');
-            id_evento = selectEvento.value;
-            detalhes = selectEvento.options[selectEvento.selectedIndex].text;
-        } else {
-            detalhes = document.getElementById('espaco_atividade').value;
-        }
-
-        const novaAtividade = {
-            data: document.getElementById('data_atividade').value,
-            turma: document.getElementById('turma').value,
-            hora_inicio: document.getElementById('hora_inicio').value,
-            hora_fim: document.getElementById('hora_fim').value,
-            tipo_atividade: tipo,
-            espaco_detalhe: detalhes,
-            id_atracao: id_evento,
-            ceu_responsavel: ceuLogado,
-            criado_em: new Date()
+        // Monta um objeto de horários dinâmico para facilitar a impressão depois
+        const cronograma = {};
+        
+        const addAoCronograma = (idHora, texto) => {
+            const h = document.getElementById(idHora).value;
+            if (h) cronograma[h] = texto;
         };
 
+        addAoCronograma('hora_chegada', 'Chegada e Acolhimento');
+        addAoCronograma('hora_cafe', `Café (${document.getElementById('predio_cafe').value || 'Não inf.'})`);
+        addAoCronograma('hora_almoco', `Almoço (${document.getElementById('predio_almoco').value || 'Não inf.'})`);
+        addAoCronograma('hora_lanche', `Lanche (${document.getElementById('predio_lanche').value || 'Não inf.'})`);
+        
+        const textoAtividade = document.getElementById('desc_atividade').value;
+        const espacoAtividade = document.getElementById('espaco_atividade').value;
+        if(textoAtividade || espacoAtividade) {
+            addAoCronograma('hora_atividade', `${textoAtividade} no(a) ${espacoAtividade}`);
+        }
+        
+        if (document.getElementById('evento_interno').value) {
+            addAoCronograma('hora_evento', `Atração: ${document.getElementById('evento_interno').value}`);
+        }
+        
+        addAoCronograma('hora_saida', 'Saída');
+
+        // Cria um ID único por dia e turma, assim, se o usuário preencher de novo, ele ATUALIZA, não duplica.
+        const docId = `${data}_${turma}`;
+        
         try {
-            await addDoc(collection(db, "rf_linha_tempo"), novaAtividade);
-            alert("Atividade salva na linha do tempo com sucesso!");
+            await setDoc(doc(db, "rf_linha_tempo", docId), {
+                data: data,
+                turma: turma,
+                ceu: ceuLogado,
+                cronograma: cronograma,
+                atualizadoEm: new Date()
+            });
+            alert(`Cronograma da turma ${turma} salvo com sucesso!`);
             document.getElementById('formTimeline').reset();
-            // Reseta a visibilidade das divs
-            document.getElementById('tipo_atividade').dispatchEvent(new Event('change'));
+            document.getElementById('data_atividade').value = data; // Mantém a data para facilitar os próximos
         } catch (error) {
             console.error("Erro ao salvar:", error);
-            alert("Erro ao salvar a atividade. Verifique o console.");
-        } finally {
-            btnSubmit.textContent = "Salvar na Linha do Tempo";
-            btnSubmit.disabled = false;
+            alert("Erro ao salvar cronograma.");
         }
     });
 
-    // Inicia os carregamentos ao abrir a tela
-    window.onload = () => {
-        carregarTurmas();
-        carregarEventos();
-    };
+    // LÓGICA DE IMPRESSÃO A4
+    document.getElementById('btnImprimir').addEventListener('click', async function() {
+        const dataFiltro = document.getElementById('data_atividade').value;
+        if(!dataFiltro) return alert("Por favor, selecione a Data do Programa no topo para gerar o relatório.");
+
+        const btn = this;
+        btn.textContent = "Buscando dados...";
+
+        try {
+            // Busca apenas os cronogramas da data selecionada
+            const qImpressao = query(collection(db, "rf_linha_tempo"), where("data", "==", dataFiltro), where("ceu", "==", ceuLogado));
+            const snapshot = await getDocs(qImpressao);
+            
+            if(snapshot.empty) {
+                btn.textContent = "Gerar e Imprimir (A4)";
+                return alert("Nenhum cronograma cadastrado para esta data.");
+            }
+
+            // Organiza os dados em um mapa: dadosImpressao["4A"]["09:30"] = "Futebol..."
+            const dadosImpressao = {};
+            snapshot.forEach(doc => {
+                const d = doc.data();
+                dadosImpressao[d.turma] = d.cronograma;
+            });
+
+            const turmasEncontradas = Object.keys(dadosImpressao).sort();
+            
+            // Fatiamento (Chunk): 6 turmas por folha A4 para não estourar a largura
+            const turmasPorPagina = 6;
+            let htmlHTML = `<h2>Linha do Tempo - ${dataFiltro.split('-').reverse().join('/')} - ${ceuLogado}</h2>`;
+
+            for (let i = 0; i < turmasEncontradas.length; i += turmasPorPagina) {
+                const turmasLote = turmasEncontradas.slice(i, i + turmasPorPagina);
+                
+                htmlHTML += `<table class="tabela-timeline"><thead><tr><th>Horário</th>`;
+                turmasLote.forEach(t => htmlHTML += `<th>Turma ${t}</th>`);
+                htmlHTML += `</tr></thead><tbody>`;
+
+                // Monta as linhas cruzando o horário com a turma
+                gradeHorarios.forEach(hora => {
+                    htmlHTML += `<tr><td>${hora}</td>`;
+                    turmasLote.forEach(t => {
+                        const atividade = dadosImpressao[t][hora] || '';
+                        htmlHTML += `<td>${atividade}</td>`;
+                    });
+                    htmlHTML += `</tr>`;
+                });
+                
+                htmlHTML += `</tbody></table>`;
+            }
+
+            // Injeta o HTML gerado na div de impressão e chama o print do navegador
+            document.getElementById('area_impressao').innerHTML = htmlHTML;
+            window.print();
+            
+        } catch (error) {
+            console.error(error);
+            alert("Erro ao montar impressão.");
+        } finally {
+            btn.textContent = "Gerar e Imprimir (A4)";
+        }
+    });
+
+    window.onload = inicializarDados;
 </script>
 </body>
 </html>

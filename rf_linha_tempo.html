@@ -11,7 +11,6 @@
         .container { background-color: var(--box-bg); padding: 20px 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 900px; margin: 0 auto 20px auto; }
         h2 { color: var(--primary); border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-top: 0;}
         
-        /* Painel de Impressão Direto e Reto */
         .painel-impressao { background-color: #e9ecef; border-left: 5px solid var(--primary); padding: 15px; display: flex; align-items: center; justify-content: space-between; border-radius: 4px; margin-bottom: 30px; gap: 15px; }
         .painel-impressao p { margin: 0; font-weight: bold; color: var(--text); font-size: 1.1em;}
         
@@ -30,38 +29,40 @@
         .btn-imprimir { background-color: var(--primary); padding: 12px 25px; }
         .btn-imprimir:hover { background-color: #004494; }
 
-        /* CSS DE IMPRESSÃO A4 (Blindado contra quebras de página indesejadas) */
+        /* CSS BLINDADO DE IMPRESSÃO A4 (Comprimido para não vazar de página) */
         #area_impressao { display: none; }
         @media print {
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             .no-print { display: none !important; }
             #area_impressao { display: block !important; }
-            @page { size: A4 landscape; margin: 10mm; }
-            body { padding: 0; background-color: #fff; }
             
-            /* Força a folha a ficar unida e só quebrar quando mudar de DIA ou estourar 6 turmas */
-            .pagina-a4 { page-break-after: always; margin-bottom: 20px; width: 100%; }
+            /* Margens reduzidas a 5mm para dar mais espaço à tabela */
+            @page { size: A4 landscape; margin: 5mm; }
+            body { padding: 0; background-color: #fff; margin: 0; }
+            
+            .pagina-a4 { page-break-after: always; width: 100%; box-sizing: border-box; }
             .pagina-a4:last-of-type { page-break-after: auto; }
             
-            .cabecalho-dia { font-size: 22px; text-align: center; font-weight: bold; color: #333; margin-bottom: 15px; text-transform: uppercase; }
+            .cabecalho-dia { font-size: 18px; text-align: center; font-weight: bold; color: #333; margin-bottom: 10px; text-transform: uppercase; }
             
-            .tabela-timeline { width: 100%; border-collapse: collapse; text-align: center; font-family: 'Segoe UI', Arial, sans-serif; page-break-inside: avoid; }
-            .tabela-timeline th, .tabela-timeline td { border: 1px solid #555; padding: 8px; font-size: 13px; }
+            /* Tabela com layout fixo e palavras quebrando se necessário */
+            .tabela-timeline { width: 100%; border-collapse: collapse; text-align: center; font-family: 'Segoe UI', Arial, sans-serif; table-layout: fixed; word-wrap: break-word; }
             
-            .tabela-timeline td:first-child, .tabela-timeline th:first-child { font-weight: bold; width: 70px; background-color: #e9ecef; }
+            /* Fonte e paddings pequenos para garantir que 17 linhas caibam na altura do papel */
+            .tabela-timeline th, .tabela-timeline td { border: 1px solid #555; padding: 4px; font-size: 11px; line-height: 1.1; overflow: hidden; }
+            
+            .tabela-timeline td:first-child, .tabela-timeline th:first-child { font-weight: bold; width: 45px; background-color: #e9ecef; font-size: 12px; }
             .tabela-timeline tbody tr:nth-child(even) { background-color: #f8f9fa; }
         }
     </style>
 </head>
 <body>
 
-<!-- MÓDULO 1: PAINEL DE IMPRESSÃO GERAL -->
 <div class="container no-print painel-impressao">
-    <p>O sistema gera os Diários gerando UMA folha para cada dia cadastrado.</p>
+    <p>Gere todas as turmas de um mesmo DIA lado a lado em UMA única folha TESTE.</p>
     <button type="button" class="btn-imprimir" id="btnImprimirMenu">🖨️ Imprimir Diários de Bordo</button>
 </div>
 
-<!-- MÓDULO 2: FORMULÁRIO -->
 <div class="container no-print">
     <h2>Cadastrar / Atualizar Atividades</h2>
     <form id="formTimeline">
@@ -144,7 +145,6 @@
     </form>
 </div>
 
-<!-- ÁREA INVISÍVEL ONDE A PÁGINA A4 É MONTADA -->
 <div id="area_impressao"></div>
 
 <script type="module">
@@ -166,7 +166,7 @@
     const ceuLogado = "CEU Caminho do Mar";
 
     const gradeHorarios = ['08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30'];
-    const coresTurmas = ['#ffb3ba', '#ffdfba', '#ffffba', '#baffc9', '#bae1ff', '#e8baff', '#f4c2c2', '#dcd0ff'];
+    const coresTurmas = ['#ffb3ba', '#ffdfba', '#ffffba', '#baffc9', '#bae1ff', '#e8baff', '#f4c2c2', '#dcd0ff', '#c2f4c2', '#c2d0f4', '#f4c2f4', '#f4e8c2', '#ffe4e1'];
 
     document.querySelectorAll('.hora-select').forEach(select => {
         gradeHorarios.forEach(h => {
@@ -219,7 +219,6 @@
         } catch(e) {}
     }
 
-    // SALVA OS DADOS (Lê o que já existe e acrescenta, impedindo duplicidade cega)
     document.getElementById('formTimeline').addEventListener('submit', async function(e) {
         e.preventDefault();
         const data = document.getElementById('data_atividade').value;
@@ -254,7 +253,6 @@
             });
             
             alert(`Atividades salvas para a turma ${turma} no dia ${data.split('-').reverse().join('/')}!`);
-            
             document.getElementById('formTimeline').reset();
             document.getElementById('data_atividade').value = data; 
             document.getElementById('turma').value = turma; 
@@ -262,10 +260,10 @@
         } catch(e) { alert("Erro ao salvar."); }
     });
 
-    // O FUNIL ABSOLUTO DE IMPRESSÃO
+    // IMPRESSÃO - COM AGRUPAMENTO ABSOLUTO POR DIA
     document.getElementById('btnImprimirMenu').addEventListener('click', async function() {
         const btn = this; 
-        btn.textContent = "Processando o relatório...";
+        btn.textContent = "Formatando páginas...";
         
         try {
             const qImpressao = query(collection(db, "rf_linha_tempo"), where("ceu", "==", ceuLogado));
@@ -276,28 +274,19 @@
                 return alert("Nenhuma atividade cadastrada ainda.");
             }
 
-            // O FUNIL: Obriga o JavaScript a jogar todas as atividades que tenham 
-            // a mesma data dentro do MESMO balde, independentemente de como foram cadastradas.
             const funilDeDias = {};
             
             snapshot.forEach(doc => {
                 const d = doc.data();
-                const dia = d.data;
-                const turma = d.turma;
+                if(!d.data || !d.turma) return;
                 
-                if(!dia || !turma) return; // Proteção contra registros velhos corrompidos
+                // Normaliza datas e turmas para garantir que não se separem por erro de digitação
+                const dia = d.data.substring(0, 10).trim();
+                const turma = d.turma.trim().toUpperCase();
                 
-                // Cria a gaveta do Dia se não existir
-                if (!funilDeDias[dia]) {
-                    funilDeDias[dia] = {};
-                }
+                if (!funilDeDias[dia]) funilDeDias[dia] = {};
+                if (!funilDeDias[dia][turma]) funilDeDias[dia][turma] = {};
                 
-                // Cria a pasta da Turma dentro da gaveta do Dia
-                if (!funilDeDias[dia][turma]) {
-                    funilDeDias[dia][turma] = {};
-                }
-                
-                // Joga os horários lá dentro
                 if (d.cronograma) {
                     for(let hora in d.cronograma) {
                         funilDeDias[dia][turma][hora] = d.cronograma[hora];
@@ -305,42 +294,36 @@
                 }
             });
 
-            // Extrai as datas e ordena do menor pro maior (ex: dia 06 vem antes do dia 07)
             const diasOrdenados = Object.keys(funilDeDias).sort();
-            const maxColunasPorFolha = 6;
             let htmlFinal = "";
 
-            // Cria o relatório página por página (Dia por Dia)
+            // O laço agora força TODAS as turmas do mesmo DIA dentro da mesma Tabela
             diasOrdenados.forEach(dia => {
                 const dataBR = dia.split('-').reverse().join('/');
                 const turmasDesteDia = Object.keys(funilDeDias[dia]).sort();
                 
-                for (let i = 0; i < turmasDesteDia.length; i += maxColunasPorFolha) {
-                    const loteTurmas = turmasDesteDia.slice(i, i + maxColunasPorFolha);
-                    
-                    htmlFinal += `<div class="pagina-a4">`;
-                    htmlFinal += `<div class="cabecalho-dia">${ceuLogado} - Relatório de Atividades - ${dataBR}</div>`;
-                    htmlFinal += `<table class="tabela-timeline"><thead><tr><th>Horário</th>`;
-                    
-                    // Colunas (Turmas)
-                    loteTurmas.forEach((t, index) => {
-                        const cor = coresTurmas[index % coresTurmas.length];
-                        htmlFinal += `<th style="background-color: ${cor};">Turma ${t}</th>`; 
-                    });
-                    htmlFinal += `</tr></thead><tbody>`;
+                htmlFinal += `<div class="pagina-a4">`;
+                htmlFinal += `<div class="cabecalho-dia">${ceuLogado} - RELATÓRIO DE ATIVIDADES - ${dataBR}</div>`;
+                htmlFinal += `<table class="tabela-timeline"><thead><tr><th>Horário</th>`;
+                
+                // Cria as colunas com as Turmas do dia (lado a lado na mesma página)
+                turmasDesteDia.forEach((t, index) => {
+                    const cor = coresTurmas[index % coresTurmas.length];
+                    htmlFinal += `<th style="background-color: ${cor};">Turma ${t}</th>`; 
+                });
+                htmlFinal += `</tr></thead><tbody>`;
 
-                    // Linhas (Horários)
-                    gradeHorarios.forEach(hora => {
-                        htmlFinal += `<tr><td>${hora}</td>`;
-                        loteTurmas.forEach(t => {
-                            const atividade = funilDeDias[dia][t][hora] || '';
-                            htmlFinal += `<td>${atividade}</td>`;
-                        });
-                        htmlFinal += `</tr>`;
+                // Insere os horários nas linhas e cruza com a coluna da turma
+                gradeHorarios.forEach(hora => {
+                    htmlFinal += `<tr><td>${hora}</td>`;
+                    turmasDesteDia.forEach(t => {
+                        const atividade = funilDeDias[dia][t][hora] || '';
+                        htmlFinal += `<td>${atividade}</td>`;
                     });
+                    htmlFinal += `</tr>`;
+                });
 
-                    htmlFinal += `</tbody></table></div>`;
-                }
+                htmlFinal += `</tbody></table></div>`;
             });
 
             document.getElementById('area_impressao').innerHTML = htmlFinal;

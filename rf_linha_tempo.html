@@ -11,10 +11,9 @@
         .container { background-color: var(--box-bg); padding: 20px 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 900px; margin: 0 auto 20px auto; }
         h2 { color: var(--primary); border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-top: 0;}
         
-        /* Painel de Impressão Atualizado */
-        .painel-impressao { background-color: #e9ecef; border-left: 5px solid var(--primary); padding: 15px; display: flex; align-items: flex-end; justify-content: space-between; border-radius: 4px; margin-bottom: 30px; gap: 15px; }
-        .painel-impressao .bloco-data { flex: 1; }
-        .painel-impressao p { margin: 0 0 5px 0; font-weight: bold; color: var(--text); }
+        /* Painel de Impressão Limpo - Sem escolhas para o usuário */
+        .painel-impressao { background-color: #e9ecef; border-left: 5px solid var(--primary); padding: 15px; display: flex; align-items: center; justify-content: space-between; border-radius: 4px; margin-bottom: 30px; gap: 15px; }
+        .painel-impressao p { margin: 0; font-weight: bold; color: var(--text); font-size: 1.1em;}
         
         fieldset { border: 1px solid var(--border); border-radius: 5px; padding: 15px; margin-bottom: 15px; background-color: #fafafa; }
         legend { font-weight: bold; color: var(--primary); background: #fff; padding: 0 10px; border: 1px solid var(--border); border-radius: 4px; }
@@ -28,10 +27,10 @@
         button { padding: 10px 20px; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 1em; }
         .btn-salvar { background-color: #28a745; width: 100%; padding: 15px;}
         .btn-salvar:hover { background-color: #218838; }
-        .btn-imprimir { background-color: var(--primary); padding: 10px 25px; height: 42px;}
+        .btn-imprimir { background-color: var(--primary); padding: 12px 25px; }
         .btn-imprimir:hover { background-color: #004494; }
 
-        /* CSS DE IMPRESSÃO A4 (Oculto na tela, ativo no papel) */
+        /* CSS DE IMPRESSÃO A4 */
         #area_impressao { display: none; }
         @media print {
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
@@ -40,12 +39,12 @@
             @page { size: A4 landscape; margin: 10mm; }
             body { padding: 0; background-color: #fff; }
             
-            .pagina-a4 { page-break-after: always; margin-bottom: 20px; }
-            .pagina-a4:last-child { page-break-after: auto; }
+            .pagina-a4 { break-after: page; page-break-after: always; margin-bottom: 20px; }
+            .pagina-a4:last-child { break-after: auto; page-break-after: auto; }
             
             .cabecalho-dia { font-size: 22px; text-align: center; font-weight: bold; color: #333; margin-bottom: 15px; text-transform: uppercase; }
             
-            .tabela-timeline { width: 100%; border-collapse: collapse; text-align: center; font-family: 'Segoe UI', Arial, sans-serif; }
+            .tabela-timeline { width: 100%; border-collapse: collapse; text-align: center; font-family: 'Segoe UI', Arial, sans-serif; page-break-inside: avoid; }
             .tabela-timeline th, .tabela-timeline td { border: 1px solid #777; padding: 8px; font-size: 13px; }
             
             .tabela-timeline td:first-child, .tabela-timeline th:first-child { font-weight: bold; width: 70px; background-color: #e9ecef; }
@@ -55,14 +54,10 @@
 </head>
 <body>
 
-<!-- MÓDULO 1: PAINEL DE IMPRESSÃO -->
+<!-- MÓDULO 1: PAINEL DE IMPRESSÃO AUTOMÁTICO -->
 <div class="container no-print painel-impressao">
-    <div class="bloco-data">
-        <p>Gere o Relatório (Uma página por dia, Turmas nas Colunas)</p>
-        <label>Selecione o Dia para Imprimir:</label>
-        <input type="date" id="data_impressao">
-    </div>
-    <button type="button" class="btn-imprimir" id="btnImprimirMenu">🖨️ Imprimir Dia Selecionado</button>
+    <p>O sistema irá gerar um relatório completo (Uma folha para cada Dia cadastrado).</p>
+    <button type="button" class="btn-imprimir" id="btnImprimirMenu">🖨️ Imprimir Diários de Bordo</button>
 </div>
 
 <!-- MÓDULO 2: FORMULÁRIO -->
@@ -144,7 +139,7 @@
             </div>
         </fieldset>
 
-        <button type="submit" class="btn-salvar" id="btnSalvar">Adicionar Atividades à Coluna da Turma</button>
+        <button type="submit" class="btn-salvar" id="btnSalvar">Salvar no Banco de Dados</button>
     </form>
 </div>
 
@@ -153,7 +148,6 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
-    // IMPORTANTE: Adicionado o getDoc para ler os dados existentes antes de salvar
     import { getFirestore, collection, getDocs, getDoc, setDoc, doc, query, where } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -173,7 +167,6 @@
     const gradeHorarios = ['08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30'];
     const coresTurmas = ['#ffb3ba', '#ffdfba', '#ffffba', '#baffc9', '#bae1ff', '#e8baff', '#f4c2c2', '#dcd0ff'];
 
-    // Preenche os selects de horário
     document.querySelectorAll('.hora-select').forEach(select => {
         gradeHorarios.forEach(h => {
             const opt = document.createElement('option'); opt.value = h; opt.textContent = h;
@@ -182,7 +175,6 @@
     });
 
     async function inicializarDados() {
-        // Carrega Turmas
         try {
             const snapTurmas = await getDocs(collection(db, "rf_inscricoes"));
             const turmasSet = new Set();
@@ -194,7 +186,6 @@
             });
         } catch(e) {}
 
-        // Carrega Eventos e Passeios
         const comboEvento = document.getElementById('evento_interno');
         try {
             const snapPasseios = await getDocs(collection(db, "rf_passeios"));
@@ -227,7 +218,7 @@
         } catch(e) {}
     }
 
-    // A LÓGICA DE SALVAMENTO CORRIGIDA (União Segura)
+    // SALVA OS DADOS MESCLANDO COM O QUE JÁ EXISTE
     document.getElementById('formTimeline').addEventListener('submit', async function(e) {
         e.preventDefault();
         const data = document.getElementById('data_atividade').value;
@@ -236,14 +227,12 @@
         const docRef = doc(db, "rf_linha_tempo", docId);
         
         try {
-            // 1. Vai no Firebase e puxa o que já existe para essa turma nesse dia
             const docSnap = await getDoc(docRef);
             let cronogramaExistente = {};
             if (docSnap.exists() && docSnap.data().cronograma) {
                 cronogramaExistente = docSnap.data().cronograma;
             }
 
-            // 2. Adiciona apenas os campos que o usuário preencheu agora
             const adicionar = (id, txt) => { 
                 const v = document.getElementById(id).value; 
                 if(v) cronogramaExistente[v] = txt; 
@@ -256,7 +245,6 @@
             if (document.getElementById('evento_interno').value) adicionar('hora_evento', document.getElementById('evento_interno').value);
             adicionar('hora_saida', 'Saída');
 
-            // 3. Salva a coluna da turma atualizada de volta no banco
             await setDoc(docRef, { 
                 data: data, 
                 turma: turma, 
@@ -264,84 +252,84 @@
                 cronograma: cronogramaExistente 
             });
             
-            alert(`Atividades adicionadas à coluna da Turma ${turma}!`);
+            alert(`Atividades salvas na coluna da Turma ${turma}!`);
             
-            // Limpa o formulário, mas mantém Data e Turma para facilitar digitar o próximo evento
             document.getElementById('formTimeline').reset();
             document.getElementById('data_atividade').value = data; 
             document.getElementById('turma').value = turma; 
             
         } catch(e) { 
-            alert("Erro ao salvar no banco."); 
-            console.error(e); 
+            alert("Erro ao salvar."); 
         }
     });
 
-    // A LÓGICA DE IMPRESSÃO CORRIGIDA (Uma página, Filtro por Dia)
+    // IMPRESSÃO COMPLETA (Um dia por página, sem escolhas)
     document.getElementById('btnImprimirMenu').addEventListener('click', async function() {
-        const dataFiltro = document.getElementById('data_impressao').value;
-        
-        if (!dataFiltro) {
-            alert("Por favor, selecione qual Dia você quer imprimir no calendário superior.");
-            return;
-        }
-
         const btn = this; 
-        btn.textContent = "Buscando o dia...";
+        btn.textContent = "Processando o relatório...";
         
         try {
-            // Busca apenas os documentos referentes ao DIA selecionado
-            const qImpressao = query(collection(db, "rf_linha_tempo"), where("data", "==", dataFiltro), where("ceu", "==", ceuLogado));
+            // Busca TODO o histórico deste CEU
+            const qImpressao = query(collection(db, "rf_linha_tempo"), where("ceu", "==", ceuLogado));
             const snapshot = await getDocs(qImpressao);
             
             if(snapshot.empty) {
-                btn.textContent = "🖨️ Imprimir Dia Selecionado";
-                return alert("Não há nenhuma turma com atividade cadastrada para este dia.");
+                btn.textContent = "🖨️ Imprimir Diários de Bordo";
+                return alert("Nenhuma atividade cadastrada ainda.");
             }
 
-            // Agrupa os eventos em suas respectivas colunas (Turmas)
-            const dadosPorTurma = {};
+            // Agrupa os eventos focando primeiramente no DIA
+            // Estrutura: dadosPorDia["2026-07-15"]["10C"]["08:30"] = "Café"
+            const dadosPorDia = {};
+            
             snapshot.forEach(doc => {
                 const d = doc.data();
+                if(!d.data || !d.turma) return; // Evita erros se houver documento incompleto
+                
+                if (!dadosPorDia[d.data]) dadosPorDia[d.data] = {};
                 if (d.cronograma) {
-                    dadosPorTurma[d.turma] = d.cronograma;
+                    dadosPorDia[d.data][d.turma] = d.cronograma;
                 }
             });
 
-            // Separa as turmas (ex: ["5A", "10C"])
-            const turmas = Object.keys(dadosPorTurma).sort();
-            const turmasPorPagina = 6;
-            const dataFormatadaBR = dataFiltro.split('-').reverse().join('/');
-            
+            // Separa os dias em ordem cronológica
+            const diasFormatados = Object.keys(dadosPorDia).sort();
+            const maxColunasPorFolha = 6;
             let htmlFinal = "";
 
-            // Monta a página A4 (Só cria página 2 se passar de 6 turmas no mesmo dia)
-            for (let i = 0; i < turmas.length; i += turmasPorPagina) {
-                const loteTurmas = turmas.slice(i, i + turmasPorPagina);
+            // Loop 1: Percorre cada DIA cadastrado no sistema
+            diasFormatados.forEach(dia => {
+                const dataBR = dia.split('-').reverse().join('/');
+                const turmasNesteDia = Object.keys(dadosPorDia[dia]).sort(); // ex: ["5A", "10C"]
                 
-                htmlFinal += `<div class="pagina-a4">`;
-                htmlFinal += `<div class="cabecalho-dia">${ceuLogado} - Relatório de Atividades - ${dataFormatadaBR}</div>`;
-                htmlFinal += `<table class="tabela-timeline"><thead><tr><th>Horário</th>`;
-                
-                // Cabeçalho das Colunas
-                loteTurmas.forEach((t, index) => {
-                    const cor = coresTurmas[index % coresTurmas.length];
-                    htmlFinal += `<th style="background-color: ${cor};">Turma ${t}</th>`; 
-                });
-                htmlFinal += `</tr></thead><tbody>`;
-
-                // Percorre os horários (Linhas)
-                gradeHorarios.forEach(hora => {
-                    htmlFinal += `<tr><td>${hora}</td>`;
-                    loteTurmas.forEach(t => {
-                        const atividade = dadosPorTurma[t][hora] || '';
-                        htmlFinal += `<td>${atividade}</td>`;
+                // Loop 2: Monta a(s) página(s) para este DIA específico
+                for (let i = 0; i < turmasNesteDia.length; i += maxColunasPorFolha) {
+                    const loteTurmas = turmasNesteDia.slice(i, i + maxColunasPorFolha);
+                    
+                    htmlFinal += `<div class="pagina-a4">`;
+                    htmlFinal += `<div class="cabecalho-dia">${ceuLogado} - Relatório de Atividades - ${dataBR}</div>`;
+                    htmlFinal += `<table class="tabela-timeline"><thead><tr><th>Horário</th>`;
+                    
+                    // Cabeçalho das Colunas = Turmas
+                    loteTurmas.forEach((t, index) => {
+                        const cor = coresTurmas[index % coresTurmas.length];
+                        htmlFinal += `<th style="background-color: ${cor};">Turma ${t}</th>`; 
                     });
-                    htmlFinal += `</tr>`;
-                });
+                    htmlFinal += `</tr></thead><tbody>`;
 
-                htmlFinal += `</tbody></table></div>`;
-            }
+                    // Linhas = Horários
+                    gradeHorarios.forEach(hora => {
+                        htmlFinal += `<tr><td>${hora}</td>`;
+                        loteTurmas.forEach(t => {
+                            const atividade = dadosPorDia[dia][t][hora] || '';
+                            htmlFinal += `<td>${atividade}</td>`;
+                        });
+                        htmlFinal += `</tr>`;
+                    });
+
+                    htmlFinal += `</tbody></table></div>`;
+                }
+            });
 
             // Injeta na tela e aciona a impressora
             document.getElementById('area_impressao').innerHTML = htmlFinal;
@@ -351,7 +339,7 @@
             alert("Erro ao montar a impressão."); 
             console.error(e);
         } finally { 
-            btn.textContent = "🖨️ Imprimir Dia Selecionado"; 
+            btn.textContent = "🖨️ Imprimir Diários de Bordo"; 
         }
     });
 

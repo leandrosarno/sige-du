@@ -29,7 +29,7 @@
         .btn-imprimir { background-color: var(--primary); padding: 12px 25px; }
         .btn-imprimir:hover { background-color: #004494; }
 
-        /* CSS DE IMPRESSÃO A4 - COLUNAS = TURMAS */
+        /* CSS DE IMPRESSÃO A4 (O Segredo da Formatação) */
         #area_impressao { display: none; }
         @media print {
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
@@ -38,12 +38,13 @@
             @page { size: A4 landscape; margin: 10mm; }
             body { padding: 0; background-color: #fff; }
             
-            .pagina-a4 { page-break-after: always; margin-bottom: 20px; }
+            /* Evita criar páginas em branco no final */
+            .pagina-a4 { break-after: page; page-break-after: always; margin-bottom: 20px; }
+            .pagina-a4:last-child { break-after: auto; page-break-after: auto; }
             
-            /* TÍTULO DA PÁGINA COM O DIA AQUI */
             .cabecalho-dia { font-size: 22px; text-align: center; font-weight: bold; color: #333; margin-bottom: 15px; text-transform: uppercase; }
             
-            .tabela-timeline { width: 100%; border-collapse: collapse; text-align: center; font-family: 'Segoe UI', Arial, sans-serif; }
+            .tabela-timeline { width: 100%; border-collapse: collapse; text-align: center; font-family: 'Segoe UI', Arial, sans-serif; page-break-inside: avoid; }
             .tabela-timeline th, .tabela-timeline td { border: 1px solid #777; padding: 8px; font-size: 13px; }
             
             .tabela-timeline td:first-child, .tabela-timeline th:first-child { font-weight: bold; width: 70px; background-color: #e9ecef; }
@@ -54,12 +55,12 @@
 <body>
 
 <div class="container no-print painel-impressao">
-    <p>Imprimir Relatórios (Agrupados por DIA nas páginas, TURMAS nas colunas)</p>
-    <button type="button" class="btn-imprimir" id="btnImprimirMenu">🖨️ Imprimir Relatórios Diários</button>
+    <p>O sistema irá juntar todas as turmas de um mesmo DIA na mesma página.</p>
+    <button type="button" class="btn-imprimir" id="btnImprimirMenu">🖨️ Imprimir Diários de Bordo</button>
 </div>
 
 <div class="container no-print">
-    <h2>Cadastrar Cronograma Diário da Turma</h2>
+    <h2>Cadastrar / Atualizar Atividades</h2>
     <form id="formTimeline">
         <div class="form-grid full-width" style="margin-bottom: 20px;">
             <div>
@@ -77,7 +78,7 @@
             <div class="form-grid">
                 <div>
                     <label>Horário da Chegada</label>
-                    <select id="hora_chegada" class="hora-select"><option value="">Selecione...</option></select>
+                    <select id="hora_chegada" class="hora-select"><option value="">Sem atividade</option></select>
                 </div>
             </div>
         </fieldset>
@@ -91,7 +92,7 @@
                 </div>
                 <div>
                     <label>Horário do Café</label>
-                    <select id="hora_cafe" class="hora-select"><option value="">Selecione...</option></select>
+                    <select id="hora_cafe" class="hora-select"><option value="">Sem atividade</option></select>
                 </div>
                 <div>
                     <label>Almoço (Prédio Ex: CEI, EMEF)</label>
@@ -99,7 +100,7 @@
                 </div>
                 <div>
                     <label>Horário do Almoço</label>
-                    <select id="hora_almoco" class="hora-select"><option value="">Selecione...</option></select>
+                    <select id="hora_almoco" class="hora-select"><option value="">Sem atividade</option></select>
                 </div>
                 <div>
                     <label>Lanche (Prédio Ex: CEI, EMEF)</label>
@@ -107,7 +108,7 @@
                 </div>
                 <div>
                     <label>Horário do Lanche</label>
-                    <select id="hora_lanche" class="hora-select"><option value="">Selecione...</option></select>
+                    <select id="hora_lanche" class="hora-select"><option value="">Sem atividade</option></select>
                 </div>
             </div>
         </fieldset>
@@ -121,7 +122,7 @@
                 </div>
                 <div>
                     <label>Horário de Início</label>
-                    <select id="hora_evento" class="hora-select"><option value="">Selecione...</option></select>
+                    <select id="hora_evento" class="hora-select"><option value="">Sem atividade</option></select>
                 </div>
             </div>
         </fieldset>
@@ -131,16 +132,15 @@
             <div class="form-grid">
                 <div>
                     <label>Horário da Saída</label>
-                    <select id="hora_saida" class="hora-select"><option value="">Selecione...</option></select>
+                    <select id="hora_saida" class="hora-select"><option value="">Sem atividade</option></select>
                 </div>
             </div>
         </fieldset>
 
-        <button type="submit" class="btn-salvar" id="btnSalvar">Salvar Cronograma no Banco</button>
+        <button type="submit" class="btn-salvar" id="btnSalvar">Salvar no Banco de Dados</button>
     </form>
 </div>
 
-<!-- ÁREA DE IMPRESSÃO GERADA PELO JAVASCRIPT -->
 <div id="area_impressao"></div>
 
 <script type="module">
@@ -215,14 +215,14 @@
         } catch(e) {}
     }
 
-    // SALVAR CRONOGRAMA
+    // SALVAMENTO INCREMENTAL (Não apaga o que já existia no banco)
     document.getElementById('formTimeline').addEventListener('submit', async function(e) {
         e.preventDefault();
         const data = document.getElementById('data_atividade').value;
         const turma = document.getElementById('turma').value;
         
-        const cronograma = {};
-        const add = (id, txt) => { const v = document.getElementById(id).value; if(v) cronograma[v] = txt; };
+        const cronogramaAtualizado = {};
+        const add = (id, txt) => { const v = document.getElementById(id).value; if(v) cronogramaAtualizado[v] = txt; };
 
         add('hora_chegada', 'Chegada e Acolhimento');
         add('hora_cafe', `Café (${document.getElementById('predio_cafe').value || '?'})`);
@@ -233,63 +233,84 @@
 
         const docId = `${data}_${turma}`;
         try {
-            await setDoc(doc(db, "rf_linha_tempo", docId), { data, turma, ceu: ceuLogado, cronograma });
-            alert(`Cronograma salvo!`);
+            // MERGE TRUE: A grande diferença. Se você cadastrou o Café de manhã e agora está cadastrando o Almoço, ele apenas junta os dois.
+            await setDoc(doc(db, "rf_linha_tempo", docId), { 
+                data: data, 
+                turma: turma, 
+                ceu: ceuLogado, 
+                cronograma: cronogramaAtualizado 
+            }, { merge: true });
+            
+            alert(`Atividades salvas com sucesso!`);
             document.getElementById('formTimeline').reset();
             document.getElementById('data_atividade').value = data; 
-        } catch(e) { alert("Erro ao salvar."); }
+        } catch(e) { alert("Erro ao salvar no banco."); console.error(e); }
     });
 
-    // LÓGICA DE IMPRESSÃO - GARANTINDO O DIA NO TÍTULO E TURMAS NAS COLUNAS
+    // O FUNIL DEFINITIVO DE IMPRESSÃO
     document.getElementById('btnImprimirMenu').addEventListener('click', async function() {
-        const btn = this; btn.textContent = "Processando...";
+        const btn = this; btn.textContent = "Agrupando dados...";
         
         try {
             const qImpressao = query(collection(db, "rf_linha_tempo"), where("ceu", "==", ceuLogado));
             const snapshot = await getDocs(qImpressao);
             
             if(snapshot.empty) {
-                btn.textContent = "🖨️ Imprimir Relatórios Diários";
-                return alert("Nenhum cronograma cadastrado.");
+                btn.textContent = "🖨️ Imprimir Diários de Bordo";
+                return alert("Nenhuma atividade cadastrada ainda.");
             }
 
-            // Agrupa os dados usando a DATA como base principal
+            // Garante o agrupamento perfeito independentemente de como foi salvo
             const dadosPorDia = {};
+            
             snapshot.forEach(doc => {
                 const d = doc.data();
-                if (!dadosPorDia[d.data]) dadosPorDia[d.data] = {};
-                dadosPorDia[d.data][d.turma] = d.cronograma;
+                const diaBase = d.data;
+                const turmaBase = d.turma;
+
+                // Prevenção contra documentos corrompidos
+                if(!diaBase || !turmaBase) return;
+
+                // Cria o "balde" do Dia
+                if (!dadosPorDia[diaBase]) dadosPorDia[diaBase] = {};
+                // Cria o "balde" da Turma dentro do Dia
+                if (!dadosPorDia[diaBase][turmaBase]) dadosPorDia[diaBase][turmaBase] = {};
+
+                // Despeja as atividades nos horários
+                if (d.cronograma) {
+                    for (let hora in d.cronograma) {
+                        dadosPorDia[diaBase][turmaBase][hora] = d.cronograma[hora];
+                    }
+                }
             });
 
             const diasFormatados = Object.keys(dadosPorDia).sort();
-            const turmasPorPagina = 6;
+            const maxColunasPorFolha = 6;
             let htmlFinal = "";
 
-            // Loop 1: Percorre cada DIA (ex: 2026-07-15, 2026-07-16)
+            // Cria uma página para cada DIA
             diasFormatados.forEach(dia => {
                 const dataBR = dia.split('-').reverse().join('/');
                 const turmasNesteDia = Object.keys(dadosPorDia[dia]).sort();
                 
-                // Loop 2: Divide as turmas desse dia em blocos de 6 colunas
-                for (let i = 0; i < turmasNesteDia.length; i += turmasPorPagina) {
-                    const loteTurmas = turmasNesteDia.slice(i, i + turmasPorPagina);
+                // Se um dia tiver 8 turmas, ele cria a folha 1 (6 turmas) e a folha 2 (2 turmas)
+                for (let i = 0; i < turmasNesteDia.length; i += maxColunasPorFolha) {
+                    const loteTurmas = turmasNesteDia.slice(i, i + maxColunasPorFolha);
                     
                     htmlFinal += `<div class="pagina-a4">`;
-                    // O TÍTULO É A DATA (O DIA AQUI)
                     htmlFinal += `<div class="cabecalho-dia">${ceuLogado} - Linha do Tempo - ${dataBR}</div>`;
                     htmlFinal += `<table class="tabela-timeline"><thead><tr><th>Horário</th>`;
                     
-                    // AS COLUNAS SÃO AS TURMAS
                     loteTurmas.forEach((t, index) => {
                         const cor = coresTurmas[index % coresTurmas.length];
                         htmlFinal += `<th style="background-color: ${cor};">Turma ${t}</th>`; 
                     });
                     htmlFinal += `</tr></thead><tbody>`;
 
-                    // AS LINHAS SÃO OS HORÁRIOS
                     gradeHorarios.forEach(hora => {
                         htmlFinal += `<tr><td>${hora}</td>`;
                         loteTurmas.forEach(t => {
+                            // Busca exatamente no funil que criamos
                             const atividade = dadosPorDia[dia][t][hora] || '';
                             htmlFinal += `<td>${atividade}</td>`;
                         });
@@ -304,9 +325,10 @@
             window.print();
             
         } catch(e) { 
-            alert("Erro na impressão."); 
+            alert("Erro ao montar impressão."); 
+            console.error(e);
         } finally { 
-            btn.textContent = "🖨️ Imprimir Relatórios Diários"; 
+            btn.textContent = "🖨️ Imprimir Diários de Bordo"; 
         }
     });
 

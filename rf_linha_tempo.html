@@ -5,83 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Linha do Tempo - Recreio nas Férias</title>
     <style>
-        :root {
-            --primary: #0056b3;
-            --bg-color: #f4f7f6;
-            --box-bg: #ffffff;
-            --text: #333333;
-            --border: #ccc;
-        }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text);
-            padding: 20px;
-        }
-        .container {
-            background-color: var(--box-bg);
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            max-width: 900px;
-            margin: 0 auto;
-        }
-        h2 { color: var(--primary); border-bottom: 2px solid var(--primary); padding-bottom: 10px; }
+        :root { --primary: #0056b3; --bg-color: #f4f7f6; --box-bg: #ffffff; --text: #333333; --border: #ccc; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); color: var(--text); padding: 20px; }
         
-        fieldset {
-            border: 1px solid var(--border);
-            border-radius: 5px;
-            padding: 15px;
-            margin-bottom: 20px;
-            background-color: #fafafa;
-        }
+        .container { background-color: var(--box-bg); padding: 20px 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 900px; margin: 0 auto 20px auto; }
+        h2 { color: var(--primary); border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-top: 0;}
+        
+        /* Painel de Impressão Destacado */
+        .painel-impressao { background-color: #e9ecef; border-left: 5px solid var(--primary); padding: 15px; display: flex; align-items: flex-end; gap: 15px; border-radius: 4px; margin-bottom: 30px; }
+        
+        fieldset { border: 1px solid var(--border); border-radius: 5px; padding: 15px; margin-bottom: 15px; background-color: #fafafa; }
         legend { font-weight: bold; color: var(--primary); background: #fff; padding: 0 10px; border: 1px solid var(--border); border-radius: 4px; }
         
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            align-items: center;
-        }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; align-items: center; }
         .full-width { grid-column: 1 / -1; }
         
         label { font-weight: bold; font-size: 0.9em; display: block; margin-bottom: 5px; }
         input, select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
         
-        .botoes-acao { display: flex; gap: 15px; margin-top: 20px; }
-        button {
-            padding: 12px 20px; color: white; border: none; border-radius: 4px;
-            cursor: pointer; font-weight: bold; font-size: 1em; flex: 1;
-        }
-        .btn-salvar { background-color: #28a745; }
+        button { padding: 10px 20px; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 1em; }
+        .btn-salvar { background-color: #28a745; width: 100%; padding: 15px;}
         .btn-salvar:hover { background-color: #218838; }
-        .btn-imprimir { background-color: var(--primary); }
+        .btn-imprimir { background-color: var(--primary); height: 40px;}
         .btn-imprimir:hover { background-color: #004494; }
 
-        /* =========================================
-           CSS ESPECÍFICO PARA IMPRESSÃO A4 PAISAGEM
-           ========================================= */
+        /* CSS DE IMPRESSÃO A4 */
         #area_impressao { display: none; }
-        
         @media print {
             .no-print { display: none !important; }
             #area_impressao { display: block !important; }
             @page { size: A4 landscape; margin: 10mm; }
             body { padding: 0; background-color: #fff; }
-            
-            .tabela-timeline {
-                width: 100%;
-                border-collapse: collapse;
-                page-break-after: always;
-                margin-bottom: 20px;
-                text-align: center;
-                font-family: Arial, sans-serif;
-            }
-            .tabela-timeline th, .tabela-timeline td {
-                border: 1px solid #000;
-                padding: 8px;
-                font-size: 12px;
-            }
+            .tabela-timeline { width: 100%; border-collapse: collapse; page-break-after: always; text-align: center; font-family: Arial, sans-serif; }
+            .tabela-timeline th, .tabela-timeline td { border: 1px solid #000; padding: 8px; font-size: 12px; }
             .tabela-timeline th { background-color: #f0f0f0; font-weight: bold; }
             .tabela-timeline td:first-child { font-weight: bold; width: 60px; background-color: #f9f9f9; }
         }
@@ -89,9 +45,18 @@
 </head>
 <body>
 
-<!-- ÁREA DO FORMULÁRIO (Oculta na impressão) -->
+<!-- MÓDULO 1: PAINEL DE IMPRESSÃO INDEPENDENTE -->
+<div class="container no-print painel-impressao">
+    <div style="flex: 1;">
+        <label for="data_impressao">Deseja imprimir a Linha do Tempo de qual dia?</label>
+        <input type="date" id="data_impressao">
+    </div>
+    <button type="button" class="btn-imprimir" id="btnImprimirMenu">Gerar e Imprimir (A4)</button>
+</div>
+
+<!-- MÓDULO 2: FORMULÁRIO DE CADASTRO -->
 <div class="container no-print">
-    <h2>Montar Linha do Tempo Diária</h2>
+    <h2>Cadastrar/Editar Cronograma da Turma</h2>
     <form id="formTimeline">
         
         <div class="form-grid full-width" style="margin-bottom: 20px;">
@@ -116,11 +81,11 @@
         </fieldset>
 
         <fieldset>
-            <legend>2. Refeições (Informe o Prédio e o Horário)</legend>
+            <legend>2. Refeições</legend>
             <div class="form-grid">
                 <div>
                     <label>Café (Prédio Ex: CEI, EMEI)</label>
-                    <input type="text" id="predio_cafe" placeholder="Onde será?">
+                    <input type="text" id="predio_cafe">
                 </div>
                 <div>
                     <label>Horário do Café</label>
@@ -129,7 +94,7 @@
 
                 <div>
                     <label>Almoço (Prédio Ex: CEI, EMEF)</label>
-                    <input type="text" id="predio_almoco" placeholder="Onde será?">
+                    <input type="text" id="predio_almoco">
                 </div>
                 <div>
                     <label>Horário do Almoço</label>
@@ -138,7 +103,7 @@
 
                 <div>
                     <label>Lanche (Prédio Ex: CEI, EMEF)</label>
-                    <input type="text" id="predio_lanche" placeholder="Onde será?">
+                    <input type="text" id="predio_lanche">
                 </div>
                 <div>
                     <label>Horário do Lanche</label>
@@ -148,27 +113,17 @@
         </fieldset>
 
         <fieldset>
-            <legend>3. Atividade e Evento Interno</legend>
+            <legend>3. Eventos / Passeios / Atrações</legend>
             <div class="form-grid">
-                <div>
-                    <label>Atividade (Tipo/Descrição)</label>
-                    <input type="text" id="desc_atividade" placeholder="Ex: Gincana, Leitura...">
-                </div>
-                <div>
-                    <label>Espaço da Atividade</label>
-                    <input type="text" id="espaco_atividade" placeholder="Ex: Quadra, Sala 4...">
-                </div>
                 <div class="full-width">
-                    <label>Horário da Atividade</label>
-                    <select id="hora_atividade" class="hora-select" style="width: 50%;"><option value="">Selecione...</option></select>
+                    <label>Atração Interna ou Passeio Externo <span id="load_evento" style="font-size: 0.8em; color: gray;"></span></label>
+                    <select id="evento_interno">
+                        <option value="">Nenhum evento selecionado...</option>
+                        <!-- Os optgroups serão injetados aqui -->
+                    </select>
                 </div>
-
-                <div style="margin-top: 15px;">
-                    <label>Evento Interno (Atração) <span id="load_evento" style="font-size: 0.8em; color: gray;"></span></label>
-                    <select id="evento_interno"><option value="">Selecione...</option></select>
-                </div>
-                <div style="margin-top: 15px;">
-                    <label>Horário do Evento</label>
+                <div>
+                    <label>Horário de Início (Para alinhar na tabela)</label>
                     <select id="hora_evento" class="hora-select"><option value="">Selecione...</option></select>
                 </div>
             </div>
@@ -184,14 +139,11 @@
             </div>
         </fieldset>
 
-        <div class="botoes-acao">
-            <button type="submit" class="btn-salvar" id="btnSalvar">Salvar Cronograma da Turma</button>
-            <button type="button" class="btn-imprimir" id="btnImprimir">Gerar e Imprimir (A4)</button>
-        </div>
+        <button type="submit" class="btn-salvar" id="btnSalvar">Salvar Cronograma desta Turma</button>
     </form>
 </div>
 
-<!-- ÁREA DE IMPRESSÃO (Visível apenas ao imprimir) -->
+<!-- ÁREA DE IMPRESSÃO (Invisível na tela, formata apenas no papel) -->
 <div id="area_impressao"></div>
 
 <script type="module">
@@ -212,22 +164,18 @@
     const db = getFirestore(app);
     const ceuLogado = "CEU Caminho do Mar";
 
-    // Grade de horários padrão do Recreio nas Férias
     const gradeHorarios = ['08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30'];
 
-    // Preenche todos os combos de horário do formulário
     document.querySelectorAll('.hora-select').forEach(select => {
         gradeHorarios.forEach(h => {
-            const opt = document.createElement('option');
-            opt.value = h; opt.textContent = h;
+            const opt = document.createElement('option'); opt.value = h; opt.textContent = h;
             select.appendChild(opt);
         });
     });
 
-    // Carregar Turmas e Eventos
     async function inicializarDados() {
+        // 1. Carregar Turmas
         try {
-            // Turmas
             const snapTurmas = await getDocs(collection(db, "rf_inscricoes"));
             const turmasSet = new Set();
             snapTurmas.forEach(doc => { if (doc.data().turma) turmasSet.add(doc.data().turma); });
@@ -236,135 +184,121 @@
                 const opt = document.createElement('option'); opt.value = t; opt.textContent = t;
                 comboTurma.appendChild(opt);
             });
+        } catch(e) { console.error("Erro turmas", e); }
 
-            // Eventos
-            const qEventos = query(collection(db, "rf_atracoes"), where("ceus", "==", ceuLogado));
-            const snapEventos = await getDocs(qEventos);
-            const comboEvento = document.getElementById('evento_interno');
-            snapEventos.forEach(doc => {
-                const opt = document.createElement('option'); 
-                opt.value = doc.data().nome || doc.data().titulo || "Atração"; 
-                opt.textContent = opt.value;
-                comboEvento.appendChild(opt);
-            });
-        } catch (error) {
-            console.error("Erro ao carregar:", error);
-        }
+        // 2. Carregar Eventos (Passeios + Atrações)
+        const comboEvento = document.getElementById('evento_interno');
+        
+        try {
+            // 2.1 Buscar Passeios
+            const snapPasseios = await getDocs(collection(db, "rf_passeios"));
+            if (!snapPasseios.empty) {
+                const grupoPasseios = document.createElement('optgroup');
+                grupoPasseios.label = "Passeios Externos";
+                snapPasseios.forEach(doc => {
+                    const d = doc.data();
+                    const opt = document.createElement('option');
+                    // Formata a string que será salva no banco da linha do tempo
+                    opt.value = `PASSEIO: ${d.passeio} (Saída: ${d.saidaCeu} / Volta: ${d.chegadaCeu})`;
+                    opt.textContent = opt.value;
+                    grupoPasseios.appendChild(opt);
+                });
+                comboEvento.appendChild(grupoPasseios);
+            }
+
+            // 2.2 Buscar Atrações Internas (Filtradas pelo CEU)
+            const qAtracoes = query(collection(db, "rf_atracoes"), where("ceus", "==", ceuLogado));
+            const snapAtracoes = await getDocs(qAtracoes);
+            if (!snapAtracoes.empty) {
+                const grupoAtracoes = document.createElement('optgroup');
+                grupoAtracoes.label = "Atrações Internas";
+                snapAtracoes.forEach(doc => {
+                    const d = doc.data();
+                    const opt = document.createElement('option');
+                    // O campo de horário é texto livre (ex: "08:00 às 09:00"), exibimos como dica
+                    const dicaHorario = d.horario ? ` | Horário previsto: ${d.horario}` : '';
+                    opt.value = `ATRAÇÃO: ${d.titulo} - Local: ${d.local}${dicaHorario}`;
+                    opt.textContent = opt.value;
+                    grupoAtracoes.appendChild(opt);
+                });
+                comboEvento.appendChild(grupoAtracoes);
+            }
+        } catch(e) { console.error("Erro eventos", e); }
     }
 
-    // SALVAR O CRONOGRAMA NO FIREBASE
+    // SALVAR
     document.getElementById('formTimeline').addEventListener('submit', async function(e) {
         e.preventDefault();
         const data = document.getElementById('data_atividade').value;
         const turma = document.getElementById('turma').value;
-        if(!data || !turma) return alert("Selecione a Data e a Turma.");
-
-        // Monta um objeto de horários dinâmico para facilitar a impressão depois
-        const cronograma = {};
         
+        const cronograma = {};
         const addAoCronograma = (idHora, texto) => {
             const h = document.getElementById(idHora).value;
             if (h) cronograma[h] = texto;
         };
 
         addAoCronograma('hora_chegada', 'Chegada e Acolhimento');
-        addAoCronograma('hora_cafe', `Café (${document.getElementById('predio_cafe').value || 'Não inf.'})`);
-        addAoCronograma('hora_almoco', `Almoço (${document.getElementById('predio_almoco').value || 'Não inf.'})`);
-        addAoCronograma('hora_lanche', `Lanche (${document.getElementById('predio_lanche').value || 'Não inf.'})`);
-        
-        const textoAtividade = document.getElementById('desc_atividade').value;
-        const espacoAtividade = document.getElementById('espaco_atividade').value;
-        if(textoAtividade || espacoAtividade) {
-            addAoCronograma('hora_atividade', `${textoAtividade} no(a) ${espacoAtividade}`);
-        }
+        addAoCronograma('hora_cafe', `Café (${document.getElementById('predio_cafe').value || '?'})`);
+        addAoCronograma('hora_almoco', `Almoço (${document.getElementById('predio_almoco').value || '?'})`);
+        addAoCronograma('hora_lanche', `Lanche (${document.getElementById('predio_lanche').value || '?'})`);
         
         if (document.getElementById('evento_interno').value) {
-            addAoCronograma('hora_evento', `Atração: ${document.getElementById('evento_interno').value}`);
+            addAoCronograma('hora_evento', document.getElementById('evento_interno').value);
         }
-        
         addAoCronograma('hora_saida', 'Saída');
 
-        // Cria um ID único por dia e turma, assim, se o usuário preencher de novo, ele ATUALIZA, não duplica.
         const docId = `${data}_${turma}`;
-        
         try {
-            await setDoc(doc(db, "rf_linha_tempo", docId), {
-                data: data,
-                turma: turma,
-                ceu: ceuLogado,
-                cronograma: cronograma,
-                atualizadoEm: new Date()
-            });
-            alert(`Cronograma da turma ${turma} salvo com sucesso!`);
+            await setDoc(doc(db, "rf_linha_tempo", docId), { data, turma, ceu: ceuLogado, cronograma });
+            alert(`Cronograma da turma ${turma} salvo!`);
             document.getElementById('formTimeline').reset();
-            document.getElementById('data_atividade').value = data; // Mantém a data para facilitar os próximos
-        } catch (error) {
-            console.error("Erro ao salvar:", error);
-            alert("Erro ao salvar cronograma.");
-        }
+            document.getElementById('data_atividade').value = data; // Facilita próximo cadastro
+        } catch(e) { alert("Erro ao salvar."); console.error(e); }
     });
 
-    // LÓGICA DE IMPRESSÃO A4
-    document.getElementById('btnImprimir').addEventListener('click', async function() {
-        const dataFiltro = document.getElementById('data_atividade').value;
-        if(!dataFiltro) return alert("Por favor, selecione a Data do Programa no topo para gerar o relatório.");
+    // IMPRIMIR INDEPENDENTE
+    document.getElementById('btnImprimirMenu').addEventListener('click', async function() {
+        const dataFiltro = document.getElementById('data_impressao').value;
+        if(!dataFiltro) return alert("Selecione uma data no painel superior para imprimir.");
 
-        const btn = this;
-        btn.textContent = "Buscando dados...";
-
+        const btn = this; btn.textContent = "Buscando...";
         try {
-            // Busca apenas os cronogramas da data selecionada
             const qImpressao = query(collection(db, "rf_linha_tempo"), where("data", "==", dataFiltro), where("ceu", "==", ceuLogado));
             const snapshot = await getDocs(qImpressao);
             
             if(snapshot.empty) {
                 btn.textContent = "Gerar e Imprimir (A4)";
-                return alert("Nenhum cronograma cadastrado para esta data.");
+                return alert("Nenhum dado cadastrado para esta data.");
             }
 
-            // Organiza os dados em um mapa: dadosImpressao["4A"]["09:30"] = "Futebol..."
             const dadosImpressao = {};
-            snapshot.forEach(doc => {
-                const d = doc.data();
-                dadosImpressao[d.turma] = d.cronograma;
-            });
-
+            snapshot.forEach(doc => { dadosImpressao[doc.data().turma] = doc.data().cronograma; });
             const turmasEncontradas = Object.keys(dadosImpressao).sort();
             
-            // Fatiamento (Chunk): 6 turmas por folha A4 para não estourar a largura
             const turmasPorPagina = 6;
-            let htmlHTML = `<h2>Linha do Tempo - ${dataFiltro.split('-').reverse().join('/')} - ${ceuLogado}</h2>`;
+            let htmlHTML = ``;
 
             for (let i = 0; i < turmasEncontradas.length; i += turmasPorPagina) {
                 const turmasLote = turmasEncontradas.slice(i, i + turmasPorPagina);
                 
+                htmlHTML += `<h2>Linha do Tempo - ${dataFiltro.split('-').reverse().join('/')} - ${ceuLogado}</h2>`;
                 htmlHTML += `<table class="tabela-timeline"><thead><tr><th>Horário</th>`;
                 turmasLote.forEach(t => htmlHTML += `<th>Turma ${t}</th>`);
                 htmlHTML += `</tr></thead><tbody>`;
 
-                // Monta as linhas cruzando o horário com a turma
                 gradeHorarios.forEach(hora => {
                     htmlHTML += `<tr><td>${hora}</td>`;
-                    turmasLote.forEach(t => {
-                        const atividade = dadosImpressao[t][hora] || '';
-                        htmlHTML += `<td>${atividade}</td>`;
-                    });
+                    turmasLote.forEach(t => htmlHTML += `<td>${dadosImpressao[t][hora] || ''}</td>`);
                     htmlHTML += `</tr>`;
                 });
-                
                 htmlHTML += `</tbody></table>`;
             }
 
-            // Injeta o HTML gerado na div de impressão e chama o print do navegador
             document.getElementById('area_impressao').innerHTML = htmlHTML;
             window.print();
-            
-        } catch (error) {
-            console.error(error);
-            alert("Erro ao montar impressão.");
-        } finally {
-            btn.textContent = "Gerar e Imprimir (A4)";
-        }
+        } catch(e) { alert("Erro na impressão."); console.error(e); } 
+        finally { btn.textContent = "Gerar e Imprimir (A4)"; }
     });
 
     window.onload = inicializarDados;

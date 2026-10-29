@@ -30,45 +30,51 @@
         .btn-imprimir { background-color: var(--primary); padding: 12px 25px; }
         .btn-imprimir:hover { background-color: #004494; }
 
-        /* CSS DE IMPRESSÃO A4 */
+        /* CSS DE IMPRESSÃO A4 (Colorido) */
         #area_impressao { display: none; }
         @media print {
+            * {
+                /* Força o navegador a imprimir as cores de fundo */
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
             .no-print { display: none !important; }
             #area_impressao { display: block !important; }
             @page { size: A4 landscape; margin: 10mm; }
             body { padding: 0; background-color: #fff; }
             
             .pagina-a4 { page-break-after: always; margin-bottom: 20px; }
-            .pagina-a4 h2 { font-size: 18px; text-align: center; border: none; margin-bottom: 15px; }
+            .cabecalho-dia { font-size: 22px; text-align: center; border: none; margin-bottom: 15px; color: #333; font-weight: bold;}
             
-            .tabela-timeline { width: 100%; border-collapse: collapse; text-align: center; font-family: Arial, sans-serif; }
-            .tabela-timeline th, .tabela-timeline td { border: 1px solid #000; padding: 6px; font-size: 12px; }
-            .tabela-timeline th { background-color: #f0f0f0; font-weight: bold; text-transform: uppercase; }
-            .tabela-timeline td:first-child { font-weight: bold; width: 60px; background-color: #f9f9f9; }
+            .tabela-timeline { width: 100%; border-collapse: collapse; text-align: center; font-family: 'Segoe UI', Arial, sans-serif; }
+            .tabela-timeline th, .tabela-timeline td { border: 1px solid #999; padding: 8px; font-size: 13px; }
+            
+            /* Coluna de horários */
+            .tabela-timeline td:first-child, .tabela-timeline th:first-child { font-weight: bold; width: 70px; background-color: #e9ecef; }
+            
+            /* Zebrado leve nas linhas para facilitar a leitura */
+            .tabela-timeline tbody tr:nth-child(even) { background-color: #f8f9fa; }
         }
     </style>
 </head>
 <body>
 
-<!-- MÓDULO 1: PAINEL DE IMPRESSÃO GERAL -->
 <div class="container no-print painel-impressao">
-    <p>Gere todas as Linhas do Tempo das turmas cadastradas com um clique.</p>
-    <button type="button" class="btn-imprimir" id="btnImprimirMenu">🖨️ Imprimir Relatório Completo (A4)</button>
+    <p>Gerar todos os Relatórios Diários (A4 Paisagem, Agrupado por Dia)</p>
+    <button type="button" class="btn-imprimir" id="btnImprimirMenu">🖨️ Imprimir Diários de Bordo</button>
 </div>
 
-<!-- MÓDULO 2: FORMULÁRIO DE CADASTRO -->
 <div class="container no-print">
     <h2>Cadastrar/Editar Cronograma</h2>
     <form id="formTimeline">
-        
         <div class="form-grid full-width" style="margin-bottom: 20px;">
-            <div>
-                <label>Turma <span id="load_turma" style="font-size: 0.8em; color: gray;"></span></label>
-                <select id="turma" required><option value="">Selecione...</option></select>
-            </div>
             <div>
                 <label>Data do Programa</label>
                 <input type="date" id="data_atividade" required>
+            </div>
+            <div>
+                <label>Turma <span id="load_turma" style="font-size: 0.8em; color: gray;"></span></label>
+                <select id="turma" required><option value="">Selecione...</option></select>
             </div>
         </div>
 
@@ -93,7 +99,6 @@
                     <label>Horário do Café</label>
                     <select id="hora_cafe" class="hora-select"><option value="">Selecione...</option></select>
                 </div>
-
                 <div>
                     <label>Almoço (Prédio Ex: CEI, EMEF)</label>
                     <input type="text" id="predio_almoco">
@@ -102,7 +107,6 @@
                     <label>Horário do Almoço</label>
                     <select id="hora_almoco" class="hora-select"><option value="">Selecione...</option></select>
                 </div>
-
                 <div>
                     <label>Lanche (Prédio Ex: CEI, EMEF)</label>
                     <input type="text" id="predio_lanche">
@@ -121,11 +125,10 @@
                     <label>Atração Interna ou Passeio Externo <span id="load_evento" style="font-size: 0.8em; color: gray;"></span></label>
                     <select id="evento_interno">
                         <option value="">Nenhum evento selecionado...</option>
-                        <!-- Os optgroups injetados dinamicamente via JS -->
                     </select>
                 </div>
                 <div>
-                    <label>Horário de Início (Para alinhar na tabela)</label>
+                    <label>Horário de Início</label>
                     <select id="hora_evento" class="hora-select"><option value="">Selecione...</option></select>
                 </div>
             </div>
@@ -141,7 +144,7 @@
             </div>
         </fieldset>
 
-        <button type="submit" class="btn-salvar" id="btnSalvar">Salvar Cronograma no Banco</button>
+        <button type="submit" class="btn-salvar" id="btnSalvar">Salvar Cronograma da Turma</button>
     </form>
 </div>
 
@@ -167,6 +170,9 @@
     const ceuLogado = "CEU Caminho do Mar";
 
     const gradeHorarios = ['08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30'];
+    
+    // Cores pastéis amigáveis para as colunas das turmas no relatório impresso
+    const coresTurmas = ['#ffb3ba', '#ffdfba', '#ffffba', '#baffc9', '#bae1ff', '#e8baff', '#f4c2c2', '#dcd0ff'];
 
     document.querySelectorAll('.hora-select').forEach(select => {
         gradeHorarios.forEach(h => {
@@ -176,7 +182,6 @@
     });
 
     async function inicializarDados() {
-        // Carregar Turmas
         try {
             const snapTurmas = await getDocs(collection(db, "rf_inscricoes"));
             const turmasSet = new Set();
@@ -188,7 +193,6 @@
             });
         } catch(e) { console.error(e); }
 
-        // Carregar Eventos e Passeios
         const comboEvento = document.getElementById('evento_interno');
         try {
             const snapPasseios = await getDocs(collection(db, "rf_passeios"));
@@ -211,7 +215,7 @@
                 snapAtracoes.forEach(doc => {
                     const d = doc.data();
                     const opt = document.createElement('option');
-                    const dicaHorario = d.horario ? ` | Horário: ${d.horario}` : '';
+                    const dicaHorario = d.horario ? ` | ${d.horario}` : '';
                     opt.value = `ATRAÇÃO: ${d.titulo} - ${d.local}${dicaHorario}`;
                     opt.textContent = opt.value;
                     grupoAtracoes.appendChild(opt);
@@ -221,7 +225,7 @@
         } catch(e) { console.error(e); }
     }
 
-    // SALVAR DADOS
+    // SALVAR
     document.getElementById('formTimeline').addEventListener('submit', async function(e) {
         e.preventDefault();
         const data = document.getElementById('data_atividade').value;
@@ -237,65 +241,64 @@
         if (document.getElementById('evento_interno').value) add('hora_evento', document.getElementById('evento_interno').value);
         add('hora_saida', 'Saída');
 
-        const docId = `${turma}_${data}`;
+        const docId = `${data}_${turma}`;
         try {
             await setDoc(doc(db, "rf_linha_tempo", docId), { data, turma, ceu: ceuLogado, cronograma });
-            alert(`Salvo para a turma ${turma} no dia ${data.split('-').reverse().join('/')}!`);
+            alert(`Cronograma da Turma ${turma} salvo para o dia ${data.split('-').reverse().join('/')}!`);
             document.getElementById('formTimeline').reset();
-            document.getElementById('turma').value = turma; // Facilita manter a turma para preencher o próximo dia
+            document.getElementById('data_atividade').value = data; // Mantém a data para agilizar digitação
         } catch(e) { alert("Erro ao salvar."); console.error(e); }
     });
 
-    // LÓGICA DE IMPRESSÃO CORRIGIDA (Eixo X = Dias / Eixo Y = Horários)
+    // IMPRIMIR AGRUPADO POR DIA (Turmas nas Colunas)
     document.getElementById('btnImprimirMenu').addEventListener('click', async function() {
-        const btn = this; btn.textContent = "Buscando e processando dados...";
+        const btn = this; btn.textContent = "Buscando dados e formatando...";
         
         try {
-            // 1. Busca todos os cronogramas do CEU
             const qImpressao = query(collection(db, "rf_linha_tempo"), where("ceu", "==", ceuLogado));
             const snapshot = await getDocs(qImpressao);
             
             if(snapshot.empty) {
-                btn.textContent = "🖨️ Imprimir Relatório Completo (A4)";
-                return alert("Nenhum dado cadastrado para este CEU.");
+                btn.textContent = "🖨️ Imprimir Diários de Bordo";
+                return alert("Nenhum cronograma cadastrado para este CEU.");
             }
 
-            // 2. Organiza os dados no formato: dadosPorTurma["4A"]["2026-07-15"]["08:30"]
-            const dadosPorTurma = {};
+            // Estrutura: dadosPorDia["2026-07-15"]["4A"]["08:30"] = "Café..."
+            const dadosPorDia = {};
             snapshot.forEach(doc => {
                 const d = doc.data();
-                if (!dadosPorTurma[d.turma]) dadosPorTurma[d.turma] = {};
-                dadosPorTurma[d.turma][d.data] = d.cronograma;
+                if (!dadosPorDia[d.data]) dadosPorDia[d.data] = {};
+                dadosPorDia[d.data][d.turma] = d.cronograma;
             });
 
-            const turmas = Object.keys(dadosPorTurma).sort();
-            const diasPorPagina = 6; // Limite de colunas (dias) para não estourar a folha A4
+            const diasFormatados = Object.keys(dadosPorDia).sort();
+            const turmasPorPagina = 6;
             let htmlFinal = "";
 
-            // 3. Monta as páginas Turma por Turma
-            turmas.forEach(turma => {
-                const diasCadastrados = Object.keys(dadosPorTurma[turma]).sort();
+            diasFormatados.forEach(dia => {
+                const dataBR = dia.split('-').reverse().join('/');
+                const turmasNesteDia = Object.keys(dadosPorDia[dia]).sort();
                 
-                // Se a turma tem muitos dias, fatiamos as colunas em mais de uma página
-                for (let i = 0; i < diasCadastrados.length; i += diasPorPagina) {
-                    const diasLote = diasCadastrados.slice(i, i + diasPorPagina);
+                // Quebra as turmas em lotes de 6 para caber no A4 Paisagem
+                for (let i = 0; i < turmasNesteDia.length; i += turmasPorPagina) {
+                    const loteTurmas = turmasNesteDia.slice(i, i + turmasPorPagina);
                     
                     htmlFinal += `<div class="pagina-a4">`;
-                    htmlFinal += `<h2>${ceuLogado} - Linha do Tempo - Turma ${turma}</h2>`;
+                    htmlFinal += `<div class="cabecalho-dia">Diário de Bordo - ${dataBR} (${ceuLogado})</div>`;
                     htmlFinal += `<table class="tabela-timeline"><thead><tr><th>Horário</th>`;
                     
-                    // Cabeçalho das Colunas (Dias formatados para DD/MM)
-                    diasLote.forEach(dia => {
-                        const partes = dia.split('-'); // ex: 2026-07-15
-                        htmlFinal += `<th>${partes[2]}/${partes[1]}</th>`; 
+                    // Cabeçalho das Turmas (Colorido)
+                    loteTurmas.forEach((t, index) => {
+                        const cor = coresTurmas[index % coresTurmas.length];
+                        htmlFinal += `<th style="background-color: ${cor};">Turma ${t}</th>`; 
                     });
                     htmlFinal += `</tr></thead><tbody>`;
 
-                    // Linhas da Tabela (Horários)
+                    // Linhas de Horário
                     gradeHorarios.forEach(hora => {
                         htmlFinal += `<tr><td>${hora}</td>`;
-                        diasLote.forEach(dia => {
-                            const atividade = dadosPorTurma[turma][dia][hora] || '';
+                        loteTurmas.forEach(t => {
+                            const atividade = dadosPorDia[dia][t][hora] || '';
                             htmlFinal += `<td>${atividade}</td>`;
                         });
                         htmlFinal += `</tr>`;
@@ -305,7 +308,6 @@
                 }
             });
 
-            // 4. Injeta na tela e chama a impressão
             document.getElementById('area_impressao').innerHTML = htmlFinal;
             window.print();
             
@@ -313,7 +315,7 @@
             alert("Erro na impressão."); 
             console.error(e); 
         } finally { 
-            btn.textContent = "🖨️ Imprimir Relatório Completo (A4)"; 
+            btn.textContent = "🖨️ Imprimir Diários de Bordo"; 
         }
     });
 

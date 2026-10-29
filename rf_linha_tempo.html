@@ -11,8 +11,9 @@
         .container { background-color: var(--box-bg); padding: 20px 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 900px; margin: 0 auto 20px auto; }
         h2 { color: var(--primary); border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-top: 0;}
         
-        /* Painel de Impressão Destacado */
-        .painel-impressao { background-color: #e9ecef; border-left: 5px solid var(--primary); padding: 15px; display: flex; align-items: flex-end; gap: 15px; border-radius: 4px; margin-bottom: 30px; }
+        /* Painel de Impressão */
+        .painel-impressao { background-color: #e9ecef; border-left: 5px solid var(--primary); padding: 15px; display: flex; align-items: center; justify-content: space-between; border-radius: 4px; margin-bottom: 30px; }
+        .painel-impressao p { margin: 0; font-weight: bold; color: var(--text); }
         
         fieldset { border: 1px solid var(--border); border-radius: 5px; padding: 15px; margin-bottom: 15px; background-color: #fafafa; }
         legend { font-weight: bold; color: var(--primary); background: #fff; padding: 0 10px; border: 1px solid var(--border); border-radius: 4px; }
@@ -26,7 +27,7 @@
         button { padding: 10px 20px; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 1em; }
         .btn-salvar { background-color: #28a745; width: 100%; padding: 15px;}
         .btn-salvar:hover { background-color: #218838; }
-        .btn-imprimir { background-color: var(--primary); height: 40px;}
+        .btn-imprimir { background-color: var(--primary); padding: 12px 25px; }
         .btn-imprimir:hover { background-color: #004494; }
 
         /* CSS DE IMPRESSÃO A4 */
@@ -36,37 +37,38 @@
             #area_impressao { display: block !important; }
             @page { size: A4 landscape; margin: 10mm; }
             body { padding: 0; background-color: #fff; }
-            .tabela-timeline { width: 100%; border-collapse: collapse; page-break-after: always; text-align: center; font-family: Arial, sans-serif; }
-            .tabela-timeline th, .tabela-timeline td { border: 1px solid #000; padding: 8px; font-size: 12px; }
-            .tabela-timeline th { background-color: #f0f0f0; font-weight: bold; }
+            
+            .pagina-a4 { page-break-after: always; margin-bottom: 20px; }
+            .pagina-a4 h2 { font-size: 18px; text-align: center; border: none; margin-bottom: 15px; }
+            
+            .tabela-timeline { width: 100%; border-collapse: collapse; text-align: center; font-family: Arial, sans-serif; }
+            .tabela-timeline th, .tabela-timeline td { border: 1px solid #000; padding: 6px; font-size: 12px; }
+            .tabela-timeline th { background-color: #f0f0f0; font-weight: bold; text-transform: uppercase; }
             .tabela-timeline td:first-child { font-weight: bold; width: 60px; background-color: #f9f9f9; }
         }
     </style>
 </head>
 <body>
 
-<!-- MÓDULO 1: PAINEL DE IMPRESSÃO INDEPENDENTE -->
+<!-- MÓDULO 1: PAINEL DE IMPRESSÃO GERAL -->
 <div class="container no-print painel-impressao">
-    <div style="flex: 1;">
-        <label for="data_impressao">Deseja imprimir a Linha do Tempo de qual dia?</label>
-        <input type="date" id="data_impressao">
-    </div>
-    <button type="button" class="btn-imprimir" id="btnImprimirMenu">Gerar e Imprimir (A4)</button>
+    <p>Gere todas as Linhas do Tempo das turmas cadastradas com um clique.</p>
+    <button type="button" class="btn-imprimir" id="btnImprimirMenu">🖨️ Imprimir Relatório Completo (A4)</button>
 </div>
 
 <!-- MÓDULO 2: FORMULÁRIO DE CADASTRO -->
 <div class="container no-print">
-    <h2>Cadastrar/Editar Cronograma da Turma</h2>
+    <h2>Cadastrar/Editar Cronograma</h2>
     <form id="formTimeline">
         
         <div class="form-grid full-width" style="margin-bottom: 20px;">
             <div>
-                <label>Data do Programa</label>
-                <input type="date" id="data_atividade" required>
-            </div>
-            <div>
                 <label>Turma <span id="load_turma" style="font-size: 0.8em; color: gray;"></span></label>
                 <select id="turma" required><option value="">Selecione...</option></select>
+            </div>
+            <div>
+                <label>Data do Programa</label>
+                <input type="date" id="data_atividade" required>
             </div>
         </div>
 
@@ -119,7 +121,7 @@
                     <label>Atração Interna ou Passeio Externo <span id="load_evento" style="font-size: 0.8em; color: gray;"></span></label>
                     <select id="evento_interno">
                         <option value="">Nenhum evento selecionado...</option>
-                        <!-- Os optgroups serão injetados aqui -->
+                        <!-- Os optgroups injetados dinamicamente via JS -->
                     </select>
                 </div>
                 <div>
@@ -139,11 +141,11 @@
             </div>
         </fieldset>
 
-        <button type="submit" class="btn-salvar" id="btnSalvar">Salvar Cronograma desta Turma</button>
+        <button type="submit" class="btn-salvar" id="btnSalvar">Salvar Cronograma no Banco</button>
     </form>
 </div>
 
-<!-- ÁREA DE IMPRESSÃO (Invisível na tela, formata apenas no papel) -->
+<!-- ÁREA DE IMPRESSÃO -->
 <div id="area_impressao"></div>
 
 <script type="module">
@@ -174,7 +176,7 @@
     });
 
     async function inicializarDados() {
-        // 1. Carregar Turmas
+        // Carregar Turmas
         try {
             const snapTurmas = await getDocs(collection(db, "rf_inscricoes"));
             const turmasSet = new Set();
@@ -184,21 +186,17 @@
                 const opt = document.createElement('option'); opt.value = t; opt.textContent = t;
                 comboTurma.appendChild(opt);
             });
-        } catch(e) { console.error("Erro turmas", e); }
+        } catch(e) { console.error(e); }
 
-        // 2. Carregar Eventos (Passeios + Atrações)
+        // Carregar Eventos e Passeios
         const comboEvento = document.getElementById('evento_interno');
-        
         try {
-            // 2.1 Buscar Passeios
             const snapPasseios = await getDocs(collection(db, "rf_passeios"));
             if (!snapPasseios.empty) {
-                const grupoPasseios = document.createElement('optgroup');
-                grupoPasseios.label = "Passeios Externos";
+                const grupoPasseios = document.createElement('optgroup'); grupoPasseios.label = "Passeios Externos";
                 snapPasseios.forEach(doc => {
                     const d = doc.data();
                     const opt = document.createElement('option');
-                    // Formata a string que será salva no banco da linha do tempo
                     opt.value = `PASSEIO: ${d.passeio} (Saída: ${d.saidaCeu} / Volta: ${d.chegadaCeu})`;
                     opt.textContent = opt.value;
                     grupoPasseios.appendChild(opt);
@@ -206,99 +204,117 @@
                 comboEvento.appendChild(grupoPasseios);
             }
 
-            // 2.2 Buscar Atrações Internas (Filtradas pelo CEU)
             const qAtracoes = query(collection(db, "rf_atracoes"), where("ceus", "==", ceuLogado));
             const snapAtracoes = await getDocs(qAtracoes);
             if (!snapAtracoes.empty) {
-                const grupoAtracoes = document.createElement('optgroup');
-                grupoAtracoes.label = "Atrações Internas";
+                const grupoAtracoes = document.createElement('optgroup'); grupoAtracoes.label = "Atrações Internas";
                 snapAtracoes.forEach(doc => {
                     const d = doc.data();
                     const opt = document.createElement('option');
-                    // O campo de horário é texto livre (ex: "08:00 às 09:00"), exibimos como dica
-                    const dicaHorario = d.horario ? ` | Horário previsto: ${d.horario}` : '';
-                    opt.value = `ATRAÇÃO: ${d.titulo} - Local: ${d.local}${dicaHorario}`;
+                    const dicaHorario = d.horario ? ` | Horário: ${d.horario}` : '';
+                    opt.value = `ATRAÇÃO: ${d.titulo} - ${d.local}${dicaHorario}`;
                     opt.textContent = opt.value;
                     grupoAtracoes.appendChild(opt);
                 });
                 comboEvento.appendChild(grupoAtracoes);
             }
-        } catch(e) { console.error("Erro eventos", e); }
+        } catch(e) { console.error(e); }
     }
 
-    // SALVAR
+    // SALVAR DADOS
     document.getElementById('formTimeline').addEventListener('submit', async function(e) {
         e.preventDefault();
         const data = document.getElementById('data_atividade').value;
         const turma = document.getElementById('turma').value;
         
         const cronograma = {};
-        const addAoCronograma = (idHora, texto) => {
-            const h = document.getElementById(idHora).value;
-            if (h) cronograma[h] = texto;
-        };
+        const add = (id, txt) => { const v = document.getElementById(id).value; if(v) cronograma[v] = txt; };
 
-        addAoCronograma('hora_chegada', 'Chegada e Acolhimento');
-        addAoCronograma('hora_cafe', `Café (${document.getElementById('predio_cafe').value || '?'})`);
-        addAoCronograma('hora_almoco', `Almoço (${document.getElementById('predio_almoco').value || '?'})`);
-        addAoCronograma('hora_lanche', `Lanche (${document.getElementById('predio_lanche').value || '?'})`);
-        
-        if (document.getElementById('evento_interno').value) {
-            addAoCronograma('hora_evento', document.getElementById('evento_interno').value);
-        }
-        addAoCronograma('hora_saida', 'Saída');
+        add('hora_chegada', 'Chegada e Acolhimento');
+        add('hora_cafe', `Café (${document.getElementById('predio_cafe').value || '?'})`);
+        add('hora_almoco', `Almoço (${document.getElementById('predio_almoco').value || '?'})`);
+        add('hora_lanche', `Lanche (${document.getElementById('predio_lanche').value || '?'})`);
+        if (document.getElementById('evento_interno').value) add('hora_evento', document.getElementById('evento_interno').value);
+        add('hora_saida', 'Saída');
 
-        const docId = `${data}_${turma}`;
+        const docId = `${turma}_${data}`;
         try {
             await setDoc(doc(db, "rf_linha_tempo", docId), { data, turma, ceu: ceuLogado, cronograma });
-            alert(`Cronograma da turma ${turma} salvo!`);
+            alert(`Salvo para a turma ${turma} no dia ${data.split('-').reverse().join('/')}!`);
             document.getElementById('formTimeline').reset();
-            document.getElementById('data_atividade').value = data; // Facilita próximo cadastro
+            document.getElementById('turma').value = turma; // Facilita manter a turma para preencher o próximo dia
         } catch(e) { alert("Erro ao salvar."); console.error(e); }
     });
 
-    // IMPRIMIR INDEPENDENTE
+    // LÓGICA DE IMPRESSÃO CORRIGIDA (Eixo X = Dias / Eixo Y = Horários)
     document.getElementById('btnImprimirMenu').addEventListener('click', async function() {
-        const dataFiltro = document.getElementById('data_impressao').value;
-        if(!dataFiltro) return alert("Selecione uma data no painel superior para imprimir.");
-
-        const btn = this; btn.textContent = "Buscando...";
+        const btn = this; btn.textContent = "Buscando e processando dados...";
+        
         try {
-            const qImpressao = query(collection(db, "rf_linha_tempo"), where("data", "==", dataFiltro), where("ceu", "==", ceuLogado));
+            // 1. Busca todos os cronogramas do CEU
+            const qImpressao = query(collection(db, "rf_linha_tempo"), where("ceu", "==", ceuLogado));
             const snapshot = await getDocs(qImpressao);
             
             if(snapshot.empty) {
-                btn.textContent = "Gerar e Imprimir (A4)";
-                return alert("Nenhum dado cadastrado para esta data.");
+                btn.textContent = "🖨️ Imprimir Relatório Completo (A4)";
+                return alert("Nenhum dado cadastrado para este CEU.");
             }
 
-            const dadosImpressao = {};
-            snapshot.forEach(doc => { dadosImpressao[doc.data().turma] = doc.data().cronograma; });
-            const turmasEncontradas = Object.keys(dadosImpressao).sort();
-            
-            const turmasPorPagina = 6;
-            let htmlHTML = ``;
+            // 2. Organiza os dados no formato: dadosPorTurma["4A"]["2026-07-15"]["08:30"]
+            const dadosPorTurma = {};
+            snapshot.forEach(doc => {
+                const d = doc.data();
+                if (!dadosPorTurma[d.turma]) dadosPorTurma[d.turma] = {};
+                dadosPorTurma[d.turma][d.data] = d.cronograma;
+            });
 
-            for (let i = 0; i < turmasEncontradas.length; i += turmasPorPagina) {
-                const turmasLote = turmasEncontradas.slice(i, i + turmasPorPagina);
+            const turmas = Object.keys(dadosPorTurma).sort();
+            const diasPorPagina = 6; // Limite de colunas (dias) para não estourar a folha A4
+            let htmlFinal = "";
+
+            // 3. Monta as páginas Turma por Turma
+            turmas.forEach(turma => {
+                const diasCadastrados = Object.keys(dadosPorTurma[turma]).sort();
                 
-                htmlHTML += `<h2>Linha do Tempo - ${dataFiltro.split('-').reverse().join('/')} - ${ceuLogado}</h2>`;
-                htmlHTML += `<table class="tabela-timeline"><thead><tr><th>Horário</th>`;
-                turmasLote.forEach(t => htmlHTML += `<th>Turma ${t}</th>`);
-                htmlHTML += `</tr></thead><tbody>`;
+                // Se a turma tem muitos dias, fatiamos as colunas em mais de uma página
+                for (let i = 0; i < diasCadastrados.length; i += diasPorPagina) {
+                    const diasLote = diasCadastrados.slice(i, i + diasPorPagina);
+                    
+                    htmlFinal += `<div class="pagina-a4">`;
+                    htmlFinal += `<h2>${ceuLogado} - Linha do Tempo - Turma ${turma}</h2>`;
+                    htmlFinal += `<table class="tabela-timeline"><thead><tr><th>Horário</th>`;
+                    
+                    // Cabeçalho das Colunas (Dias formatados para DD/MM)
+                    diasLote.forEach(dia => {
+                        const partes = dia.split('-'); // ex: 2026-07-15
+                        htmlFinal += `<th>${partes[2]}/${partes[1]}</th>`; 
+                    });
+                    htmlFinal += `</tr></thead><tbody>`;
 
-                gradeHorarios.forEach(hora => {
-                    htmlHTML += `<tr><td>${hora}</td>`;
-                    turmasLote.forEach(t => htmlHTML += `<td>${dadosImpressao[t][hora] || ''}</td>`);
-                    htmlHTML += `</tr>`;
-                });
-                htmlHTML += `</tbody></table>`;
-            }
+                    // Linhas da Tabela (Horários)
+                    gradeHorarios.forEach(hora => {
+                        htmlFinal += `<tr><td>${hora}</td>`;
+                        diasLote.forEach(dia => {
+                            const atividade = dadosPorTurma[turma][dia][hora] || '';
+                            htmlFinal += `<td>${atividade}</td>`;
+                        });
+                        htmlFinal += `</tr>`;
+                    });
 
-            document.getElementById('area_impressao').innerHTML = htmlHTML;
+                    htmlFinal += `</tbody></table></div>`;
+                }
+            });
+
+            // 4. Injeta na tela e chama a impressão
+            document.getElementById('area_impressao').innerHTML = htmlFinal;
             window.print();
-        } catch(e) { alert("Erro na impressão."); console.error(e); } 
-        finally { btn.textContent = "Gerar e Imprimir (A4)"; }
+            
+        } catch(e) { 
+            alert("Erro na impressão."); 
+            console.error(e); 
+        } finally { 
+            btn.textContent = "🖨️ Imprimir Relatório Completo (A4)"; 
+        }
     });
 
     window.onload = inicializarDados;

@@ -7,23 +7,23 @@
     <style>
         :root { --primary: #0056b3; --bg-color: #f4f7f6; --box-bg: #ffffff; --text: #333333; --border: #ccc; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); color: var(--text); padding: 20px; }
-        
+
         .container { background-color: var(--box-bg); padding: 20px 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 900px; margin: 0 auto 20px auto; }
         h2 { color: var(--primary); border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-top: 0;}
-        
+
         /* Painel de Controle Superior */
         .painel-controle { background-color: #e9ecef; border-left: 5px solid var(--primary); padding: 15px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; border-radius: 4px; margin-bottom: 30px; gap: 15px; }
         .painel-controle p { margin: 0 0 10px 0; font-weight: bold; width: 100%; font-size: 1.1em;}
-        
+
         fieldset { border: 1px solid var(--border); border-radius: 5px; padding: 15px; margin-bottom: 15px; background-color: #fafafa; }
         legend { font-weight: bold; color: var(--primary); background: #fff; padding: 0 10px; border: 1px solid var(--border); border-radius: 4px; }
-        
+
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; align-items: center; }
         .full-width { grid-column: 1 / -1; }
-        
+
         label { font-weight: bold; font-size: 0.9em; display: block; margin-bottom: 5px; }
         input, select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        
+
         button { padding: 10px 15px; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 1em; }
         .btn-salvar { background-color: #28a745; width: 100%; padding: 15px; margin-bottom: 10px;}
         .btn-salvar:hover { background-color: #218838; }
@@ -33,28 +33,45 @@
         .btn-limpar:hover { background-color: #c82333; }
         .btn-imprimir { background-color: #333; display: none; margin-top: 15px; width: 100%; padding: 15px;}
 
-        /* CSS DO RELATÓRIO NA TELA */
-        #relatorio_visivel { display: none; max-width: 100%; overflow-x: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .pagina-a4 { margin-bottom: 40px; border-bottom: 2px dashed #ccc; padding-bottom: 20px;}
-        .cabecalho-dia { font-size: 18px; text-align: center; font-weight: bold; color: #333; margin-bottom: 15px; text-transform: uppercase; }
-        .tabela-timeline { width: 100%; border-collapse: collapse; text-align: center; }
-        .tabela-timeline th, .tabela-timeline td { border: 1px solid #555; padding: 6px; font-size: 13px; }
-        .tabela-timeline td:first-child, .tabela-timeline th:first-child { font-weight: bold; width: 60px; background-color: #e9ecef; }
-        .tabela-timeline tbody tr:nth-child(even) { background-color: #f8f9fa; }
+        /* Resumo do que foi encontrado (só na tela) */
+        #resumo { display: none; max-width: 900px; margin: 0 auto 20px auto; padding: 12px 16px; background: #e7f3ec; border-left: 5px solid #28a745; border-radius: 4px; font-size: 0.95em; line-height: 1.5; }
+        #resumo .aviso { color: #a15c00; display: block; margin-top: 4px; }
 
-        /* CSS EXCLUSIVO PARA A IMPRESSORA */
+        /* ===== RELATÓRIO NA TELA: uma "folha" por DIA, com cara de planilha ===== */
+        #relatorio_visivel { display: none; overflow-x: auto; background: #dfe3e6; padding: 20px; border-radius: 8px; }
+
+        .folha { --fs: 12px; width: 285mm; margin: 0 auto 30px auto; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.25); }
+        .folha:last-child { margin-bottom: 0; }
+
+        .tabela-timeline { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: var(--fs); border: 2px solid #2b2f33; }
+        .tabela-timeline th, .tabela-timeline td { border: 1px solid #8a8f98; padding: 0.3em 0.5em; text-align: center; vertical-align: middle; line-height: 1.2; overflow-wrap: anywhere; }
+
+        .tabela-timeline th.titulo { background: #0b3d7a; color: #fff; font-size: 1.3em; padding: 0.5em; border: 2px solid #2b2f33; }
+        .tabela-timeline th.th-hora { background: #cfd4d9; width: 20mm; border-bottom: 2px solid #2b2f33; }
+        .tabela-timeline th.th-turma { font-size: 1.1em; border-bottom: 2px solid #2b2f33; }
+
+        .tabela-timeline td.col-hora { background: #e9ecef; font-weight: bold; color: #444; }
+        .tabela-timeline tbody tr:nth-child(even) td { background-color: #f6f8fa; }
+        .tabela-timeline tbody tr:nth-child(even) td.col-hora { background-color: #e1e5e9; }
+        .tabela-timeline tbody td.preenchida { font-weight: 600; }
+
+        /* ===== IMPRESSÃO: cada dia ocupa exatamente 1 folha A4 paisagem ===== */
         @media print {
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            @page { size: A4 landscape; margin: 6mm; }
+
+            html, body { height: auto; margin: 0; padding: 0; background: #fff; }
             .no-print { display: none !important; }
-            #relatorio_visivel { display: block !important; box-shadow: none; padding: 0; }
-            
-            @page { size: A4 landscape; margin: 5mm; }
-            body { padding: 0; background-color: #fff; margin: 0; }
-            
-            .pagina-a4 { page-break-after: always; border: none; margin-bottom: 0; padding-bottom: 0;}
-            .pagina-a4:last-of-type { page-break-after: auto; }
-            
-            .tabela-timeline th, .tabela-timeline td { padding: 4px; font-size: 11px; line-height: 1.1; }
+
+            #relatorio_visivel { display: block !important; overflow: visible !important; background: none; padding: 0; margin: 0; border-radius: 0; }
+
+            .folha { width: 100%; height: 196mm; margin: 0; box-shadow: none; overflow: hidden;
+                     break-inside: avoid; page-break-inside: avoid;
+                     break-after: page; page-break-after: always; }
+            .folha:last-child { break-after: auto; page-break-after: auto; }
+
+            /* a tabela preenche a folha inteira, como uma planilha impressa */
+            .tabela-timeline { height: 100%; }
         }
     </style>
 </head>
@@ -110,10 +127,11 @@
     </form>
 </div>
 
-<!-- VISUALIZADOR DE TELA (Onde a mágica acontece) -->
-<div id="relatorio_visivel">
-    <!-- As tabelas vão aparecer aqui dentro -->
-</div>
+<!-- Resumo do que o relatório encontrou (só na tela) -->
+<div id="resumo" class="no-print"></div>
+
+<!-- VISUALIZADOR DE TELA: uma .folha por dia -->
+<div id="relatorio_visivel"></div>
 <button type="button" class="btn-imprimir no-print" id="btnImprimir" style="max-width: 900px; margin: 20px auto;">🖨️ Enviar para Impressora (A4)</button>
 
 <script type="module">
@@ -137,6 +155,32 @@
     const gradeHorarios = ['08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30'];
     const coresTurmas = ['#ffb3ba', '#ffdfba', '#ffffba', '#baffc9', '#bae1ff', '#e8baff', '#f4c2c2', '#dcd0ff'];
 
+    // ---------- Funções auxiliares ----------
+    const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+    // Aceita "2026-07-06", "2026-07-06T00:00", "06/07/2026", Date ou Timestamp do Firestore
+    function normalizarData(v) {
+        if (!v) return null;
+        if (typeof v.toDate === 'function') v = v.toDate();
+        if (v instanceof Date && !isNaN(v)) {
+            const p = n => String(n).padStart(2, '0');
+            return `${v.getFullYear()}-${p(v.getMonth() + 1)}-${p(v.getDate())}`;
+        }
+        const s = String(v).trim();
+        let m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+        if (m) return `${m[1]}-${m[2].padStart(2, '0')}-${m[3].padStart(2, '0')}`;
+        m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+        if (m) return `${m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}`;
+        return null;
+    }
+    function normalizarHora(h) {
+        const m = String(h).trim().match(/^(\d{1,2}):(\d{2})/);
+        return m ? `${m[1].padStart(2, '0')}:${m[2]}` : String(h).trim();
+    }
+    function normalizarTurma(t) {
+        return String(t || '').trim().replace(/\s+/g, ' ').toUpperCase();
+    }
+
     document.querySelectorAll('.hora-select').forEach(select => {
         gradeHorarios.forEach(h => {
             const opt = document.createElement('option'); opt.value = h; opt.textContent = h;
@@ -148,7 +192,7 @@
         try {
             const snapTurmas = await getDocs(collection(db, "rf_inscricoes"));
             const turmasSet = new Set();
-            snapTurmas.forEach(doc => { if (doc.data().turma) turmasSet.add(doc.data().turma); });
+            snapTurmas.forEach(d => { if (d.data().turma) turmasSet.add(d.data().turma); });
             const comboTurma = document.getElementById('turma');
             Array.from(turmasSet).sort().forEach(t => {
                 const opt = document.createElement('option'); opt.value = t; opt.textContent = t;
@@ -161,8 +205,8 @@
             const snapPasseios = await getDocs(collection(db, "rf_passeios"));
             if (!snapPasseios.empty) {
                 const grupoPasseios = document.createElement('optgroup'); grupoPasseios.label = "Passeios";
-                snapPasseios.forEach(doc => {
-                    const d = doc.data();
+                snapPasseios.forEach(p => {
+                    const d = p.data();
                     const opt = document.createElement('option');
                     opt.value = `PASSEIO: ${d.passeio} (Saída: ${d.saidaCeu} / Volta: ${d.chegadaCeu})`;
                     opt.textContent = opt.value;
@@ -173,17 +217,17 @@
         } catch(e) {}
     }
 
-    // Função de Limpar Banco (Zerar Testes)
+    // ---------- Limpar Banco (Zerar Testes) ----------
     document.getElementById('btnLimpar').addEventListener('click', async function() {
         if(confirm("Tem certeza que deseja APAGAR TODOS os registros da Linha do Tempo criados até agora e começar do zero?")) {
             this.textContent = "Apagando...";
             try {
                 const snap = await getDocs(collection(db, "rf_linha_tempo"));
-                snap.forEach(async (documento) => {
-                    await deleteDoc(doc(db, "rf_linha_tempo", documento.id));
-                });
+                // espera TODAS as exclusões terminarem antes de avisar
+                await Promise.all(snap.docs.map(d => deleteDoc(doc(db, "rf_linha_tempo", d.id))));
                 alert("Banco de dados limpo com sucesso! Pode cadastrar o dia 06 de forma limpa.");
                 document.getElementById('relatorio_visivel').style.display = 'none';
+                document.getElementById('resumo').style.display = 'none';
                 document.getElementById('btnImprimir').style.display = 'none';
             } catch(e) {
                 alert("Erro ao limpar o banco.");
@@ -193,14 +237,14 @@
         }
     });
 
-    // Salvamento
+    // ---------- Salvamento ----------
     document.getElementById('formTimeline').addEventListener('submit', async function(e) {
         e.preventDefault();
         const data = document.getElementById('data_atividade').value;
         const turma = document.getElementById('turma').value;
         const docId = `${data}_${turma}`;
         const docRef = doc(db, "rf_linha_tempo", docId);
-        
+
         try {
             const docSnap = await getDoc(docRef);
             let cronogramaExistente = {};
@@ -208,9 +252,9 @@
                 cronogramaExistente = docSnap.data().cronograma;
             }
 
-            const adicionar = (id, txt) => { 
-                const v = document.getElementById(id).value; 
-                if(v) cronogramaExistente[v] = txt; 
+            const adicionar = (id, txt) => {
+                const v = document.getElementById(id).value;
+                if(v) cronogramaExistente[v] = txt;
             };
 
             adicionar('hora_chegada', 'Chegada');
@@ -221,71 +265,101 @@
             await setDoc(docRef, { data, turma, ceu: ceuLogado, cronograma: cronogramaExistente });
             alert(`Salvo para a turma ${turma}!`);
             document.getElementById('formTimeline').reset();
-            document.getElementById('data_atividade').value = data; 
-            document.getElementById('turma').value = turma; 
+            document.getElementById('data_atividade').value = data;
+            document.getElementById('turma').value = turma;
         } catch(e) { alert("Erro ao salvar."); }
     });
 
-    // Visualizar e Montar o Relatório na Tela
+    // ---------- Garante que cada dia caiba em UMA folha A4 paisagem ----------
+    // Altura útil: 196 mm (210 mm - margens). Se a tabela ficar maior, reduz a fonte.
+    const ALTURA_UTIL_PX = (196 / 25.4) * 96;
+    function ajustarAoPapel() {
+        document.querySelectorAll('.folha').forEach(folha => {
+            const tabela = folha.querySelector('.tabela-timeline');
+            let fs = 12;
+            folha.style.setProperty('--fs', fs + 'px');
+            while (tabela.offsetHeight > ALTURA_UTIL_PX && fs > 6) {
+                fs -= 0.5;
+                folha.style.setProperty('--fs', fs + 'px');
+            }
+        });
+    }
+
+    // ---------- Visualizar e montar o relatório ----------
     document.getElementById('btnVisualizar').addEventListener('click', async function() {
-        const btn = this; 
+        const btn = this;
         btn.textContent = "Montando Tabela...";
-        
+
         try {
             const qImpressao = query(collection(db, "rf_linha_tempo"), where("ceu", "==", ceuLogado));
             const snapshot = await getDocs(qImpressao);
-            
+
             if(snapshot.empty) {
-                btn.textContent = "👁️ Visualizar Relatório na Tela";
                 return alert("Não há nada cadastrado no momento.");
             }
 
-            const funilDeDias = {};
-            
-            snapshot.forEach(doc => {
-                const d = doc.data();
-                if(!d.data || !d.turma) return;
-                
-                const dia = d.data.substring(0, 10);
-                const turma = d.turma.trim().toUpperCase();
-                
-                if (!funilDeDias[dia]) funilDeDias[dia] = {};
-                if (!funilDeDias[dia][turma]) funilDeDias[dia][turma] = {};
-                
-                if (d.cronograma) {
-                    for(let hora in d.cronograma) {
-                        const atividade = d.cronograma[hora];
-                        // Esmaga todas as atividades do mesmo horário na mesma célula
-                        if (funilDeDias[dia][turma][hora] && !funilDeDias[dia][turma][hora].includes(atividade)) {
-                            funilDeDias[dia][turma][hora] += " + " + atividade;
-                        } else {
-                            funilDeDias[dia][turma][hora] = atividade;
-                        }
-                    }
+            // funil[dia][turma][hora] = Set de atividades (tudo do mesmo horário vai na mesma célula)
+            const funil = {};
+            const todasTurmas = new Set();
+            let ignorados = 0;
+
+            snapshot.forEach(docSnap => {
+                const d = docSnap.data();
+                const dia = normalizarData(d.data);
+                const turma = normalizarTurma(d.turma);
+                if (!dia || !turma) { ignorados++; return; }
+
+                todasTurmas.add(turma);
+                if (!funil[dia]) funil[dia] = {};
+                if (!funil[dia][turma]) funil[dia][turma] = {};
+
+                const cron = d.cronograma || {};
+                for (const horaBruta in cron) {
+                    const hora = normalizarHora(horaBruta);
+                    if (!funil[dia][turma][hora]) funil[dia][turma][hora] = new Set();
+                    funil[dia][turma][hora].add(cron[horaBruta]);
                 }
             });
 
-            const diasOrdenados = Object.keys(funilDeDias).sort();
+            // cada turma mantém a MESMA cor em todos os dias
+            const listaTurmas = Array.from(todasTurmas).sort();
+            const corDaTurma = t => coresTurmas[listaTurmas.indexOf(t) % coresTurmas.length];
+
+            const diasOrdenados = Object.keys(funil).sort();
             let htmlFinal = "";
 
             diasOrdenados.forEach(dia => {
                 const dataBR = dia.split('-').reverse().join('/');
-                const turmasDesteDia = Object.keys(funilDeDias[dia]).sort();
-                
-                htmlFinal += `<div class="pagina-a4">`;
-                htmlFinal += `<div class="cabecalho-dia">${ceuLogado} - LINHA DO TEMPO - ${dataBR}</div>`;
-                htmlFinal += `<table class="tabela-timeline"><thead><tr><th>Horário</th>`;
-                
-                turmasDesteDia.forEach((t, index) => {
-                    const cor = coresTurmas[index % coresTurmas.length];
-                    htmlFinal += `<th style="background-color: ${cor};">Turma ${t}</th>`; 
+                const turmasDoDia = Object.keys(funil[dia]).sort();
+
+                // horários da grade + qualquer horário fora da grade que exista nos dados
+                const extras = new Set();
+                turmasDoDia.forEach(t => Object.keys(funil[dia][t]).forEach(h => {
+                    if (!gradeHorarios.includes(h)) extras.add(h);
+                }));
+                const horas = gradeHorarios.concat(Array.from(extras)).sort();
+
+                // UMA folha, UMA tabela, uma coluna por turma
+                htmlFinal += `<div class="folha"><table class="tabela-timeline">`;
+                htmlFinal += `<colgroup><col style="width:20mm">${turmasDoDia.map(() => '<col>').join('')}</colgroup>`;
+                htmlFinal += `<thead>`;
+                htmlFinal += `<tr><th class="titulo" colspan="${turmasDoDia.length + 1}">${esc(ceuLogado)} - Linha do Tempo - ${dataBR}</th></tr>`;
+                htmlFinal += `<tr><th class="th-hora">Horário</th>`;
+                turmasDoDia.forEach(t => {
+                    htmlFinal += `<th class="th-turma" style="background-color:${corDaTurma(t)};">Turma ${esc(t)}</th>`;
                 });
                 htmlFinal += `</tr></thead><tbody>`;
 
-                gradeHorarios.forEach(hora => {
-                    htmlFinal += `<tr><td>${hora}</td>`;
-                    turmasDesteDia.forEach(t => {
-                        htmlFinal += `<td>${funilDeDias[dia][t][hora] || ''}</td>`;
+                horas.forEach(hora => {
+                    htmlFinal += `<tr><td class="col-hora">${hora}</td>`;
+                    turmasDoDia.forEach(t => {
+                        const conjunto = funil[dia][t][hora];
+                        if (conjunto && conjunto.size) {
+                            const texto = Array.from(conjunto).map(esc).join(' + ');
+                            htmlFinal += `<td class="preenchida" style="background-color:${corDaTurma(t)}55;">${texto}</td>`;
+                        } else {
+                            htmlFinal += `<td></td>`;
+                        }
                     });
                     htmlFinal += `</tr>`;
                 });
@@ -297,15 +371,26 @@
             divRelatorio.innerHTML = htmlFinal;
             divRelatorio.style.display = 'block';
             document.getElementById('btnImprimir').style.display = 'block';
-            
-        } catch(e) { 
-            alert("Erro ao ler dados."); 
-        } finally { 
-            btn.textContent = "👁️ Visualizar Relatório na Tela"; 
+
+            ajustarAoPapel();
+
+            // resumo (só na tela) para conferir quantas folhas vão sair
+            const linhas = diasOrdenados.map(dia =>
+                `${dia.split('-').reverse().join('/')} (${Object.keys(funil[dia]).length} turma(s))`);
+            const resumo = document.getElementById('resumo');
+            resumo.innerHTML = `✅ <strong>${diasOrdenados.length} folha(s)</strong> serão impressas, uma por dia: ${linhas.join(' · ')}` +
+                (ignorados ? `<span class="aviso">⚠️ ${ignorados} registro(s) ignorado(s) por falta de data ou turma válida.</span>` : '');
+            resumo.style.display = 'block';
+
+        } catch(e) {
+            console.error(e);
+            alert("Erro ao ler dados.");
+        } finally {
+            btn.textContent = "👁️ Visualizar Relatório na Tela";
         }
     });
 
-    // Enviar para Impressora
+    // ---------- Enviar para Impressora ----------
     document.getElementById('btnImprimir').addEventListener('click', () => {
         window.print();
     });

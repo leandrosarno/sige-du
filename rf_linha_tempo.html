@@ -32,35 +32,31 @@
         .btn-limpar:hover { background-color: #c82333; }
         .btn-imprimir { background-color: #333; display: none; margin-top: 15px; width: 100%; padding: 15px;}
 
-        /* ESTILOS DO GERENCIADOR DE ATIVIDADES */
         .btn-buscar-salvos { background-color: #17a2b8; width: 100%; padding: 12px; margin-bottom: 10px; }
         .btn-buscar-salvos:hover { background-color: #138496; }
         .lista-atividades li { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding: 10px; background: #fff; border: 1px solid #ddd; border-radius: 4px; }
         .btn-deletar-item { background-color: #dc3545; font-size: 0.8em; padding: 6px 12px; }
-        .btn-deletar-item:hover { background-color: #c82333; }
 
-        /* CSS DO RELATÓRIO NA TELA */
         #relatorio_visivel { display: none; max-width: 100%; overflow-x: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .pagina-a4 { margin-bottom: 40px; border-bottom: 2px dashed #ccc; padding-bottom: 20px;}
         .cabecalho-dia { font-size: 18px; text-align: center; font-weight: bold; color: #333; margin-bottom: 15px; text-transform: uppercase; }
+        
         .tabela-timeline { width: 100%; border-collapse: collapse; text-align: center; }
-        .tabela-timeline th, .tabela-timeline td { border: 1px solid #555; padding: 6px; font-size: 13px; }
-        .tabela-timeline td:first-child, .tabela-timeline th:first-child { font-weight: bold; width: 60px; background-color: #e9ecef; }
-        .tabela-timeline tbody tr:nth-child(even) { background-color: #f8f9fa; }
+        .tabela-timeline th { border: 1px solid #555; padding: 6px; font-size: 13px; }
+        .tabela-timeline td { border: 1px solid #ccc; padding: 2px; }
+        .tabela-timeline td:first-child, .tabela-timeline th:first-child { font-weight: bold; width: 60px; background-color: #e9ecef; border: 1px solid #555;}
+        
+        .tabela-timeline tbody tr:nth-child(even) { background-color: #fcfcfc; }
 
-        /* CSS DA IMPRESSORA */
         @media print {
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             .no-print { display: none !important; }
             #relatorio_visivel { display: block !important; box-shadow: none; padding: 0; }
-            
             @page { size: A4 landscape; margin: 5mm; }
             body { padding: 0; background-color: #fff; margin: 0; }
-            
             .pagina-a4 { page-break-after: always; border: none; margin-bottom: 0; padding-bottom: 0;}
             .pagina-a4:last-of-type { page-break-after: auto; }
-            
-            .tabela-timeline th, .tabela-timeline td { padding: 4px; font-size: 11px; line-height: 1.1; }
+            .tabela-timeline th { padding: 4px; font-size: 11px; line-height: 1.1; }
         }
     </style>
 </head>
@@ -68,7 +64,7 @@
 
 <div class="container no-print painel-controle">
     <p>Painel de Controle do Relatório</p>
-    <button type="button" class="btn-visualizar" id="btnVisualizar">👁️ Visualizar Relatório na Tela</button>
+    <button type="button" class="btn-visualizar" id="btnVisualizar">👁️ Visualizar Grade na Tela</button>
     <button type="button" class="btn-limpar" id="btnLimpar">🗑️ Limpar Dados (IRREVERSÍVEL!)</button>
 </div>
 
@@ -93,7 +89,6 @@
             <button type="button" class="btn-buscar-salvos" id="btnBuscarSalvos">🔍 Ver Atividades Salvas (Data + Turma)</button>
         </div>
         <div id="box_atividades_salvas" class="full-width" style="display: none; margin-top: 15px;">
-            <p style="font-size: 0.9em; color: #555; margin-bottom: 10px;"><em>Dica: Para editar, basta cadastrar uma nova atividade no mesmo horário no formulário abaixo.</em></p>
             <ul id="ul_atividades" class="lista-atividades" style="list-style: none; padding: 0; margin: 0;"></ul>
         </div>
     </fieldset>
@@ -103,32 +98,62 @@
             <legend>1. Chegada e Refeições</legend>
             <div class="form-grid">
                 <div><label>Horário Chegada</label><select id="hora_chegada" class="hora-select"><option value="">Nenhum...</option></select></div>
-                <div></div>
+                <div><label>Fim (Opcional)</label><select id="hora_chegada_fim" class="hora-select"><option value="">Nenhum...</option></select></div>
+                
                 <div><label>Prédio Café</label><input type="text" id="predio_cafe"></div>
-                <div><label>Horário Café</label><select id="hora_cafe" class="hora-select"><option value="">Nenhum...</option></select></div>
+                <div style="display: flex; gap: 5px;">
+                    <div style="flex: 1;"><label>Início</label><select id="hora_cafe" class="hora-select"><option value="">Nenhum...</option></select></div>
+                    <div style="flex: 1;"><label>Fim</label><select id="hora_cafe_fim" class="hora-select"><option value="">Nenhum...</option></select></div>
+                </div>
+                
                 <div><label>Prédio Almoço</label><input type="text" id="predio_almoco"></div>
-                <div><label>Horário Almoço</label><select id="hora_almoco" class="hora-select"><option value="">Nenhum...</option></select></div>
-                <!-- NOVO: Campos de Lanche da Tarde -->
-                <div><label>Prédio Lanche</label><input type="text" id="predio_lanche"></div>
-                <div><label>Horário Lanche</label><select id="hora_lanche" class="hora-select"><option value="">Nenhum...</option></select></div>
+                <div style="display: flex; gap: 5px;">
+                    <div style="flex: 1;"><label>Início</label><select id="hora_almoco" class="hora-select"><option value="">Nenhum...</option></select></div>
+                    <div style="flex: 1;"><label>Fim</label><select id="hora_almoco_fim" class="hora-select"><option value="">Nenhum...</option></select></div>
+                </div>
+                
+                <div><label>Prédio Lanche da Tarde</label><input type="text" id="predio_lanche"></div>
+                <div style="display: flex; gap: 5px;">
+                    <div style="flex: 1;"><label>Início</label><select id="hora_lanche" class="hora-select"><option value="">Nenhum...</option></select></div>
+                    <div style="flex: 1;"><label>Fim</label><select id="hora_lanche_fim" class="hora-select"><option value="">Nenhum...</option></select></div>
+                </div>
             </div>
         </fieldset>
 
-        <fieldset>
-            <legend>2. Eventos Internos e Passeios</legend>
-            <div class="form-grid">
+        <fieldset style="border-color: #0056b3;">
+            <legend style="background: #0056b3; color: white;">2. Passeios Externos e Atrações Internas</legend>
+            
+            <!-- BLOCO PASSEIO -->
+            <div class="form-grid" style="background: #f0f8ff; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
+                <div class="full-width" style="color: #0056b3;"><strong>🚍 PASSEIO EXTERNO</strong></div>
                 <div class="full-width">
-                    <label>Selecione a Atração ou Passeio</label>
-                    <select id="evento_interno"><option value="">Nenhum evento selecionado...</option></select>
+                    <label>Selecione o Passeio</label>
+                    <select id="passeio_externo"><option value="">Nenhum Passeio selecionado...</option></select>
                 </div>
-                <div>
-                    <label>Horário na Linha do Tempo</label>
-                    <select id="hora_evento" class="hora-select"><option value="">Nenhum...</option></select>
+                <div><label>Horário Início</label><select id="hora_passeio" class="hora-select"><option value="">Nenhum...</option></select></div>
+                <div><label>Horário Término</label><select id="hora_passeio_fim" class="hora-select"><option value="">Nenhum...</option></select></div>
+            </div>
+
+            <!-- BLOCO ATRAÇÃO -->
+            <div class="form-grid" style="background: #fdf5ff; padding: 10px; border-radius: 5px;">
+                <div class="full-width" style="color: #6a0dad;"><strong>🎭 ATRAÇÃO INTERNA</strong></div>
+                <div class="full-width">
+                    <label>Selecione a Atração</label>
+                    <select id="atracao_interna"><option value="">Nenhuma Atração selecionada...</option></select>
                 </div>
+                <div><label>Horário Início</label><select id="hora_atracao" class="hora-select"><option value="">Nenhum...</option></select></div>
+                <div><label>Horário Término</label><select id="hora_atracao_fim" class="hora-select"><option value="">Nenhum...</option></select></div>
+            </div>
+        </fieldset>
+        
+        <fieldset>
+            <legend>3. Saída</legend>
+            <div class="form-grid">
+                <div><label>Horário da Saída</label><select id="hora_saida" class="hora-select"><option value="">Nenhum...</option></select></div>
             </div>
         </fieldset>
 
-        <button type="submit" class="btn-salvar" id="btnSalvar">Salvar Dados da Turma</button>
+        <button type="submit" class="btn-salvar" id="btnSalvar">Adicionar à Grade da Turma</button>
     </form>
 </div>
 
@@ -137,7 +162,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
-    import { getFirestore, collection, getDocs, getDoc, setDoc, deleteDoc, updateDoc, deleteField, doc, query, where } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, getDoc, setDoc, deleteDoc, updateDoc, doc, query, where } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyCpCXxJbD8dPXkT7mcoz4qK8Wjt7WTRwFA",
@@ -154,7 +179,7 @@
     const ceuLogado = "CEU Caminho do Mar";
 
     const gradeHorarios = ['08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30'];
-    const coresTurmas = ['#ffb3ba', '#ffdfba', '#ffffba', '#baffc9', '#bae1ff', '#e8baff', '#f4c2c2', '#dcd0ff'];
+    const coresCabecalhos = ['#ffb3ba', '#ffdfba', '#ffffba', '#baffc9', '#bae1ff', '#e8baff', '#f4c2c2', '#dcd0ff'];
 
     document.querySelectorAll('.hora-select').forEach(select => {
         gradeHorarios.forEach(h => {
@@ -164,6 +189,7 @@
     });
 
     async function inicializarDados() {
+        // Turmas
         try {
             const snapTurmas = await getDocs(collection(db, "rf_inscricoes"));
             const turmasSet = new Set();
@@ -175,39 +201,36 @@
             });
         } catch(e) {}
 
-        const comboEvento = document.getElementById('evento_interno');
+        // Passeios
         try {
-            const snapPasseios = await getDocs(collection(db, "rf_passeios"));
-            if (!snapPasseios.empty) {
-                const grupoPasseios = document.createElement('optgroup'); grupoPasseios.label = "Passeios Externos";
-                snapPasseios.forEach(doc => {
-                    const d = doc.data();
-                    const opt = document.createElement('option');
-                    opt.value = `PASSEIO: ${d.passeio} (Saída: ${d.saidaCeu} / Volta: ${d.chegadaCeu})`;
-                    opt.textContent = opt.value;
-                    grupoPasseios.appendChild(opt);
-                });
-                comboEvento.appendChild(grupoPasseios);
-            }
+            const qPasseios = query(collection(db, "rf_passeios"), where("ceus", "==", ceuLogado));
+            const snapPasseios = await getDocs(qPasseios);
+            const comboPasseio = document.getElementById('passeio_externo');
+            snapPasseios.forEach(doc => {
+                const d = doc.data();
+                const opt = document.createElement('option');
+                opt.value = `PASSEIO: ${d.passeio}`;
+                opt.textContent = `${d.passeio} (Destino: ${d.destino || '-'})`;
+                comboPasseio.appendChild(opt);
+            });
+        } catch(e) {}
 
+        // Atrações
+        try {
             const qAtracoes = query(collection(db, "rf_atracoes"), where("ceus", "==", ceuLogado));
             const snapAtracoes = await getDocs(qAtracoes);
-            if (!snapAtracoes.empty) {
-                const grupoAtracoes = document.createElement('optgroup'); grupoAtracoes.label = "Atrações Internas";
-                snapAtracoes.forEach(doc => {
-                    const d = doc.data();
-                    const opt = document.createElement('option');
-                    const dicaHorario = d.horario ? ` | ${d.horario}` : '';
-                    opt.value = `ATRAÇÃO: ${d.titulo} - ${d.local}${dicaHorario}`;
-                    opt.textContent = opt.value;
-                    grupoAtracoes.appendChild(opt);
-                });
-                comboEvento.appendChild(grupoAtracoes);
-            }
+            const comboAtracao = document.getElementById('atracao_interna');
+            snapAtracoes.forEach(doc => {
+                const d = doc.data();
+                const opt = document.createElement('option');
+                opt.value = `ATRAÇÃO: ${d.titulo} - Local: ${d.local}`;
+                opt.textContent = `${d.titulo} (Local: ${d.local || '-'})`;
+                comboAtracao.appendChild(opt);
+            });
         } catch(e) {}
     }
 
-    // BUSCAR ATIVIDADES PARA EXCLUIR
+    // BUSCAR ATIVIDADES
     document.getElementById('btnBuscarSalvos').addEventListener('click', async function() {
         const data = document.getElementById('data_atividade').value;
         const turma = document.getElementById('turma').value;
@@ -222,79 +245,71 @@
             const docRef = doc(db, "rf_linha_tempo", `${data}_${turma}`);
             const docSnap = await getDoc(docRef);
             
-            if (docSnap.exists() && docSnap.data().cronograma) {
-                const cronograma = docSnap.data().cronograma;
-                const horarios = Object.keys(cronograma).sort();
+            if (docSnap.exists() && docSnap.data().eventos && docSnap.data().eventos.length > 0) {
+                const eventos = docSnap.data().eventos;
+                eventos.sort((a, b) => a.inicio.localeCompare(b.inicio));
                 
-                if (horarios.length === 0) {
-                    ul.innerHTML = '<li>Nenhuma atividade cadastrada.</li>';
-                } else {
-                    horarios.forEach(hora => {
-                        ul.innerHTML += `
-                            <li>
-                                <span><strong>${hora}</strong> - ${cronograma[hora]}</span>
-                                <button type="button" class="btn-deletar-item" data-hora="${hora}">🗑️ Excluir</button>
-                            </li>
-                        `;
-                    });
-                }
+                eventos.forEach(evt => {
+                    ul.innerHTML += `
+                        <li>
+                            <span><strong>${evt.inicio} às ${evt.fim}</strong>: ${evt.texto}</span>
+                            <button type="button" class="btn-deletar-item" data-id="${evt.id}">🗑️ Excluir</button>
+                        </li>
+                    `;
+                });
             } else {
-                ul.innerHTML = '<li>Nenhuma atividade cadastrada para esta turma neste dia.</li>';
+                ul.innerHTML = '<li>Nenhuma atividade cadastrada.</li>';
             }
             document.getElementById('box_atividades_salvas').style.display = 'block';
         } catch(e) {
             console.error(e);
-            alert("Erro ao buscar atividades.");
         } finally {
             this.textContent = "🔍 Ver Atividades Salvas (Data + Turma)";
         }
     });
 
-    // DELETAR ITEM ESPECÍFICO
+    // EXCLUIR ITEM
     document.getElementById('ul_atividades').addEventListener('click', async function(e) {
         if (e.target.classList.contains('btn-deletar-item')) {
-            const hora = e.target.getAttribute('data-hora');
+            const idEvento = e.target.getAttribute('data-id');
             const data = document.getElementById('data_atividade').value;
             const turma = document.getElementById('turma').value;
             
-            if(confirm(`Tem certeza que deseja EXCLUIR a atividade das ${hora}?`)) {
+            if(confirm(`Tem certeza que deseja excluir esta atividade?`)) {
                 e.target.textContent = "Apagando...";
                 try {
                     const docRef = doc(db, "rf_linha_tempo", `${data}_${turma}`);
-                    await updateDoc(docRef, {
-                        [`cronograma.${hora}`]: deleteField()
-                    });
-                    document.getElementById('btnBuscarSalvos').click();
-                } catch(error) {
-                    alert("Erro ao excluir.");
-                    console.error(error);
-                }
+                    const docSnap = await getDoc(docRef);
+                    if (docSnap.exists()) {
+                        let eventos = docSnap.data().eventos || [];
+                        eventos = eventos.filter(evt => evt.id !== idEvento);
+                        await updateDoc(docRef, { eventos: eventos });
+                        document.getElementById('btnBuscarSalvos').click();
+                    }
+                } catch(error) {}
             }
         }
     });
 
-    // Limpar Banco Total
     document.getElementById('btnLimpar').addEventListener('click', async function() {
-        if(confirm("Tem certeza que deseja APAGAR TODOS os registros da Linha do Tempo criados até agora e começar do zero?")) {
+        if(confirm("Deseja APAGAR TODOS os registros da Linha do Tempo e começar do zero?")) {
             this.textContent = "Apagando...";
             try {
                 const snap = await getDocs(collection(db, "rf_linha_tempo"));
                 snap.forEach(async (documento) => {
                     await deleteDoc(doc(db, "rf_linha_tempo", documento.id));
                 });
-                alert("Banco de dados limpo com sucesso! Pode cadastrar o dia de forma limpa.");
+                alert("Banco limpo!");
                 document.getElementById('relatorio_visivel').style.display = 'none';
                 document.getElementById('btnImprimir').style.display = 'none';
                 document.getElementById('box_atividades_salvas').style.display = 'none';
-            } catch(e) {
-                alert("Erro ao limpar o banco.");
-            } finally {
+            } catch(e) {} finally {
                 this.textContent = "🗑️ Limpar Dados (IRREVERSÍVEL!)";
             }
         }
     });
 
-    // Salvamento
+    // SALVAR NOVA ATIVIDADE
     document.getElementById('formTimeline').addEventListener('submit', async function(e) {
         e.preventDefault();
         const data = document.getElementById('data_atividade').value;
@@ -304,24 +319,45 @@
         
         try {
             const docSnap = await getDoc(docRef);
-            let cronogramaExistente = {};
-            if (docSnap.exists() && docSnap.data().cronograma) {
-                cronogramaExistente = docSnap.data().cronograma;
-            }
+            let eventosExistentes = (docSnap.exists() && docSnap.data().eventos) ? docSnap.data().eventos : [];
 
-            const adicionar = (id, txt) => { 
-                const v = document.getElementById(id).value; 
-                if(v) cronogramaExistente[v] = txt; 
+            const adicionar = (idInicio, idFim, txt, corFundo) => {
+                const horaInicio = document.getElementById(idInicio)?.value;
+                if (!horaInicio) return;
+
+                let horaFim = document.getElementById(idFim)?.value;
+                if (!horaFim) { 
+                    const idx = gradeHorarios.indexOf(horaInicio);
+                    horaFim = (idx !== -1 && idx < gradeHorarios.length - 1) ? gradeHorarios[idx + 1] : horaInicio;
+                }
+
+                eventosExistentes.push({
+                    id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
+                    texto: txt,
+                    inicio: horaInicio,
+                    fim: horaFim,
+                    cor: corFundo
+                });
             };
 
-            adicionar('hora_chegada', 'Chegada');
-            adicionar('hora_cafe', `Café (${document.getElementById('predio_cafe').value || '-'})`);
-            adicionar('hora_almoco', `Almoço (${document.getElementById('predio_almoco').value || '-'})`);
-            adicionar('hora_lanche', `Lanche (${document.getElementById('predio_lanche').value || '-'})`); // ATUALIZADO
-            if (document.getElementById('evento_interno').value) adicionar('hora_evento', document.getElementById('evento_interno').value);
+            adicionar('hora_chegada', 'hora_chegada_fim', 'Chegada e Acolhimento', '#d4edda');
+            adicionar('hora_cafe', 'hora_cafe_fim', `Café (${document.getElementById('predio_cafe').value || '-'})`, '#fff3cd');
+            adicionar('hora_almoco', 'hora_almoco_fim', `Almoço (${document.getElementById('predio_almoco').value || '-'})`, '#fff3cd');
+            adicionar('hora_lanche', 'hora_lanche_fim', `Lanche (${document.getElementById('predio_lanche').value || '-'})`, '#fff3cd');
+            adicionar('hora_saida', null, 'Saída', '#d4edda');
 
-            await setDoc(docRef, { data, turma, ceu: ceuLogado, cronograma: cronogramaExistente });
-            alert(`Atividade(s) salva(s) para a turma ${turma}!`);
+            // Passeio Externo = Azul
+            if (document.getElementById('passeio_externo').value) {
+                adicionar('hora_passeio', 'hora_passeio_fim', document.getElementById('passeio_externo').value, '#cce5ff');
+            }
+            
+            // Atração Interna = Lilás/Roxo Pastel
+            if (document.getElementById('atracao_interna').value) {
+                adicionar('hora_atracao', 'hora_atracao_fim', document.getElementById('atracao_interna').value, '#e8baff');
+            }
+
+            await setDoc(docRef, { data, turma, ceu: ceuLogado, eventos: eventosExistentes }, { merge: true });
+            alert(`Atividade(s) adicionada(s) à grade da turma ${turma}!`);
             
             if (document.getElementById('box_atividades_salvas').style.display === 'block') {
                 document.getElementById('btnBuscarSalvos').click();
@@ -330,13 +366,13 @@
             document.getElementById('formTimeline').reset();
             document.getElementById('data_atividade').value = data; 
             document.getElementById('turma').value = turma; 
-        } catch(e) { alert("Erro ao salvar."); }
+        } catch(e) { alert("Erro ao salvar."); console.error(e);}
     });
 
-    // Visualizar Relatório
+    // VISUALIZAR (LÓGICA FLEXBOX PARA CORES CONTÍNUAS E CONCORRÊNCIA)
     document.getElementById('btnVisualizar').addEventListener('click', async function() {
         const btn = this; 
-        btn.textContent = "Montando Tabela...";
+        btn.textContent = "Montando Grade...";
         
         try {
             const qImpressao = query(collection(db, "rf_linha_tempo"), where("ceu", "==", ceuLogado));
@@ -344,7 +380,7 @@
             
             if(snapshot.empty) {
                 btn.textContent = "👁️ Visualizar Relatório na Tela";
-                return alert("Não há nada cadastrado no momento.");
+                return alert("Não há nada cadastrado.");
             }
 
             const funilDeDias = {};
@@ -357,17 +393,10 @@
                 const turma = d.turma.trim().toUpperCase();
                 
                 if (!funilDeDias[dia]) funilDeDias[dia] = {};
-                if (!funilDeDias[dia][turma]) funilDeDias[dia][turma] = {};
+                if (!funilDeDias[dia][turma]) funilDeDias[dia][turma] = [];
                 
-                if (d.cronograma) {
-                    for(let hora in d.cronograma) {
-                        const atividade = d.cronograma[hora];
-                        if (funilDeDias[dia][turma][hora] && !funilDeDias[dia][turma][hora].includes(atividade)) {
-                            funilDeDias[dia][turma][hora] += " + " + atividade;
-                        } else {
-                            funilDeDias[dia][turma][hora] = atividade;
-                        }
-                    }
+                if (d.eventos) {
+                    funilDeDias[dia][turma] = funilDeDias[dia][turma].concat(d.eventos);
                 }
             });
 
@@ -378,25 +407,83 @@
                 const dataBR = dia.split('-').reverse().join('/');
                 const turmasDesteDia = Object.keys(funilDeDias[dia]).sort();
                 
-                htmlFinal += `<div class="pagina-a4">`;
-                htmlFinal += `<div class="cabecalho-dia">${ceuLogado} - DIÁRIO DE BORDO - ${dataBR}</div>`;
-                htmlFinal += `<table class="tabela-timeline"><thead><tr><th>Horário</th>`;
+                const maxColunasPorFolha = 7;
                 
-                turmasDesteDia.forEach((t, index) => {
-                    const cor = coresTurmas[index % coresTurmas.length];
-                    htmlFinal += `<th style="background-color: ${cor};">Turma ${t}</th>`; 
-                });
-                htmlFinal += `</tr></thead><tbody>`;
-
-                gradeHorarios.forEach(hora => {
-                    htmlFinal += `<tr><td>${hora}</td>`;
-                    turmasDesteDia.forEach(t => {
-                        htmlFinal += `<td>${funilDeDias[dia][t][hora] || ''}</td>`;
+                for (let i = 0; i < turmasDesteDia.length; i += maxColunasPorFolha) {
+                    const loteTurmas = turmasDesteDia.slice(i, i + maxColunasPorFolha);
+                    
+                    htmlFinal += `<div class="pagina-a4">`;
+                    htmlFinal += `<div class="cabecalho-dia">${ceuLogado} - DIÁRIO DE BORDO - ${dataBR}</div>`;
+                    htmlFinal += `<table class="tabela-timeline"><thead><tr><th>Horário</th>`;
+                    
+                    loteTurmas.forEach((t, index) => {
+                        const cor = coresCabecalhos[index % coresCabecalhos.length];
+                        htmlFinal += `<th style="background-color: ${cor};">Turma ${t}</th>`; 
                     });
-                    htmlFinal += `</tr>`;
-                });
+                    htmlFinal += `</tr></thead><tbody>`;
 
-                htmlFinal += `</tbody></table></div>`;
+                    gradeHorarios.forEach(hora => {
+                        htmlFinal += `<tr style="height: 38px;"><td>${hora}</td>`;
+                        
+                        loteTurmas.forEach(t => {
+                            const atividadesAtivas = (funilDeDias[dia][t] || []).filter(evt => {
+                                if (evt.inicio === evt.fim) return evt.inicio === hora;
+                                return hora >= evt.inicio && hora < evt.fim;
+                            });
+
+                            if (atividadesAtivas.length > 0) {
+                                htmlFinal += `<td style="padding: 1px; vertical-align: top;">
+                                                <div style="display: flex; gap: 2px; height: 100%; align-items: stretch;">`;
+                                
+                                atividadesAtivas.forEach(evt => {
+                                    const isStart = (hora === evt.inicio);
+                                    const idxAtual = gradeHorarios.indexOf(hora);
+                                    const nextHora = gradeHorarios[idxAtual + 1];
+                                    const isEnd = (nextHora === evt.fim || evt.inicio === evt.fim || !nextHora);
+
+                                    let borderRadius = "0";
+                                    let borderTop = "none";
+                                    let borderBottom = "none";
+                                    const borderSides = "1px solid rgba(0,0,0,0.3)";
+                                    let content = "";
+
+                                    if (isStart && isEnd) {
+                                        borderRadius = "4px"; borderTop = borderSides; borderBottom = borderSides;
+                                        content = `<strong>${evt.texto}</strong>`;
+                                    } else if (isStart) {
+                                        borderRadius = "4px 4px 0 0"; borderTop = borderSides; borderBottom = "none";
+                                        content = `<strong>${evt.texto}</strong><br><small>${evt.inicio} - ${evt.fim}</small>`;
+                                    } else if (isEnd) {
+                                        borderRadius = "0 0 4px 4px"; borderTop = "none"; borderBottom = borderSides;
+                                    } else {
+                                        borderRadius = "0"; borderTop = "none"; borderBottom = "none";
+                                    }
+
+                                    htmlFinal += `<div style="
+                                        flex: 1;
+                                        background-color: ${evt.cor};
+                                        border-left: ${borderSides};
+                                        border-right: ${borderSides};
+                                        border-top: ${borderTop};
+                                        border-bottom: ${borderBottom};
+                                        border-radius: ${borderRadius};
+                                        padding: 2px;
+                                        box-sizing: border-box;
+                                        overflow: hidden;
+                                        font-size: 10px;
+                                        line-height: 1.1;
+                                    ">${content}</div>`;
+                                });
+                                htmlFinal += `</div></td>`;
+                            } else {
+                                htmlFinal += `<td></td>`;
+                            }
+                        });
+                        htmlFinal += `</tr>`;
+                    });
+
+                    htmlFinal += `</tbody></table></div>`;
+                }
             });
 
             const divRelatorio = document.getElementById('relatorio_visivel');
@@ -405,7 +492,8 @@
             document.getElementById('btnImprimir').style.display = 'block';
             
         } catch(e) { 
-            alert("Erro ao ler dados."); 
+            alert("Erro ao montar grade de horários."); 
+            console.error(e);
         } finally { 
             btn.textContent = "👁️ Visualizar Relatório na Tela"; 
         }

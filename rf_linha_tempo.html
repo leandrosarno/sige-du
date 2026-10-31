@@ -188,8 +188,8 @@
         });
     });
 
-    async function inicializarDados() {
-        // Turmas
+async function inicializarDados() {
+        // 1. Carregar Turmas
         try {
             const snapTurmas = await getDocs(collection(db, "rf_inscricoes"));
             const turmasSet = new Set();
@@ -199,12 +199,11 @@
                 const opt = document.createElement('option'); opt.value = t; opt.textContent = t;
                 comboTurma.appendChild(opt);
             });
-        } catch(e) {}
+        } catch(e) { console.error("Erro nas turmas:", e); }
 
-        // Passeios
+        // 2. Carregar Passeios (Sem filtro para evitar erros de maiúscula/minúscula)
         try {
-            const qPasseios = query(collection(db, "rf_passeios"), where("ceus", "==", ceuLogado));
-            const snapPasseios = await getDocs(qPasseios);
+            const snapPasseios = await getDocs(collection(db, "rf_passeios"));
             const comboPasseio = document.getElementById('passeio_externo');
             snapPasseios.forEach(doc => {
                 const d = doc.data();
@@ -213,12 +212,11 @@
                 opt.textContent = `${d.passeio} (Destino: ${d.destino || '-'})`;
                 comboPasseio.appendChild(opt);
             });
-        } catch(e) {}
+        } catch(e) { console.error("Erro nos passeios:", e); }
 
-        // Atrações
+        // 3. Carregar Atrações (Sem filtro)
         try {
-            const qAtracoes = query(collection(db, "rf_atracoes"), where("ceus", "==", ceuLogado));
-            const snapAtracoes = await getDocs(qAtracoes);
+            const snapAtracoes = await getDocs(collection(db, "rf_atracoes"));
             const comboAtracao = document.getElementById('atracao_interna');
             snapAtracoes.forEach(doc => {
                 const d = doc.data();
@@ -227,7 +225,7 @@
                 opt.textContent = `${d.titulo} (Local: ${d.local || '-'})`;
                 comboAtracao.appendChild(opt);
             });
-        } catch(e) {}
+        } catch(e) { console.error("Erro nas atrações:", e); }
     }
 
     // BUSCAR ATIVIDADES

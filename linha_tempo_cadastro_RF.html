@@ -3,515 +3,314 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Linha do Tempo . Cadastro</title>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <title>Linha do Tempo - Recreio nas Férias</title>
     <style>
-        :root {
-            --navy: #0a2a73; --primary: #0b57d0; --primary-dark: #0842a0; --sun: #ffc933; --leaf: #1f9d6b;
-            --paper: #f6f9ff; --grid: #dde6f7; --border: #d3dcf0; --text-main: #17203a; --text-muted: #4d5876; --danger: #c93a3a;
+        :root { --primary: #0056b3; --bg-color: #f4f7f6; --box-bg: #ffffff; --text: #333333; --border: #ccc; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); color: var(--text); padding: 20px; }
+        
+        .container { background-color: var(--box-bg); padding: 20px 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 900px; margin: 0 auto 20px auto; }
+        h2 { color: var(--primary); border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-top: 0;}
+        
+        /* Painel de Controle Superior */
+        .painel-controle { background-color: #e9ecef; border-left: 5px solid var(--primary); padding: 15px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; border-radius: 4px; margin-bottom: 30px; gap: 15px; }
+        .painel-controle p { margin: 0 0 10px 0; font-weight: bold; width: 100%; font-size: 1.1em;}
+        
+        fieldset { border: 1px solid var(--border); border-radius: 5px; padding: 15px; margin-bottom: 15px; background-color: #fafafa; }
+        legend { font-weight: bold; color: var(--primary); background: #fff; padding: 0 10px; border: 1px solid var(--border); border-radius: 4px; }
+        
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; align-items: center; }
+        .full-width { grid-column: 1 / -1; }
+        
+        label { font-weight: bold; font-size: 0.9em; display: block; margin-bottom: 5px; }
+        input, select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        
+        button { padding: 10px 15px; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 1em; }
+        .btn-salvar { background-color: #28a745; width: 100%; padding: 15px; margin-bottom: 10px;}
+        .btn-salvar:hover { background-color: #218838; }
+        .btn-visualizar { background-color: var(--primary); flex: 1;}
+        .btn-visualizar:hover { background-color: #004494; }
+        .btn-limpar { background-color: #dc3545; }
+        .btn-limpar:hover { background-color: #c82333; }
+        .btn-imprimir { background-color: #333; display: none; margin-top: 15px; width: 100%; padding: 15px;}
+
+        /* CSS DO RELATÓRIO NA TELA */
+        #relatorio_visivel { display: none; max-width: 100%; overflow-x: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .pagina-a4 { margin-bottom: 40px; border-bottom: 2px dashed #ccc; padding-bottom: 20px;}
+        .cabecalho-dia { font-size: 18px; text-align: center; font-weight: bold; color: #333; margin-bottom: 15px; text-transform: uppercase; }
+        .tabela-timeline { width: 100%; border-collapse: collapse; text-align: center; }
+        .tabela-timeline th, .tabela-timeline td { border: 1px solid #555; padding: 6px; font-size: 13px; }
+        .tabela-timeline td:first-child, .tabela-timeline th:first-child { font-weight: bold; width: 60px; background-color: #e9ecef; }
+        .tabela-timeline tbody tr:nth-child(even) { background-color: #f8f9fa; }
+
+        /* CSS EXCLUSIVO PARA A IMPRESSORA */
+        @media print {
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .no-print { display: none !important; }
+            #relatorio_visivel { display: block !important; box-shadow: none; padding: 0; }
+            
+            @page { size: A4 landscape; margin: 5mm; }
+            body { padding: 0; background-color: #fff; margin: 0; }
+            
+            .pagina-a4 { page-break-after: always; border: none; margin-bottom: 0; padding-bottom: 0;}
+            .pagina-a4:last-of-type { page-break-after: auto; }
+            
+            .tabela-timeline th, .tabela-timeline td { padding: 4px; font-size: 11px; line-height: 1.1; }
         }
-        * { box-sizing: border-box; }
-        html, body { margin: 0; }
-        body {
-            font-family: 'Nunito', 'Segoe UI', system-ui, sans-serif; color: var(--text-main);
-            background-color: var(--paper);
-            background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
-            background-size: 30px 30px; min-height: 100vh; padding-bottom: 96px;
-        }
-        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; user-select: none; }
- 
-        .topo { background: linear-gradient(160deg, var(--navy), var(--primary)); color: #fff; padding: 14px 22px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-        .topo .titulo { display: flex; align-items: center; gap: 12px; }
-        .topo .titulo .material-symbols-outlined { font-size: 34px; color: var(--sun); }
-        .topo h1 { margin: 0; font-size: 22px; font-weight: 800; }
-        .topo small { opacity: .85; font-size: 13px; }
-        .topo nav { display: flex; gap: 8px; }
-        .btn { border: none; border-radius: 12px; padding: 10px 16px; font: 700 14px 'Nunito', sans-serif; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
-        .btn.ghost { background: rgba(255,255,255,.15); color: #fff; }
-        .btn.ghost:hover { background: rgba(255,255,255,.28); }
-        .btn.primary { background: var(--primary); color: #fff; }
-        .btn.primary:hover { background: var(--primary-dark); }
-        .btn.sec { background: #e8f0ff; color: var(--primary); }
-        .btn.sec:hover { background: #d9e7ff; }
-        .btn.danger { background: #fdeaea; color: var(--danger); }
-        .btn.danger:hover { background: #fbd7d7; }
- 
-        .wrap { max-width: 1000px; margin: 22px auto; padding: 0 16px; display: grid; gap: 16px; }
-        .card { background: #fff; border: 1px solid var(--border); border-radius: 20px; padding: 20px 22px; box-shadow: 0 10px 30px rgba(10,42,115,.08); }
-        .card h2 { margin: 0 0 14px; font-size: 17px; font-weight: 800; display: flex; align-items: center; gap: 8px; color: var(--navy); }
-        .card h2 .material-symbols-outlined { color: var(--primary); }
-        .dica { font-size: 13px; color: var(--text-muted); margin: -6px 0 12px; }
- 
-        label { display: block; font-weight: 700; font-size: 13px; margin-bottom: 5px; color: var(--text-main); }
-        input[type=text], select {
-            width: 100%; height: 44px; padding: 0 12px; border: 2px solid var(--border); border-radius: 12px; background: #fff;
-            font: 600 15px 'Nunito', sans-serif; color: var(--text-main);
-        }
-        input[type=text]:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(11,87,208,.15); }
-        .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-        .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
-        .row-hora { display: grid; grid-template-columns: 150px 150px; gap: 14px; }
-        .refeicao .hora { font-weight: 800; color: var(--primary); font-size: 12px; margin-left: 4px; }
- 
-        .status { display: inline-block; font-size: 12px; font-weight: 800; padding: 3px 10px; border-radius: 20px; background: #e8f0ff; color: var(--primary); }
-        .status.ok { background: #dff5ea; color: #137a4f; }
-        .topo-form { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
- 
-        .chips { display: flex; flex-wrap: wrap; gap: 8px; }
-        .chip { display: inline-flex; align-items: center; gap: 6px; background: #f1f5ff; border: 1px solid var(--border); border-radius: 20px; padding: 6px 12px; font-size: 13px; font-weight: 700; cursor: pointer; margin: 0; }
-        .link { background: none; border: none; color: var(--primary); font: 700 12px 'Nunito', sans-serif; cursor: pointer; margin-left: 8px; }
- 
-        .linha { display: grid; grid-template-columns: 2.2fr 105px 105px 1.4fr auto 44px; gap: 10px; align-items: end; padding: 12px; border: 1px solid var(--border); border-radius: 14px; background: #fbfcff; margin-bottom: 10px; }
-        .linha.evt { grid-template-columns: 2.4fr 105px 105px 1.4fr 44px; }
-        .cores { display: flex; gap: 6px; height: 44px; align-items: center; }
-        .sw { width: 26px; height: 26px; border-radius: 50%; border: 3px solid; cursor: pointer; padding: 0; }
-        .sw.on { box-shadow: 0 0 0 3px #fff, 0 0 0 5px var(--navy); }
-        .rm { height: 44px; border: none; border-radius: 12px; background: #fdeaea; color: var(--danger); cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .rm:hover { background: #fbd7d7; }
- 
-        .barra { position: fixed; left: 0; right: 0; bottom: 0; background: #fff; border-top: 1px solid var(--border); padding: 12px 18px; display: flex; justify-content: flex-end; gap: 10px; z-index: 5; box-shadow: 0 -8px 24px rgba(10,42,115,.08); }
-        [hidden] { display: none !important; }
- 
-        @media (max-width: 820px) {
-            .grid2, .grid3 { grid-template-columns: 1fr; }
-            .linha, .linha.evt { grid-template-columns: 1fr 1fr; }
-            .linha .nome, .linha .esp, .linha.evt .nome { grid-column: 1 / -1; }
-            .row-hora { grid-template-columns: 1fr 1fr; }
-        }
- 
-        div:where(.swal2-container) div:where(.swal2-popup) { border-radius: 22px !important; font-family: 'Nunito', 'Segoe UI', system-ui, sans-serif !important; }
-        div:where(.swal2-container) h2:where(.swal2-title) { font-size: 19px !important; font-weight: 800 !important; }
-        div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm { border-radius: 50px !important; font-weight: 700 !important; background-color: var(--primary) !important; }
-        div:where(.swal2-container) button:where(.swal2-styled).swal2-cancel { border-radius: 50px !important; font-weight: 700 !important; }
-        .lista-swal { text-align: left; font-size: 13px; margin: 8px 0 0; padding-left: 18px; max-height: 220px; overflow: auto; }
     </style>
 </head>
 <body>
-    <header class="topo">
-        <div class="titulo">
-            <span class="material-symbols-outlined">calendar_view_day</span>
-            <div><h1>Linha do Tempo</h1><small id="subtitulo"></small></div>
+
+<div class="container no-print painel-controle">
+    <p>Painel de Controle do Relatório</p>
+    <button type="button" class="btn-visualizar" id="btnVisualizar">👁️ Visualizar Relatório na Tela</button>
+    <button type="button" class="btn-limpar" id="btnLimpar">🗑️ Limpar Dados Fantasmas</button>
+</div>
+
+<div class="container no-print">
+    <h2>Cadastrar / Adicionar Atividades</h2>
+    <form id="formTimeline">
+        <div class="form-grid full-width" style="margin-bottom: 20px;">
+            <div>
+                <label>Data do Programa</label>
+                <input type="date" id="data_atividade" required>
+            </div>
+            <div>
+                <label>Turma <span id="load_turma" style="font-size: 0.8em; color: gray;"></span></label>
+                <select id="turma" required><option value="">Selecione...</option></select>
+            </div>
         </div>
-        <nav>
-            <a class="btn ghost" href="linha_tempo_relatorio.html"><span class="material-symbols-outlined">print</span> Relatório</a>
-            <a class="btn ghost" id="lnkVoltar" href="#"><span class="material-symbols-outlined">arrow_back</span> Painel</a>
-        </nav>
-    </header>
- 
-    <main class="wrap">
-        <section class="card">
-            <h2><span class="material-symbols-outlined">groups</span> Turma e dia</h2>
-            <div class="grid2">
-                <div><label for="selTurma">Turma</label><select id="selTurma"><option value="">Carregando turmas…</option></select></div>
-                <div><label for="selDia">Dia</label><select id="selDia"></select></div>
+
+        <fieldset>
+            <legend>1. Chegada e Refeições</legend>
+            <div class="form-grid">
+                <div><label>Horário Chegada</label><select id="hora_chegada" class="hora-select"><option value="">Nenhum...</option></select></div>
+                <div></div>
+                <div><label>Prédio Café</label><input type="text" id="predio_cafe"></div>
+                <div><label>Horário Café</label><select id="hora_cafe" class="hora-select"><option value="">Nenhum...</option></select></div>
+                <div><label>Prédio Almoço</label><input type="text" id="predio_almoco"></div>
+                <div><label>Horário Almoço</label><select id="hora_almoco" class="hora-select"><option value="">Nenhum...</option></select></div>
             </div>
-            <div class="topo-form">
-                <span class="status" id="statusDia" hidden></span>
-                <button type="button" class="btn sec" id="btnCopiar" hidden><span class="material-symbols-outlined">content_copy</span> Copiar de outra turma</button>
-            </div>
-            <div id="boxExtras" hidden style="margin-top:14px">
-                <label>Aplicar também aos dias <button type="button" class="link" id="btnTodos">marcar todos</button></label>
-                <div class="chips" id="chipsDias"></div>
-            </div>
-        </section>
- 
-        <div id="formulario" hidden style="display:contents">
-            <section class="card">
-                <h2><span class="material-symbols-outlined">waving_hand</span> Chegada e acolhimento</h2>
-                <div class="row-hora">
-                    <div><label for="chegIni">Início</label><select id="chegIni"></select></div>
-                    <div><label for="chegFim">Fim</label><select id="chegFim"></select></div>
+        </fieldset>
+
+        <fieldset>
+            <legend>2. Eventos Internos e Passeios</legend>
+            <div class="form-grid">
+                <div class="full-width">
+                    <label>Selecione a Atração ou Passeio</label>
+                    <select id="evento_interno"><option value="">Nenhum evento selecionado...</option></select>
                 </div>
-            </section>
- 
-            <section class="card">
-                <h2><span class="material-symbols-outlined">restaurant</span> Café, almoço e lanche</h2>
-                <p class="dica">Os horários são fixos. Informe em qual prédio será cada refeição.</p>
-                <div class="grid3" id="refeicoes"></div>
-            </section>
- 
-            <section class="card">
-                <h2><span class="material-symbols-outlined">palette</span> Atividades</h2>
-                <div id="listaAtiv"></div>
-                <button type="button" class="btn sec" id="btnAddAtiv"><span class="material-symbols-outlined">add</span> Adicionar atividade</button>
-            </section>
- 
-            <section class="card">
-                <h2><span class="material-symbols-outlined">celebration</span> Evento interno</h2>
-                <p class="dica">Contação de histórias, jogos em grupo e outros eventos cadastrados para esta unidade.</p>
-                <div id="listaEvt"></div>
-                <button type="button" class="btn sec" id="btnAddEvt"><span class="material-symbols-outlined">add</span> Adicionar evento</button>
-            </section>
- 
-            <section class="card">
-                <h2><span class="material-symbols-outlined">logout</span> Saída</h2>
-                <div class="row-hora"><div><label for="saida">Horário de saída</label><select id="saida"></select></div></div>
-            </section>
-        </div>
-    </main>
- 
-    <datalist id="listaEspacos"></datalist>
-    <datalist id="listaPredios"><option value="CEI"><option value="EMEI"><option value="EMEF"><option value="CEU"></datalist>
- 
-    <div class="barra" id="barra" hidden>
-        <button type="button" class="btn danger" id="btnExcluir" hidden><span class="material-symbols-outlined">delete</span> Excluir este dia</button>
-        <button type="button" class="btn primary" id="btnSalvar"><span class="material-symbols-outlined">save</span> Salvar</button>
-    </div>
- 
-    <script type="module">
-        import {
-            db, COLECAO_LINHA, DASHBOARD_PAGE, HORARIOS_FIXOS, SLOTS, PALETA_ATIV, TITULO_PROGRAMA,
-            diasDoPrograma, sessao, esc, idDoc, idx, carregarTurmas, carregarAtracoes,
-            blocosDoDia, conflitosInternos, conflitosEspaco
-        } from "./linha_tempo_comum.js";
-        import { collection, getDocs, query, where, doc, deleteDoc, writeBatch, serverTimestamp }
-            from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
- 
-        const ses = sessao();
-        if (!ses) throw new Error("Sem sessão: redirecionando para o login.");
- 
-        const $ = (id) => document.getElementById(id);
-        const DIAS = diasDoPrograma();
-        const OPC_INI = SLOTS.slice(0, -1);   // 08:30 … 16:00
-        const OPC_FIM = SLOTS.slice(1);       // 09:00 … 16:30
-        const fmtDia = (iso) => (DIAS.find((d) => d.iso === iso) || {}).curto || iso;
- 
-        const S = {
-            turma: "", data: DIAS[0].iso, docsTurma: {},
-            atividades: [], eventos: [], atracoes: [],
-            espacos: new Set(), sujo: false,
-        };
- 
-        /* ---------- helpers de tela ---------- */
-        const opcoes = (lista, sel, vazio = "—") =>
-            `<option value="">${vazio}</option>` + lista.map((h) => `<option value="${h}"${h === sel ? " selected" : ""}>${h}</option>`).join("");
- 
-        function toast(titulo, icon = "success") {
-            Swal.fire({ toast: true, position: "top-end", icon, title: titulo, showConfirmButton: false, timer: 2400, width: 320 });
-        }
-        const listaHtml = (itens) => `<ul class="lista-swal">${itens.map((i) => `<li>${esc(i)}</li>`).join("")}</ul>`;
- 
-        async function confirmarDescarte() {
-            if (!S.sujo) return true;
-            const r = await Swal.fire({
-                icon: "question", title: "Descartar alterações?", text: "Há dados deste formulário que ainda não foram salvos.",
-                showCancelButton: true, confirmButtonText: "Descartar", cancelButtonText: "Voltar",
+                <div>
+                    <label>Horário na Linha do Tempo</label>
+                    <select id="hora_evento" class="hora-select"><option value="">Nenhum...</option></select>
+                </div>
+            </div>
+        </fieldset>
+
+        <button type="submit" class="btn-salvar" id="btnSalvar">Salvar Dados da Turma</button>
+    </form>
+</div>
+
+<!-- VISUALIZADOR DE TELA (Onde a mágica acontece) -->
+<div id="relatorio_visivel">
+    <!-- As tabelas vão aparecer aqui dentro -->
+</div>
+<button type="button" class="btn-imprimir no-print" id="btnImprimir" style="max-width: 900px; margin: 20px auto;">🖨️ Enviar para Impressora (A4)</button>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+    import { getFirestore, collection, getDocs, getDoc, setDoc, deleteDoc, doc, query, where } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCpCXxJbD8dPXkT7mcoz4qK8Wjt7WTRwFA",
+        authDomain: "sig-edu.firebaseapp.com",
+        projectId: "sig-edu",
+        storageBucket: "sig-edu.firebasestorage.app",
+        messagingSenderId: "233239725278",
+        appId: "1:233239725278:web:809b9c42feacd99175ee4f",
+        measurementId: "G-E5LLYGW7DN"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const ceuLogado = "CEU Caminho do Mar";
+
+    const gradeHorarios = ['08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30'];
+    const coresTurmas = ['#ffb3ba', '#ffdfba', '#ffffba', '#baffc9', '#bae1ff', '#e8baff', '#f4c2c2', '#dcd0ff'];
+
+    document.querySelectorAll('.hora-select').forEach(select => {
+        gradeHorarios.forEach(h => {
+            const opt = document.createElement('option'); opt.value = h; opt.textContent = h;
+            select.appendChild(opt);
+        });
+    });
+
+    async function inicializarDados() {
+        try {
+            const snapTurmas = await getDocs(collection(db, "rf_inscricoes"));
+            const turmasSet = new Set();
+            snapTurmas.forEach(doc => { if (doc.data().turma) turmasSet.add(doc.data().turma); });
+            const comboTurma = document.getElementById('turma');
+            Array.from(turmasSet).sort().forEach(t => {
+                const opt = document.createElement('option'); opt.value = t; opt.textContent = t;
+                comboTurma.appendChild(opt);
             });
-            return r.isConfirmed;
-        }
- 
-        function registrarEspacos(docs) {
-            docs.forEach((d) => {
-                (d.atividades || []).forEach((a) => a.espaco && S.espacos.add(a.espaco));
-                (d.eventos || []).forEach((e) => e.espaco && S.espacos.add(e.espaco));
-            });
-            $("listaEspacos").innerHTML = [...S.espacos].sort().map((e) => `<option value="${esc(e)}">`).join("");
-        }
- 
-        /* ---------- partes fixas do formulário ---------- */
-        function montarFixos() {
-            $("chegIni").innerHTML = opcoes(OPC_INI, "08:30");
-            $("chegFim").innerHTML = opcoes(OPC_FIM, "09:00");
-            $("saida").innerHTML = opcoes(SLOTS, SLOTS[SLOTS.length - 1], "Escolha…");
-            $("refeicoes").innerHTML = Object.entries(HORARIOS_FIXOS).map(([k, f]) => `
-                <div class="refeicao">
-                    <label for="pred_${k}">${f.rotulo} <span class="hora">${f.inicio}–${f.fim}</span></label>
-                    <input type="text" id="pred_${k}" list="listaPredios" placeholder="Prédio: CEI, EMEI, EMEF…" maxlength="40" autocomplete="off">
-                </div>`).join("");
-        }
- 
-        /* ---------- dia e chips ---------- */
-        function renderDias() {
-            $("selDia").innerHTML = DIAS.map((d) =>
-                `<option value="${d.iso}"${d.iso === S.data ? " selected" : ""}>${d.curto}${S.docsTurma[d.iso] ? "  ✓" : ""}</option>`).join("");
-            $("chipsDias").innerHTML = DIAS.filter((d) => d.iso !== S.data).map((d) =>
-                `<label class="chip"><input type="checkbox" value="${d.iso}"> ${d.curto}${S.docsTurma[d.iso] ? " ✓" : ""}</label>`).join("");
-            $("boxExtras").hidden = !S.turma;
-        }
- 
-        /* ---------- atividades e eventos ---------- */
-        const novaAtividade = () => ({ nome: "", inicio: "", fim: "", espaco: "", cor: S.atividades.length % PALETA_ATIV.length });
-        const novoEvento = () => ({ atracaoId: "", nome: "", inicio: "", fim: "", espaco: "" });
- 
-        function renderAtividades() {
-            $("listaAtiv").innerHTML = S.atividades.map((a, i) => `
-                <div class="linha" data-i="${i}">
-                    <div class="nome"><label>Atividade</label><input type="text" data-c="nome" value="${esc(a.nome)}" placeholder="Ex.: Oficina de pintura" maxlength="80" autocomplete="off"></div>
-                    <div><label>Início</label><select data-c="inicio">${opcoes(OPC_INI, a.inicio)}</select></div>
-                    <div><label>Fim</label><select data-c="fim">${opcoes(OPC_FIM, a.fim)}</select></div>
-                    <div class="esp"><label>Espaço</label><input type="text" data-c="espaco" list="listaEspacos" value="${esc(a.espaco)}" placeholder="Ex.: Quadra, Sala 3" maxlength="60" autocomplete="off"></div>
-                    <div><label>Cor</label><div class="cores">${PALETA_ATIV.map((p, k) =>
-                        `<button type="button" class="sw${(a.cor ?? 0) === k ? " on" : ""}" data-cor="${k}" title="${p.nome}" style="background:${p.bg};border-color:${p.bd}"></button>`).join("")}</div></div>
-                    <button type="button" class="rm" data-rm title="Remover atividade"><span class="material-symbols-outlined">delete</span></button>
-                </div>`).join("");
-        }
- 
-        function renderEventos() {
-            const base = S.atracoes.map((a) => ({ ...a }));
-            $("listaEvt").innerHTML = S.eventos.map((e, i) => {
-                const lista = [...base];
-                if (e.atracaoId && !lista.some((x) => x.id === e.atracaoId)) lista.push({ id: e.atracaoId, nome: e.nome || e.atracaoId });
-                const vazio = lista.length ? "Escolha o evento…" : "Nenhum evento cadastrado para esta unidade";
-                return `
-                <div class="linha evt" data-i="${i}">
-                    <div class="nome"><label>Evento</label><select data-c="atracaoId"><option value="">${vazio}</option>${lista.map((x) =>
-                        `<option value="${esc(x.id)}"${x.id === e.atracaoId ? " selected" : ""}>${esc(x.nome)}</option>`).join("")}</select></div>
-                    <div><label>Início</label><select data-c="inicio">${opcoes(OPC_INI, e.inicio)}</select></div>
-                    <div><label>Fim</label><select data-c="fim">${opcoes(OPC_FIM, e.fim)}</select></div>
-                    <div class="esp"><label>Espaço (opcional)</label><input type="text" data-c="espaco" list="listaEspacos" value="${esc(e.espaco)}" maxlength="60" autocomplete="off"></div>
-                    <button type="button" class="rm" data-rm title="Remover evento"><span class="material-symbols-outlined">delete</span></button>
-                </div>`;
-            }).join("");
-        }
- 
-        function ligarLista(el, nome, render) {
-            el.addEventListener("input", (e) => {
-                const l = e.target.closest(".linha");
-                const c = e.target.dataset.c;
-                if (!l || !c) return;
-                const item = S[nome][+l.dataset.i];
-                item[c] = e.target.value;
-                if (c === "atracaoId") item.nome = (S.atracoes.find((x) => x.id === e.target.value) || {}).nome || "";
-            });
-            el.addEventListener("click", (e) => {
-                const l = e.target.closest(".linha");
-                if (!l) return;
-                const i = +l.dataset.i;
-                if (e.target.closest("[data-rm]")) { S[nome].splice(i, 1); S.sujo = true; render(); return; }
-                const sw = e.target.closest("[data-cor]");
-                if (sw) { S[nome][i].cor = +sw.dataset.cor; S.sujo = true; render(); }
-            });
-        }
- 
-        /* ---------- carregar / preencher ---------- */
-        async function carregarDocsTurma() {
-            S.docsTurma = {};
-            if (S.turma) {
-                try {
-                    const snap = await getDocs(query(collection(db, COLECAO_LINHA), where("ceu", "==", ses.unidade), where("turma", "==", S.turma)));
-                    snap.forEach((x) => { const v = x.data(); S.docsTurma[v.data] = v; });
-                    registrarEspacos(Object.values(S.docsTurma));
-                } catch (e) {
-                    console.error(e);
-                    Swal.fire({ icon: "error", title: "Erro ao carregar", text: "Não foi possível ler os dados desta turma." });
-                }
+        } catch(e) {}
+
+        const comboEvento = document.getElementById('evento_interno');
+        try {
+            const snapPasseios = await getDocs(collection(db, "rf_passeios"));
+            if (!snapPasseios.empty) {
+                const grupoPasseios = document.createElement('optgroup'); grupoPasseios.label = "Passeios";
+                snapPasseios.forEach(doc => {
+                    const d = doc.data();
+                    const opt = document.createElement('option');
+                    opt.value = `PASSEIO: ${d.passeio} (Saída: ${d.saidaCeu} / Volta: ${d.chegadaCeu})`;
+                    opt.textContent = opt.value;
+                    grupoPasseios.appendChild(opt);
+                });
+                comboEvento.appendChild(grupoPasseios);
             }
-            renderDias();
-            preencher(S.docsTurma[S.data]);
+        } catch(e) {}
+    }
+
+    // Função de Limpar Banco (Zerar Testes)
+    document.getElementById('btnLimpar').addEventListener('click', async function() {
+        if(confirm("Tem certeza que deseja APAGAR TODOS os registros da Linha do Tempo criados até agora e começar do zero?")) {
+            this.textContent = "Apagando...";
+            try {
+                const snap = await getDocs(collection(db, "rf_linha_tempo"));
+                snap.forEach(async (documento) => {
+                    await deleteDoc(doc(db, "rf_linha_tempo", documento.id));
+                });
+                alert("Banco de dados limpo com sucesso! Pode cadastrar o dia 06 de forma limpa.");
+                document.getElementById('relatorio_visivel').style.display = 'none';
+                document.getElementById('btnImprimir').style.display = 'none';
+            } catch(e) {
+                alert("Erro ao limpar o banco.");
+            } finally {
+                this.textContent = "🗑️ Limpar Dados Fantasmas";
+            }
         }
- 
-        function preencher(d) {
-            const dados = d || {};
-            $("formulario").hidden = !S.turma;
-            $("barra").hidden = !S.turma;
-            $("btnCopiar").hidden = !S.turma;
-            $("statusDia").hidden = !S.turma;
-            $("chegIni").innerHTML = opcoes(OPC_INI, dados.chegada?.inicio || "08:30");
-            $("chegFim").innerHTML = opcoes(OPC_FIM, dados.chegada?.fim || "09:00");
-            $("saida").innerHTML = opcoes(SLOTS, dados.saida || SLOTS[SLOTS.length - 1], "Escolha…");
-            for (const k of Object.keys(HORARIOS_FIXOS)) $("pred_" + k).value = dados[k]?.predio || "";
-            S.atividades = (dados.atividades || []).map((a) => ({ ...a }));
-            if (!S.atividades.length) S.atividades.push(novaAtividade());
-            S.eventos = (dados.eventos || []).map((e) => ({ ...e }));
-            renderAtividades();
-            renderEventos();
-            $("btnExcluir").hidden = !d;
-            $("statusDia").textContent = d ? "Já cadastrado — editando" : "Novo cadastro";
-            $("statusDia").classList.toggle("ok", !!d);
-            S.sujo = false;
-        }
- 
-        /* ---------- leitura e validação ---------- */
-        function lerFormulario() {
-            const erros = [];
-            const d = {
-                ceu: ses.unidade, turma: S.turma,
-                chegada: { inicio: $("chegIni").value, fim: $("chegFim").value },
-                saida: $("saida").value, atividades: [], eventos: [],
+    });
+
+    // Salvamento
+    document.getElementById('formTimeline').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const data = document.getElementById('data_atividade').value;
+        const turma = document.getElementById('turma').value;
+        const docId = `${data}_${turma}`;
+        const docRef = doc(db, "rf_linha_tempo", docId);
+        
+        try {
+            const docSnap = await getDoc(docRef);
+            let cronogramaExistente = {};
+            if (docSnap.exists() && docSnap.data().cronograma) {
+                cronogramaExistente = docSnap.data().cronograma;
+            }
+
+            const adicionar = (id, txt) => { 
+                const v = document.getElementById(id).value; 
+                if(v) cronogramaExistente[v] = txt; 
             };
-            for (const k of Object.keys(HORARIOS_FIXOS)) d[k] = { predio: $("pred_" + k).value.trim() };
- 
-            if (!d.chegada.inicio || !d.chegada.fim) erros.push("Chegada e acolhimento: escolha início e fim.");
-            else if (idx(d.chegada.fim) <= idx(d.chegada.inicio)) erros.push("Chegada e acolhimento: o fim deve ser depois do início.");
-            if (!d.saida) erros.push("Saída: escolha o horário.");
- 
-            S.atividades.forEach((a, i) => {
-                const nome = (a.nome || "").trim(), espaco = (a.espaco || "").trim();
-                if (!nome && !espaco && !a.inicio && !a.fim) return; // linha em branco é ignorada
-                const rot = `Atividade ${i + 1}`;
-                if (!nome) erros.push(`${rot}: informe o nome.`);
-                if (!a.inicio || !a.fim) erros.push(`${rot}: escolha início e fim.`);
-                else if (idx(a.fim) <= idx(a.inicio)) erros.push(`${rot}: o fim deve ser depois do início.`);
-                d.atividades.push({ nome, espaco, inicio: a.inicio, fim: a.fim, cor: a.cor ?? 0 });
-            });
-            S.eventos.forEach((e, i) => {
-                const espaco = (e.espaco || "").trim();
-                if (!e.atracaoId && !e.inicio && !e.fim && !espaco) return;
-                const rot = `Evento ${i + 1}`;
-                if (!e.atracaoId) erros.push(`${rot}: escolha o evento.`);
-                if (!e.inicio || !e.fim) erros.push(`${rot}: escolha início e fim.`);
-                else if (idx(e.fim) <= idx(e.inicio)) erros.push(`${rot}: o fim deve ser depois do início.`);
-                d.eventos.push({ atracaoId: e.atracaoId, nome: e.nome || "", espaco, inicio: e.inicio, fim: e.fim });
-            });
-            return { d, erros };
-        }
- 
-        async function docsDoDia(iso) {
-            const snap = await getDocs(query(collection(db, COLECAO_LINHA), where("ceu", "==", ses.unidade), where("data", "==", iso)));
-            const lista = [];
-            snap.forEach((x) => lista.push(x.data()));
-            registrarEspacos(lista);
-            return lista;
-        }
- 
-        /* ---------- salvar ---------- */
-        async function salvar() {
-            if (!S.turma) return;
-            const { d, erros } = lerFormulario();
-            if (erros.length) {
-                Swal.fire({ icon: "warning", title: "Confira os dados", html: listaHtml(erros), confirmButtonText: "Entendi" });
-                return;
+
+            adicionar('hora_chegada', 'Chegada');
+            adicionar('hora_cafe', `Café (${document.getElementById('predio_cafe').value || '-'})`);
+            adicionar('hora_almoco', `Almoço (${document.getElementById('predio_almoco').value || '-'})`);
+            if (document.getElementById('evento_interno').value) adicionar('hora_evento', document.getElementById('evento_interno').value);
+
+            await setDoc(docRef, { data, turma, ceu: ceuLogado, cronograma: cronogramaExistente });
+            alert(`Salvo para a turma ${turma}!`);
+            document.getElementById('formTimeline').reset();
+            document.getElementById('data_atividade').value = data; 
+            document.getElementById('turma').value = turma; 
+        } catch(e) { alert("Erro ao salvar."); }
+    });
+
+    // Visualizar e Montar o Relatório na Tela
+    document.getElementById('btnVisualizar').addEventListener('click', async function() {
+        const btn = this; 
+        btn.textContent = "Montando Tabela...";
+        
+        try {
+            const qImpressao = query(collection(db, "rf_linha_tempo"), where("ceu", "==", ceuLogado));
+            const snapshot = await getDocs(qImpressao);
+            
+            if(snapshot.empty) {
+                btn.textContent = "👁️ Visualizar Relatório na Tela";
+                return alert("Não há nada cadastrado no momento.");
             }
-            const internos = conflitosInternos(blocosDoDia(d));
-            if (internos.length) {
-                Swal.fire({ icon: "error", title: "Horários sobrepostos", html: "Estes itens ocupam o mesmo horário nesta turma:" + listaHtml(internos), confirmButtonText: "Vou ajustar" });
-                return;
-            }
- 
-            const extras = [...document.querySelectorAll("#chipsDias input:checked")].map((c) => c.value);
-            const datas = [S.data, ...extras];
- 
-            Swal.fire({ title: "Verificando…", allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-            const avisos = [];
-            try {
-                const blocos = blocosDoDia(d);
-                for (const iso of datas) {
-                    const outros = await docsDoDia(iso);
-                    conflitosEspaco(blocos, outros, S.turma).forEach((m) => avisos.push(`${fmtDia(iso)} — ${m}`));
+
+            const funilDeDias = {};
+            
+            snapshot.forEach(doc => {
+                const d = doc.data();
+                if(!d.data || !d.turma) return;
+                
+                const dia = d.data.substring(0, 10);
+                const turma = d.turma.trim().toUpperCase();
+                
+                if (!funilDeDias[dia]) funilDeDias[dia] = {};
+                if (!funilDeDias[dia][turma]) funilDeDias[dia][turma] = {};
+                
+                if (d.cronograma) {
+                    for(let hora in d.cronograma) {
+                        const atividade = d.cronograma[hora];
+                        // Esmaga todas as atividades do mesmo horário na mesma célula
+                        if (funilDeDias[dia][turma][hora] && !funilDeDias[dia][turma][hora].includes(atividade)) {
+                            funilDeDias[dia][turma][hora] += " + " + atividade;
+                        } else {
+                            funilDeDias[dia][turma][hora] = atividade;
+                        }
+                    }
                 }
-            } catch (e) {
-                console.error(e);
-                Swal.fire({ icon: "error", title: "Erro de conexão", text: "Não foi possível verificar os conflitos de espaço." });
-                return;
-            }
- 
-            const substitui = extras.filter((iso) => S.docsTurma[iso]);
-            if (avisos.length || substitui.length) {
-                let html = "";
-                if (avisos.length) html += "<b>Espaço já usado por outra turma no mesmo horário:</b>" + listaHtml(avisos);
-                if (substitui.length) html += `<p style="margin:12px 0 0;font-size:13px"><b>Serão substituídos</b> os dados já cadastrados em: ${substitui.map(fmtDia).join(", ")}.</p>`;
-                const r = await Swal.fire({ icon: "warning", title: "Salvar mesmo assim?", html, showCancelButton: true, confirmButtonText: "Salvar", cancelButtonText: "Voltar e ajustar" });
-                if (!r.isConfirmed) return;
-            }
- 
-            Swal.fire({ title: "Salvando…", allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-            try {
-                const batch = writeBatch(db);
-                for (const iso of datas) {
-                    batch.set(doc(db, COLECAO_LINHA, idDoc(ses.unidade, iso, S.turma)),
-                        { ...d, data: iso, atualizadoPor: ses.rf, atualizadoEm: serverTimestamp() });
-                }
-                await batch.commit();
-                datas.forEach((iso) => { S.docsTurma[iso] = { ...d, data: iso }; });
-                registrarEspacos([d]);
-                renderDias();
-                $("selDia").value = S.data;
-                S.sujo = false;
-                $("btnExcluir").hidden = false;
-                $("statusDia").textContent = "Já cadastrado — editando";
-                $("statusDia").classList.add("ok");
-                Swal.close();
-                toast(datas.length > 1 ? `Salvo em ${datas.length} dias` : "Salvo!");
-            } catch (e) {
-                console.error(e);
-                Swal.fire({ icon: "error", title: "Não foi possível salvar", text: "Verifique a conexão e as permissões do banco e tente de novo." });
-            }
-        }
- 
-        async function excluir() {
-            const r = await Swal.fire({
-                icon: "warning", title: "Excluir este dia?", text: `Turma ${S.turma} · ${fmtDia(S.data)}`,
-                showCancelButton: true, confirmButtonText: "Excluir", cancelButtonText: "Cancelar",
             });
-            if (!r.isConfirmed) return;
-            try {
-                await deleteDoc(doc(db, COLECAO_LINHA, idDoc(ses.unidade, S.data, S.turma)));
-                delete S.docsTurma[S.data];
-                renderDias();
-                preencher(null);
-                toast("Dia excluído");
-            } catch (e) {
-                console.error(e);
-                Swal.fire({ icon: "error", title: "Erro ao excluir" });
-            }
+
+            const diasOrdenados = Object.keys(funilDeDias).sort();
+            let htmlFinal = "";
+
+            diasOrdenados.forEach(dia => {
+                const dataBR = dia.split('-').reverse().join('/');
+                const turmasDesteDia = Object.keys(funilDeDias[dia]).sort();
+                
+                htmlFinal += `<div class="pagina-a4">`;
+                htmlFinal += `<div class="cabecalho-dia">${ceuLogado} - DIÁRIO DE BORDO - ${dataBR}</div>`;
+                htmlFinal += `<table class="tabela-timeline"><thead><tr><th>Horário</th>`;
+                
+                turmasDesteDia.forEach((t, index) => {
+                    const cor = coresTurmas[index % coresTurmas.length];
+                    htmlFinal += `<th style="background-color: ${cor};">Turma ${t}</th>`; 
+                });
+                htmlFinal += `</tr></thead><tbody>`;
+
+                gradeHorarios.forEach(hora => {
+                    htmlFinal += `<tr><td>${hora}</td>`;
+                    turmasDesteDia.forEach(t => {
+                        htmlFinal += `<td>${funilDeDias[dia][t][hora] || ''}</td>`;
+                    });
+                    htmlFinal += `</tr>`;
+                });
+
+                htmlFinal += `</tbody></table></div>`;
+            });
+
+            const divRelatorio = document.getElementById('relatorio_visivel');
+            divRelatorio.innerHTML = htmlFinal;
+            divRelatorio.style.display = 'block';
+            document.getElementById('btnImprimir').style.display = 'block';
+            
+        } catch(e) { 
+            alert("Erro ao ler dados."); 
+        } finally { 
+            btn.textContent = "👁️ Visualizar Relatório na Tela"; 
         }
- 
-        async function copiarDeOutra() {
-            if (!(await confirmarDescarte())) return;
-            let docs;
-            try { docs = (await docsDoDia(S.data)).filter((x) => x.turma !== S.turma); }
-            catch (e) { console.error(e); Swal.fire({ icon: "error", title: "Erro de conexão" }); return; }
-            if (!docs.length) { Swal.fire({ icon: "info", title: "Nada para copiar", text: `Nenhuma outra turma foi cadastrada em ${fmtDia(S.data)}.` }); return; }
-            const opts = {};
-            docs.map((x) => x.turma).sort((a, b) => a.localeCompare(b, "pt-BR", { numeric: true })).forEach((t) => (opts[t] = t));
-            const r = await Swal.fire({ title: "Copiar de qual turma?", input: "select", inputOptions: opts, inputPlaceholder: "Escolha…", showCancelButton: true, confirmButtonText: "Copiar", cancelButtonText: "Cancelar" });
-            if (!r.isConfirmed || !r.value) return;
-            const origem = docs.find((x) => x.turma === r.value);
-            preencher(JSON.parse(JSON.stringify(origem)));
-            $("btnExcluir").hidden = !S.docsTurma[S.data];
-            $("statusDia").textContent = `Copiado da turma ${r.value} — revise e salve`;
-            $("statusDia").classList.remove("ok");
-            S.sujo = true;
-        }
- 
-        /* ---------- eventos da tela ---------- */
-        $("selTurma").addEventListener("change", async (e) => {
-            if (!(await confirmarDescarte())) { e.target.value = S.turma; return; }
-            S.turma = e.target.value;
-            await carregarDocsTurma();
-        });
-        $("selDia").addEventListener("change", async (e) => {
-            if (!(await confirmarDescarte())) { e.target.value = S.data; return; }
-            S.data = e.target.value;
-            renderDias();
-            preencher(S.docsTurma[S.data]);
-        });
-        $("btnTodos").addEventListener("click", () => {
-            const caixas = [...document.querySelectorAll("#chipsDias input")];
-            const marcar = caixas.some((c) => !c.checked);
-            caixas.forEach((c) => (c.checked = marcar));
-            $("btnTodos").textContent = marcar ? "desmarcar todos" : "marcar todos";
-        });
-        $("formulario").addEventListener("input", () => { S.sujo = true; });
-        $("btnAddAtiv").addEventListener("click", () => { S.atividades.push(novaAtividade()); S.sujo = true; renderAtividades(); });
-        $("btnAddEvt").addEventListener("click", () => { S.eventos.push(novoEvento()); S.sujo = true; renderEventos(); });
-        $("btnSalvar").addEventListener("click", salvar);
-        $("btnExcluir").addEventListener("click", excluir);
-        $("btnCopiar").addEventListener("click", copiarDeOutra);
-        window.addEventListener("beforeunload", (e) => { if (S.sujo) { e.preventDefault(); e.returnValue = ""; } });
-        ligarLista($("listaAtiv"), "atividades", renderAtividades);
-        ligarLista($("listaEvt"), "eventos", renderEventos);
- 
-        /* ---------- início ---------- */  .
-        (async function iniciar() {
-            $("subtitulo").textContent = `${TITULO_PROGRAMA} · Unidade ${ses.unidade}`;
-            $("lnkVoltar").href = DASHBOARD_PAGE;
-            montarFixos();
-            renderDias();
-            try {
-                const [turmas, atracoes] = await Promise.all([carregarTurmas(ses.unidade), carregarAtracoes(ses.unidade)]);
-                S.atracoes = atracoes;
-                $("selTurma").innerHTML = turmas.length
-                    ? `<option value="">Selecione a turma…</option>` + turmas.map((t) => `<option value="${esc(t)}">${esc(t)}</option>`).join("")
-                    : `<option value="">Nenhuma turma encontrada</option>`;
-            } catch (e) {
-                console.error(e);
-                $("selTurma").innerHTML = `<option value="">Erro ao carregar turmas</option>`;
-                Swal.fire({ icon: "error", title: "Erro de conexão", text: "Não foi possível carregar as turmas e os eventos." });
-            }
-        })();
-    </script>
+    });
+
+    // Enviar para Impressora
+    document.getElementById('btnImprimir').addEventListener('click', () => {
+        window.print();
+    });
+
+    window.onload = inicializarDados;
+</script>
 </body>
 </html>

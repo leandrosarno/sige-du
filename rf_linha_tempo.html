@@ -123,7 +123,6 @@
         <fieldset style="border-color: #0056b3;">
             <legend style="background: #0056b3; color: white;">2. Passeios Externos e Atrações Internas</legend>
             
-            <!-- BLOCO PASSEIO -->
             <div class="form-grid" style="background: #f0f8ff; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
                 <div class="full-width" style="color: #0056b3;"><strong>🚍 PASSEIO EXTERNO</strong></div>
                 <div class="full-width">
@@ -134,7 +133,6 @@
                 <div><label>Horário Término</label><select id="hora_passeio_fim" class="hora-select"><option value="">Nenhum...</option></select></div>
             </div>
 
-            <!-- BLOCO ATRAÇÃO -->
             <div class="form-grid" style="background: #fdf5ff; padding: 10px; border-radius: 5px;">
                 <div class="full-width" style="color: #6a0dad;"><strong>🎭 ATRAÇÃO INTERNA</strong></div>
                 <div class="full-width">
@@ -188,8 +186,7 @@
         });
     });
 
-async function inicializarDados() {
-        // 1. Carregar Turmas
+    async function inicializarDados() {
         try {
             const snapTurmas = await getDocs(collection(db, "rf_inscricoes"));
             const turmasSet = new Set();
@@ -201,7 +198,6 @@ async function inicializarDados() {
             });
         } catch(e) { console.error("Erro nas turmas:", e); }
 
-        // 2. Carregar Passeios (Sem filtro para evitar erros de maiúscula/minúscula)
         try {
             const snapPasseios = await getDocs(collection(db, "rf_passeios"));
             const comboPasseio = document.getElementById('passeio_externo');
@@ -214,7 +210,6 @@ async function inicializarDados() {
             });
         } catch(e) { console.error("Erro nos passeios:", e); }
 
-        // 3. Carregar Atrações (Sem filtro)
         try {
             const snapAtracoes = await getDocs(collection(db, "rf_atracoes"));
             const comboAtracao = document.getElementById('atracao_interna');
@@ -228,7 +223,6 @@ async function inicializarDados() {
         } catch(e) { console.error("Erro nas atrações:", e); }
     }
 
-    // BUSCAR ATIVIDADES
     document.getElementById('btnBuscarSalvos').addEventListener('click', async function() {
         const data = document.getElementById('data_atividade').value;
         const turma = document.getElementById('turma').value;
@@ -266,7 +260,6 @@ async function inicializarDados() {
         }
     });
 
-    // EXCLUIR ITEM
     document.getElementById('ul_atividades').addEventListener('click', async function(e) {
         if (e.target.classList.contains('btn-deletar-item')) {
             const idEvento = e.target.getAttribute('data-id');
@@ -307,7 +300,6 @@ async function inicializarDados() {
         }
     });
 
-    // SALVAR NOVA ATIVIDADE
     document.getElementById('formTimeline').addEventListener('submit', async function(e) {
         e.preventDefault();
         const data = document.getElementById('data_atividade').value;
@@ -344,12 +336,9 @@ async function inicializarDados() {
             adicionar('hora_lanche', 'hora_lanche_fim', `Lanche (${document.getElementById('predio_lanche').value || '-'})`, '#fff3cd');
             adicionar('hora_saida', null, 'Saída', '#d4edda');
 
-            // Passeio Externo = Azul
             if (document.getElementById('passeio_externo').value) {
                 adicionar('hora_passeio', 'hora_passeio_fim', document.getElementById('passeio_externo').value, '#cce5ff');
             }
-            
-            // Atração Interna = Lilás/Roxo Pastel
             if (document.getElementById('atracao_interna').value) {
                 adicionar('hora_atracao', 'hora_atracao_fim', document.getElementById('atracao_interna').value, '#e8baff');
             }
@@ -367,17 +356,16 @@ async function inicializarDados() {
         } catch(e) { alert("Erro ao salvar."); console.error(e);}
     });
 
-    // VISUALIZAR (LÓGICA FLEXBOX PARA CORES CONTÍNUAS E CONCORRÊNCIA)
     document.getElementById('btnVisualizar').addEventListener('click', async function() {
         const btn = this; 
-        btn.textContent = "Montando Grade...";
+        btn.textContent = "Montando Grade Inteligente...";
         
         try {
             const qImpressao = query(collection(db, "rf_linha_tempo"), where("ceu", "==", ceuLogado));
             const snapshot = await getDocs(qImpressao);
             
             if(snapshot.empty) {
-                btn.textContent = "👁️ Visualizar Relatório na Tela";
+                btn.textContent = "👁️ Visualizar Grade na Tela";
                 return alert("Não há nada cadastrado.");
             }
 
@@ -430,8 +418,9 @@ async function inicializarDados() {
                             });
 
                             if (atividadesAtivas.length > 0) {
-                                htmlFinal += `<td style="padding: 1px; vertical-align: top;">
-                                                <div style="display: flex; gap: 2px; height: 100%; align-items: stretch;">`;
+                                /* O SEGREDO DO PREENCHIMENTO: height: 1px no TD obriga a div interna a esticar 100% da altura da linha */
+                                htmlFinal += `<td style="padding: 1px; vertical-align: top; height: 1px;">
+                                                <div style="display: flex; gap: 2px; height: 100%; min-height: 36px; align-items: stretch;">`;
                                 
                                 atividadesAtivas.forEach(evt => {
                                     const isStart = (hora === evt.inicio);
@@ -443,7 +432,7 @@ async function inicializarDados() {
                                     let borderTop = "none";
                                     let borderBottom = "none";
                                     const borderSides = "1px solid rgba(0,0,0,0.3)";
-                                    let content = "";
+                                    let content = "&nbsp;"; // Garante que a linha murcha expanda
 
                                     if (isStart && isEnd) {
                                         borderRadius = "4px"; borderTop = borderSides; borderBottom = borderSides;
@@ -493,7 +482,7 @@ async function inicializarDados() {
             alert("Erro ao montar grade de horários."); 
             console.error(e);
         } finally { 
-            btn.textContent = "👁️ Visualizar Relatório na Tela"; 
+            btn.textContent = "👁️ Visualizar Grade na Tela"; 
         }
     });
 

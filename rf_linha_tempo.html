@@ -11,7 +11,6 @@
         .container { background-color: var(--box-bg); padding: 20px 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 900px; margin: 0 auto 20px auto; }
         h2 { color: var(--primary); border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-top: 0;}
         
-        /* Painel de Controle Superior */
         .painel-controle { background-color: #e9ecef; border-left: 5px solid var(--primary); padding: 15px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; border-radius: 4px; margin-bottom: 30px; gap: 15px; }
         .painel-controle p { margin: 0 0 10px 0; font-weight: bold; width: 100%; font-size: 1.1em;}
         
@@ -49,7 +48,7 @@
         .tabela-timeline td:first-child, .tabela-timeline th:first-child { font-weight: bold; width: 60px; background-color: #e9ecef; }
         .tabela-timeline tbody tr:nth-child(even) { background-color: #f8f9fa; }
 
-        /* CSS EXCLUSIVO PARA A IMPRESSORA */
+        /* CSS DA IMPRESSORA */
         @media print {
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             .no-print { display: none !important; }
@@ -87,7 +86,7 @@
         </div>
     </div>
 
-    <!-- NOVO MÓDULO: GERENCIADOR DE ATIVIDADES -->
+    <!-- GERENCIADOR DE ATIVIDADES -->
     <fieldset style="background-color: #eef2f5; border-color: #b8c2cc;">
         <legend style="background-color: #17a2b8; color: white;">Gerenciar / Excluir Atividades</legend>
         <div class="full-width">
@@ -109,6 +108,9 @@
                 <div><label>Horário Café</label><select id="hora_cafe" class="hora-select"><option value="">Nenhum...</option></select></div>
                 <div><label>Prédio Almoço</label><input type="text" id="predio_almoco"></div>
                 <div><label>Horário Almoço</label><select id="hora_almoco" class="hora-select"><option value="">Nenhum...</option></select></div>
+                <!-- NOVO: Campos de Lanche da Tarde -->
+                <div><label>Prédio Lanche</label><input type="text" id="predio_lanche"></div>
+                <div><label>Horário Lanche</label><select id="hora_lanche" class="hora-select"><option value="">Nenhum...</option></select></div>
             </div>
         </fieldset>
 
@@ -130,15 +132,11 @@
     </form>
 </div>
 
-<!-- VISUALIZADOR DE TELA (Onde a mágica acontece) -->
-<div id="relatorio_visivel">
-    <!-- As tabelas vão aparecer aqui dentro -->
-</div>
+<div id="relatorio_visivel"></div>
 <button type="button" class="btn-imprimir no-print" id="btnImprimir" style="max-width: 900px; margin: 20px auto;">🖨️ Enviar para Impressora (A4)</button>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
-    // ATENÇÃO: Adicionamos updateDoc e deleteField aqui nas importações
     import { getFirestore, collection, getDocs, getDoc, setDoc, deleteDoc, updateDoc, deleteField, doc, query, where } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -181,7 +179,7 @@
         try {
             const snapPasseios = await getDocs(collection(db, "rf_passeios"));
             if (!snapPasseios.empty) {
-                const grupoPasseios = document.createElement('optgroup'); grupoPasseios.label = "Passeios";
+                const grupoPasseios = document.createElement('optgroup'); grupoPasseios.label = "Passeios Externos";
                 snapPasseios.forEach(doc => {
                     const d = doc.data();
                     const opt = document.createElement('option');
@@ -191,10 +189,25 @@
                 });
                 comboEvento.appendChild(grupoPasseios);
             }
+
+            const qAtracoes = query(collection(db, "rf_atracoes"), where("ceus", "==", ceuLogado));
+            const snapAtracoes = await getDocs(qAtracoes);
+            if (!snapAtracoes.empty) {
+                const grupoAtracoes = document.createElement('optgroup'); grupoAtracoes.label = "Atrações Internas";
+                snapAtracoes.forEach(doc => {
+                    const d = doc.data();
+                    const opt = document.createElement('option');
+                    const dicaHorario = d.horario ? ` | ${d.horario}` : '';
+                    opt.value = `ATRAÇÃO: ${d.titulo} - ${d.local}${dicaHorario}`;
+                    opt.textContent = opt.value;
+                    grupoAtracoes.appendChild(opt);
+                });
+                comboEvento.appendChild(grupoAtracoes);
+            }
         } catch(e) {}
     }
 
-    // --- NOVA FUNÇÃO: BUSCAR ATIVIDADES PARA EXCLUIR ---
+    // BUSCAR ATIVIDADES PARA EXCLUIR
     document.getElementById('btnBuscarSalvos').addEventListener('click', async function() {
         const data = document.getElementById('data_atividade').value;
         const turma = document.getElementById('turma').value;
@@ -237,7 +250,7 @@
         }
     });
 
-    // --- NOVA FUNÇÃO: DELETAR ITEM ESPECÍFICO ---
+    // DELETAR ITEM ESPECÍFICO
     document.getElementById('ul_atividades').addEventListener('click', async function(e) {
         if (e.target.classList.contains('btn-deletar-item')) {
             const hora = e.target.getAttribute('data-hora');
@@ -248,11 +261,9 @@
                 e.target.textContent = "Apagando...";
                 try {
                     const docRef = doc(db, "rf_linha_tempo", `${data}_${turma}`);
-                    // O deleteField remove especificamente aquela chave (horário) do Firebase
                     await updateDoc(docRef, {
                         [`cronograma.${hora}`]: deleteField()
                     });
-                    // Atualiza a lista automaticamente após apagar
                     document.getElementById('btnBuscarSalvos').click();
                 } catch(error) {
                     alert("Erro ao excluir.");
@@ -262,7 +273,7 @@
         }
     });
 
-    // Função de Limpar Banco Total
+    // Limpar Banco Total
     document.getElementById('btnLimpar').addEventListener('click', async function() {
         if(confirm("Tem certeza que deseja APAGAR TODOS os registros da Linha do Tempo criados até agora e começar do zero?")) {
             this.textContent = "Apagando...";
@@ -271,7 +282,7 @@
                 snap.forEach(async (documento) => {
                     await deleteDoc(doc(db, "rf_linha_tempo", documento.id));
                 });
-                alert("Banco de dados limpo com sucesso! Pode cadastrar o dia 06 de forma limpa.");
+                alert("Banco de dados limpo com sucesso! Pode cadastrar o dia de forma limpa.");
                 document.getElementById('relatorio_visivel').style.display = 'none';
                 document.getElementById('btnImprimir').style.display = 'none';
                 document.getElementById('box_atividades_salvas').style.display = 'none';
@@ -283,7 +294,7 @@
         }
     });
 
-    // Salvamento de Novos Eventos
+    // Salvamento
     document.getElementById('formTimeline').addEventListener('submit', async function(e) {
         e.preventDefault();
         const data = document.getElementById('data_atividade').value;
@@ -306,24 +317,23 @@
             adicionar('hora_chegada', 'Chegada');
             adicionar('hora_cafe', `Café (${document.getElementById('predio_cafe').value || '-'})`);
             adicionar('hora_almoco', `Almoço (${document.getElementById('predio_almoco').value || '-'})`);
+            adicionar('hora_lanche', `Lanche (${document.getElementById('predio_lanche').value || '-'})`); // ATUALIZADO
             if (document.getElementById('evento_interno').value) adicionar('hora_evento', document.getElementById('evento_interno').value);
 
             await setDoc(docRef, { data, turma, ceu: ceuLogado, cronograma: cronogramaExistente });
             alert(`Atividade(s) salva(s) para a turma ${turma}!`);
             
-            // Atualiza a lista de atividades salvas caso ela esteja aberta
             if (document.getElementById('box_atividades_salvas').style.display === 'block') {
                 document.getElementById('btnBuscarSalvos').click();
             }
 
-            // Reseta apenas os campos de horário e texto, mantendo Data e Turma
             document.getElementById('formTimeline').reset();
             document.getElementById('data_atividade').value = data; 
             document.getElementById('turma').value = turma; 
         } catch(e) { alert("Erro ao salvar."); }
     });
 
-    // Visualizar e Montar o Relatório na Tela
+    // Visualizar Relatório
     document.getElementById('btnVisualizar').addEventListener('click', async function() {
         const btn = this; 
         btn.textContent = "Montando Tabela...";
@@ -401,7 +411,6 @@
         }
     });
 
-    // Enviar para Impressora
     document.getElementById('btnImprimir').addEventListener('click', () => {
         window.print();
     });

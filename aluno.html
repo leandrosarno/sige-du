@@ -14,8 +14,8 @@
       --body: 'Figtree', 'Segoe UI', Tahoma, sans-serif;
     }
     * { box-sizing: border-box; }
-    body { margin: 0; min-height: 100vh; font-family: var(--body); color: var(--ink); background: #f3f4fb; }
-    .shell { min-height: 100vh; display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); }
+    body { margin: 0; min-height: 100vh; display: flex; flex-direction: column; font-family: var(--body); color: var(--ink); background: #f3f4fb; }
+    .shell { flex: 1; display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); }
 
     /* ── Painel de marca ── */
     .hero {
@@ -85,6 +85,16 @@
 
     .swal2-popup { font-family: var(--body); border-radius: 1.4rem; }
     .swal2-title { font-family: var(--head); }
+
+    /* ── Rodapé ── */
+    .rodape {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 1rem; padding: 1.1rem 1.5rem; color: #fff;
+      background: linear-gradient(90deg, #0a1b5a, #3b2a8f 60%, #4b2f9e);
+    }
+    .rodape img { height: 2.8rem; width: auto; display: block; }
+    .rodape .quem { line-height: 1.25; }
+    .rodape small { display: block; font-size: .72rem; font-weight: 600; opacity: .7; }
+    .rodape strong { font: 800 1.05rem var(--head); letter-spacing: .02em; }
 
     @media (max-width: 860px) {
       .shell { grid-template-columns: 1fr; }
@@ -170,6 +180,16 @@
       </div>
     </section>
   </main>
+
+  <footer class="rodape">
+    <!-- TROQUE o nome do arquivo abaixo pelo nome do logotipo que está na pasta IMAGENS -->
+    <img src="IMAGES/selo_iso.png" alt="Logotipo SIGEDU" onerror="this.style.display='none'">
+    <div class="quem">
+      <small>Desenvolvido por</small>
+      <strong>SIGEDU</strong>
+      <small>Sistema Integrado de Gestão Educacional</small>
+    </div>
+  </footer>
 
   <script>
     // --- 🔗 URL DO SISTEMA DE CARTEIRINHAS ANTIGO ---
@@ -352,10 +372,6 @@
   </script>
 </body>
 </html>
-
-
-
-
 
 
 

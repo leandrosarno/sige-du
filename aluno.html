@@ -50,8 +50,8 @@
     .card h2 { margin: 0 0 .3rem; font: 800 1.7rem var(--head); letter-spacing: -.01em; }
     .sub { margin: 0 0 1.4rem; color: var(--mut); }
 
-    .seg { display: grid; grid-template-columns: 1fr 1fr; gap: .3rem; padding: .3rem; margin-bottom: 1.5rem; border-radius: .9rem; background: #eef0fa; }
-    .seg button { border: 0; background: transparent; padding: .65rem .5rem; border-radius: .7rem; font: 700 .9rem var(--body); color: var(--mut); cursor: pointer; transition: .25s; }
+    .seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: .3rem; padding: .3rem; margin-bottom: 1.5rem; border-radius: .9rem; background: #eef0fa; }
+    .seg button { border: 0; background: transparent; padding: .65rem .3rem; border-radius: .7rem; font: 700 .8rem var(--body); color: var(--mut); cursor: pointer; transition: .25s; }
     .seg button.on { background: #fff; color: var(--roxo); box-shadow: 0 .2rem .6rem rgba(60,40,140,.18); }
 
     .campo { margin-bottom: 1.1rem; }
@@ -135,8 +135,9 @@
         <p class="sub" id="subtitulo">Primeira vez por aqui? Use sua data de nascimento.</p>
 
         <div class="seg">
-          <button type="button" id="tabPrimeiro" class="on" onclick="definirModo(true)">Primeiro acesso</button>
-          <button type="button" id="tabSenha" onclick="definirModo(false)">Já tenho senha</button>
+          <button type="button" id="tabPrimeiro" class="on" onclick="definirModo('primeiro')">Primeiro acesso</button>
+          <button type="button" id="tabSenha" onclick="definirModo('senha')">Já tenho senha</button>
+          <button type="button" id="tabNova" onclick="definirModo('nova')">Nova senha</button>
         </div>
 
         <form id="formLogin" novalidate>
@@ -149,14 +150,14 @@
             </div>
           </div>
 
-          <!-- Primeiro acesso: Data de Nascimento -->
+          <!-- Primeiro acesso e Nova senha: Data de Nascimento -->
           <div id="areaPrimeiroAcesso" class="campo">
             <label for="dataNascAluno">Data de nascimento</label>
             <div class="entrada">
               <i class="fas fa-calendar-alt"></i>
               <input type="date" id="dataNascAluno">
             </div>
-            <div class="dica">
+            <div class="dica" id="dica">
               <i class="fas fa-info-circle"></i>
               <strong>Primeiro acesso?</strong> Utilize sua data de nascimento para entrar. Você criará uma senha segura no próximo passo.
             </div>
@@ -195,8 +196,8 @@
     // --- 🔗 URL DO SISTEMA DE CARTEIRINHAS ANTIGO ---
     const API_URL = "https://script.google.com/macros/s/AKfycbwKts8WbT02uwYqZ-Ihtv6H-fCazTx9AWh4nz2yfLxeGLR4zET6aAx3YgkhdTaRZHr9/exec";
 
-    // Variável de controle visual
-    let modoPrimeiroAcesso = true;
+    // Modo da tela: 'primeiro' (primeiro acesso), 'senha' (já tenho senha) ou 'nova' (nova senha)
+    let modo = 'primeiro';
 
     // Enter no teclado também faz o login
     document.getElementById("formLogin").addEventListener("submit", function(e) {
@@ -223,17 +224,38 @@
       icon.classList.toggle("fa-eye-slash", mostrar);
     }
 
-    // --- Alternar visual entre Data de Nascimento (primeiro acesso) e Senha ---
-    function definirModo(primeiro) {
-      modoPrimeiroAcesso = primeiro;
-      document.getElementById('areaPrimeiroAcesso').style.display = primeiro ? "block" : "none";
-      document.getElementById('areaSenhaPadrao').style.display = primeiro ? "none" : "block";
-      document.getElementById('tabPrimeiro').classList.toggle('on', primeiro);
-      document.getElementById('tabSenha').classList.toggle('on', !primeiro);
-      document.getElementById('subtitulo').innerText = primeiro
-        ? "Primeira vez por aqui? Use sua data de nascimento."
-        : "Que bom ver você! Entre com seu CPF e sua senha.";
-      if (primeiro) document.getElementById('senhaAluno').value = "";
+    // --- Textos de cada modo: [subtítulo, dica, texto do botão] ---
+    const TEXTOS = {
+      primeiro: [
+        "Primeira vez por aqui? Use sua data de nascimento.",
+        '<i class="fas fa-info-circle"></i> <strong>Primeiro acesso?</strong> Utilize sua data de nascimento para entrar. Você criará uma senha segura no próximo passo.',
+        "ACESSAR MEU PORTAL"
+      ],
+      senha: [
+        "Que bom ver você! Entre com seu CPF e sua senha.",
+        "",
+        "ACESSAR MEU PORTAL"
+      ],
+      nova: [
+        "Esqueceu a senha? Confirme seus dados para criar uma nova.",
+        '<i class="fas fa-key"></i> <strong>Nova senha:</strong> informe seu CPF e sua data de nascimento. Se estiverem corretos, você poderá criar uma nova senha.',
+        "CRIAR NOVA SENHA"
+      ]
+    };
+
+    // --- Alternar entre Primeiro acesso, Já tenho senha e Nova senha ---
+    function definirModo(m) {
+      modo = m;
+      const usaData = m !== 'senha';
+      document.getElementById('areaPrimeiroAcesso').style.display = usaData ? "block" : "none";
+      document.getElementById('areaSenhaPadrao').style.display = usaData ? "none" : "block";
+      document.getElementById('tabPrimeiro').classList.toggle('on', m === 'primeiro');
+      document.getElementById('tabSenha').classList.toggle('on', m === 'senha');
+      document.getElementById('tabNova').classList.toggle('on', m === 'nova');
+      document.getElementById('subtitulo').innerText = TEXTOS[m][0];
+      document.getElementById('dica').innerHTML = TEXTOS[m][1];
+      document.getElementById('btnAcessar').innerHTML = '<i class="fas fa-sign-in-alt" style="margin-right:.5rem"></i> ' + TEXTOS[m][2];
+      if (usaData) document.getElementById('senhaAluno').value = "";
       else document.getElementById('dataNascAluno').value = "";
     }
 
@@ -243,7 +265,7 @@
       localStorage.removeItem('portalCeuAluno');
       document.getElementById('cpfAluno').value = "";
       document.getElementById('senhaAluno').value = "";
-      definirModo(false);
+      definirModo('senha');
       document.getElementById('cpfAluno').focus();
     }
 
@@ -260,11 +282,11 @@
 
       let pacoteEnvio = { acao: "loginAlunoPortal", dados: { cpf: cpf } };
 
-      if (modoPrimeiroAcesso) {
+      if (modo !== 'senha') {
         const dataNasc = document.getElementById("dataNascAluno").value;
         if (!dataNasc) { Swal.fire('Opa!', 'Preencha sua data de nascimento.', 'warning'); return; }
         pacoteEnvio.dados.dataNascimento = dataNasc;
-        pacoteEnvio.dados.tipoLogin = "PRIMEIRO_ACESSO";
+        pacoteEnvio.dados.tipoLogin = modo === 'nova' ? "NOVA_SENHA" : "PRIMEIRO_ACESSO";
       } else {
         const senha = document.getElementById("senhaAluno").value;
         if (!senha) { Swal.fire('Opa!', 'Digite sua senha.', 'warning'); return; }
@@ -298,7 +320,7 @@
 
         } else if (res.status === "exige_nova_senha") {
           // Abre tela forçando criar senha nova
-          abrirModalNovaSenha(cpf);
+          abrirModalNovaSenha(cpf, pacoteEnvio.dados.dataNascimento);
         } else {
           Swal.fire('Acesso Negado', res.erro || res.mensagem, 'error');
         }
@@ -309,10 +331,10 @@
       }
     }
 
-    // --- Fluxo Criar Senha no 1º Acesso ---
-    function abrirModalNovaSenha(cpfAlunoValidado) {
+    // --- Fluxo Criar Senha (primeiro acesso ou nova senha) ---
+    function abrirModalNovaSenha(cpfAlunoValidado, dataNasc) {
       Swal.fire({
-        title: '<i class="fas fa-key" style="color:#6f42c1"></i><br>Crie sua Senha Definitiva',
+        title: '<i class="fas fa-key" style="color:#6f42c1"></i><br>' + (modo === 'nova' ? 'Crie sua Nova Senha' : 'Crie sua Senha Definitiva'),
         html: `
           <p style="color:#6b7090;font-size:.9rem">Sua identidade foi confirmada! Agora crie uma senha para seus próximos acessos ao portal.</p>
           <input type="password" id="novaSenha1" class="swal2-input" placeholder="Digite uma senha forte" autocomplete="new-password" style="font-size: 16px;">
@@ -331,19 +353,20 @@
         }
       }).then((result) => {
         if (result.isConfirmed) {
-          gravarNovaSenhaNoServidor(cpfAlunoValidado, result.value);
+          gravarNovaSenhaNoServidor(cpfAlunoValidado, result.value, dataNasc);
         }
       });
     }
 
-    async function gravarNovaSenhaNoServidor(cpf, novaSenha) {
+    async function gravarNovaSenhaNoServidor(cpf, novaSenha, dataNasc) {
       const overlay = document.getElementById("loadingOverlay");
       overlay.style.display = "flex";
 
       try {
+        // dataNascimento e origem seguem junto para o servidor poder conferir de novo
         let pacote = {
           acao: "salvarNovaSenhaPortal",
-          dados: { cpf: cpf, novaSenha: novaSenha }
+          dados: { cpf: cpf, novaSenha: novaSenha, dataNascimento: dataNasc, origem: modo }
         };
 
         const resRaw = await fetch(API_URL, { method: 'POST', body: JSON.stringify(pacote) });

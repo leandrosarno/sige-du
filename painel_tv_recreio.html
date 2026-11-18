@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel TV - Recreio nas Férias</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root { --tinta:#0b2a3c; --suave:#4f6b7d; --agua:#0369a1; --sol:#f08a00; --linha:#cfe6f2; }
+    * { box-sizing: border-box; margin: 0; }
+    html, body { height: 100%; }
+    body { font-family: 'Nunito','Segoe UI',system-ui,sans-serif; color: var(--tinta); background: #f3faff;
+           display: flex; flex-direction: column; padding: 3vh 3vw 2.5vh; gap: 2.5vh; overflow: hidden; }
+
+    header { display: flex; justify-content: space-between; align-items: flex-end; }
+    h1 { font-size: clamp(28px, 5.4vh, 72px); font-weight: 900; color: var(--agua); line-height: 1; }
+    .sub { display: flex; align-items: center; gap: 1.6vw; margin-top: 1vh; color: var(--suave); font-weight: 700; font-size: clamp(14px, 2.2vh, 28px); }
+    .live { display: inline-flex; align-items: center; gap: .8vh; font-weight: 800; color: #15803d; }
+    .live::before { content: ""; width: 1.4vh; height: 1.4vh; border-radius: 50%; background: currentColor; animation: piscar 1.6s infinite; }
+    .live.off { color: #b45309; }
+    @keyframes piscar { 50% { opacity: .2; } }
+
+    .total { display: flex; align-items: baseline; gap: 1.2vw; }
+    .total b { font-size: clamp(56px, 13vh, 170px); font-weight: 900; line-height: 1; padding: 0 .6vw;
+               background: linear-gradient(transparent 64%, #ffe08a 64%); display: inline-block; }
+    .total b.pulso { animation: pulso 1s ease; }
+    .total span { font-size: clamp(16px, 3vh, 38px); font-weight: 800; color: var(--suave); }
+    @keyframes pulso { 35% { transform: scale(1.14); } }
+
+    main { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 3vw; }
+    .col { display: flex; flex-direction: column; min-height: 0; }
+    .col + .col { border-left: 2px solid var(--linha); padding-left: 3vw; }
+    .col h2 { font-size: clamp(20px, 3.6vh, 46px); font-weight: 900; margin-bottom: 1.5vh; }
+    .col.idade h2 { color: var(--agua); } .col.turma h2 { color: var(--sol); }
+    .graf { flex: 1; min-height: 0; position: relative; }
+
+    #aviso { position: fixed; left: 50%; bottom: 4vh; transform: translate(-50%, 220%); background: #ffd24d; color: var(--tinta);
+             font-weight: 900; font-size: clamp(20px, 3.6vh, 46px); padding: 1.4vh 2.6vw; border-radius: 80px;
+             box-shadow: 0 10px 40px rgba(11,42,60,.3); transition: transform .5s; }
+    #aviso.on { transform: translate(-50%, 0); }
+    #msg { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; text-align: center;
+           padding: 5vw; background: #f3faff; font-size: 3.2vh; line-height: 1.6; font-weight: 700; z-index: 9; }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Recreio nas Férias</h1>
+      <div class="sub"><span id="st" class="live off">Conectando…</span><span id="rel"></span></div>
+    </div>
+    <div class="total"><b id="total">0</b><span>crianças matriculadas</span></div>
+  </header>
+
+  <main>
+    <section class="col idade"><h2>Crianças por idade</h2><div class="graf"><canvas id="cIdade"></canvas></div></section>
+    <section class="col turma"><h2>Crianças por turma</h2><div class="graf"><canvas id="cTurma"></canvas></div></section>
+  </main>
+
+  <div id="aviso"></div>
+  <div id="msg"></div>
+
+  <script type="module">
+    import { db } from './firebase_config.js';
+    import { collection, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+
+    // ⚙️ UNIDADE: abra a página com ?unidade=NUMERO no final do endereço, ou preencha aqui.
+    const ID_UNIDADE_FIXO = "";
+    const ceuId = new URLSearchParams(location.search).get('unidade') || ID_UNIDADE_FIXO || localStorage.getItem('sig_id_unidade') || "";
+
+    const $ = id => document.getElementById(id);
+    const fonte = () => Math.max(14, Math.round(innerHeight / 50));
+
+    Chart.defaults.font.family = "'Nunito','Segoe UI',system-ui,sans-serif";
+    Chart.defaults.font.weight = '700';
+    Chart.defaults.font.size = fonte();
+    Chart.defaults.color = '#35566b';
+
+    // 🔢 Total escrito na ponta de cada coluna
+    Chart.register({
+      id: 'totais',
+      afterDatasetsDraw(chart) {
+        const c = chart.ctx, h = chart.options.indexAxis === 'y';
+        c.save();
+        c.font = `900 ${Math.round(fonte() * 1.35)}px 'Nunito','Segoe UI',sans-serif`;
+        c.fillStyle = '#0b2a3c';
+        chart.getDatasetMeta(0).data.forEach((el, i) => {
+          const v = chart.data.datasets[0].data[i];
+          if (h) { c.textAlign = 'left'; c.textBaseline = 'middle'; c.fillText(v, el.x + 10, el.y); }
+          else   { c.textAlign = 'center'; c.textBaseline = 'bottom'; c.fillText(v, el.x, el.y - 8); }
+        });
+        c.restore();
+      }
+    });
+
+    const degrade = (c1, c2, h) => ctx => {
+      const a = ctx.chart.chartArea; if (!a) return c2;
+      const g = ctx.chart.ctx.createLinearGradient(h ? a.left : 0, h ? 0 : a.bottom, h ? a.right : 0, h ? 0 : a.top);
+      g.addColorStop(0, c1); g.addColorStop(1, c2); return g;
+    };
+
+    function criar(id, horizontal, c1, c2) {
+      const cat = { grid: { display: false }, border: { display: false }, ticks: { autoSkip: false } };
+      const val = { beginAtZero: true, grid: { color: '#d7e9f3' }, border: { display: false }, ticks: { precision: 0 } };
+      return new Chart($(id), {
+        type: 'bar',
+        data: { labels: [], datasets: [{ data: [], backgroundColor: degrade(c1, c2, horizontal), borderRadius: 12, borderSkipped: false, maxBarThickness: horizontal ? 48 : 110 }] },
+        options: {
+          indexAxis: horizontal ? 'y' : 'x', responsive: true, maintainAspectRatio: false,
+          animation: { duration: 900, easing: 'easeOutQuart' },
+          layout: { padding: horizontal ? { right: 70 } : { top: 50 } },
+          plugins: { legend: { display: false }, tooltip: { enabled: false } },
+          scales: horizontal ? { x: val, y: cat } : { x: cat, y: val }
+        }
+      });
+    }
+    const chIdade = criar('cIdade', false, '#7dd3fc', '#0369a1');
+    const chTurma = criar('cTurma', true, '#ffd24d', '#f08a00');
+    document.fonts.ready.then(() => { chIdade.update(); chTurma.update(); });
+
+    // 📊 Totais: idade em ordem crescente, turma em ordem alfabética
+    function porIdade(l) {
+      const m = {};
+      l.forEach(c => {
+        const vazio = String(c.idade ?? '').trim() === '' || isNaN(Number(c.idade));
+        const k = vazio ? 'Não Inf.' : String(Number(c.idade));
+        m[k] = (m[k] || 0) + 1;
+      });
+      return Object.keys(m).sort((a, b) => a === 'Não Inf.' ? 1 : b === 'Não Inf.' ? -1 : a - b)
+        .map(k => [k === 'Não Inf.' ? k : k + ' anos', m[k]]);
+    }
+    function porTurma(l) {
+      const m = {};
+      l.forEach(c => { const k = String(c.turma ?? '').trim() || 'Sem Turma'; m[k] = (m[k] || 0) + 1; });
+      return Object.keys(m).sort((a, b) => a === 'Sem Turma' ? 1 : b === 'Sem Turma' ? -1 : a.localeCompare(b, 'pt-BR', { numeric: true, sensitivity: 'base' }))
+        .map(k => [k, m[k]]);
+    }
+    function atualizar(ch, dados) {
+      ch.data.labels = dados.map(d => d[0]);
+      ch.data.datasets[0].data = dados.map(d => d[1]);
+      ch.update();
+    }
+
+    // 🔢 Contador animado
+    let totalAtual = 0;
+    function contar(para) {
+      const de = totalAtual, t0 = performance.now(); totalAtual = para;
+      (function passo(t) {
+        const p = Math.min(1, (t - t0) / 800);
+        $('total').textContent = Math.round(de + (para - de) * p);
+        if (p < 1) requestAnimationFrame(passo);
+      })(t0);
+    }
+
+    // 🎉 Aviso de nova matrícula
+    let tAviso;
+    function avisoNovo(n) {
+      $('aviso').textContent = n === 1 ? '+1 criança matriculada agora' : `+${n} crianças matriculadas agora`;
+      $('aviso').classList.add('on');
+      $('total').classList.remove('pulso'); void $('total').offsetWidth; $('total').classList.add('pulso');
+      clearTimeout(tAviso); tAviso = setTimeout(() => $('aviso').classList.remove('on'), 7000);
+    }
+
+    const status = on => { $('st').textContent = on ? 'Ao vivo' : 'Reconectando…'; $('st').className = 'live' + (on ? '' : ' off'); };
+    const mensagem = html => { $('msg').innerHTML = html; $('msg').style.display = 'flex'; };
+    const relogio = () => { $('rel').textContent = new Date().toLocaleString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }); };
+    relogio(); setInterval(relogio, 20000);
+
+    // 🔴 TEMPO REAL: o Firebase avisa sozinho a cada nova criança, sem precisar recarregar
+    if (!ceuId) {
+      mensagem('Unidade não definida.<br>Abra esta página com <b>?unidade=NÚMERO</b> no final do endereço<br>ou preencha <b>ID_UNIDADE_FIXO</b> no código.');
+    } else {
+      // ADMIN (999999) e SME (000000) veem todas as unidades; as demais veem só a própria
+      const q = (ceuId === '000000' || ceuId === '999999')
+        ? collection(db, 'rf_inscricoes')
+        : query(collection(db, 'rf_inscricoes'), where('id_unidade', '==', String(ceuId)));
+
+      let carregado = false;
+      onSnapshot(q, { includeMetadataChanges: true }, snap => {
+        status(!snap.metadata.fromCache);
+        const lista = snap.docs.map(d => d.data());
+        contar(lista.length);
+        atualizar(chIdade, porIdade(lista));
+        atualizar(chTurma, porTurma(lista));
+        if (!snap.metadata.fromCache) {
+          if (carregado) {
+            const novos = snap.docChanges().filter(c => c.type === 'added').length;
+            if (novos) avisoNovo(novos);
+          }
+          carregado = true;
+        }
+      }, erro => {
+        console.error(erro);
+        mensagem(erro.code === 'permission-denied'
+          ? 'Sem permissão para ler os dados.<br>Verifique as regras do Firestore.'
+          : 'Falha na conexão com o banco de dados.');
+      });
+    }
+
+    // Recarrega a página a cada 6 horas para a TV ficar estável o dia todo
+    setTimeout(() => location.reload(), 6 * 60 * 60 * 1000);
+  </script>
+</body>
+</html>

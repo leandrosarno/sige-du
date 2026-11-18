@@ -204,12 +204,9 @@
                                 <option value="SIM">SIM</option>
                             </select>
                         </div>
-                        <div class="col-md-4 mt-3">
-                            <label class="form-label" style="font-size: 11px; font-weight: 700; color: #444746;">VEM DE ABRIGO?</label>
-                            <select id="edit_abrigo" class="form-select" style="border-radius: 8px; font-size: 13px;">
-                                <option value="NÃO">NÃO (Comunidade)</option>
-                                <option value="SIM">SIM (Abrigo)</option>
-                            </select>
+                        <div class="col-md-9 mt-3">
+                            <label class="form-label" style="font-size: 11px; font-weight: 700; color: #444746;">NOME DO ABRIGO</label>
+                            <input type="text" id="edit_abrigo" class="form-control text-uppercase" style="border-radius: 8px; font-size: 13px;" placeholder="Deixe vazio se a criança vem da comunidade">
                         </div>
                     </div>
                 </div>
@@ -284,6 +281,14 @@
             }
         };
 
+function infoAbrigo(c) {
+    const v = String(c.abrigo ?? '').trim();
+    const u = v.toUpperCase();
+    if (!v || u === 'NÃO' || u === 'NAO' || u === '-') return { tem: false, nome: '' };
+    return { tem: true, nome: u === 'SIM' ? '' : v };
+}
+
+        
         function renderizarTabela(lista) {
             const tbody = document.getElementById('tbodyCriancas');
             tbody.innerHTML = '';
@@ -301,7 +306,8 @@
                 if (cri.sozinho === 'SIM') tags += `<span class="tag-info text-success border-success" style="color: #146c2e !important;">🚶 Vai Sozinho</span>`;
                 if (cri.piscina === 'SIM') tags += `<span class="tag-info text-info border-info" style="color: #00639b !important;">🏊 Piscina</span>`;
                 if (cri.restricao_imagem === 'SIM') tags += `<span class="tag-info text-dark border-dark">📷 Rest. Imagem</span>`;
-                if (cri.abrigo && cri.abrigo !== 'NÃO' && cri.abrigo !== '-') tags += `<span class="tag-info text-danger border-danger">🏠 Abrigo</span>`;
+                const abr = infoAbrigo(cri);
+                if (abr.tem) tags += `<span class="tag-info text-danger border-danger">🏠 Abrigo${abr.nome ? ': ' + esc(abr.nome) : ''}</span>`;
                 
                 if (tags === '') tags = `<span class="text-muted" style="font-size: 11px;">Padrão</span>`;
 
@@ -364,9 +370,8 @@
             document.getElementById('edit_piscina').value = cri.piscina || 'SIM';
             document.getElementById('edit_rest_img').value = cri.restricao_imagem || 'NÃO';
             
-            let valAbrigo = cri.abrigo || 'NÃO';
-            if (valAbrigo !== 'NÃO' && valAbrigo !== 'NAO' && valAbrigo !== '-') valAbrigo = 'SIM';
-            document.getElementById('edit_abrigo').value = valAbrigo;
+            const abr = infoAbrigo(cri);
+            document.getElementById('edit_abrigo').value = abr.tem ? (abr.nome || 'SIM') : '';
 
             modalEdicao.show();
         };
@@ -394,7 +399,7 @@
                 sozinho: document.getElementById('edit_sozinho').value,
                 piscina: document.getElementById('edit_piscina').value,
                 restricao_imagem: document.getElementById('edit_rest_img').value,
-                abrigo: document.getElementById('edit_abrigo').value
+                abrigo: document.getElementById('edit_abrigo').value.trim().toUpperCase() || 'NÃO'
             };
 
             Swal.fire({ title: 'Salvando...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
@@ -507,6 +512,11 @@
             modalImprimir.show();
         };
 
+        function textoAbrigo(c) {
+            const a = infoAbrigo(c);
+            return a.tem ? (a.nome || 'Sim') : '-';
+        }
+        
         function textoCaracteristicas(c) {
             const t = [];
             if (c.inclusao === 'SIM') t.push('Inclusão');
@@ -514,7 +524,6 @@
             if (c.sozinho === 'SIM') t.push('Vai sozinho');
             if (c.piscina === 'SIM') t.push('Piscina');
             if (c.restricao_imagem === 'SIM') t.push('Rest. imagem');
-            if (c.abrigo && c.abrigo !== 'NÃO' && c.abrigo !== '-') t.push('Abrigo');
             return t.join(', ') || 'Padrão';
         }
 
@@ -526,10 +535,11 @@
                     <td class="c">${esc(c.idade)}</td>
                     <td class="c">${esc(c.turma || '-')}</td>
                     <td>${esc(c.resp || '-')}<br><span class="tel">${esc(c.tel || '')}</span></td>
+                    <td>${esc(textoAbrigo(c))}</td>
                     <td>${esc(textoCaracteristicas(c))}</td>
                 </tr>`).join('');
             return `<table>
-                <thead><tr><th style="width:5%">Nº</th><th>Nome da Criança</th><th style="width:7%">Idade</th><th style="width:9%">Turma</th><th>Responsável / Contato</th><th>Características</th></tr></thead>
+                <thead><tr><th style="width:5%">Nº</th><th>Nome da Criança</th><th style="width:7%">Idade</th><th style="width:9%">Turma</th><th>Responsável / Contato</th><th>Abrigo</th><th>Características</th></tr></thead>
                 <tbody>${linhas}</tbody>
             </table>`;
         }

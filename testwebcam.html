@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head><title>Câmera</title></head>
+<body style="text-align:center; font-family:sans-serif;">
+  <video id="video" width="400" height="300" autoplay></video><br><br>
+  <button id="btnCapturar">Tirar Foto e Enviar</button>
+  <canvas id="canvas" width="400" height="300" style="display:none;"></canvas>
+
+  <script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+
+    // Liga a webcam normalmente (fora do iframe do Google)
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => { video.srcObject = stream; })
+      .catch(err => alert("Erro ao acessar câmera: " + err));
+
+    document.getElementById('btnCapturar').onclick = () => {
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, 400, 300);
+      
+      // Converte a foto para texto (Base64)
+      const imagemBase64 = canvas.toDataURL('image/jpeg', 0.8);
+
+      // Envia de volta para o Modal do Google Sheets e fecha o pop-up
+      if (window.opener) {
+        window.opener.postMessage(imagemBase64, "*");
+        window.close();
+      }
+    };
+  </script>
+</body>
+</html>

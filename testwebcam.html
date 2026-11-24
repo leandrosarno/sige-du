@@ -1,33 +1,33 @@
 <!DOCTYPE html>
 <html>
-<head><title>Câmera</title></head>
-<body style="text-align:center; font-family:sans-serif;">
-  <video id="video" width="400" height="300" autoplay></video><br><br>
-  <button id="btnCapturar">Tirar Foto e Enviar</button>
-  <canvas id="canvas" width="400" height="300" style="display:none;"></canvas>
+<head>
+  <title>Leitor de QR Code</title>
+  <!-- Biblioteca gratuita e leve para ler QR Code e Código de Barras -->
+  <script src="https://unpkg.com"></script>
+</head>
+<body style="font-family: sans-serif; text-align: center; padding: 20px;">
+  <h3>Aponte o QR Code para a câmera</h3>
+  <div id="leitor" style="width: 350px; margin: auto;"></div>
 
   <script>
-    const video = document.getElementById('video');
-    const canvas = document.getElementById('canvas');
+    function aoLerComSucesso(textoDoQrCode) {
+      // Para a câmera assim que ler
+      scanner.clear();
 
-    // Liga a webcam normalmente (fora do iframe do Google)
-    navigator.mediaDevices.getUserMedia({ video: true })
-      .then(stream => { video.srcObject = stream; })
-      .catch(err => alert("Erro ao acessar câmera: " + err));
-
-    document.getElementById('btnCapturar').onclick = () => {
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(video, 0, 0, 400, 300);
-      
-      // Converte a foto para texto (Base64)
-      const imagemBase64 = canvas.toDataURL('image/jpeg', 0.8);
-
-      // Envia de volta para o Modal do Google Sheets e fecha o pop-up
+      // Envia o texto do QR Code para o Modal do Google Sheets e fecha
       if (window.opener) {
-        window.opener.postMessage(imagemBase64, "*");
+        window.opener.postMessage(textoDoQrCode, "*");
         window.close();
       }
-    };
+    }
+
+    // Inicia a câmera automaticamente
+    const scanner = new Html5QrcodeScanner("leitor", { 
+      fps: 10, 
+      qrbox: { width: 250, height: 250 } 
+    });
+    
+    scanner.render(aoLerComSucesso);
   </script>
 </body>
 </html>

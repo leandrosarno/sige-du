@@ -3,49 +3,84 @@
 <head>
   <meta charset="UTF-8">
   <title>Leitor de QR Code</title>
-  <!-- URL com versão fixa para garantir o carregamento -->
-  <script src="https://unpkg.com"></script>
+  <!-- CDN alternativa mais rápida e estável (jsDelivr) -->
+  <script src="https://jsdelivr.net"></script>
 </head>
 <body style="font-family: sans-serif; text-align: center; padding: 20px;">
   <h3>Aponte o QR Code para a câmera</h3>
   
-  <!-- Área onde o vídeo vai aparecer -->
-  <div id="leitor" style="width: 350px; margin: auto;"></div>
-  
-  <!-- Mensagem de diagnóstico caso algo falhe -->
-  <p id="erro" style="color: red; font-size: 14px;"></p>
+  <video id="video" width="350" height="260" style="border: 2px solid #ccc; border-radius: 8px;" autoplay playsinline></video>
+  <canvas id="canvas" style="display:none;"></canvas>
+  <p id="status" style="color: #555; font-size: 14px;">Iniciando câmera...</p>
 
   <script>
-    const msgErro = document.getElementById("erro");
+    const video = document.getElementById("video");
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
+    const status = document.getElementById("status");
+    let lendo = true;
 
-    // Verifica se a biblioteca carregou corretamente
-    if (typeof Html5Qrcode === "undefined") {
-      msgErro.innerText = "Erro: A biblioteca de QR Code não carregou. Verifique sua internet.";
-    } else {
-      const html5QrCode = new Html5Qrcode("leitor");
-
-      // Inicia a câmera traseira/principal automaticamente
-      html5QrCode.start(
-        { facingMode: "environment" }, 
-        { fps: 10, qrbox: { width: 250, height: 250 } },
-        (textoDoQrCode) => {
-          // Sucesso! Para a câmera, envia o dado para o Google Sheets e fecha
-          html5QrCode.stop().then(() => {
-            if (window.opener) {
-              window.opener.postMessage(textoDoQrCode, "*");
-              window.close();
-            } else {
-              alert("QR Code lido: " + textoDoQrCode);
-            }
-          });
-        },
-        (erroDeLeitura) => {
-          // Ignora erros de frame vazio enquanto procura o QR Code
-        }
-      ).catch((err) => {
-        // Mostra o motivo exato se a câmera não abrir
-        msgErro.innerText = "Não foi possível iniciar a câmera: " + err;
+    // 1. Liga a webcam usando o mesmo método que já funcionou no seu PC
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+      .then((stream) => {
+        video.srcObject = stream;
+        status.innerText = "Procurando QR Code...";
+        requestAnimationFrame(escanearFrame);
+      })
+      .catch((err) => {
+        status.style.color = "red";
+        status.innerText = "Erro na câmera: " + err;
       });
+
+    // 2. Analisa cada quadro do vídeo procurando um QR Code
+    async function escanearFrame() {
+      if (!lendo) return;
+
+      if (video.readyState === video.HAVE_ENOUGH_DATA) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        // Tenta usar o leitor nativo do Chrome/Edge primeiro (não precisa de internet)
+        if ("BarcodeDetector" in window) {
+          try {
+            const detector = new BarcodeDetector({ formats: ["qr_code"] });
+            const codigos = await detector.detect(canvas);
+            if (codigos.length > 0) {
+              finalizarLeitura(codigos[0].rawValue);
+              return;
+            }
+          } catch (e) {}
+        }
+
+        // Plano B: Usa a biblioteca jsQR (caso esteja no Firefox ou Safari)
+        if (typeof jsQR !== "undefined") {
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const codigo = jsQR(imageData.data, imageData.width, imageData.height);
+          if (codigo) {
+            finalizarLeitura(codigo.data);
+            return;
+          }
+        }
+      }
+
+      requestAnimationFrame(escanearFrame);
+    }
+
+    // 3. Envia o resultado para o Google Sheets e fecha
+    function finalizarLeitura(texto) {
+      lendo = false;
+      // Desliga a luz da webcam antes de fechar
+      if (video.srcObject) {
+        video.srcObject.getTracks().forEach(track => track.stop());
+      }
+
+      if (window.opener) {
+        window.opener.postMessage(texto, "*");
+        window.close();
+      } else {
+        alert("QR Code lido: " + texto);
+      }
     }
   </script>
 </body>

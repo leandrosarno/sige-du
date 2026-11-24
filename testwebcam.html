@@ -3,14 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <title>Leitor de QR Code</title>
+  <!-- CDN alternativa mais rápida e estável (jsDelivr) -->
+  <script src="https://jsdelivr.net"></script>
 </head>
 <body style="font-family: sans-serif; text-align: center; padding: 20px;">
   <h3>Aponte o QR Code para a câmera</h3>
-  <p style="font-size: 13px; color: #666;">Dica: Mantenha o QR Code a uns 20–30 cm da lente (não encoste muito) e evite reflexo na tela.</p>
   
-  <video id="video" width="400" height="300" style="border: 2px solid #ccc; border-radius: 8px; background: #000;" autoplay playsinline></video>
+  <video id="video" width="350" height="260" style="border: 2px solid #ccc; border-radius: 8px;" autoplay playsinline></video>
   <canvas id="canvas" style="display:none;"></canvas>
-  <p id="status" style="color: #0066cc; font-weight: bold; font-size: 14px;">Abrindo câmera...</p>
+  <p id="status" style="color: #555; font-size: 14px;">Iniciando câmera...</p>
 
   <script>
     const video = document.getElementById("video");
@@ -19,66 +20,64 @@
     const status = document.getElementById("status");
     let lendo = true;
 
-    if (!("BarcodeDetector" in window)) {
-      status.style.color = "red";
-      status.innerText = "Este navegador no PC não suporta leitura nativa. Tente pelo Google Chrome ou Edge.";
-    } else {
-      iniciarCamera();
-    }
-
-    function iniciarCamera() {
-      // Pede resolução HD para ajudar na nitidez do QR Code
-      navigator.mediaDevices.getUserMedia({ 
-        video: { width: { ideal: 1280 }, height: { ideal: 720 } } 
-      })
+    // 1. Liga a webcam usando o mesmo método que já funcionou no seu PC
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
       .then((stream) => {
         video.srcObject = stream;
-        status.innerText = "Procurando QR Code... (Mantenha firme)";
-        const detector = new BarcodeDetector({ formats: ["qr_code"] });
-        
-        const intervalo = setInterval(async () => {
-          if (!lendo) {
-            clearInterval(intervalo);
-            return;
-          }
-          if (video.readyState === video.HAVE_ENOUGH_DATA) {
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-            try {
-              const codigos = await detector.detect(canvas);
-              if (codigos.length > 0) {
-                clearInterval(intervalo);
-                // Correção: pega o primeiro item da lista [0]
-                const textoLido = codigos[0].rawValue;
-                finalizarLeitura(textoLido);
-              }
-            } catch (e) {
-              status.style.color = "red";
-              status.innerText = "Erro no detector: " + e.message;
-            }
-          }
-        }, 300);
+        status.innerText = "Procurando QR Code...";
+        requestAnimationFrame(escanearFrame);
       })
       .catch((err) => {
         status.style.color = "red";
-        status.innerText = "Erro ao abrir câmera: " + err;
+        status.innerText = "Erro na câmera: " + err;
       });
+
+    // 2. Analisa cada quadro do vídeo procurando um QR Code
+    async function escanearFrame() {
+      if (!lendo) return;
+
+      if (video.readyState === video.HAVE_ENOUGH_DATA) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        // Tenta usar o leitor nativo do Chrome/Edge primeiro (não precisa de internet)
+        if ("BarcodeDetector" in window) {
+          try {
+            const detector = new BarcodeDetector({ formats: ["qr_code"] });
+            const codigos = await detector.detect(canvas);
+            if (codigos.length > 0) {
+              finalizarLeitura(codigos[0].rawValue);
+              return;
+            }
+          } catch (e) {}
+        }
+
+        // Plano B: Usa a biblioteca jsQR (caso esteja no Firefox ou Safari)
+        if (typeof jsQR !== "undefined") {
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const codigo = jsQR(imageData.data, imageData.width, imageData.height);
+          if (codigo) {
+            finalizarLeitura(codigo.data);
+            return;
+          }
+        }
+      }
+
+      requestAnimationFrame(escanearFrame);
     }
 
+    // 3. Envia o resultado para o Google Sheets e fecha
     function finalizarLeitura(texto) {
       lendo = false;
-      status.style.color = "green";
-      status.innerText = "Lido com sucesso: " + texto;
-
+      // Desliga a luz da webcam antes de fechar
       if (video.srcObject) {
         video.srcObject.getTracks().forEach(track => track.stop());
       }
 
       if (window.opener) {
         window.opener.postMessage(texto, "*");
-        setTimeout(() => window.close(), 500);
+        window.close();
       } else {
         alert("QR Code lido: " + texto);
       }

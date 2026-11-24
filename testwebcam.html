@@ -1,33 +1,52 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="UTF-8">
   <title>Leitor de QR Code</title>
-  <!-- Biblioteca gratuita e leve para ler QR Code e Código de Barras -->
+  <!-- URL com versão fixa para garantir o carregamento -->
   <script src="https://unpkg.com"></script>
 </head>
 <body style="font-family: sans-serif; text-align: center; padding: 20px;">
   <h3>Aponte o QR Code para a câmera</h3>
+  
+  <!-- Área onde o vídeo vai aparecer -->
   <div id="leitor" style="width: 350px; margin: auto;"></div>
+  
+  <!-- Mensagem de diagnóstico caso algo falhe -->
+  <p id="erro" style="color: red; font-size: 14px;"></p>
 
   <script>
-    function aoLerComSucesso(textoDoQrCode) {
-      // Para a câmera assim que ler
-      scanner.clear();
+    const msgErro = document.getElementById("erro");
 
-      // Envia o texto do QR Code para o Modal do Google Sheets e fecha
-      if (window.opener) {
-        window.opener.postMessage(textoDoQrCode, "*");
-        window.close();
-      }
+    // Verifica se a biblioteca carregou corretamente
+    if (typeof Html5Qrcode === "undefined") {
+      msgErro.innerText = "Erro: A biblioteca de QR Code não carregou. Verifique sua internet.";
+    } else {
+      const html5QrCode = new Html5Qrcode("leitor");
+
+      // Inicia a câmera traseira/principal automaticamente
+      html5QrCode.start(
+        { facingMode: "environment" }, 
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        (textoDoQrCode) => {
+          // Sucesso! Para a câmera, envia o dado para o Google Sheets e fecha
+          html5QrCode.stop().then(() => {
+            if (window.opener) {
+              window.opener.postMessage(textoDoQrCode, "*");
+              window.close();
+            } else {
+              alert("QR Code lido: " + textoDoQrCode);
+            }
+          });
+        },
+        (erroDeLeitura) => {
+          // Ignora erros de frame vazio enquanto procura o QR Code
+        }
+      ).catch((err) => {
+        // Mostra o motivo exato se a câmera não abrir
+        msgErro.innerText = "Não foi possível iniciar a câmera: " + err;
+      });
     }
-
-    // Inicia a câmera automaticamente
-    const scanner = new Html5QrcodeScanner("leitor", { 
-      fps: 10, 
-      qrbox: { width: 250, height: 250 } 
-    });
-    
-    scanner.render(aoLerComSucesso);
   </script>
 </body>
 </html>

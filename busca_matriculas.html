@@ -30,7 +30,11 @@
   .info-bar { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding:0 4px; flex-wrap:wrap; gap:8px; }
   .info-bar span { font-size:0.9rem; color:#475569; }
 
-  .table-wrap { background:#fff; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,.08); overflow:auto; max-height:70vh; }
+  .table-wrap {
+    background:#fff; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,.08);
+    overflow:auto; max-height:70vh;
+    width:90vw; margin-left:calc(-45vw + 50%); /* centraliza mesmo com o container */
+  }
   table { width:100%; border-collapse:collapse; font-size:0.82rem; white-space:nowrap; }
   thead th { position:sticky; top:0; background:#1e40af; color:#fff; padding:10px 8px; text-align:left;
     font-weight:600; font-size:0.75rem; text-transform:uppercase; letter-spacing:.3px; z-index:2; }
@@ -97,14 +101,15 @@
 
   <div id="erro" class="error" style="display:none;"></div>
 
-  <div class="topbar">
-    <button class="btn btn-primary" onclick="abrirDashboard()">📊 Ver Dashboard</button>
-  </div>
+<div class="topbar">
+  <button class="btn btn-success" onclick="baixarCSV()">⬇️ Exportar CSV</button>
+  <button class="btn btn-primary" onclick="abrirDashboard()">📊 Ver Dashboard</button>
+</div>
 
   <div class="filters">
-    <div><label>ID Turma</label><input type="text" id="fIdTurma" placeholder="Filtrar..."></div>
+    <div><label>EOL da Turma</label><input type="text" id="fEolTurma" placeholder="Filtrar..."></div>
     <div><label>Nome do Aluno</label><input type="text" id="fNome" placeholder="Filtrar..."></div>
-    <div><label>Nº EOL / Prontuário</label><input type="text" id="fEol" placeholder="Filtrar..."></div>
+    <div><label>EOL do Aluno</label><input type="text" id="fEolAluno" placeholder="Filtrar..."></div>
     <div><label>Núcleo</label><select id="fNucleo"><option value="">Todos</option></select></div>
     <div><label>Modalidade</label><select id="fModalidade"><option value="">Todas</option></select></div>
     <div><label>Professor</label><select id="fProfessor"><option value="">Todos</option></select></div>
@@ -121,13 +126,12 @@
     <div id="loading" class="status">⏳ Carregando dados da planilha...</div>
     <table id="tabela" style="display:none;">
       <thead>
-        <tr>
-          <th>ID_TURMA</th><th>DATA MAT</th><th>EOL TURMA</th><th>SUFIXO</th>
-          <th>MODALIDADE</th><th>FAIXA ETÁRIA</th><th>NÚCLEO</th><th>VAGAS</th>
-          <th>PROFESSOR</th><th>ESPAÇO</th><th>VAGAS INICIAIS</th><th>VEZES/SEM</th>
-          <th>DIA HORÁRIO</th><th>ID_ALUNO</th><th>ALU_NOME</th><th>COD_EOL</th>
-          <th>PRONTUÁRIO</th><th>ANO</th><th>CARIMBO NÚCLEO</th><th>CARIMBO/ASSINATURA</th>
-        </tr>
+       <tr>
+         <th>ID_TURMA</th><th>DATA MAT</th><th>EOL TURMA</th><th>SUFIXO</th>
+         <th>MODALIDADE</th><th>FAIXA ETÁRIA</th><th>NÚCLEO</th><th>VAGAS</th>
+         <th>PROFESSOR</th><th>ESPAÇO</th><th>VAGAS INICIAIS</th><th>VEZES/SEM</th>
+         <th>DIA HORÁRIO</th><th>ALU_NOME</th><th>COD_EOL</th><th>PRONTUÁRIO</th><th>ANO</th>
+       </tr>
       </thead>
       <tbody id="tbody"></tbody>
     </table>
@@ -182,7 +186,7 @@ function normalizar(s) {
   return (s ?? '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
 }
 function limparFiltros() {
-  ['fIdTurma','fNome','fEol','fDiaHorario'].forEach(id => document.getElementById(id).value='');
+  ['fEolTurma','fNome','fEolAluno','fDiaHorario'].forEach(id => document.getElementById(id).value='');
   ['fNucleo','fModalidade','fProfessor','fAno'].forEach(id => document.getElementById(id).value='');
   render();
 }
@@ -269,19 +273,19 @@ function mostrarErro(msg) {
 
 /* ===================== FILTRO E RENDER TABELA ===================== */
 function filtrarDados() {
-  const fIdTurma = normalizar(document.getElementById('fIdTurma').value);
-  const fNome    = normalizar(document.getElementById('fNome').value);
-  const fEol     = normalizar(document.getElementById('fEol').value);
-  const fNucleo  = document.getElementById('fNucleo').value;
-  const fMod     = document.getElementById('fModalidade').value;
-  const fProf    = document.getElementById('fProfessor').value;
-  const fAno     = document.getElementById('fAno').value;
-  const fDia     = normalizar(document.getElementById('fDiaHorario').value);
+  const fEolTurma = normalizar(document.getElementById('fEolTurma').value);
+  const fNome     = normalizar(document.getElementById('fNome').value);
+  const fEolAluno = normalizar(document.getElementById('fEolAluno').value);
+  const fNucleo   = document.getElementById('fNucleo').value;
+  const fMod      = document.getElementById('fModalidade').value;
+  const fProf     = document.getElementById('fProfessor').value;
+  const fAno      = document.getElementById('fAno').value;
+  const fDia      = normalizar(document.getElementById('fDiaHorario').value);
 
   return DADOS.filter(d => {
-    if (fIdTurma && !normalizar(d.idTurma).includes(fIdTurma)) return false;
+    if (fEolTurma && !normalizar(d.eolTurma).includes(fEolTurma)) return false; // coluna C
     if (fNome && !normalizar(d.aluNome).includes(fNome)) return false;
-    if (fEol && !(normalizar(d.codEol).includes(fEol) || normalizar(d.prontuario).includes(fEol))) return false;
+    if (fEolAluno && !normalizar(d.codEol).includes(fEolAluno)) return false;   // coluna P
     if (fNucleo && String(d.nucleo) !== fNucleo) return false;
     if (fMod && String(d.modalidade) !== fMod) return false;
     if (fProf && String(d.professor) !== fProf) return false;
@@ -295,15 +299,21 @@ function render() {
   const tbody = document.getElementById('tbody');
   tbody.innerHTML = '';
   if (!filtrados.length) {
-    tbody.innerHTML = '<tr><td colspan="20" style="text-align:center;padding:20px;color:#64748b;">Nenhum registro encontrado.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="17" style="text-align:center;padding:20px;color:#64748b;">Nenhum registro encontrado.</td></tr>';
   } else {
     const frag = document.createDocumentFragment();
     filtrados.forEach(d => {
       const tr = document.createElement('tr');
-      [d.idTurma,d.dataMat,d.eolTurma,d.sufixoTurma,d.modalidade,d.faixaEtaria,d.nucleo,
-       d.vagas,d.professor,d.espaco,d.vagasIniciais,d.vezesSemana,d.diaHorario,
-       d.idAluno,d.aluNome,d.codEol,d.prontuario,d.ano,d.carimboNucleo,d.carimboAssin]
-        .forEach(v => { const td=document.createElement('td'); td.textContent = v ?? ''; tr.appendChild(td); });
+      // ✅ Removidas: idAluno, carimboNucleo, carimboAssin. Tudo em MAIÚSCULO.
+      [
+        d.idTurma, d.dataMat, d.eolTurma, d.sufixoTurma, d.modalidade, d.faixaEtaria,
+        d.nucleo, d.vagas, d.professor, d.espaco, d.vagasIniciais, d.vezesSemana,
+        d.diaHorario, d.aluNome, d.codEol, d.prontuario, d.ano
+      ].forEach(v => {
+        const td = document.createElement('td');
+        td.textContent = (v ?? '').toString().toUpperCase();
+        tr.appendChild(td);
+      });
       frag.appendChild(tr);
     });
     tbody.appendChild(frag);
@@ -455,7 +465,7 @@ function baixarCSV() {
 }
 
 /* ===================== EVENTOS ===================== */
-['fIdTurma','fNome','fEol','fDiaHorario'].forEach(id =>
+['fEolTurma','fNome','fEolAluno','fDiaHorario'].forEach(id =>
   document.getElementById(id).addEventListener('input', render)
 );
 ['fNucleo','fModalidade','fProfessor','fAno'].forEach(id =>

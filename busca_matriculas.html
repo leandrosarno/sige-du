@@ -20,13 +20,41 @@
   .btn-success { background:linear-gradient(135deg,#10b981,#047857); color:#fff; }
   .btn-danger  { background:#ef4444; color:#fff; }
 
-  .filters { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px;
-    background:#fff; padding:15px; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,.08); margin-bottom:15px; }
+   .filters {
+     display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px;
+     background:#fff; padding:15px; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,.08);
+     width:90vw; margin-left:calc(-45vw + 50%); margin-bottom:15px;
+   }
   .filters label { display:block; font-size:0.75rem; font-weight:600; color:#475569; margin-bottom:4px;
     text-transform:uppercase; letter-spacing:.5px; }
   .filters input, .filters select { width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.9rem; outline:none; }
   .filters input:focus, .filters select:focus { border-color:#3b82f6; }
 
+   /* Barra de totais (globais e filtrados) */
+   .totais {
+     display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px;
+     width:90vw; margin-left:calc(-45vw + 50%); margin-bottom:15px;
+   }
+   .total-card {
+     background:#fff; border-radius:10px; padding:12px 14px;
+     box-shadow:0 2px 6px rgba(0,0,0,.08); border-left:5px solid #3b82f6;
+   }
+   .total-card.filtrado { border-left-color:#10b981; }
+   .total-card .t-label {
+     font-size:0.7rem; text-transform:uppercase; letter-spacing:.5px;
+     font-weight:700; color:#64748b; margin-bottom:4px;
+   }
+   .total-card .t-value {
+     font-size:1.35rem; font-weight:800; color:#0f172a; line-height:1.1;
+   }
+   .total-card .t-sub {
+     font-size:0.72rem; color:#94a3b8; margin-top:2px;
+   }
+   .total-card .t-value .destaque { color:#3b82f6; }
+   .total-card.filtrado .t-value .destaque { color:#10b981; }
+   .total-card .t-value .sep { color:#cbd5e1; font-weight:400; margin:0 4px; }
+
+ 
   .info-bar { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding:0 4px; flex-wrap:wrap; gap:8px; }
   .info-bar span { font-size:0.9rem; color:#475569; }
 
@@ -117,6 +145,47 @@
     <div><label>Dia/Horário</label><input type="text" id="fDiaHorario" placeholder="Filtrar..."></div>
   </div>
 
+  <!-- ================= TOTAIS GLOBAIS E FILTRADOS ================= -->
+  <div class="totais">
+    <div class="total-card">
+      <div class="t-label">Matrículas (Geral × Filtro)</div>
+      <div class="t-value">
+        <span class="destaque" id="totMatGeral">—</span>
+        <span class="sep">×</span>
+        <span class="destaque" id="totMatFiltro">—</span>
+      </div>
+      <div class="t-sub">total geral × registros filtrados</div>
+    </div>
+    <div class="total-card filtrado">
+      <div class="t-label">Alunos Únicos (Geral × Filtro)</div>
+      <div class="t-value">
+        <span class="destaque" id="totAluGeral">—</span>
+        <span class="sep">×</span>
+        <span class="destaque" id="totAluFiltro">—</span>
+      </div>
+      <div class="t-sub">por ID/EOL/Prontuário</div>
+    </div>
+    <div class="total-card">
+      <div class="t-label">Turmas (Geral × Filtro)</div>
+      <div class="t-value">
+        <span class="destaque" id="totTurGeral">—</span>
+        <span class="sep">×</span>
+        <span class="destaque" id="totTurFiltro">—</span>
+      </div>
+      <div class="t-sub">EOL da turma (col. C)</div>
+    </div>
+    <div class="total-card filtrado">
+      <div class="t-label">Núcleos (Geral × Filtro)</div>
+      <div class="t-value">
+        <span class="destaque" id="totNucGeral">—</span>
+        <span class="sep">×</span>
+        <span class="destaque" id="totNucFiltro">—</span>
+      </div>
+      <div class="t-sub">núcleos com matrícula</div>
+    </div>
+  </div>
+
+ 
   <div class="info-bar">
     <span id="contador">Carregando dados...</span>
     <button class="btn btn-danger" onclick="limparFiltros()">Limpar Filtros</button>
@@ -318,8 +387,43 @@ function render() {
     });
     tbody.appendChild(frag);
   }
-  document.getElementById('contador').textContent = `Exibindo ${filtrados.length} de ${DADOS.length} registros`;
+   document.getElementById('contador').textContent = `Exibindo ${filtrados.length} de ${DADOS.length} registros`;
+  atualizarTotais(filtrados);
 }
+
+/* ===================== TOTAIS GLOBAIS × FILTRADOS ===================== */
+function calcularTotais(arr) {
+  const totalMatriculas = arr.length;
+  const alunos = new Set(arr.map(chaveAluno).filter(Boolean));
+  const turmas = new Set(arr.map(chaveTurma).filter(Boolean));
+  const nucleos = new Set(
+    arr.map(d => String(d.nucleo||'').trim()).filter(Boolean)
+  );
+  return {
+    matriculas: totalMatriculas,
+    alunos: alunos.size,
+    turmas: turmas.size,
+    nucleos: nucleos.size
+  };
+}
+
+function atualizarTotais(filtrados) {
+  const geral = calcularTotais(DADOS);
+  const filtro = calcularTotais(filtrados);
+
+  document.getElementById('totMatGeral').textContent  = geral.matriculas;
+  document.getElementById('totMatFiltro').textContent = filtro.matriculas;
+
+  document.getElementById('totAluGeral').textContent  = geral.alunos;
+  document.getElementById('totAluFiltro').textContent = filtro.alunos;
+
+  document.getElementById('totTurGeral').textContent  = geral.turmas;
+  document.getElementById('totTurFiltro').textContent = filtro.turmas;
+
+  document.getElementById('totNucGeral').textContent  = geral.nucleos;
+  document.getElementById('totNucFiltro').textContent = filtro.nucleos;
+}
+
 
 /* ===================== DASHBOARD ===================== */
 function contarPor(arr, chave) {

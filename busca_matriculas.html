@@ -145,7 +145,7 @@
     <div class="kpis">
       <div class="kpi"><div class="label">Total de Matrículas</div><div class="value" id="kpiMatriculas">—</div><div class="sub">registros na base</div></div>
       <div class="kpi"><div class="label">Alunos Únicos</div><div class="value" id="kpiAlunos">—</div><div class="sub">por ID/EOL/Prontuário</div></div>
-      <div class="kpi"><div class="label">Total de Turmas</div><div class="value" id="kpiTurmas">—</div><div class="sub">turmas reais (ID+Núcleo+EOL+Sufixo)</div></div>
+      <div class="kpi"><div class="label">Total de Turmas</div><div class="value" id="kpiTurmas">—</div><div class="sub">EOL da turma (col. C)</div></div>
       <div class="kpi"><div class="label">Núcleos Ativos</div><div class="value" id="kpiNucleos">—</div><div class="sub">com matrículas</div></div>
       <div class="kpi"><div class="label">Média Aluno/Turma</div><div class="value" id="kpiMedia">—</div><div class="sub">matrículas ÷ turmas</div></div>
     </div>
@@ -190,6 +190,19 @@ function popularSelect(id, valores) {
   const sel = document.getElementById(id);
   const unicos = [...new Set(valores.map(v=>(v??'').toString().trim()).filter(v=>v))].sort();
   unicos.forEach(v => { const o=document.createElement('option'); o.value=v; o.textContent=v; sel.appendChild(o); });
+}
+
+/* ===================== CHAVES DE IDENTIFICAÇÃO ===================== */
+// ✅ CORRIGIDO: chave única de uma TURMA = EOL_TURMA (coluna C)
+function chaveTurma(d) {
+  return String(d.eolTurma || '').trim();
+}
+// Chave única de um ALUNO = ID_ALUNO / COD_EOL / PRONTUÁRIO (fallback: nome)
+function chaveAluno(d) {
+  const a = String(d.idAluno||'').trim();
+  const b = String(d.codEol||'').trim();
+  const c = String(d.prontuario||'').trim();
+  return [a,b,c].filter(Boolean).join('|') || normalizar(d.aluNome) || null;
 }
 
 /* ===================== DETECÇÃO DE TURNO ===================== */
@@ -307,12 +320,6 @@ function contarPor(arr, chave) {
   });
   return map;
 }
-function chaveAluno(d) {
-  const a = String(d.idAluno||'').trim();
-  const b = String(d.codEol||'').trim();
-  const c = String(d.prontuario||'').trim();
-  return [a,b,c].filter(Boolean).join('|') || normalizar(d.aluNome) || null;
-}
 function destruirGrafico(id) {
   if (charts[id]) { charts[id].destroy(); delete charts[id]; }
 }
@@ -325,29 +332,17 @@ function abrirDashboard() {
   const filtrados = filtrarDados();
   if (!filtrados.length) { alert('Nenhum dado para exibir com os filtros atuais.'); return; }
 
+  /* ---------- KPIs ---------- */
   const totalMatriculas = filtrados.length;
   const idsAlunos = new Set(filtrados.map(chaveAluno).filter(Boolean));
   const totalAlunos = idsAlunos.size || totalMatriculas;
-  // ===== CHAVE REAL DE UMA TURMA =====
-  // Uma turma é única quando combina: ID_TURMA + NÚCLEO + EOL_TURMA + SUFIXO + DIA_HORARIO
-  // (o ID_TURMA sozinho se repete em cada matrícula)
-  function chaveTurma(d) {
-    return [
-      String(d.idTurma||'').trim(),
-      String(d.nucleo||'').trim(),
-      String(d.eolTurma||'').trim(),
-      String(d.sufixoTurma||'').trim(),
-      String(d.diaHorario||'').trim()
-    ].join('|');
-  }
-  const turmasUnicas = new Set(
-    filtrados.map(chaveTurma).filter(k => k.replace(/\|/g,'').trim() !== '')
-  );
-  const totalTurmas = turmasUnicas.size;
+
+  // ✅ CORRIGIDO: total de turmas = EOL_TURMA distintos (coluna C)
+  const idsTurmas = new Set(filtrados.map(chaveTurma).filter(Boolean));
+  const totalTurmas = idsTurmas.size;
+
   const nucleosAtivos = new Set(filtrados.map(d => String(d.nucleo||'').trim()).filter(Boolean)).size;
   const media = totalTurmas ? (totalMatriculas / totalTurmas).toFixed(1) : '0';
-
- 
 
   document.getElementById('kpiMatriculas').textContent = totalMatriculas;
   document.getElementById('kpiAlunos').textContent = totalAlunos;
@@ -355,19 +350,15 @@ function abrirDashboard() {
   document.getElementById('kpiNucleos').textContent = nucleosAtivos;
   document.getElementById('kpiMedia').textContent = media;
 
-  // Turmas por núcleo (IDs distintos)
-
+  /* ---------- Turmas por núcleo (EOL_TURMA distintos por núcleo) ---------- */
   const turmasPorNucleo = {};
   filtrados.forEach(d => {
     const nuc = (d.nucleo||'').toString().trim() || '(vazio)';
-    const chave = chaveTurma(d);
-    if (!chave.replace(/\|/g,'').trim()) return;
+    const eol = chaveTurma(d);
+    if (!eol) return;
     if (!turmasPorNucleo[nuc]) turmasPorNucleo[nuc] = new Set();
-    turmasPorNucleo[nuc].add(chave);
+    turmasPorNucleo[nuc].add(eol);
   });
-
-
- 
   const nucLabels = Object.keys(turmasPorNucleo).sort();
   const nucValues = nucLabels.map(n => turmasPorNucleo[n].size);
 
@@ -378,7 +369,7 @@ function abrirDashboard() {
     options:{ responsive:true, plugins:{ legend:{ display:false } }, scales:{ y:{ beginAtZero:true, ticks:{ precision:0 } } } }
   });
 
-  // Pessoas x Matrículas
+  /* ---------- Pessoas x Matrículas ---------- */
   destruirGrafico('chartPessoas');
   charts['chartPessoas'] = new Chart(document.getElementById('chartPessoas'), {
     type:'doughnut',
@@ -387,7 +378,7 @@ function abrirDashboard() {
     options:{ responsive:true, cutout:'60%', plugins:{ legend:{ position:'bottom' } } }
   });
 
-  // Turno
+  /* ---------- Turno ---------- */
   const turnoMap = { 'Manhã':0, 'Tarde':0, 'Noite':0, 'Não informado':0 };
   filtrados.forEach(d => { turnoMap[detectarTurno(d.diaHorario)]++; });
   const turnoLabels = Object.keys(turnoMap).filter(k => turnoMap[k] > 0 || k !== 'Não informado');
@@ -402,7 +393,7 @@ function abrirDashboard() {
     options:{ indexAxis:'y', responsive:true, plugins:{ legend:{ display:false } }, scales:{ x:{ beginAtZero:true, ticks:{ precision:0 } } } }
   });
 
-  // Modalidade
+  /* ---------- Modalidade ---------- */
   const modMap = contarPor(filtrados, 'modalidade');
   const modLabels = Object.keys(modMap).sort((a,b)=>modMap[b]-modMap[a]);
   const modValues = modLabels.map(k => modMap[k]);
@@ -414,7 +405,7 @@ function abrirDashboard() {
     options:{ responsive:true, plugins:{ legend:{ position:'bottom', labels:{ boxWidth:12, font:{ size:10 } } } } }
   });
 
-  // Faixa etária
+  /* ---------- Faixa etária ---------- */
   const fxMap = contarPor(filtrados, 'faixaEtaria');
   const fxLabels = Object.keys(fxMap).sort();
   const fxValues = fxLabels.map(k => fxMap[k]);
@@ -426,7 +417,7 @@ function abrirDashboard() {
     options:{ responsive:true, plugins:{ legend:{ display:false } }, scales:{ y:{ beginAtZero:true, ticks:{ precision:0 } } } }
   });
 
-  // Top 10 professores
+  /* ---------- Top 10 professores ---------- */
   const profMap = contarPor(filtrados, 'professor');
   const profTop = Object.entries(profMap).filter(([k])=>k!=='(vazio)').sort((a,b)=>b[1]-a[1]).slice(0,10);
   const profLabels = profTop.map(([k])=>k);

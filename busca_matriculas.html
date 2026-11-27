@@ -125,13 +125,12 @@
 <body>
 <div class="container">
   <h1>📋 Consulta de Matrículas</h1>
-  <p class="subtitle">Filtre e consulte os registros da aba MATRICULAS</p>
-
   <div id="erro" class="error" style="display:none;"></div>
 
 <div class="topbar">
   <button class="btn btn-success" onclick="baixarCSV()">⬇️ Exportar CSV</button>
   <button class="btn btn-primary" onclick="abrirDashboard()">📊 Ver Dashboard</button>
+  <button class="btn btn-danger" onclick="limparFiltros()">Limpar Filtros</button>
 </div>
 
   <div class="filters">
@@ -188,7 +187,6 @@
  
   <div class="info-bar">
     <span id="contador">Carregando dados...</span>
-    <button class="btn btn-danger" onclick="limparFiltros()">Limpar Filtros</button>
   </div>
 
   <div class="table-wrap">

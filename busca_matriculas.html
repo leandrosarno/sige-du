@@ -4,134 +4,157 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Consulta de Matrículas</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
   * { box-sizing: border-box; }
   body {
     font-family: 'Segoe UI', Roboto, Arial, sans-serif;
-    background: #f0f4f8;
-    margin: 0;
-    padding: 20px;
-    color: #1e293b;
+    background: #f0f4f8; margin: 0; padding: 20px; color: #1e293b;
   }
-  h1 {
-    text-align: center;
-    color: #0f172a;
-    font-size: 1.6rem;
-    margin-bottom: 6px;
+  h1 { text-align: center; color: #0f172a; font-size: 1.6rem; margin-bottom: 6px; }
+  .subtitle { text-align: center; color: #64748b; font-size: 0.9rem; margin-bottom: 20px; }
+  .container { max-width: 1400px; margin: 0 auto; }
+
+  /* Barra superior */
+  .topbar {
+    display: flex; gap: 10px; justify-content: flex-end;
+    margin-bottom: 15px; flex-wrap: wrap;
   }
-  .subtitle {
-    text-align: center;
-    color: #64748b;
-    font-size: 0.9rem;
-    margin-bottom: 20px;
+  .btn {
+    border: none; padding: 10px 18px; border-radius: 8px;
+    font-size: 0.9rem; font-weight: 600; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 6px;
+    transition: transform .15s, box-shadow .15s;
   }
-  .container {
-    max-width: 1400px;
-    margin: 0 auto;
-  }
+  .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0,0,0,.15); }
+  .btn-primary { background: linear-gradient(135deg,#3b82f6,#1e40af); color: #fff; }
+  .btn-success { background: linear-gradient(135deg,#10b981,#047857); color: #fff; }
+  .btn-danger  { background: #ef4444; color: #fff; }
+
+  /* Filtros */
   .filters {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 10px;
-    background: #fff;
-    padding: 15px;
-    border-radius: 10px;
-    box-shadow: 0 2px 6px rgba(0,0,0,.08);
-    margin-bottom: 15px;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr));
+    gap: 10px; background: #fff; padding: 15px; border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,.08); margin-bottom: 15px;
   }
   .filters label {
-    display: block;
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: #475569;
-    margin-bottom: 4px;
-    text-transform: uppercase;
+    display: block; font-size: 0.75rem; font-weight: 600;
+    color: #475569; margin-bottom: 4px; text-transform: uppercase;
     letter-spacing: .5px;
   }
   .filters input, .filters select {
-    width: 100%;
-    padding: 8px 10px;
-    border: 1px solid #cbd5e1;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    outline: none;
-    transition: border-color .2s;
+    width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1;
+    border-radius: 6px; font-size: 0.9rem; outline: none;
   }
-  .filters input:focus, .filters select:focus {
-    border-color: #3b82f6;
-  }
+  .filters input:focus, .filters select:focus { border-color: #3b82f6; }
+
   .info-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-    padding: 0 4px;
-    flex-wrap: wrap;
-    gap: 8px;
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 10px; padding: 0 4px; flex-wrap: wrap; gap: 8px;
   }
   .info-bar span { font-size: 0.9rem; color: #475569; }
-  .btn-clear {
-    background: #ef4444;
-    color: #fff;
-    border: none;
-    padding: 7px 14px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 0.85rem;
-    font-weight: 600;
-  }
-  .btn-clear:hover { background: #dc2626; }
 
   .table-wrap {
-    background: #fff;
-    border-radius: 10px;
+    background: #fff; border-radius: 10px;
     box-shadow: 0 2px 6px rgba(0,0,0,.08);
-    overflow: auto;
-    max-height: 75vh;
+    overflow: auto; max-height: 70vh;
   }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.82rem;
-    white-space: nowrap;
-  }
+  table { width: 100%; border-collapse: collapse; font-size: 0.82rem; white-space: nowrap; }
   thead th {
-    position: sticky;
-    top: 0;
-    background: #1e40af;
-    color: #fff;
-    padding: 10px 8px;
-    text-align: left;
-    font-weight: 600;
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: .3px;
-    z-index: 2;
+    position: sticky; top: 0; background: #1e40af; color: #fff;
+    padding: 10px 8px; text-align: left; font-weight: 600;
+    font-size: 0.75rem; text-transform: uppercase; letter-spacing: .3px; z-index: 2;
   }
-  tbody td {
-    padding: 8px;
-    border-bottom: 1px solid #e2e8f0;
-    vertical-align: top;
-  }
+  tbody td { padding: 8px; border-bottom: 1px solid #e2e8f0; }
   tbody tr:nth-child(even) { background: #f8fafc; }
   tbody tr:hover { background: #e0f2fe; }
 
-  .status {
-    text-align: center;
-    padding: 30px;
-    color: #64748b;
+  .status { text-align: center; padding: 30px; color: #64748b; }
+  .error { background: #fee2e2; color: #991b1b; padding: 15px; border-radius: 8px; margin-bottom: 15px; font-size: 0.9rem; }
+
+  /* ================= MODAL ================= */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(15,23,42,.7); backdrop-filter: blur(4px);
+    z-index: 1000; justify-content: center; align-items: flex-start;
+    padding: 20px; overflow-y: auto;
   }
-  .error {
-    background: #fee2e2;
-    color: #991b1b;
-    padding: 15px;
-    border-radius: 8px;
-    margin-bottom: 15px;
-    font-size: 0.9rem;
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: #fff; width: 100%; max-width: 1100px;
+    border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,.4);
+    padding: 24px 28px 32px; animation: slideIn .3s ease;
   }
+  @keyframes slideIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .modal-header {
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 2px solid #e2e8f0; padding-bottom: 14px; margin-bottom: 20px;
+  }
+  .modal-header h2 {
+    margin: 0; font-size: 1.4rem; color: #0f172a;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .modal-header h2::before { content: '📊'; font-size: 1.6rem; }
+  .modal-close {
+    background: none; border: none; font-size: 1.8rem; cursor: pointer;
+    color: #64748b; line-height: 1; padding: 4px 10px; border-radius: 6px;
+  }
+  .modal-close:hover { background: #f1f5f9; color: #dc2626; }
+
+  /* KPI cards */
+  .kpis {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr));
+    gap: 12px; margin-bottom: 20px;
+  }
+  .kpi {
+    background: linear-gradient(135deg, #eff6ff, #dbeafe);
+    border-left: 5px solid #3b82f6; padding: 14px 16px; border-radius: 10px;
+  }
+  .kpi:nth-child(2) { background: linear-gradient(135deg,#f0fdf4,#dcfce7); border-left-color:#10b981; }
+  .kpi:nth-child(3) { background: linear-gradient(135deg,#fef3c7,#fde68a); border-left-color:#f59e0b; }
+  .kpi:nth-child(4) { background: linear-gradient(135deg,#fce7f3,#fbcfe8); border-left-color:#ec4899; }
+  .kpi:nth-child(5) { background: linear-gradient(135deg,#ede9fe,#ddd6fe); border-left-color:#8b5cf6; }
+  .kpi .label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: .5px; font-weight: 700; color: #475569; margin-bottom: 4px; }
+  .kpi .value { font-size: 1.6rem; font-weight: 800; color: #0f172a; }
+  .kpi .sub { font-size: 0.72rem; color: #64748b; margin-top: 2px; }
+
+  .charts-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(320px,1fr));
+    gap: 20px;
+  }
+  .chart-card {
+    background: #f8fafc; border: 1px solid #e2e8f0;
+    border-radius: 12px; padding: 16px;
+  }
+  .chart-card h3 {
+    margin: 0 0 12px; font-size: 0.95rem; color: #1e40af;
+    text-transform: uppercase; letter-spacing: .5px; text-align: center;
+  }
+  .chart-card canvas { max-height: 260px; }
+
+  .modal-footer {
+    margin-top: 24px; padding-top: 16px;
+    border-top: 2px solid #e2e8f0;
+    display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap;
+  }
+
+  /* Impressão */
+  @media print {
+    body { padding: 0; background: #fff; }
+    .topbar, .filters, .info-bar, .table-wrap, .modal-footer, .modal-close { display: none !important; }
+    .modal-overlay { display: block !important; position: static; background: #fff; padding: 0; }
+    .modal { box-shadow: none; max-width: 100%; padding: 0; animation: none; }
+    .modal-header { border-bottom: 3px solid #1e40af; }
+    .charts-grid { grid-template-columns: 1fr 1fr; page-break-inside: avoid; }
+    .chart-card { page-break-inside: avoid; border: 1px solid #cbd5e1; }
+    @page { size: A4 portrait; margin: 15mm; }
+  }
+
   @media (max-width: 600px) {
     body { padding: 10px; }
     h1 { font-size: 1.2rem; }
+    .modal { padding: 16px; }
+    .modal-header h2 { font-size: 1.1rem; }
   }
 </style>
 </head>
@@ -142,44 +165,24 @@
 
   <div id="erro" class="error" style="display:none;"></div>
 
+  <div class="topbar">
+    <button class="btn btn-primary" onclick="abrirDashboard()">📊 Ver Dashboard</button>
+  </div>
+
   <div class="filters">
-    <div>
-      <label>ID Turma</label>
-      <input type="text" id="fIdTurma" placeholder="Filtrar...">
-    </div>
-    <div>
-      <label>Nome do Aluno</label>
-      <input type="text" id="fNome" placeholder="Filtrar...">
-    </div>
-    <div>
-      <label>Nº EOL / Prontuário</label>
-      <input type="text" id="fEol" placeholder="Filtrar...">
-    </div>
-    <div>
-      <label>Núcleo</label>
-      <select id="fNucleo"><option value="">Todos</option></select>
-    </div>
-    <div>
-      <label>Modalidade</label>
-      <select id="fModalidade"><option value="">Todas</option></select>
-    </div>
-    <div>
-      <label>Professor</label>
-      <select id="fProfessor"><option value="">Todos</option></select>
-    </div>
-    <div>
-      <label>Ano</label>
-      <select id="fAno"><option value="">Todos</option></select>
-    </div>
-    <div>
-      <label>Dia/Horário</label>
-      <input type="text" id="fDiaHorario" placeholder="Filtrar...">
-    </div>
+    <div><label>ID Turma</label><input type="text" id="fIdTurma" placeholder="Filtrar..."></div>
+    <div><label>Nome do Aluno</label><input type="text" id="fNome" placeholder="Filtrar..."></div>
+    <div><label>Nº EOL / Prontuário</label><input type="text" id="fEol" placeholder="Filtrar..."></div>
+    <div><label>Núcleo</label><select id="fNucleo"><option value="">Todos</option></select></div>
+    <div><label>Modalidade</label><select id="fModalidade"><option value="">Todas</option></select></div>
+    <div><label>Professor</label><select id="fProfessor"><option value="">Todos</option></select></div>
+    <div><label>Ano</label><select id="fAno"><option value="">Todos</option></select></div>
+    <div><label>Dia/Horário</label><input type="text" id="fDiaHorario" placeholder="Filtrar..."></div>
   </div>
 
   <div class="info-bar">
     <span id="contador">Carregando dados...</span>
-    <button class="btn-clear" onclick="limparFiltros()">Limpar Filtros</button>
+    <button class="btn btn-danger" onclick="limparFiltros()">Limpar Filtros</button>
   </div>
 
   <div class="table-wrap">
@@ -187,26 +190,11 @@
     <table id="tabela" style="display:none;">
       <thead>
         <tr>
-          <th>ID_TURMA</th>
-          <th>DATA MAT</th>
-          <th>EOL TURMA</th>
-          <th>SUFIXO</th>
-          <th>MODALIDADE</th>
-          <th>FAIXA ETÁRIA</th>
-          <th>NÚCLEO</th>
-          <th>VAGAS</th>
-          <th>PROFESSOR</th>
-          <th>ESPAÇO</th>
-          <th>VAGAS INICIAIS</th>
-          <th>VEZES/SEM</th>
-          <th>DIA HORÁRIO</th>
-          <th>ID_ALUNO</th>
-          <th>ALU_NOME</th>
-          <th>COD_EOL</th>
-          <th>PRONTUÁRIO</th>
-          <th>ANO</th>
-          <th>CARIMBO NÚCLEO</th>
-          <th>CARIMBO/ASSINATURA</th>
+          <th>ID_TURMA</th><th>DATA MAT</th><th>EOL TURMA</th><th>SUFIXO</th>
+          <th>MODALIDADE</th><th>FAIXA ETÁRIA</th><th>NÚCLEO</th><th>VAGAS</th>
+          <th>PROFESSOR</th><th>ESPAÇO</th><th>VAGAS INICIAIS</th><th>VEZES/SEM</th>
+          <th>DIA HORÁRIO</th><th>ID_ALUNO</th><th>ALU_NOME</th><th>COD_EOL</th>
+          <th>PRONTUÁRIO</th><th>ANO</th><th>CARIMBO NÚCLEO</th><th>CARIMBO/ASSINATURA</th>
         </tr>
       </thead>
       <tbody id="tbody"></tbody>
@@ -214,91 +202,107 @@
   </div>
 </div>
 
+<!-- ==================== MODAL DASHBOARD ==================== -->
+<div class="modal-overlay" id="modalDash" onclick="if(event.target===this) fecharDashboard()">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Dashboard de Matrículas</h2>
+      <button class="modal-close" onclick="fecharDashboard()" title="Fechar">×</button>
+    </div>
+
+    <div class="kpis" id="kpis">
+      <div class="kpi"><div class="label">Total de Matrículas</div><div class="value" id="kpiMatriculas">—</div><div class="sub">registros na base</div></div>
+      <div class="kpi"><div class="label">Alunos Únicos</div><div class="value" id="kpiAlunos">—</div><div class="sub">por ID/EOL/Prontuário</div></div>
+      <div class="kpi"><div class="label">Total de Turmas</div><div class="value" id="kpiTurmas">—</div><div class="sub">IDs distintos</div></div>
+      <div class="kpi"><div class="label">Núcleos Ativos</div><div class="value" id="kpiNucleos">—</div><div class="sub">com matrículas</div></div>
+      <div class="kpi"><div class="label">Média Aluno/Turma</div><div class="value" id="kpiMedia">—</div><div class="sub">matrículas ÷ turmas</div></div>
+    </div>
+
+    <div class="charts-grid">
+      <div class="chart-card"><h3>Total de Turmas por Núcleo</h3><canvas id="chartNucleo"></canvas></div>
+      <div class="chart-card"><h3>Total de Pessoas × Total de Matrículas</h3><canvas id="chartPessoas"></canvas></div>
+      <div class="chart-card"><h3>Matrículas por Turno (Manhã / Tarde / Noite)</h3><canvas id="chartTurno"></canvas></div>
+      <div class="chart-card"><h3>Matrículas por Modalidade</h3><canvas id="chartModalidade"></canvas></div>
+      <div class="chart-card"><h3>Matrículas por Faixa Etária</h3><canvas id="chartFaixa"></canvas></div>
+      <div class="chart-card"><h3>Top 10 Professores por Matrículas</h3><canvas id="chartProfessor"></canvas></div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-success" onclick="baixarCSV()">⬇️ Baixar CSV</button>
+      <button class="btn btn-primary" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ===================== CONFIGURAÇÃO ===================== */
 const SHEET_ID   = '1CM5X5d6yoK1_UceTw6Sq-XG-bvwrGxcZpzcbuO6Edyk';
 const SHEET_NAME = 'MATRICULAS';
-const FIRST_DATA_ROW = 3; // linha 1 = numeração, linha 2 = cabeçalho
+const FIRST_DATA_ROW = 3;
 
-/* Endpoint público (JSON) do Google Sheets */
 const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?sheet=${encodeURIComponent(SHEET_NAME)}&tq=SELECT *`;
 
-/* ===================== ESTADO ===================== */
-let DADOS = []; // array de objetos
+let DADOS = [];
+const charts = {}; // instâncias Chart.js para destruir antes de recriar
 
 /* ===================== UTIL ===================== */
 function normalizar(s) {
-  return (s ?? '').toString()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase().trim();
+  return (s ?? '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
 }
 function limparFiltros() {
-  ['fIdTurma','fNome','fEol','fDiaHorario'].forEach(id => document.getElementById(id).value = '');
-  ['fNucleo','fModalidade','fProfessor','fAno'].forEach(id => document.getElementById(id).value = '');
+  ['fIdTurma','fNome','fEol','fDiaHorario'].forEach(id => document.getElementById(id).value='');
+  ['fNucleo','fModalidade','fProfessor','fAno'].forEach(id => document.getElementById(id).value='');
   render();
 }
 function popularSelect(id, valores) {
   const sel = document.getElementById(id);
-  const unicos = [...new Set(valores.map(v => (v ?? '').toString().trim()).filter(v => v))].sort();
-  unicos.forEach(v => {
-    const opt = document.createElement('option');
-    opt.value = v; opt.textContent = v;
-    sel.appendChild(opt);
-  });
+  const unicos = [...new Set(valores.map(v=>(v??'').toString().trim()).filter(v=>v))].sort();
+  unicos.forEach(v=>{ const o=document.createElement('option'); o.value=v; o.textContent=v; sel.appendChild(o); });
+}
+
+/* ===================== DETECÇÃO DE TURNO ===================== */
+function detectarTurno(diaHorario) {
+  const t = normalizar(diaHorario);
+  if (!t) return 'Não informado';
+  if (/(noite|noturn|19:|20:|21:|22:)/.test(t)) return 'Noite';
+  if (/(tarde|vespertin|13:|14:|15:|16:|17:)/.test(t)) return 'Tarde';
+  if (/(manha|matutin|07:|08:|09:|10:|11:|12:)/.test(t)) return 'Manhã';
+  return 'Não informado';
 }
 
 /* ===================== CARREGAMENTO ===================== */
 function carregarDados() {
-  // Usamos JSONP para evitar problema de CORS em GitHub Pages
   const cbName = 'gvizCallback_' + Date.now();
   window[cbName] = function(resp) {
     try {
       const linhas = resp.table.rows || [];
-      // Linha 1 (índice 0) = numeração; Linha 2 (índice 1) = cabeçalho
-      // Dados começam em índice 2 (linha 3)
       DADOS = linhas.slice(FIRST_DATA_ROW - 1).map(r => {
         const c = r.c || [];
         const val = (i) => {
           const cell = c[i];
           if (!cell) return '';
-          if (cell.f) return cell.f;           // valor formatado (ex.: datas)
-          if (cell.v === null || cell.v === undefined) return '';
+          if (cell.f) return cell.f;
+          if (cell.v == null) return '';
           return cell.v;
         };
         return {
-          idTurma:      val(0),
-          dataMat:      val(1),
-          eolTurma:     val(2),
-          sufixoTurma:  val(3),
-          modalidade:   val(4),
-          faixaEtaria:  val(5),
-          nucleo:       val(6),
-          vagas:        val(7),
-          professor:    val(8),
-          espaco:       val(9),
-          vagasIniciais:val(10),
-          vezesSemana:  val(11),
-          diaHorario:   val(12),
-          idAluno:      val(13),
-          aluNome:      val(14),
-          codEol:       val(15),
-          prontuario:   val(16),
-          ano:          val(17),
-          carimboNucleo:val(18),
-          carimboAssin: val(19)
+          idTurma: val(0), dataMat: val(1), eolTurma: val(2), sufixoTurma: val(3),
+          modalidade: val(4), faixaEtaria: val(5), nucleo: val(6), vagas: val(7),
+          professor: val(8), espaco: val(9), vagasIniciais: val(10), vezesSemana: val(11),
+          diaHorario: val(12), idAluno: val(13), aluNome: val(14), codEol: val(15),
+          prontuario: val(16), ano: val(17), carimboNucleo: val(18), carimboAssin: val(19)
         };
       }).filter(r => String(r.idTurma).trim() || String(r.aluNome).trim());
 
-      popularSelect('fNucleo',     DADOS.map(d => d.nucleo));
-      popularSelect('fModalidade', DADOS.map(d => d.modalidade));
-      popularSelect('fProfessor',  DADOS.map(d => d.professor));
-      popularSelect('fAno',        DADOS.map(d => d.ano));
+      popularSelect('fNucleo', DADOS.map(d=>d.nucleo));
+      popularSelect('fModalidade', DADOS.map(d=>d.modalidade));
+      popularSelect('fProfessor', DADOS.map(d=>d.professor));
+      popularSelect('fAno', DADOS.map(d=>d.ano));
 
       document.getElementById('loading').style.display = 'none';
       document.getElementById('tabela').style.display = '';
       render();
-
-    } catch (e) {
+    } catch(e) {
       mostrarErro('Erro ao processar dados: ' + e.message);
     } finally {
       delete window[cbName];
@@ -306,86 +310,233 @@ function carregarDados() {
       if (s) s.remove();
     }
   };
-
   const script = document.createElement('script');
   script.id = cbName;
   script.src = URL + '&tqx=out:json;responseHandler:' + cbName;
-  script.onerror = () => mostrarErro(
-    'Não foi possível acessar a planilha. Verifique se ela está compartilhada como ' +
-    '"Qualquer pessoa com o link – Leitor".'
-  );
+  script.onerror = () => mostrarErro('Não foi possível acessar a planilha. Verifique o compartilhamento como "Qualquer pessoa com o link – Leitor".');
   document.body.appendChild(script);
 }
-
 function mostrarErro(msg) {
   const el = document.getElementById('erro');
-  el.textContent = '⚠️ ' + msg;
-  el.style.display = 'block';
+  el.textContent = '⚠️ ' + msg; el.style.display='block';
   document.getElementById('loading').textContent = 'Erro ao carregar.';
 }
 
-/* ===================== RENDER / FILTRO ===================== */
-function render() {
-  const fIdTurma  = normalizar(document.getElementById('fIdTurma').value);
-  const fNome     = normalizar(document.getElementById('fNome').value);
-  const fEol      = normalizar(document.getElementById('fEol').value);
-  const fNucleo   = document.getElementById('fNucleo').value;
-  const fMod      = document.getElementById('fModalidade').value;
-  const fProf     = document.getElementById('fProfessor').value;
-  const fAno      = document.getElementById('fAno').value;
-  const fDia      = normalizar(document.getElementById('fDiaHorario').value);
+/* ===================== RENDER TABELA ===================== */
+function filtrarDados() {
+  const fIdTurma = normalizar(document.getElementById('fIdTurma').value);
+  const fNome    = normalizar(document.getElementById('fNome').value);
+  const fEol     = normalizar(document.getElementById('fEol').value);
+  const fNucleo  = document.getElementById('fNucleo').value;
+  const fMod     = document.getElementById('fModalidade').value;
+  const fProf    = document.getElementById('fProfessor').value;
+  const fAno     = document.getElementById('fAno').value;
+  const fDia     = normalizar(document.getElementById('fDiaHorario').value);
 
-  const filtrados = DADOS.filter(d => {
+  return DADOS.filter(d => {
     if (fIdTurma && !normalizar(d.idTurma).includes(fIdTurma)) return false;
-    if (fNome    && !normalizar(d.aluNome).includes(fNome))    return false;
+    if (fNome && !normalizar(d.aluNome).includes(fNome)) return false;
     if (fEol && !(normalizar(d.codEol).includes(fEol) || normalizar(d.prontuario).includes(fEol))) return false;
-    if (fNucleo  && String(d.nucleo) !== fNucleo)   return false;
-    if (fMod     && String(d.modalidade) !== fMod)  return false;
-    if (fProf    && String(d.professor) !== fProf)  return false;
-    if (fAno     && String(d.ano) !== fAno)         return false;
-    if (fDia     && !normalizar(d.diaHorario).includes(fDia)) return false;
+    if (fNucleo && String(d.nucleo) !== fNucleo) return false;
+    if (fMod && String(d.modalidade) !== fMod) return false;
+    if (fProf && String(d.professor) !== fProf) return false;
+    if (fAno && String(d.ano) !== fAno) return false;
+    if (fDia && !normalizar(d.diaHorario).includes(fDia)) return false;
     return true;
   });
-
+}
+function render() {
+  const filtrados = filtrarDados();
   const tbody = document.getElementById('tbody');
   tbody.innerHTML = '';
-
-  if (filtrados.length === 0) {
+  if (!filtrados.length) {
     tbody.innerHTML = '<tr><td colspan="20" style="text-align:center;padding:20px;color:#64748b;">Nenhum registro encontrado.</td></tr>';
   } else {
     const frag = document.createDocumentFragment();
     filtrados.forEach(d => {
       const tr = document.createElement('tr');
-      const vals = [
-        d.idTurma, d.dataMat, d.eolTurma, d.sufixoTurma, d.modalidade,
-        d.faixaEtaria, d.nucleo, d.vagas, d.professor, d.espaco,
-        d.vagasIniciais, d.vezesSemana, d.diaHorario, d.idAluno,
-        d.aluNome, d.codEol, d.prontuario, d.ano, d.carimboNucleo, d.carimboAssin
-      ];
-      vals.forEach(v => {
-        const td = document.createElement('td');
-        td.textContent = v ?? '';
-        tr.appendChild(td);
-      });
+      [d.idTurma,d.dataMat,d.eolTurma,d.sufixoTurma,d.modalidade,d.faixaEtaria,d.nucleo,
+       d.vagas,d.professor,d.espaco,d.vagasIniciais,d.vezesSemana,d.diaHorario,
+       d.idAluno,d.aluNome,d.codEol,d.prontuario,d.ano,d.carimboNucleo,d.carimboAssin]
+        .forEach(v => { const td=document.createElement('td'); td.textContent = v ?? ''; tr.appendChild(td); });
       frag.appendChild(tr);
     });
     tbody.appendChild(frag);
   }
+  document.getElementById('contador').textContent = `Exibindo ${filtrados.length} de ${DADOS.length} registros`;
+}
 
-  document.getElementById('contador').textContent =
-    `Exibindo ${filtrados.length} de ${DADOS.length} registros`;
+/* ===================== DASHBOARD ===================== */
+function contarPor(arr, chave) {
+  const map = {};
+  arr.forEach(d => {
+    const k = (d[chave] ?? '').toString().trim() || '(vazio)';
+    map[k] = (map[k] || 0) + 1;
+  });
+  return map;
+}
+function chaveAluno(d) {
+  // Combina ID_ALUNO, COD_EOL e PRONTUÁRIO para identificar o aluno único
+  const a = String(d.idAluno||'').trim();
+  const b = String(d.codEol||'').trim();
+  const c = String(d.prontuario||'').trim();
+  return [a,b,c].filter(Boolean).join('|') || normalizar(d.aluNome) || null;
+}
+function destruirGrafico(id) {
+  if (charts[id]) { charts[id].destroy(); delete charts[id]; }
+}
+function paleta(n) {
+  const base = ['#3b82f6','#10b981','#f59e0b','#ec4899','#8b5cf6','#06b6d4','#f97316','#84cc16','#ef4444','#6366f1'];
+  return Array.from({length:n}, (_,i)=>base[i % base.length]);
+}
+
+function abrirDashboard() {
+  const filtrados = filtrarDados();
+  if (!filtrados.length) { alert('Nenhum dado para exibir com os filtros atuais.'); return; }
+
+  // ---------- KPIs ----------
+  const totalMatriculas = filtrados.length;
+  const idsAlunos = new Set(filtrados.map(chaveAluno).filter(Boolean));
+  const totalAlunos = idsAlunos.size || totalMatriculas;
+  const idsTurmas = new Set(filtrados.map(d => String(d.idTurma||'').trim()).filter(Boolean));
+  const totalTurmas = idsTurmas.size;
+  const nucleosAtivos = new Set(filtrados.map(d => String(d.nucleo||'').trim()).filter(Boolean)).size;
+  const media = totalTurmas ? (totalMatriculas / totalTurmas).toFixed(1) : '0';
+
+  document.getElementById('kpiMatriculas').textContent = totalMatriculas;
+  document.getElementById('kpiAlunos').textContent = totalAlunos;
+  document.getElementById('kpiTurmas').textContent = totalTurmas;
+  document.getElementById('kpiNucleos').textContent = nucleosAtivos;
+  document.getElementById('kpiMedia').textContent = media;
+
+  // ---------- TURMAS POR NÚCLEO (contar IDs de turma DISTINTOS por núcleo) ----------
+  const turmasPorNucleo = {};
+  filtrados.forEach(d => {
+    const nuc = (d.nucleo||'').toString().trim() || '(vazio)';
+    const idT = String(d.idTurma||'').trim();
+    if (!idT) return;
+    if (!turmasPorNucleo[nuc]) turmasPorNucleo[nuc] = new Set();
+    turmasPorNucleo[nuc].add(idT);
+  });
+  const nucLabels = Object.keys(turmasPorNucleo).sort();
+  const nucValues = nucLabels.map(n => turmasPorNucleo[n].size);
+
+  destruirGrafico('chartNucleo');
+  charts['chartNucleo'] = new Chart(document.getElementById('chartNucleo'), {
+    type: 'bar',
+    data: {
+      labels: nucLabels,
+      datasets: [{ label:'Turmas', data: nucValues, backgroundColor: paleta(nucLabels.length), borderRadius: 6 }]
+    },
+    options: { responsive:true, plugins:{ legend:{ display:false } },
+      scales:{ y:{ beginAtZero:true, ticks:{ precision:0 } } } }
+  });
+
+  // ---------- PESSOAS x MATRÍCULAS ----------
+  destruirGrafico('chartPessoas');
+  charts['chartPessoas'] = new Chart(document.getElementById('chartPessoas'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Alunos únicos','Matrículas (registros)'],
+      datasets: [{ data:[totalAlunos, totalMatriculas], backgroundColor:['#3b82f6','#f59e0b'], borderWidth:2, borderColor:'#fff' }]
+    },
+    options: {
+      responsive:true, cutout:'60%',
+      plugins:{
+        legend:{ position:'bottom' },
+        tooltip:{ callbacks:{ label: ctx => `${ctx.label}: ${ctx.parsed}` } }
+      }
+    }
+  });
+
+  // ---------- TURNO ----------
+  const turnoMap = { 'Manhã':0, 'Tarde':0, 'Noite':0, 'Não informado':0 };
+  filtrados.forEach(d => { turnoMap[detectarTurno(d.diaHorario)]++; });
+  const turnoLabels = Object.keys(turnoMap).filter(k => turnoMap[k] > 0 || k !== 'Não informado');
+  const turnoValues = turnoLabels.map(k => turnoMap[k]);
+
+  destruirGrafico('chartTurno');
+  charts['chartTurno'] = new Chart(document.getElementById('chartTurno'), {
+    type: 'bar',
+    data: {
+      labels: turnoLabels,
+      datasets: [{
+        label:'Matrículas', data: turnoValues,
+        backgroundColor: turnoLabels.map(l =>
+          l==='Manhã' ? '#f59e0b' : l==='Tarde' ? '#f97316' : l==='Noite' ? '#1e40af' : '#94a3b8'
+        ),
+        borderRadius: 6
+      }]
+    },
+    options: { indexAxis:'y', responsive:true, plugins:{ legend:{ display:false } },
+      scales:{ x:{ beginAtZero:true, ticks:{ precision:0 } } } }
+  });
+
+  // ---------- MODALIDADE ----------
+  const modMap = contarPor(filtrados, 'modalidade');
+  const modLabels = Object.keys(modMap).sort((a,b)=>modMap[b]-modMap[a]);
+  const modValues = modLabels.map(k => modMap[k]);
+
+  destruirGrafico('chartModalidade');
+  charts['chartModalidade'] = new Chart(document.getElementById('chartModalidade'), {
+    type: 'pie',
+    data: { labels: modLabels, datasets:[{ data: modValues, backgroundColor: paleta(modLabels.length), borderWidth:2, borderColor:'#fff' }] },
+    options: { responsive:true, plugins:{ legend:{ position:'bottom', labels:{ boxWidth:12, font:{ size:10 } } } } }
+  });
+
+  // ---------- FAIXA ETÁRIA ----------
+  const fxMap = contarPor(filtrados, 'faixaEtaria');
+  const fxLabels = Object.keys(fxMap).sort();
+  const fxValues = fxLabels.map(k => fxMap[k]);
+
+  destruirGrafico('chartFaixa');
+  charts['chartFaixa'] = new Chart(document.getElementById('chartFaixa'), {
+    type: 'bar',
+    data: { labels: fxLabels, datasets:[{ label:'Matrículas', data: fxValues, backgroundColor:'#8b5cf6', borderRadius:6 }] },
+    options: { responsive:true, plugins:{ legend:{ display:false } },
+      scales:{ y:{ beginAtZero:true, ticks:{ precision:0 } } } }
+  });
+
+  // ---------- TOP 10 PROFESSORES ----------
+  const profMap = contarPor(filtrados, 'professor');
+  const profTop = Object.entries(profMap).filter(([k])=>k!=='(vazio)').sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const profLabels = profTop.map(([k])=>k);
+  const profValues = profTop.map(([,v])=>v);
+
+  destruirGrafico('chartProfessor');
+  charts['chartProfessor'] = new Chart(document.getElementById('chartProfessor'), {
+    type: 'bar',
+    data: { labels: profLabels, datasets:[{ label:'Matrículas', data: profValues, backgroundColor:'#06b6d4', borderRadius:6 }] },
+    options: { indexAxis:'y', responsive:true, plugins:{ legend:{ display:false } },
+      scales:{ x:{ beginAtZero:true, ticks:{ precision:0 } } } }
+  });
+
+  document.getElementById('modalDash').classList.add('show');
+}
+function fecharDashboard() {
+  document.getElementById('modalDash').classList.remove('show');
+}
+
+/* ===================== CSV ===================== */
+function baixarCSV() {
+  const filtrados = filtrarDados();
+  const cab = ['ID_TURMA','DATA MAT','EOL TURMA','SUFIXO','MODALIDADE','FAIXA ETARIA','NUCLEO','VAGAS','PROFESSOR','ESPACO','VAGAS INICIAIS','VEZES/SEM','DIA HORARIO','ID_ALUNO','ALU_NOME','COD_EOL','PRONTUARIO','ANO','CARIMBO NUCLEO','CARIMBO/ASSINATURA','TURNO'];
+  const linhas = filtrados.map(d => [
+    d.idTurma,d.dataMat,d.eolTurma,d.sufixoTurma,d.modalidade,d.faixaEtaria,d.nucleo,
+    d.vagas,d.professor,d.espaco,d.vagasIniciais,d.vezesSemana,d.diaHorario,
+    d.idAluno,d.aluNome,d.codEol,d.prontuario,d.ano,d.carimboNucleo,d.carimboAssin,
+    detectarTurno(d.diaHorario)
+  ]);
+  const esc = v => `"${(v ?? '').toString().replace(/"/g,'""')}"`;
+  const csv = [cab.map(esc).join(';'), ...linhas.map(l => l.map(esc).join(';'))].join('\r\n');
+  const blob = new Blob(['\uFEFF' + csv], { type:'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `matriculas_${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(a.href);
 }
 
 /* ===================== EVENTOS ===================== */
 ['fIdTurma','fNome','fEol','fDiaHorario'].forEach(id =>
-  document.getElementById(id).addEventListener('input', render)
-);
-['fNucleo','fModalidade','fProfessor','fAno'].forEach(id =>
-  document.getElementById(id).addEventListener('change', render)
-);
-
-/* ===================== INICIALIZAÇÃO ===================== */
-carregarDados();
-</script>
-</body>
-</html>
+  document.getElementById(id).addEventListener('input',

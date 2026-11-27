@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Consulta de Matrículas</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+    background: #f0f4f8;
+    margin: 0;
+    padding: 20px;
+    color: #1e293b;
+  }
+  h1 {
+    text-align: center;
+    color: #0f172a;
+    font-size: 1.6rem;
+    margin-bottom: 6px;
+  }
+  .subtitle {
+    text-align: center;
+    color: #64748b;
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+  }
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .filters {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 10px;
+    background: #fff;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,.08);
+    margin-bottom: 15px;
+  }
+  .filters label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+  }
+  .filters input, .filters select {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .filters input:focus, .filters select:focus {
+    border-color: #3b82f6;
+  }
+  .info-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 0 4px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .info-bar span { font-size: 0.9rem; color: #475569; }
+  .btn-clear {
+    background: #ef4444;
+    color: #fff;
+    border: none;
+    padding: 7px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  .btn-clear:hover { background: #dc2626; }
+
+  .table-wrap {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,.08);
+    overflow: auto;
+    max-height: 75vh;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+    white-space: nowrap;
+  }
+  thead th {
+    position: sticky;
+    top: 0;
+    background: #1e40af;
+    color: #fff;
+    padding: 10px 8px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+    z-index: 2;
+  }
+  tbody td {
+    padding: 8px;
+    border-bottom: 1px solid #e2e8f0;
+    vertical-align: top;
+  }
+  tbody tr:nth-child(even) { background: #f8fafc; }
+  tbody tr:hover { background: #e0f2fe; }
+
+  .status {
+    text-align: center;
+    padding: 30px;
+    color: #64748b;
+  }
+  .error {
+    background: #fee2e2;
+    color: #991b1b;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+  }
+  @media (max-width: 600px) {
+    body { padding: 10px; }
+    h1 { font-size: 1.2rem; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>📋 Consulta de Matrículas</h1>
+  <p class="subtitle">Filtre e consulte os registros da aba MATRICULAS</p>
+
+  <div id="erro" class="error" style="display:none;"></div>
+
+  <div class="filters">
+    <div>
+      <label>ID Turma</label>
+      <input type="text" id="fIdTurma" placeholder="Filtrar...">
+    </div>
+    <div>
+      <label>Nome do Aluno</label>
+      <input type="text" id="fNome" placeholder="Filtrar...">
+    </div>
+    <div>
+      <label>Nº EOL / Prontuário</label>
+      <input type="text" id="fEol" placeholder="Filtrar...">
+    </div>
+    <div>
+      <label>Núcleo</label>
+      <select id="fNucleo"><option value="">Todos</option></select>
+    </div>
+    <div>
+      <label>Modalidade</label>
+      <select id="fModalidade"><option value="">Todas</option></select>
+    </div>
+    <div>
+      <label>Professor</label>
+      <select id="fProfessor"><option value="">Todos</option></select>
+    </div>
+    <div>
+      <label>Ano</label>
+      <select id="fAno"><option value="">Todos</option></select>
+    </div>
+    <div>
+      <label>Dia/Horário</label>
+      <input type="text" id="fDiaHorario" placeholder="Filtrar...">
+    </div>
+  </div>
+
+  <div class="info-bar">
+    <span id="contador">Carregando dados...</span>
+    <button class="btn-clear" onclick="limparFiltros()">Limpar Filtros</button>
+  </div>
+
+  <div class="table-wrap">
+    <div id="loading" class="status">⏳ Carregando dados da planilha...</div>
+    <table id="tabela" style="display:none;">
+      <thead>
+        <tr>
+          <th>ID_TURMA</th>
+          <th>DATA MAT</th>
+          <th>EOL TURMA</th>
+          <th>SUFIXO</th>
+          <th>MODALIDADE</th>
+          <th>FAIXA ETÁRIA</th>
+          <th>NÚCLEO</th>
+          <th>VAGAS</th>
+          <th>PROFESSOR</th>
+          <th>ESPAÇO</th>
+          <th>VAGAS INICIAIS</th>
+          <th>VEZES/SEM</th>
+          <th>DIA HORÁRIO</th>
+          <th>ID_ALUNO</th>
+          <th>ALU_NOME</th>
+          <th>COD_EOL</th>
+          <th>PRONTUÁRIO</th>
+          <th>ANO</th>
+          <th>CARIMBO NÚCLEO</th>
+          <th>CARIMBO/ASSINATURA</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+/* ===================== CONFIGURAÇÃO ===================== */
+const SHEET_ID   = '1CM5X5d6yoK1_UceTw6Sq-XG-bvwrGxcZpzcbuO6Edyk';
+const SHEET_NAME = 'MATRICULAS';
+const FIRST_DATA_ROW = 3; // linha 1 = numeração, linha 2 = cabeçalho
+
+/* Endpoint público (JSON) do Google Sheets */
+const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?sheet=${encodeURIComponent(SHEET_NAME)}&tq=SELECT *`;
+
+/* ===================== ESTADO ===================== */
+let DADOS = []; // array de objetos
+
+/* ===================== UTIL ===================== */
+function normalizar(s) {
+  return (s ?? '').toString()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase().trim();
+}
+function limparFiltros() {
+  ['fIdTurma','fNome','fEol','fDiaHorario'].forEach(id => document.getElementById(id).value = '');
+  ['fNucleo','fModalidade','fProfessor','fAno'].forEach(id => document.getElementById(id).value = '');
+  render();
+}
+function popularSelect(id, valores) {
+  const sel = document.getElementById(id);
+  const unicos = [...new Set(valores.map(v => (v ?? '').toString().trim()).filter(v => v))].sort();
+  unicos.forEach(v => {
+    const opt = document.createElement('option');
+    opt.value = v; opt.textContent = v;
+    sel.appendChild(opt);
+  });
+}
+
+/* ===================== CARREGAMENTO ===================== */
+function carregarDados() {
+  // Usamos JSONP para evitar problema de CORS em GitHub Pages
+  const cbName = 'gvizCallback_' + Date.now();
+  window[cbName] = function(resp) {
+    try {
+      const linhas = resp.table.rows || [];
+      // Linha 1 (índice 0) = numeração; Linha 2 (índice 1) = cabeçalho
+      // Dados começam em índice 2 (linha 3)
+      DADOS = linhas.slice(FIRST_DATA_ROW - 1).map(r => {
+        const c = r.c || [];
+        const val = (i) => {
+          const cell = c[i];
+          if (!cell) return '';
+          if (cell.f) return cell.f;           // valor formatado (ex.: datas)
+          if (cell.v === null || cell.v === undefined) return '';
+          return cell.v;
+        };
+        return {
+          idTurma:      val(0),
+          dataMat:      val(1),
+          eolTurma:     val(2),
+          sufixoTurma:  val(3),
+          modalidade:   val(4),
+          faixaEtaria:  val(5),
+          nucleo:       val(6),
+          vagas:        val(7),
+          professor:    val(8),
+          espaco:       val(9),
+          vagasIniciais:val(10),
+          vezesSemana:  val(11),
+          diaHorario:   val(12),
+          idAluno:      val(13),
+          aluNome:      val(14),
+          codEol:       val(15),
+          prontuario:   val(16),
+          ano:          val(17),
+          carimboNucleo:val(18),
+          carimboAssin: val(19)
+        };
+      }).filter(r => String(r.idTurma).trim() || String(r.aluNome).trim());
+
+      popularSelect('fNucleo',     DADOS.map(d => d.nucleo));
+      popularSelect('fModalidade', DADOS.map(d => d.modalidade));
+      popularSelect('fProfessor',  DADOS.map(d => d.professor));
+      popularSelect('fAno',        DADOS.map(d => d.ano));
+
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('tabela').style.display = '';
+      render();
+
+    } catch (e) {
+      mostrarErro('Erro ao processar dados: ' + e.message);
+    } finally {
+      delete window[cbName];
+      const s = document.getElementById(cbName);
+      if (s) s.remove();
+    }
+  };
+
+  const script = document.createElement('script');
+  script.id = cbName;
+  script.src = URL + '&tqx=out:json;responseHandler:' + cbName;
+  script.onerror = () => mostrarErro(
+    'Não foi possível acessar a planilha. Verifique se ela está compartilhada como ' +
+    '"Qualquer pessoa com o link – Leitor".'
+  );
+  document.body.appendChild(script);
+}
+
+function mostrarErro(msg) {
+  const el = document.getElementById('erro');
+  el.textContent = '⚠️ ' + msg;
+  el.style.display = 'block';
+  document.getElementById('loading').textContent = 'Erro ao carregar.';
+}
+
+/* ===================== RENDER / FILTRO ===================== */
+function render() {
+  const fIdTurma  = normalizar(document.getElementById('fIdTurma').value);
+  const fNome     = normalizar(document.getElementById('fNome').value);
+  const fEol      = normalizar(document.getElementById('fEol').value);
+  const fNucleo   = document.getElementById('fNucleo').value;
+  const fMod      = document.getElementById('fModalidade').value;
+  const fProf     = document.getElementById('fProfessor').value;
+  const fAno      = document.getElementById('fAno').value;
+  const fDia      = normalizar(document.getElementById('fDiaHorario').value);
+
+  const filtrados = DADOS.filter(d => {
+    if (fIdTurma && !normalizar(d.idTurma).includes(fIdTurma)) return false;
+    if (fNome    && !normalizar(d.aluNome).includes(fNome))    return false;
+    if (fEol && !(normalizar(d.codEol).includes(fEol) || normalizar(d.prontuario).includes(fEol))) return false;
+    if (fNucleo  && String(d.nucleo) !== fNucleo)   return false;
+    if (fMod     && String(d.modalidade) !== fMod)  return false;
+    if (fProf    && String(d.professor) !== fProf)  return false;
+    if (fAno     && String(d.ano) !== fAno)         return false;
+    if (fDia     && !normalizar(d.diaHorario).includes(fDia)) return false;
+    return true;
+  });
+
+  const tbody = document.getElementById('tbody');
+  tbody.innerHTML = '';
+
+  if (filtrados.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="20" style="text-align:center;padding:20px;color:#64748b;">Nenhum registro encontrado.</td></tr>';
+  } else {
+    const frag = document.createDocumentFragment();
+    filtrados.forEach(d => {
+      const tr = document.createElement('tr');
+      const vals = [
+        d.idTurma, d.dataMat, d.eolTurma, d.sufixoTurma, d.modalidade,
+        d.faixaEtaria, d.nucleo, d.vagas, d.professor, d.espaco,
+        d.vagasIniciais, d.vezesSemana, d.diaHorario, d.idAluno,
+        d.aluNome, d.codEol, d.prontuario, d.ano, d.carimboNucleo, d.carimboAssin
+      ];
+      vals.forEach(v => {
+        const td = document.createElement('td');
+        td.textContent = v ?? '';
+        tr.appendChild(td);
+      });
+      frag.appendChild(tr);
+    });
+    tbody.appendChild(frag);
+  }
+
+  document.getElementById('contador').textContent =
+    `Exibindo ${filtrados.length} de ${DADOS.length} registros`;
+}
+
+/* ===================== EVENTOS ===================== */
+['fIdTurma','fNome','fEol','fDiaHorario'].forEach(id =>
+  document.getElementById(id).addEventListener('input', render)
+);
+['fNucleo','fModalidade','fProfessor','fAno'].forEach(id =>
+  document.getElementById(id).addEventListener('change', render)
+);
+
+/* ===================== INICIALIZAÇÃO ===================== */
+carregarDados();
+</script>
+</body>
+</html>

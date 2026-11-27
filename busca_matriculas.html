@@ -145,7 +145,7 @@
     <div class="kpis">
       <div class="kpi"><div class="label">Total de Matrículas</div><div class="value" id="kpiMatriculas">—</div><div class="sub">registros na base</div></div>
       <div class="kpi"><div class="label">Alunos Únicos</div><div class="value" id="kpiAlunos">—</div><div class="sub">por ID/EOL/Prontuário</div></div>
-      <div class="kpi"><div class="label">Total de Turmas</div><div class="value" id="kpiTurmas">—</div><div class="sub">IDs distintos</div></div>
+      <div class="kpi"><div class="label">Total de Turmas</div><div class="value" id="kpiTurmas">—</div><div class="sub">turmas reais (ID+Núcleo+EOL+Sufixo)</div></div>
       <div class="kpi"><div class="label">Núcleos Ativos</div><div class="value" id="kpiNucleos">—</div><div class="sub">com matrículas</div></div>
       <div class="kpi"><div class="label">Média Aluno/Turma</div><div class="value" id="kpiMedia">—</div><div class="sub">matrículas ÷ turmas</div></div>
     </div>
@@ -328,10 +328,26 @@ function abrirDashboard() {
   const totalMatriculas = filtrados.length;
   const idsAlunos = new Set(filtrados.map(chaveAluno).filter(Boolean));
   const totalAlunos = idsAlunos.size || totalMatriculas;
-  const idsTurmas = new Set(filtrados.map(d => String(d.idTurma||'').trim()).filter(Boolean));
-  const totalTurmas = idsTurmas.size;
+  // ===== CHAVE REAL DE UMA TURMA =====
+  // Uma turma é única quando combina: ID_TURMA + NÚCLEO + EOL_TURMA + SUFIXO + DIA_HORARIO
+  // (o ID_TURMA sozinho se repete em cada matrícula)
+  function chaveTurma(d) {
+    return [
+      String(d.idTurma||'').trim(),
+      String(d.nucleo||'').trim(),
+      String(d.eolTurma||'').trim(),
+      String(d.sufixoTurma||'').trim(),
+      String(d.diaHorario||'').trim()
+    ].join('|');
+  }
+  const turmasUnicas = new Set(
+    filtrados.map(chaveTurma).filter(k => k.replace(/\|/g,'').trim() !== '')
+  );
+  const totalTurmas = turmasUnicas.size;
   const nucleosAtivos = new Set(filtrados.map(d => String(d.nucleo||'').trim()).filter(Boolean)).size;
   const media = totalTurmas ? (totalMatriculas / totalTurmas).toFixed(1) : '0';
+
+ 
 
   document.getElementById('kpiMatriculas').textContent = totalMatriculas;
   document.getElementById('kpiAlunos').textContent = totalAlunos;
@@ -340,14 +356,18 @@ function abrirDashboard() {
   document.getElementById('kpiMedia').textContent = media;
 
   // Turmas por núcleo (IDs distintos)
+
   const turmasPorNucleo = {};
   filtrados.forEach(d => {
     const nuc = (d.nucleo||'').toString().trim() || '(vazio)';
-    const idT = String(d.idTurma||'').trim();
-    if (!idT) return;
+    const chave = chaveTurma(d);
+    if (!chave.replace(/\|/g,'').trim()) return;
     if (!turmasPorNucleo[nuc]) turmasPorNucleo[nuc] = new Set();
-    turmasPorNucleo[nuc].add(idT);
+    turmasPorNucleo[nuc].add(chave);
   });
+
+
+ 
   const nucLabels = Object.keys(turmasPorNucleo).sort();
   const nucValues = nucLabels.map(n => turmasPorNucleo[n].size);
 

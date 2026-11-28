@@ -27,7 +27,7 @@ header .av{width:46px;height:46px;border:2px solid #fff8}
 
 /* Área do chat com marca d'água ao centro */
 .stage{position:relative;flex:1;min-height:0;display:flex;background:var(--bg)}
-#marca{position:absolute;inset:0;margin:auto;width:min(60%,320px);max-height:60%;object-fit:contain;opacity:.07;filter:brightness(0);pointer-events:none;user-select:none}
+#marca{position:absolute;inset:0;margin:auto;width:min(60%,320px);max-height:60%;object-fit:contain;opacity:.10;filter:brightness(0);pointer-events:none;user-select:none}
 #chat{position:relative;flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
 
 .m{display:flex;gap:8px;align-items:flex-end;max-width:92%;animation:in .25s ease}
@@ -116,7 +116,7 @@ const CFG={
   avatar:'MARINA AVATAR.png',   // arquivo do avatar, na mesma pasta do index.html
   logo:'/images/logo_branco_sem_fundo.png',        // arquivo do logotipo  /images/logo_branco_sem_fundo.png
   marca:'/images/logo_branco_sem_fundo.png',       // logotipo da marca d'água (centro do chat)
-  marcaSilhueta:true   // true = marca d'água cinza clara (ideal para logotipo branco); false = usa as cores do arquivo
+  marcaSilhueta:false   // true = marca d'água cinza clara (ideal para logotipo branco); false = usa as cores do arquivo
 };
 
 /* ===== UTILITÁRIOS ===== */
